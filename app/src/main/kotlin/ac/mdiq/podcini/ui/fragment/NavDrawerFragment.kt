@@ -7,11 +7,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.PlayQueue
-import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -224,8 +221,9 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             QueuesFragment.TAG to NavItem(QueuesFragment.TAG, R.drawable.ic_playlist_play, R.string.queue_label),
             AllEpisodesFragment.TAG to NavItem(AllEpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
             DownloadsFragment.TAG to NavItem(DownloadsFragment.TAG, R.drawable.ic_download, R.string.downloads_label),
-            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.ic_history, R.string.playback_history_label),
-            SharedLogFragment.TAG to NavItem(SharedLogFragment.TAG, R.drawable.ic_share, R.string.shared_log_label),
+            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.baseline_work_history_24, R.string.playback_history_label),
+            LogsFragment.TAG to NavItem(LogsFragment.TAG, R.drawable.ic_history, R.string.logs_label),
+//            SubscriptionLogFragment.TAG to NavItem(SubscriptionLogFragment.TAG, R.drawable.ic_subscriptions, R.string.subscriptions_log_label),
             StatisticsFragment.TAG to NavItem(StatisticsFragment.TAG, R.drawable.ic_chart_box, R.string.statistics_label),
             OnlineSearchFragment.TAG to NavItem(OnlineSearchFragment.TAG, R.drawable.ic_add, R.string.add_feed_label)
         )
@@ -256,7 +254,10 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             navMap[HistoryFragment.TAG]?.count = getNumberOfPlayed().toInt()
             navMap[DownloadsFragment.TAG]?.count = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
             navMap[AllEpisodesFragment.TAG]?.count = numItems
-            navMap[SharedLogFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt()
+            navMap[LogsFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt() +
+                    realm.query(SubscriptionLog::class).count().find().toInt() +
+                    realm.query(DownloadResult::class).count().find().toInt()
+//            navMap[SubscriptionLogFragment.TAG]?.count = realm.query(SubscriptionLog::class).count().find().toInt()
         }
     }
 }

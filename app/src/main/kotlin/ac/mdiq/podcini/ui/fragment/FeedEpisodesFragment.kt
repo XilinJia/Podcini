@@ -40,10 +40,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,6 +94,8 @@ import java.util.concurrent.Semaphore
 
     private var enableFilter: Boolean = true
     private var filterButColor = mutableStateOf(Color.White)
+
+    private var showRemoveFeedDialog by mutableStateOf(false)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -152,14 +159,15 @@ import java.util.concurrent.Semaphore
                 loadItemsRunning = false
             }
         }
-        binding.header.setContent {
-            CustomTheme(requireContext()) {
-                FeedEpisodesHeader(activity = (activity as MainActivity), feed = feed, filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
-            }
-        }
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
+                if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = {showRemoveFeedDialog = false}) {
+                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                    // Make sure fragment is hidden before actually starting to delete
+                    requireActivity().supportFragmentManager.executePendingTransactions()
+                }
                 Column {
+                    FeedEpisodesHeader(activity = (activity as MainActivity), feed = feed, filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
@@ -216,8 +224,24 @@ import java.util.concurrent.Semaphore
     fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
-            val (controlRow, image1, image2, imgvCover, taColumn) = createRefs()
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(colorResource(id = R.color.image_readability_tint))
+            val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
+            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
+                error = painterResource(R.drawable.teaser),
+                modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
+                    .constrainAs(bgImage) {
+                    bottom.linkTo(parent.bottom)
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                })
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                .constrainAs(bgColor) {
+                    bottom.linkTo(parent.bottom)
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                })
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
                 .constrainAs(controlRow) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
@@ -259,8 +283,8 @@ import java.util.concurrent.Semaphore
             Column(Modifier.constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
-                Text(feed?.title?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(feed?.title?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(feed?.author?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -367,12 +391,12 @@ import java.util.concurrent.Semaphore
 //                }
 //            }
             R.id.rename_feed -> CustomFeedNameDialog(activity as Activity, feed!!).show()
-            R.id.remove_feed -> {
-                RemoveFeedDialog.show(requireContext(), feed!!) {
-                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-                    // Make sure fragment is hidden before actually starting to delete
-                    requireActivity().supportFragmentManager.executePendingTransactions()
-                }
+            R.id.remove_feed -> { showRemoveFeedDialog = true
+//                RemoveFeedDialog.show(requireContext(), feed!!) {
+//                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+//                    // Make sure fragment is hidden before actually starting to delete
+//                    requireActivity().supportFragmentManager.executePendingTransactions()
+//                }
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()

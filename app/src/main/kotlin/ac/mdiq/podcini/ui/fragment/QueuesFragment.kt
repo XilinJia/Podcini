@@ -503,7 +503,10 @@ import kotlin.math.max
             setContent {
                 val showDialog = remember { mutableStateOf(true) }
                 CustomTheme(requireContext()) {
-                    RenameQueueDialog(showDialog = showDialog.value, onDismiss = { showDialog.value = false })
+                    RenameQueueDialog(showDialog = showDialog.value, onDismiss = {
+                        showDialog.value = false
+                        (view as? ViewGroup)?.removeView(this@apply)
+                    })
                 }
             }
         }
@@ -515,7 +518,10 @@ import kotlin.math.max
             setContent {
                 val showDialog = remember { mutableStateOf(true) }
                 CustomTheme(requireContext()) {
-                    AddQueueDialog(showDialog = showDialog.value, onDismiss = { showDialog.value = false })
+                    AddQueueDialog(showDialog = showDialog.value, onDismiss = {
+                        showDialog.value = false
+                        (view as? ViewGroup)?.removeView(this@apply)
+                    })
                 }
             }
         }

@@ -231,10 +231,10 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             val retrying = !isLastRunAttempt && !isImmediateFail
             if (episodeTitle.length > 20) episodeTitle = episodeTitle.substring(0, 19) + "…"
 
-            EventFlow.postEvent(FlowEvent.MessageEvent(applicationContext.getString(
-                if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
-                episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() }, applicationContext.getString(
-                R.string.download_error_details)))
+            EventFlow.postEvent(FlowEvent.MessageEvent(
+                applicationContext.getString(if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying, episodeTitle),
+                { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() },
+                applicationContext.getString(R.string.download_error_details)))
         }
         private fun getDownloadLogsIntent(context: Context): PendingIntent {
             val intent = MainActivityStarter(context).withDownloadLogsOpen().getIntent()

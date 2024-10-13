@@ -10,11 +10,11 @@
         android:title="@string/search_label"
         custom:showAsAction="always" />
 
-    <item
-        android:id="@+id/action_download_logs"
-        android:icon="@drawable/ic_history"
-        android:title="@string/downloads_log_label"
-        custom:showAsAction="always" />
+<!--    <item-->
+<!--        android:id="@+id/action_download_logs"-->
+<!--        android:icon="@drawable/ic_history"-->
+<!--        android:title="@string/downloads_log_label"-->
+<!--        custom:showAsAction="always" />-->
 
 <!--    <item-->
 <!--        android:id="@+id/refresh_item"-->
@@ -25,13 +25,14 @@
     <item
         android:id="@+id/filter_items"
         android:icon="@drawable/ic_filter"
-        android:menuCategory="container"
         android:title="@string/filter"
-        custom:showAsAction="ifRoom"/>
+        custom:showAsAction="always"/>
 
     <item
         android:id="@+id/downloads_sort"
-        android:title="@string/sort" />
+        android:icon="@drawable/arrows_sort"
+        android:title="@string/sort"
+        custom:showAsAction="always"/>
 
     <item
         android:id="@+id/switch_queue"

@@ -57,7 +57,7 @@ class MainActivityStarter(private val context: Context) {
     }
 
     fun withDownloadLogsOpen(): MainActivityStarter {
-        intent.putExtra(Extras.open_download_logs.name, true)
+        intent.putExtra(Extras.open_logs.name, true)
         return this
     }
 
@@ -74,7 +74,7 @@ class MainActivityStarter(private val context: Context) {
         add_to_back_stack,
         fragment_tag,
         open_drawer,
-        open_download_logs,
+        open_logs,
         fragment_args
     }
     companion object {

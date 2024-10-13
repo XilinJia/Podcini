@@ -13,11 +13,14 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
+import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.feedLogsMap
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -41,8 +44,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -58,6 +63,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.File
 import java.io.IOException
+import java.util.*
 import kotlin.concurrent.Volatile
 
 /**
@@ -321,6 +327,7 @@ class OnlineFeedFragment : Fragment() {
     @Composable
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
+        val feedLogsMap_ = feedLogsMap!!
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
             val (progressBar, main) = createRefs()
             if (showProgress) CircularProgressIndicator(progress = { 0.6f },
@@ -404,9 +411,28 @@ class OnlineFeedFragment : Fragment() {
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-                    Text("$numEpisodes episodes", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 10.dp))
-                    Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(HtmlToPlainText.getPlainText(feed?.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    Text("$numEpisodes episodes", color = textColor, style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 5.dp, bottom = 10.dp))
+                    Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(HtmlToPlainText.getPlainText(feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    val sLog = remember {feedLogsMap_[feed?.downloadUrl?:""] }
+                    if (sLog != null) {
+                        val commentTextState by remember { mutableStateOf(TextFieldValue(sLog?.comment ?: "")) }
+                        val context = LocalContext.current
+                        val cancelDate = remember { formatAbbrev(context, Date(sLog.cancelDate)) }
+                        val ratingRes = remember { fromCode(sLog.rating).res }
+                        if (!commentTextState.text.isEmpty()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp)) {
+                                Text(stringResource(R.string.my_opinion_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                                Icon(painter = painterResource(ratingRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.padding(start = 5.dp))
+                            }
+                            Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
+                            Text(stringResource(R.string.cancelled_on_label) + ": " + cancelDate, color = textColor, style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
+                        }
+                    }
                     Text(feed?.mostRecentItem?.title ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
                     Text("${feed?.language?:""} ${feed?.type ?: ""} ${feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
                     Text(feed?.link?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))

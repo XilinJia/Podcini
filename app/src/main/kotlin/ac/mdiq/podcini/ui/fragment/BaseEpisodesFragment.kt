@@ -224,9 +224,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
             Logd(TAG, "loadItems() called")
             lifecycleScope.launch {
                 try {
-                    val data = withContext(Dispatchers.IO) {
-                        Pair(loadData().toMutableList(), loadTotalItemCount())
-                    }
+                    val data = withContext(Dispatchers.IO) { Pair(loadData().toMutableList(), loadTotalItemCount()) }
                     val restoreScrollPosition = episodes.isEmpty()
                     episodes.clear()
                     episodes.addAll(data.first)
@@ -236,11 +234,8 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 //                        if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
                         updateToolbar()
                     }
-                } catch (e: Throwable) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                } finally {
-                    loadItemsRunning = false
-                }
+                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                } finally { loadItemsRunning = false }
             }
         }
     }

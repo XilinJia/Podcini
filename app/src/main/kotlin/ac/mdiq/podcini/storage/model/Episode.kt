@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
@@ -84,7 +83,7 @@ class Episode : RealmObject {
      */
     var chapters: RealmList<Chapter> = realmListOf()
 
-    var rating: Int = Rating.NEUTRAL.code
+    var rating: Int = Rating.UNRATED.code
 
     @Ignore
     var isFavorite: Boolean = (rating == 2)
@@ -318,20 +317,6 @@ class Episode : RealmObject {
     fun shiftRating(): Int {
         val nr = rating + 1
         return if (nr <= Rating.FAVORITE.code) nr else Rating.TRASH.code
-    }
-
-    enum class Rating(val code: Int, val res: Int) {
-        TRASH(-2, R.drawable.ic_delete),
-        BAD(-1, androidx.media3.session.R.drawable.media3_icon_thumb_down_filled),
-        NEUTRAL(0, R.drawable.ic_questionmark),
-        GOOD(1, androidx.media3.session.R.drawable.media3_icon_thumb_up_filled),
-        FAVORITE(2, R.drawable.ic_star);
-
-        companion object {
-            fun fromCode(code: Int): Rating {
-                return enumValues<Rating>().firstOrNull { it.code == code } ?: NEUTRAL
-            }
-        }
     }
 
     enum class PlayState(val code: Int) {

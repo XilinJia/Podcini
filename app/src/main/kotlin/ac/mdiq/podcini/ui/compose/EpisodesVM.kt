@@ -106,7 +106,6 @@ class EpisodeVM(var episode: Episode) {
     var ratingState by mutableIntStateOf(episode.rating)
     var inProgressState by mutableStateOf(episode.isInProgress)
     var downloadState by mutableIntStateOf(if (episode.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
-    var isRemote by mutableStateOf(false)
     var actionButton by mutableStateOf<EpisodeActionButton?>(null)
     var actionRes by mutableIntStateOf(R.drawable.ic_questionmark)
     var showAltActionsDialog by mutableStateOf(false)
@@ -181,7 +180,7 @@ fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                for (rating in Episode.Rating.entries) {
+                for (rating in Rating.entries) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                         for (item in selected) Episodes.setRating(item, rating.code)
                         onDismissRequest()
@@ -207,7 +206,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                 for (q in queues) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = toQueue == q, onClick = { toQueue = q })
-                        Text(q.name,)
+                        Text(q.name)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -259,7 +258,7 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                 for (f in synthetics) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = toFeed == f, onClick = { toFeed = f })
-                        Text(f.title ?: "No title",)
+                        Text(f.title ?: "No title")
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -553,11 +552,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                             }, onLongClick = {
                                 selectMode = !selectMode
                                 vm.isSelected = selectMode
+                                selected.clear()
                                 if (selectMode) {
                                     selected.add(vms[index].episode)
                                     longPressIndex = index
                                 } else {
-                                    selected.clear()
                                     selectedSize = 0
                                     longPressIndex = -1
                                 }
@@ -572,9 +571,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                             Row {
                                 if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
                                     Icon(painter = painterResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
-                                val ratingIconRes = Episode.Rating.fromCode(vm.ratingState).res
-                                if (vm.ratingState != Episode.Rating.NEUTRAL.code)
-                                    Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.surfaceTint, contentDescription = "rating", modifier = Modifier.width(14.dp).height(14.dp))
+                                val ratingIconRes = Rating.fromCode(vm.ratingState).res
+                                if (vm.ratingState != Rating.UNRATED.code)
+                                    Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(14.dp).height(14.dp))
                                 if (vm.inQueueState)
                                     Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
                                 val curContext = LocalContext.current

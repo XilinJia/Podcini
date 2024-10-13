@@ -14,6 +14,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -333,7 +334,7 @@ import kotlin.math.min
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
                 it.media!!.setLastPlayedTime(action.timestamp!!.time)
-                it.rating = if (action.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
+                it.rating = if (action.isFavorite) Rating.FAVORITE.code else Rating.UNRATED.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
                     Logd(TAG, "Marking as played")

@@ -5,7 +5,9 @@ import ac.mdiq.podcini.databinding.FragmentSearchResultsBinding
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
+import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
+import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.getFeedLogMap
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
@@ -50,6 +52,8 @@ class SearchResultsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var searchProvider: PodcastSearcher? = null
+
+    private val feedLogs = getFeedLogMap()
 
     private var searchResults = mutableStateListOf<PodcastSearchResult>()
     private var errorText by mutableStateOf("")
@@ -106,7 +110,11 @@ class SearchResultsFragment : Fragment() {
                     },
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(searchResults.size) { index ->
-                    OnlineFeedItem(activity = activity as MainActivity, searchResults[index])
+                    val result = searchResults[index]
+                    val urlPrepared by remember { mutableStateOf(prepareUrl(result.feedUrl!!))  }
+                    val sLog = remember { mutableStateOf(feedLogs[urlPrepared]) }
+//                    Logd(TAG, "result: ${result.feedUrl} ${feedLogs[urlPrepared]}")
+                    OnlineFeedItem(activity = activity as MainActivity, result, sLog.value)
                 }
             }
             if (searchResults.isEmpty()) Text(noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })

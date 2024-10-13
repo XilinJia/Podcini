@@ -14,10 +14,13 @@ import io.realm.kotlin.dynamic.DynamicRealmObject
 import io.realm.kotlin.dynamic.getValue
 import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.migration.AutomaticSchemaMigration
+import io.realm.kotlin.types.BaseRealmObject
+import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
 import kotlin.coroutines.ContinuationInterceptor
+import kotlin.reflect.KClass
 
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
@@ -38,13 +41,15 @@ object RealmDB {
                 PlayQueue::class,
                 DownloadResult::class,
                 ShareLog::class,
+                SubscriptionLog::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(25)
+            .schemaVersion(26)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
                 if (oldRealm.schemaVersion() < 25) {
+                    Logd(TAG, "migrating DB from below 25")
                     mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
                         newObject?.run {
                             set(
@@ -53,6 +58,55 @@ object RealmDB {
                             )
                         }
                     }
+                }
+                if (oldRealm.schemaVersion() < 26) {
+                    Logd(TAG, "migrating DB from below 26")
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            if (oldObject.getValue<Long>(fieldName = "rating") == 0L) set("rating", -3L)
+                        }
+                    }
+//                    val feeds = oldRealm.query(className = "Feed").query("id > 10000").find()
+//                    for (f in feeds) {
+//                        val id = f.getValue(propertyName = "id", Long::class)
+//                        val url = f.getNullableValue(propertyName = "downloadUrl", String::class)
+//                        val link = f.getNullableValue(propertyName = "link", String::class)
+//                        val title = f.getNullableValue(propertyName = "eigenTitle", String::class)
+//                        val subLog = newRealm.copyToRealm(
+//                            DynamicMutableRealmObject.create(
+//                                type = "SubscriptionLog",
+//                                mapOf(
+//                                    "id" to id/100,
+//                                    "itemId" to id,
+//                                    "url" to url,
+//                                    "link" to link,
+//                                    "type" to "Feed",
+//                                    "title" to title,
+//                                )
+//                            )
+//                        )
+//                    }
+//                    val episodes = oldRealm.query(className = "Episode").query("feedId < 100").find()
+//                    for (e in episodes) {
+//                        val id = e.getValue(propertyName = "id", Long::class)
+//                        val media = oldRealm.query(className = "EpisodeMedia").query("id == $id").first().find()
+//                        val url = media?.getNullableValue(propertyName = "downloadUrl", String::class) ?:""
+//                        val link = e.getNullableValue(propertyName = "link", String::class)
+//                        val title = e.getNullableValue(propertyName = "title", String::class)
+//                        val subLog = newRealm.copyToRealm(
+//                            DynamicMutableRealmObject.create(
+//                                type = "SubscriptionLog",
+//                                mapOf(
+//                                    "id" to id/100,
+//                                    "itemId" to id,
+//                                    "url" to url,
+//                                    "link" to link,
+//                                    "type" to "Media",
+//                                    "title" to title,
+//                                )
+//                            )
+//                        )
+//                    }
                 }
             })
             .build()

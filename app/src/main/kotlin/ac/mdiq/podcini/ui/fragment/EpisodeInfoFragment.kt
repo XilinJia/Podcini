@@ -27,14 +27,15 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
 import ac.mdiq.podcini.ui.dialog.ShareDialog
-import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.EpisodeHomeFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -58,17 +59,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -121,7 +118,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var txtvDuration by mutableStateOf("")
     private var itemLink by mutableStateOf("")
     var hasMedia by mutableStateOf(true)
-    var rating by mutableStateOf(episode?.rating ?: 0)
+    var rating by mutableStateOf(episode?.rating ?: Rating.UNRATED.code)
     var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
     var isPlayed by mutableStateOf(episode?.isPlayed() ?: false)
 
@@ -171,38 +168,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
         var showEditComment by remember { mutableStateOf(false) }
-        @Composable
-        fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldValue) -> Unit, onDismissRequest: () -> Unit, onSave: (String) -> Unit) {
-            Dialog(onDismissRequest = { onDismissRequest() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-                Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Add comment", color = textColor, style = MaterialTheme.typography.titleLarge)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        BasicTextField(value = textState, onValueChange = { onTextChange(it) }, textStyle = TextStyle(fontSize = 16.sp, color = textColor),
-                            modifier = Modifier.fillMaxWidth().height(300.dp).padding(10.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                            TextButton(onClick = { onDismissRequest() }) {
-                                Text("Cancel")
-                            }
-                            TextButton(onClick = {
-                                onSave(textState.text)
-                                onDismissRequest()
-                            }) {
-                                Text("Save")
-                            }
-                        }
-                    }
-                }
-                LaunchedEffect(Unit) {
-                    while (true) {
-                        delay(10000)
-                        onSave(textState.text)
-                    }
-                }
-            }
-        }
         var commentTextState by remember { mutableStateOf(TextFieldValue(episode?.comment?:"")) }
         if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
             onSave = {
@@ -226,8 +191,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.4f))
-                val playedIconRes = if (isPlayed) R.drawable.ic_mark_unplayed else R.drawable.ic_mark_played
-                Icon(painter = painterResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed", modifier = Modifier.width(24.dp).height(24.dp)
+                val playedIconRes = if (!isPlayed) R.drawable.ic_mark_unplayed else R.drawable.ic_mark_played
+                Icon(painter = painterResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp)
                     .clickable(onClick = {
                         if (isPlayed) {
                             setPlayState(Episode.PlayState.UNPLAYED.code, false, episode!!)
@@ -252,14 +218,18 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             }
                         }
                 }))
+                if (episode?.media != null) {
+                    Spacer(modifier = Modifier.weight(0.2f))
+                    val inQueueIconRes = if (inQueue) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
+                    Icon(painter = painterResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
+                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
+                            if (inQueue) removeFromQueue(episode!!) else addToQueue(true, episode!!)
+                        }))
+                }
                 Spacer(modifier = Modifier.weight(0.2f))
-                val inQueueIconRes = if (!inQueue && episode?.media != null) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
-                Icon(painter = painterResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue", modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
-                    if (inQueue) removeFromQueue(episode!!) else addToQueue(true, episode!!)
-                }))
-                Spacer(modifier = Modifier.weight(0.2f))
-                val ratingIconRes = Episode.Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
+                val ratingIconRes = Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.2f))

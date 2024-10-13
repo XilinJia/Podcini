@@ -9,11 +9,17 @@ import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
+import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
+import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_DETAILED
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_FEED_ID
@@ -38,14 +44,19 @@ import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -73,8 +84,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var feed: Feed
     private lateinit var toolbar: MaterialToolbar
 
+    private var showRemoveFeedDialog by mutableStateOf(false)
     private var txtvAuthor by mutableStateOf("")
     var txtvUrl by mutableStateOf<String?>(null)
+    var rating by mutableStateOf(Rating.UNRATED.code)
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
         uri: Uri? -> this.addLocalFolderResult(uri)
@@ -104,13 +117,13 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvAuthor = feed.author ?: ""
         txtvUrl = feed.downloadUrl
 
-//        binding.header.setContent {
-//            CustomTheme(requireContext()) {
-//                HeaderUI()
-//            }
-//        }
         binding.detailUI.setContent {
             CustomTheme(requireContext()) {
+                if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = {showRemoveFeedDialog = false}) {
+                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                    // Make sure fragment is hidden before actually starting to delete
+                    requireActivity().supportFragmentManager.executePendingTransactions()
+                }
                 Column {
                     HeaderUI()
                     DetailUI()
@@ -141,16 +154,43 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun HeaderUI() {
         val textColor = MaterialTheme.colorScheme.onSurface
+        var showChooseRatingDialog by remember { mutableStateOf(false) }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(feed)) {
+            showChooseRatingDialog = false
+            setFeed(feed)
+        }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
-            val (controlRow, image1, image2, imgvCover, taColumn) = createRefs()
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(colorResource(id = R.color.image_readability_tint))
+            val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
+            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
+                error = painterResource(R.drawable.teaser),
+                modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
+                    .constrainAs(bgImage) {
+                        bottom.linkTo(parent.bottom)
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    })
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+                .constrainAs(bgColor) {
+                    bottom.linkTo(parent.bottom)
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                })
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
                 .constrainAs(controlRow) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
-                Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "butShowSettings",
-                    Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
+                val ratingIconRes = Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
+                    showChooseRatingDialog = true
+                }))
+                Spacer(modifier = Modifier.weight(0.2f))
+                Icon(painter = painterResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
@@ -182,8 +222,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Column(Modifier.constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
-                Text(feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(feed.title ?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(txtvAuthor, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -191,12 +231,33 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun DetailUI() {
         val scrollState = rememberScrollState()
+        var showEditComment by remember { mutableStateOf(false) }
+        var commentTextState by remember { mutableStateOf(TextFieldValue(feed?.comment?:"")) }
+        if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
+            onSave = {
+                runOnIOScope {
+                    feed = upsert(feed) { it.comment = commentTextState.text }
+                    rating =  feed.rating
+//                    val slog = realm.query(SubscriptionLog::class).query("itemId == $0", feed.id).first().find()
+//                    if (slog != null) {
+//                        upsert(slog) {
+//                            it.comment = commentTextState.text
+//                        }
+//                    }
+                }
+            })
+
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Text(feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp))
             Text(feed.author ?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
             Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             Text(HtmlToPlainText.getPlainText(feed.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
+                color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
+            Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
+
             Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             Text(text = txtvUrl?:"", color = textColor, modifier = Modifier.clickable {
                 if (feed.downloadUrl != null) {
@@ -236,7 +297,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val fundText = remember { fundingText() }
                 Text(fundText, color = textColor)
             }
-            Button({
+            Button(modifier = Modifier.padding(top = 10.dp), onClick = {
                 val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
                 (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
             }) {
@@ -270,7 +331,9 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun setFeed(feed_: Feed) {
-        feed = feed_
+//        feed = feed_
+        feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
+        rating = feed.rating
     }
 
     override fun onDestroyView() {
@@ -314,11 +377,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }.show()
             }
             R.id.remove_feed -> {
-                RemoveFeedDialog.show(requireContext(), feed) {
-                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-                    // Make sure fragment is hidden before actually starting to delete
-                    requireActivity().supportFragmentManager.executePendingTransactions()
-                }
+                showRemoveFeedDialog = true
+//                RemoveFeedDialog.show(requireContext(), feed) {
+//                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+//                    // Make sure fragment is hidden before actually starting to delete
+//                    requireActivity().supportFragmentManager.executePendingTransactions()
+//                }
             }
             else -> return false
         }
@@ -377,7 +441,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedPrefsChangeEvent -> feed = event.feed
+                    is FlowEvent.FeedPrefsChangeEvent -> {
+                        setFeed(feed)
+//                        feed = event.feed
+                    }
                     else -> {}
                 }
             }

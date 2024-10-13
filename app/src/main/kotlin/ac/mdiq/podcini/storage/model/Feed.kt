@@ -94,6 +94,10 @@ class Feed : RealmObject {
 
     var hasVideoMedia: Boolean = false
 
+    var rating: Int =  Rating.NEUTRAL.code
+
+    var comment: String = ""
+
     /**
      * Returns the value that uniquely identifies this Feed. If the
      * feedIdentifier attribute is not null, it will be returned. Else it will
@@ -182,29 +186,31 @@ class Feed : RealmObject {
 
     /**
      * This constructor is used for requesting a feed download (it must not be used for anything else!). It should NOT be
-     * used if the title of the feed is already known.
+     * used if the title of the feed is already known. TODO:
      */
-    constructor(url: String?, lastUpdate: String?) {
+    constructor(url: String?, lastUpdate: String?, title: String? = null, username: String? = null, password: String? = null) {
         this.lastUpdate = lastUpdate
         fileUrl = null
         this.downloadUrl = url
-    }
-
-    /**
-     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
-     * used if the title of the feed is already known.
-     */
-    constructor(url: String?, lastUpdate: String?, title: String?) : this(url, lastUpdate) {
         this.eigenTitle = title
-    }
-
-    /**
-     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
-     * used if the title of the feed is already known.
-     */
-    constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url, lastUpdate, title) {
         preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
     }
+
+//    /**
+//     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
+//     * used if the title of the feed is already known.
+//     */
+//    constructor(url: String?, lastUpdate: String?, title: String?) : this(url, lastUpdate) {
+//        this.eigenTitle = title
+//    }
+//
+//    /**
+//     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
+//     * used if the title of the feed is already known.
+//     */
+//    constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url, lastUpdate, title) {
+//        preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
+//    }
 
     fun setCustomTitle1(value: String?) {
         customTitle = if (value == null || value == eigenTitle) null else value

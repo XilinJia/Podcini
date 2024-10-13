@@ -81,7 +81,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import org.apache.commons.lang3.ArrayUtils
 import kotlin.math.min
 
 /**
@@ -419,7 +418,8 @@ class MainActivity : CastEnabledActivity() {
             QueuesFragment.TAG -> fragment = QueuesFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
-            SharedLogFragment.TAG -> fragment = SharedLogFragment()
+            LogsFragment.TAG -> fragment = LogsFragment()
+//            SubscriptionLogFragment.TAG -> fragment = SubscriptionLogFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
             OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
@@ -638,8 +638,10 @@ class MainActivity : CastEnabledActivity() {
             else -> handleDeeplink(intent.data)
         }
         if (intent.getBooleanExtra(MainActivityStarter.Extras.open_drawer.name, false)) drawerLayout?.open()
-        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_download_logs.name, false))
-            DownloadLogFragment().show(supportFragmentManager, null)
+//        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_download_logs.name, false))
+//            DownloadLogFragment().show(supportFragmentManager, null)
+        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_logs.name, false))
+            loadChildFragment(LogsFragment())
         if (intent.getBooleanExtra(Extras.refresh_on_start.name, false)) runOnceOrAsk(this)
 
         // to avoid handling the intent twice when the configuration changes

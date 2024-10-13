@@ -14,10 +14,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
-import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
@@ -35,7 +32,6 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
-import android.util.Rational
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -942,7 +938,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
                 it.media!!.setLastPlayedTime(action.timestamp!!.time)
-                it.rating = if (action.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
+                it.rating = if (action.isFavorite) Rating.FAVORITE.code else Rating.UNRATED.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
                     Logd(TAG, "Marking as played: $action")

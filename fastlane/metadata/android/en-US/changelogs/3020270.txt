@@ -1,0 +1,21 @@
+ Version 6.11.0
+
+* added SubscriptionLog to record unsubscribe history
+* in online SearchResults, if an item has been subscribed but removed, a X mark appears on the cover image,
+* in OnlineFeed, added prior rating, opinion and cancelled date on a feed previously unsubscribed
+* renamed SharedLog fragment to LogsFragment and merged shared, subscription and download logs into the fragment
+	* the count of LogsFragment on NavDrawer is the sum of the three logs
+* added Unrated to the rating system and set episodes default rating to Unrated
+* added the same rating system to podcast/subscription/feed
+* added comment/opinion to podcast/subscription/feed
+* in FeedInfo, added rating telltale in the header and "My opinion" section under the Description text
+* in Subscriptions view, added rating on the icon of every podcast
+* in Subscriptions view, added set rating in multi-selection menu
+* in RemoveFeedDialog, added delete reason text input for SubscriptionLog
+* added Combo swipe action with ability to choose any specific action
+* changed shift rating action to set ration action with a popup menu
+* in Subscriptions grid view is set adaptive with min size of 80 with equal image size
+* on the header of FeedInfo and FeedEpisodes, added background image and removed the dark bar
+* in EpisodeInfo, show current status with telltale icons of played and inQueue (rather than reversed in prior version)
+* various minor fixes with selections
+* DownloadLog fragment removed

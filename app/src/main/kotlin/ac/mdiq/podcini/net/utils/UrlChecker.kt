@@ -23,7 +23,7 @@ object UrlChecker {
         var url = url_
         url = url.trim { it <= ' ' }
         val lowerCaseUrl = url.lowercase() // protocol names are case insensitive
-        Logd(TAG, "prepareUrl lowerCaseUrl: $lowerCaseUrl")
+//        Logd(TAG, "prepareUrl lowerCaseUrl: $lowerCaseUrl")
         return when {
             lowerCaseUrl.startsWith("feed://") ->  prepareUrl(url.substring("feed://".length))
             lowerCaseUrl.startsWith("pcast://") ->  prepareUrl(url.substring("pcast://".length))

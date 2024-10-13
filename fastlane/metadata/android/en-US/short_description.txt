@@ -1,1 +1,1 @@
-A feature-rich open-source podcast instrument capable of handling Youtube and YT Music contents
+Modern, feature-rich, capable of handling Youtube and YT Music contents

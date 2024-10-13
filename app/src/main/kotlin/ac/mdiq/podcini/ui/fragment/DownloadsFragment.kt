@@ -114,7 +114,7 @@ import java.util.*
 
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) DownloadLogFragment().show(childFragmentManager, null)
+//        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) DownloadLogFragment().show(childFragmentManager, null)
 
         addEmptyView()
         return binding.root
@@ -155,7 +155,7 @@ import java.util.*
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.filter_items -> DownloadsFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
-            R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
+//            R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()

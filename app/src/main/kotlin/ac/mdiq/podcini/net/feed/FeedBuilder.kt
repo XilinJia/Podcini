@@ -24,7 +24,6 @@ import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.content.Context
 import android.util.Log
 import io.realm.kotlin.ext.realmListOf
-import io.realm.kotlin.types.RealmList
 import kotlinx.coroutines.*
 import org.jsoup.Jsoup
 import java.io.File
@@ -276,6 +275,10 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
             media?.episode = item
         }
         val fo = updateFeed(context, feed, false)
+//        if (fo?.downloadUrl != null || fo?.link != null) {
+//            val fLog = SubscriptionLog(fo.id, fo.title?:"", fo.downloadUrl?:"", fo.link?:"", SubscriptionLog.Type.Feed.name)
+//            upsertBlk(fLog) {}
+//        }
         Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")
     }
 }

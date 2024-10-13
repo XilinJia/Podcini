@@ -5,7 +5,6 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
-import ac.mdiq.podcini.storage.database.Episodes.setRating
 import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -18,8 +17,11 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.SwipeAction.Companion.NO_ACTION
+import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes.NO_ACTION
+import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.DownloadsFragment
@@ -32,13 +34,35 @@ import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
+import android.util.TypedValue
+import android.view.ViewGroup
 import androidx.annotation.OptIn
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.ItemTouchHelper
-import com.annimon.stream.Stream
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -80,25 +104,17 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class Actions(prefs: String?) {
         @JvmField
-        var right: SwipeAction? = null
+        var right: SwipeAction = swipeActions[0]
         @JvmField
-        var left: SwipeAction? = null
+        var left: SwipeAction = swipeActions[0]
 
         init {
             val actions = prefs!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (actions.size == 2) {
-                this.right = Stream.of(swipeActions).filter { a: SwipeAction -> a.getId().equals(actions[0]) }.single()
-                this.left = Stream.of(swipeActions).filter { a: SwipeAction -> a.getId().equals(actions[1]) }.single()
-            }
-        }
-        fun hasActions(): Boolean {
-            return right != null && left != null
-        }
-        fun hasActions(swipeDir: Int): Boolean {
-            return when (swipeDir) {
-                ItemTouchHelper.RIGHT -> right != null && right?.getId() != NO_ACTION
-                ItemTouchHelper.LEFT -> left != null && left?.getId() != NO_ACTION
-                else -> false
+                val rActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[0]) }
+                this.right = if (rActs.isEmpty()) swipeActions[0] else rActs[0]
+                val lActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[1]) }
+                this.left = if (lActs.isEmpty()) swipeActions[0] else lActs[0]
             }
         }
     }
@@ -109,15 +125,14 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
 
         var prefs: SharedPreferences? = null
-
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
         }
 
         @JvmField
         val swipeActions: List<SwipeAction> = listOf(
-            NoActionSwipeAction(), AddToQueueSwipeAction(),
-            StartDownloadSwipeAction(), ShiftRatingSwipeAction(),
+            NoActionSwipeAction(), ComboSwipeAction(), AddToQueueSwipeAction(),
+            StartDownloadSwipeAction(), SetRatingSwipeAction(),
             TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
             DeleteSwipeAction(), RemoveFromHistorySwipeAction())
 
@@ -133,11 +148,11 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         @OptIn(UnstableApi::class) @JvmStatic
         fun getPrefsWithDefaults(tag: String): Actions {
             val defaultActions = when (tag) {
-                QueuesFragment.TAG -> "$NO_ACTION,$NO_ACTION"
-                DownloadsFragment.TAG -> "$NO_ACTION,$NO_ACTION"
-                HistoryFragment.TAG -> "$NO_ACTION,$NO_ACTION"
-                AllEpisodesFragment.TAG -> "$NO_ACTION,$NO_ACTION"
-                else -> "$NO_ACTION,$NO_ACTION"
+                QueuesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                DownloadsFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                HistoryFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                AllEpisodesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                else -> "${NO_ACTION.name},${NO_ACTION.name}"
             }
             return getPrefs(tag, defaultActions)
         }
@@ -149,7 +164,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class AddToQueueSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.ADD_TO_QUEUE
+            return ActionTypes.ADD_TO_QUEUE.name
         }
 
         override fun getActionIcon(): Int {
@@ -167,7 +182,65 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             addToQueue( true, item)
-//        else RemoveFromQueueSwipeAction().performAction(item, fragment, filter)
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return filter.showQueued || filter.showNew
+        }
+    }
+
+    class ComboSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return ActionTypes.COMBO.name
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.baseline_category_24
+        }
+
+        override fun getActionColor(): Int {
+            return androidx.appcompat.R.attr.colorAccent
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.add_to_queue_label)
+        }
+
+        @OptIn(UnstableApi::class)
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            val composeView = ComposeView(fragment.requireContext()).apply {
+                setContent {
+                    var showDialog by remember { mutableStateOf(true) }
+                    CustomTheme(fragment.requireContext()) {
+                        if (showDialog) Dialog(onDismissRequest = {
+                            showDialog = false
+                            (fragment.view as? ViewGroup)?.removeView(this@apply)
+                        }) {
+                            val context = LocalContext.current
+                            Surface(shape = RoundedCornerShape(16.dp)) {
+                                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                    for (action in swipeActions) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
+                                            action.performAction(item, fragment, filter)
+                                            showDialog = false
+                                            (fragment.view as? ViewGroup)?.removeView(this@apply)
+                                        }) {
+                                            val colorAccent = remember {
+                                                val typedValue = TypedValue()
+                                                context.theme.resolveAttribute(action.getActionColor(), typedValue, true)
+                                                Color(typedValue.data)
+                                            }
+                                            Icon(imageVector = ImageVector.vectorResource(id = action.getActionIcon()),  tint = colorAccent, contentDescription = action.getTitle(context))
+                                            Text(action.getTitle(context), Modifier.padding(start = 4.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            (fragment.view as? ViewGroup)?.addView(composeView)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
@@ -177,7 +250,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class DeleteSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.DELETE
+            return ActionTypes.DELETE.name
         }
 
         override fun getActionIcon(): Int {
@@ -203,9 +276,9 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
     }
 
-    class ShiftRatingSwipeAction : SwipeAction {
+    class SetRatingSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.MARK_FAV
+            return ActionTypes.MARK_FAV.name
         }
 
         override fun getActionIcon(): Int {
@@ -222,7 +295,18 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            setRating(item, item.shiftRating())
+            var showChooseRatingDialog by mutableStateOf(true)
+            val composeView = ComposeView(fragment.requireContext()).apply {
+                setContent {
+                    CustomTheme(fragment.requireContext()) {
+                        if (showChooseRatingDialog) ChooseRatingDialog(listOf(item)) {
+                            showChooseRatingDialog = false
+                            (fragment.view as? ViewGroup)?.removeView(this@apply)
+                        }
+                    }
+                }
+            }
+            (fragment.view as? ViewGroup)?.addView(composeView)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
@@ -232,7 +316,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class NoActionSwipeAction : SwipeAction {
         override fun getId(): String {
-            return NO_ACTION
+            return NO_ACTION.name
         }
 
         override fun getActionIcon(): Int {
@@ -259,7 +343,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         val TAG = this::class.simpleName ?: "Anonymous"
 
         override fun getId(): String {
-            return SwipeAction.REMOVE_FROM_HISTORY
+            return ActionTypes.REMOVE_FROM_HISTORY.name
         }
 
         override fun getActionIcon(): Int {
@@ -306,7 +390,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class RemoveFromQueueSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.REMOVE_FROM_QUEUE
+            return ActionTypes.REMOVE_FROM_QUEUE.name
         }
 
         override fun getActionIcon(): Int {
@@ -360,35 +444,9 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
     }
 
-    class ShowFirstSwipeDialogAction : SwipeAction {
-        override fun getId(): String {
-            return "SHOW_FIRST_SWIPE_DIALOG"
-        }
-
-        override fun getActionIcon(): Int {
-            return R.drawable.ic_settings
-        }
-
-        override fun getActionColor(): Int {
-            return R.attr.icon_gray
-        }
-
-        override fun getTitle(context: Context): String {
-            return ""
-        }
-
-        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            //handled in SwipeActions
-        }
-
-        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return false
-        }
-    }
-
     class StartDownloadSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.START_DOWNLOAD
+            return ActionTypes.START_DOWNLOAD.name
         }
 
         override fun getActionIcon(): Int {
@@ -416,7 +474,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class TogglePlaybackStateSwipeAction : SwipeAction {
         override fun getId(): String {
-            return SwipeAction.TOGGLE_PLAYED
+            return ActionTypes.TOGGLE_PLAYED.name
         }
 
         override fun getActionIcon(): Int {

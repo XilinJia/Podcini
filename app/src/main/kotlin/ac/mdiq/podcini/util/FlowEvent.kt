@@ -2,10 +2,7 @@ package ac.mdiq.podcini.util
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.model.*
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer
@@ -168,7 +165,7 @@ sealed class FlowEvent {
     //    TODO: need better handling at receving end
     data class EpisodePlayedEvent(val episode: Episode? = null) : FlowEvent()
 
-    data class RatingEvent(val episode: Episode, val rating: Int = Episode.Rating.FAVORITE.code) : FlowEvent()
+    data class RatingEvent(val episode: Episode, val rating: Int = Rating.FAVORITE.code) : FlowEvent()
 
     data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 

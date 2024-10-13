@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:minHeight="300dp">
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:minHeight="?android:attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        app:title="@string/downloads_log_label" />
+        app:title="@string/logs_label" />
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/lazyColumn"

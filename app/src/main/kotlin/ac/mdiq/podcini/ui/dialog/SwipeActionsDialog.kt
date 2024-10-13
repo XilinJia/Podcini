@@ -1,27 +1,26 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getPrefsWithDefaults
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getSharedPrefs
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.isSwipeActionEnabled
+import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
+import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.gridlayout.widget.GridLayout
-import com.annimon.stream.Stream
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.*
-import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.actions.SwipeAction
-import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getPrefsWithDefaults
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getSharedPrefs
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.isSwipeActionEnabled
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @OptIn(UnstableApi::class)
 class SwipeActionsDialog(private val context: Context, private val tag: String) {
@@ -43,30 +42,30 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
         when (tag) {
             AllEpisodesFragment.TAG -> {
                 forFragment = context.getString(R.string.episodes_label)
-                keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()
+                keys = keys.filter { a: SwipeAction -> !a.getId().equals(SwipeAction.ActionTypes.REMOVE_FROM_HISTORY.name) }
             }
             DownloadsFragment.TAG -> {
                 forFragment = context.getString(R.string.downloads_label)
-                keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) && !a.getId().equals(SwipeAction.START_DOWNLOAD)) }.toList()
+                keys = keys.filter { a: SwipeAction ->
+                    (!a.getId().equals(SwipeAction.ActionTypes.REMOVE_FROM_HISTORY.name) && !a.getId().equals(SwipeAction.ActionTypes.START_DOWNLOAD.name)) }
             }
             FeedEpisodesFragment.TAG -> {
                 forFragment = context.getString(R.string.individual_subscription)
-                keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()
+                keys = keys.filter { a: SwipeAction -> !a.getId().equals(SwipeAction.ActionTypes.REMOVE_FROM_HISTORY.name) }
             }
             QueuesFragment.TAG -> {
                 forFragment = context.getString(R.string.queue_label)
 //                keys = Stream.of(keys).filter { a: SwipeAction ->
 //                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
-                keys = Stream.of(keys).filter { a: SwipeAction -> (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
+                keys = keys.filter { a: SwipeAction -> (!a.getId().equals(SwipeAction.ActionTypes.REMOVE_FROM_HISTORY.name)) }
             }
             HistoryFragment.TAG -> {
                 forFragment = context.getString(R.string.playback_history_label)
-                keys = Stream.of(keys).toList()
+                keys = keys.toList()
             }
             else -> {}
         }
-        if (tag != QueuesFragment.TAG) keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_QUEUE) }.toList()
+        if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(SwipeAction.ActionTypes.REMOVE_FROM_QUEUE.name) }
 
         builder.setTitle(context.getString(R.string.swipeactions_label) + " - " + forFragment)
         val binding = SwipeactionsDialogBinding.inflate(LayoutInflater.from(context))

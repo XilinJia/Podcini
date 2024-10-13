@@ -39,7 +39,6 @@ import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.EpisodeHomeFragment.Companion.episode
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -361,7 +360,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), ) {
                 Spacer(modifier = Modifier.weight(0.2f))
-                var ratingIconRes = Episode.Rating.fromCode(rating).res
+                var ratingIconRes = Rating.fromCode(rating).res
                 Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(15.dp).height(15.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))

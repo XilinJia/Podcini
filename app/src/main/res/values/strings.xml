@@ -16,7 +16,8 @@
     <string name="favorite_episodes_label">Favorites</string>
     <string name="settings_label">Settings</string>
     <string name="downloads_label">Downloads</string>
-    <string name="shared_log_label">Shared log</string>
+    <string name="logs_label">Logs</string>
+    <string name="subscriptions_log_label">Subscriptions log</string>
     <string name="open_autodownload_settings">Open settings</string>
     <string name="downloads_log_label">Download log</string>
     <string name="subscriptions_label">Subscriptions</string>
@@ -100,6 +101,10 @@
     <string name="copy_url_label">Copy URL</string>
     <string name="share_url_label">Share URL</string>
     <string name="go_to_position_label">Go to this position</string>
+
+    <string name="show_shared_logs_label">Show shared logs</string>
+    <string name="show_subscription_logs_label">Show subscription logs</string>
+    <string name="show_download_logs_label">Show download logs</string>
 
     <!-- Playback history -->
     <string name="clear_history_label">Clear history</string>
@@ -213,6 +218,7 @@
     <string name="feed_delete_confirmation_msg_batch">Please confirm that you want to remove the selected podcasts, ALL their episodes (including downloaded episodes), and its statistics.</string>
     <string name="feed_delete_confirmation_local_msg">Please confirm that you want to remove the podcast \"%1$s\" and its statistics. The files in the local source folder will not be deleted.</string>
     <string name="feed_remover_msg">Removing podcast</string>
+    <string name="feed_delete_reason_msg">For future reference, you can record a reason here:</string>
     <string name="load_complete_feed">Refresh complete podcast</string>
     <string name="multi_select">Multi select</string>
     <string name="select_all_above">Select all above</string>
@@ -256,6 +262,7 @@
     <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
+    <string name="cancelled_on_label">Cancelled on</string>
 
     <string name="removed_inbox_label">Removed from inbox</string>
     <string name="mark_read_label">Mark as played</string>

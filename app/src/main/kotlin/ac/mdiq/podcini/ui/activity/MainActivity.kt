@@ -32,7 +32,6 @@ import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
-import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -173,7 +172,7 @@ class MainActivity : CastEnabledActivity() {
 //       init shared preferences
         ioScope.launch {
 //            RealmDB.apply { }
-            EpisodesRecyclerView.getSharedPrefs(this@MainActivity)
+//            EpisodesRecyclerView.getSharedPrefs(this@MainActivity)
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueuesFragment.getSharedPrefs(this@MainActivity)

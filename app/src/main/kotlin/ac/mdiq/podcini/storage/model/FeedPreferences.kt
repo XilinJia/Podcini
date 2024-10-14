@@ -34,7 +34,7 @@ class FeedPreferences : EmbeddedRealmObject {
             field = value
             videoMode = field.code
         }
-    var videoMode: Int = 0
+    var videoMode: Int = VideoMode.NONE.code
 
     var playSpeed: Float = SPEED_USE_GLOBAL
 

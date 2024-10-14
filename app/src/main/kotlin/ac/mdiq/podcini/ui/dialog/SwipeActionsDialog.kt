@@ -96,17 +96,11 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
 
         view.swipeDirectionLabel.setText(if (direction == LEFT) R.string.swipe_left else R.string.swipe_right)
         view.swipeActionLabel.text = action!!.getTitle(context)
-        populateMockEpisode(view.mockEpisode)
-        if (direction == RIGHT && view.previewContainer.getChildAt(0) !== view.swipeIcon) {
-            view.previewContainer.removeView(view.swipeIcon)
-            view.previewContainer.addView(view.swipeIcon, 0)
-        }
 
         view.swipeIcon.setImageResource(action.getActionIcon())
         view.swipeIcon.setColorFilter(getColorFromAttr(context, action.getActionColor()))
 
         view.changeButton.setOnClickListener { showPicker(view, direction) }
-        view.previewContainer.setOnClickListener { showPicker(view, direction) }
     }
 
     private fun showPicker(view: SwipeactionsRowBinding, direction: Int) {
@@ -146,14 +140,6 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
         }
         picker.pickerGridLayout.columnCount = 2
         picker.pickerGridLayout.rowCount = (keys.size + 1) / 2
-    }
-
-    private fun populateMockEpisode(view: FeeditemlistItemBinding) {
-        view.container.alpha = 0.3f
-        view.secondaryActionButton.secondaryAction.visibility = View.GONE
-        view.dragHandle.visibility = View.GONE
-        view.txtvTitle.text = "███████"
-        view.txtvPosition.text = "█████"
     }
 
     private fun savePrefs(tag: String, right: String?, left: String?) {

@@ -1,9 +1,9 @@
 package de.test.podcini.util.syndication.feedgenerator
 
+import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import android.util.Xml
 import ac.mdiq.podcini.util.MiscFormatter.formatRfc822Date
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.net.feed.parser.namespace.PodcastIndex
 import de.test.podcini.util.syndication.feedgenerator.GeneratorUtil.addPaymentLink
 import java.io.IOException
 import java.io.OutputStream
@@ -101,11 +101,11 @@ class Rss2Generator : FeedGenerator {
                 }
                 if (fundingList.isNotEmpty()) {
                     for (funding in fundingList) {
-                        xml.startTag(PodcastIndex.NSTAG, "funding")
-                        xml.attribute(PodcastIndex.NSTAG, "url", funding.url)
+                        xml.startTag(FeedHandler.PodcastIndex.NSTAG, "funding")
+                        xml.attribute(FeedHandler.PodcastIndex.NSTAG, "url", funding.url)
                         xml.text(funding.content)
                         addPaymentLink(xml, funding.url, true)
-                        xml.endTag(PodcastIndex.NSTAG, "funding")
+                        xml.endTag(FeedHandler.PodcastIndex.NSTAG, "funding")
                     }
                 }
 

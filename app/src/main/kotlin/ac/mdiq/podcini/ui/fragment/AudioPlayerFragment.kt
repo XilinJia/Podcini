@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
+//import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
@@ -32,10 +33,10 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-//import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
@@ -55,13 +56,16 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
@@ -87,9 +91,6 @@ import java.text.NumberFormat
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * Shows the audio player.
- */
 @UnstableApi
 class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     var _binding: AudioplayerFragmentBinding? = null
@@ -123,8 +124,6 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var shownotesCleaner: ShownotesCleaner? = null
 
-    private var displayedChapterIndex = -1
-
     private var cleanedNotes by mutableStateOf<String?>(null)
     private var isLoading = false
     private var homeText: String? = null
@@ -132,9 +131,11 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var readerhtml: String? = null
     private var txtvPodcastTitle by mutableStateOf("")
     private var episodeDate by mutableStateOf("")
-    private var chapterControlVisible by mutableStateOf(false)
+//    private var chapterControlVisible by mutableStateOf(false)
     private var hasNextChapter by mutableStateOf(true)
     var rating by mutableStateOf(currentItem?.rating ?: 0)
+
+    private var displayedChapterIndex by mutableIntStateOf(-1)
     private val currentChapter: Chapter?
         get() {
             if (currentMedia == null || currentMedia!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
@@ -337,6 +338,8 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) {
             showChooseRatingDialog = false
         }
+        var showChaptersDialog by remember { mutableStateOf(false) }
+        if (showChaptersDialog) ChaptersDialog(media = currentMedia!!, onDismissRequest = {showChaptersDialog = false})
 
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
@@ -358,10 +361,13 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     }
                 }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), ) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp, bottom = 2.dp)) {
                 Spacer(modifier = Modifier.weight(0.2f))
-                var ratingIconRes = Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(15.dp).height(15.dp).clickable(onClick = {
+                val ratingIconRes = Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -370,26 +376,26 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             Text(titleText, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
                 .combinedClickable(onClick = {}, onLongClick = { copyText(currentItem?.title?:"") }))
-            fun restoreFromPreference(): Boolean {
-                if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false
-                Logd(TAG, "Restoring from preferences")
-                val activity: Activity? = activity
-                if (activity != null) {
-                    val id = prefs!!.getString(PREF_PLAYABLE_ID, "")
-                    val scrollY = prefs!!.getInt(PREF_SCROLL_Y, -1)
-                    if (scrollY != -1) {
-                        if (id == curMedia?.getIdentifier()?.toString()) {
-                            Logd(TAG, "Restored scroll Position: $scrollY")
-//                            binding.itemDescriptionFragment.scrollTo(binding.itemDescriptionFragment.scrollX, scrollY)
-                            return true
-                        }
-                        Logd(TAG, "reset scroll Position: 0")
-//                        binding.itemDescriptionFragment.scrollTo(0, 0)
-                        return true
-                    }
-                }
-                return false
-            }
+//            fun restoreFromPreference(): Boolean {
+//                if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false
+//                Logd(TAG, "Restoring from preferences")
+//                val activity: Activity? = activity
+//                if (activity != null) {
+//                    val id = prefs!!.getString(PREF_PLAYABLE_ID, "")
+//                    val scrollY = prefs!!.getInt(PREF_SCROLL_Y, -1)
+//                    if (scrollY != -1) {
+//                        if (id == curMedia?.getIdentifier()?.toString()) {
+//                            Logd(TAG, "Restored scroll Position: $scrollY")
+////                            binding.itemDescriptionFragment.scrollTo(binding.itemDescriptionFragment.scrollX, scrollY)
+//                            return true
+//                        }
+//                        Logd(TAG, "reset scroll Position: 0")
+////                        binding.itemDescriptionFragment.scrollTo(0, 0)
+//                        return true
+//                    }
+//                }
+//                return false
+//            }
             AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
                 ShownotesWebView(context).apply {
                     setTimecodeSelectedListener { time: Int -> seekTo(time) }
@@ -402,14 +408,19 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "AndroidView update: $cleanedNotes")
                 webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
             })
-            if (chapterControlVisible) {
-                Row {
+            if (displayedChapterIndex >= 0) {
+                Row(modifier = Modifier.padding(start = 20.dp, end = 20.dp),
+                    horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     Icon(painter = painterResource(R.drawable.ic_chapter_prev), tint = textColor, contentDescription = "prev_chapter",
-                        modifier = Modifier.width(36.dp).height(36.dp).padding(end = 10.dp).clickable(onClick = { seekToPrevChapter() }))
-                    Text(stringResource(id = R.string.chapters_label), modifier = Modifier.weight(1f)
-                        .clickable(onClick = { ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG) }))
-                    if (hasNextChapter) Icon(painter = painterResource(R.drawable.ic_chapter_prev), tint = textColor, contentDescription = "prev_chapter",
-                        modifier = Modifier.width(36.dp).height(36.dp).padding(end = 10.dp).clickable(onClick = { seekToNextChapter() }))
+                        modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToPrevChapter() }))
+                    Text("Ch " + displayedChapterIndex.toString() + ": " + currentChapter?.title,
+                        color = textColor, style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f).padding(start = 10.dp, end = 10.dp)
+//                        .clickable(onClick = { ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG) }))
+                        .clickable(onClick = { showChaptersDialog = true }))
+                    if (hasNextChapter) Icon(painter = painterResource(R.drawable.ic_chapter_next), tint = textColor, contentDescription = "next_chapter",
+                        modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToNextChapter() }))
                 }
             }
             AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
@@ -419,7 +430,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun setIsShowPlay(showPlay: Boolean) {
-        Logd(TAG, "setIsShowPlay: ${isShowPlay} $showPlay")
+        Logd(TAG, "setIsShowPlay: $isShowPlay $showPlay")
         if (isShowPlay != showPlay) {
             isShowPlay = showPlay
             playButRes = when {
@@ -492,9 +503,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.setLocked(true)
             (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        } else {
-            (activity as MainActivity).bottomSheet.setLocked(false)
-        }
+        } else (activity as MainActivity).bottomSheet.setLocked(false)
         prevMedia = media
     }
 
@@ -512,6 +521,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     homeText = null
                 }
                 if (currentItem != null) {
+                    rating = currentItem!!.rating
                     currentMedia = currentItem!!.media
                     if (prevItem?.identifyingValue != currentItem!!.identifyingValue) cleanedNotes = null
                     Logd(TAG, "updateInfo ${cleanedNotes == null} ${prevItem?.identifyingValue} ${currentItem!!.identifyingValue}")
@@ -588,25 +598,19 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         titleText = currentItem?.title ?:""
         displayedChapterIndex = -1
         refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.getPosition())) //calls displayCoverImage
-        updateChapterControlVisibility()
+//        updateChapterControlVisibility()
     }
 
-    private fun updateChapterControlVisibility() {
-        when {
-            currentMedia?.getChapters() != null -> chapterControlVisible = currentMedia!!.getChapters().isNotEmpty()
-            currentMedia is EpisodeMedia -> {
-                val item_ = (currentMedia as EpisodeMedia).episodeOrFetch()
-                // If an item has chapters but they are not loaded yet, still display the button.
-                chapterControlVisible = !item_?.chapters.isNullOrEmpty()
-            }
-        }
-//            val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
-//            if (binding.chapterButton.visibility != newVisibility) {
-//                binding.chapterButton.visibility = newVisibility
-//                ObjectAnimator.ofFloat(binding.chapterButton, "alpha",
-//                    (if (chapterControlVisible) 0 else 1).toFloat(), (if (chapterControlVisible) 1 else 0).toFloat()).start()
-//            }
-    }
+//    private fun updateChapterControlVisibility() {
+////        when {
+////            currentMedia?.getChapters() != null -> chapterControlVisible = currentMedia!!.getChapters().isNotEmpty()
+////            currentMedia is EpisodeMedia -> {
+////                val item_ = (currentMedia as EpisodeMedia).episodeOrFetch()
+////                // If an item has chapters but they are not loaded yet, still display the button.
+////                chapterControlVisible = !item_?.chapters.isNullOrEmpty()
+////            }
+////        }
+//    }
 
     private fun refreshChapterData(chapterIndex: Int) {
         Logd(TAG, "in refreshChapterData $chapterIndex")
@@ -783,6 +787,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Logd(TAG, "setItem ${item_.title}")
         if (currentItem?.identifyingValue != item_.identifyingValue) {
             currentItem = item_
+            rating = currentItem!!.rating
             showHomeText = false
             homeText = null
         }
@@ -934,7 +939,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         val isEpisodeMedia = currentMedia is EpisodeMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isEpisodeMedia)
-        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episodeOrFetch() else null
+//        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episodeOrFetch() else null
 //        EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
 
         val mediaType = curMedia?.getMediaType()
@@ -995,10 +1000,10 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         return true
     }
 
-    fun scrollToTop() {
-//        binding.itemDescriptionFragment.scrollTo(0, 0)
-        savePreference()
-    }
+//    fun scrollToTop() {
+////        binding.itemDescriptionFragment.scrollTo(0, 0)
+//        savePreference()
+//    }
 
     fun fadePlayerToToolbar(slideOffset: Float) {
         val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()

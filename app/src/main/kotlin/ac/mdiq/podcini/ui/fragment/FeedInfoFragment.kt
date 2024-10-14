@@ -52,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -103,21 +102,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.setOnMenuItemClickListener(this)
         refreshToolbarState()
 
-//        val appBar: AppBarLayout = binding.appBar
-//        val collapsingToolbar: CollapsingToolbarLayout = binding.collapsingToolbar
-//        val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
-//            override fun doTint(themedContext: Context) {
-//                toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
-//                toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
-//            }
-//        }
-//        iconTintManager.updateTint()
-//        appBar.addOnOffsetChangedListener(iconTintManager)
-
         txtvAuthor = feed.author ?: ""
         txtvUrl = feed.downloadUrl
 
-        binding.detailUI.setContent {
+        binding.mainUI.setContent {
             CustomTheme(requireContext()) {
                 if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = {showRemoveFeedDialog = false}) {
                     (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
@@ -161,7 +149,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
             val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
-            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
+            AsyncImage(model = feed.imageUrl ?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
                 error = painterResource(R.drawable.teaser),
                 modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
                     .constrainAs(bgImage) {
@@ -199,16 +187,16 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }
-            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
-                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                })
-            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
-                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
-                    bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end)
-                })
+//            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+//                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
+//                    bottom.linkTo(parent.bottom)
+//                    start.linkTo(parent.start)
+//                })
+//            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+//                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
+//                    bottom.linkTo(parent.bottom)
+//                    end.linkTo(parent.end)
+//                })
             AsyncImage(model = feed.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
                 modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
                     bottom.linkTo(parent.bottom)
@@ -232,18 +220,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun DetailUI() {
         val scrollState = rememberScrollState()
         var showEditComment by remember { mutableStateOf(false) }
-        var commentTextState by remember { mutableStateOf(TextFieldValue(feed?.comment?:"")) }
+        var commentTextState by remember { mutableStateOf(TextFieldValue(feed.comment)) }
         if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
             onSave = {
                 runOnIOScope {
                     feed = upsert(feed) { it.comment = commentTextState.text }
                     rating =  feed.rating
-//                    val slog = realm.query(SubscriptionLog::class).query("itemId == $0", feed.id).first().find()
-//                    if (slog != null) {
-//                        upsert(slog) {
-//                            it.comment = commentTextState.text
-//                        }
-//                    }
                 }
             })
 

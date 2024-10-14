@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Index
 
 class Chapter : EmbeddedRealmObject {
-
     @Index
     var id: Long = 0
 
@@ -21,9 +21,12 @@ class Chapter : EmbeddedRealmObject {
 
     var episode: Episode? = null
 
-    constructor()
+    constructor() {
+//        id = newId()
+    }
 
     constructor(start: Long, title: String?, link: String?, imageUrl: String?) {
+//        id = newId()
         this.start = start
         this.title = title
         this.link = link

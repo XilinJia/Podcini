@@ -32,6 +32,7 @@ import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
@@ -59,24 +60,24 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.MenuProvider
@@ -91,8 +92,11 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
 import com.skydoves.balloon.Balloon
 import com.skydoves.balloon.BalloonAnimation
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.extended.Readability4JExtended
 import okhttp3.Request.Builder
 import java.io.File
@@ -117,9 +121,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var txtvSize by mutableStateOf("")
     private var txtvDuration by mutableStateOf("")
     private var itemLink by mutableStateOf("")
-    var hasMedia by mutableStateOf(true)
+    private var hasMedia by mutableStateOf(true)
     var rating by mutableStateOf(episode?.rating ?: Rating.UNRATED.code)
-    var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
+    private var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
     var isPlayed by mutableStateOf(episode?.isPlayed() ?: false)
 
     private var webviewData by mutableStateOf("")
@@ -178,6 +182,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(episode!!)) {
             showChooseRatingDialog = false
         }
+
+        var showChaptersDialog by remember { mutableStateOf(false) }
+        if (showChaptersDialog && episode?.media != null) ChaptersDialog(media = episode!!.media!!, onDismissRequest = {showChaptersDialog = false})
 
         Column {
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -284,6 +291,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }, update = {
                     it.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
                 })
+                if (!episode?.chapters.isNullOrEmpty()) Text(stringResource(id = R.string.chapters_label), color = textColor, style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable(onClick = { showChaptersDialog = true }))
                 Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
                     color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
@@ -473,14 +482,14 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun updateButtons() {
 //        binding.circularProgressBar.visibility = View.GONE
         val dls = DownloadServiceInterface.get()
-        if (episode != null && episode!!.media != null && episode!!.media!!.downloadUrl != null) {
-            val url = episode!!.media!!.downloadUrl!!
-//            if (dls != null && dls.isDownloadingEpisode(url)) {
-//                binding.circularProgressBar.visibility = View.VISIBLE
-//                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), episode)
-//                binding.circularProgressBar.setIndeterminate(dls.isEpisodeQueued(url))
-//            }
-        }
+//        if (episode != null && episode!!.media != null && episode!!.media!!.downloadUrl != null) {
+//            val url = episode!!.media!!.downloadUrl!!
+////            if (dls != null && dls.isDownloadingEpisode(url)) {
+////                binding.circularProgressBar.visibility = View.VISIBLE
+////                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), episode)
+////                binding.circularProgressBar.setIndeterminate(dls.isEpisodeQueued(url))
+////            }
+//        }
 
         val media: EpisodeMedia? = episode?.media
         if (media == null) {
@@ -610,7 +619,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        if (episode != null) episode = realm.query(Episode::class).query("id == $0", episode!!.id).first().find()
+                        if (episode != null && !episode!!.isRemote.value) episode = realm.query(Episode::class).query("id == $0", episode!!.id).first().find()
                         if (episode != null) {
                             val duration = episode!!.media?.getDuration() ?: Int.MAX_VALUE
                             Logd(TAG, "description: ${episode?.description}")
@@ -629,9 +638,12 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                     withContext(Dispatchers.Main) {
 //                        binding.progbarLoading.visibility = View.GONE
-                        rating = episode!!.rating
-                        inQueue = curQueue.contains(episode!!)
-                        isPlayed = episode!!.isPlayed()
+                        Logd(TAG, "chapters: ${episode?.chapters?.size}")
+                        if (episode != null) {
+                            rating = episode!!.rating
+                            inQueue = curQueue.contains(episode!!)
+                            isPlayed = episode!!.isPlayed()
+                        }
                         onFragmentLoaded()
                         itemLoaded = true
                     }

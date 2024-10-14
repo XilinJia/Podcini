@@ -12,6 +12,8 @@ import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDownloadPolicy
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
@@ -96,7 +98,7 @@ class FeedSettingsFragment : Fragment() {
             CustomTheme(requireContext()) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Column(modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if ((feed?.id ?: 0) > 10) {
+                    if ((feed?.id ?: 0) > MAX_SYNTHETIC_ID) {
                         //                    refresh
                         Column {
                             Row(Modifier.fillMaxWidth()) {
@@ -117,7 +119,7 @@ class FeedSettingsFragment : Fragment() {
                             Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
                     }
-                    if ((feed?.id?:0) > 10 && feed?.hasVideoMedia == true) {
+                    if ((feed?.id?:0) > MAX_NATURAL_SYNTHETIC_ID && feed?.hasVideoMedia == true) {
                         //                    video mode
                         Column {
                             Row(Modifier.fillMaxWidth()) {

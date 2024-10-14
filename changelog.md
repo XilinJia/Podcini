@@ -1,3 +1,15 @@
+# 6.11.1
+
+* made rating icon consistent with other views and fixed issue of rating not updating on PlayerDetailed view when episode changes
+* fixed remote episode info not shown in OnlineFeed
+* fixed and enhanced chapters control in PlayerDetailed view
+* ChaptersDialog is in Jetpack Compose
+* fixed not being able to set video mode in newly created synthetic feed
+* fixed buttons contrast on FeedEpisodes hearder
+* reworked SwipeActionsDialog layout, removed the mock episode view
+* removed ChaptersFragment and related
+* reorganized some class structures
+
 # 6.11.0
 
 * added SubscriptionLog to record unsubscribe history

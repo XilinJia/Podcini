@@ -302,6 +302,9 @@ class Feed : RealmObject {
         const val PREFIX_LOCAL_FOLDER: String = "podcini_local:"
         const val PREFIX_GENERATIVE_COVER: String = "podcini_generative_cover:"
 
+        const val MAX_NATURAL_SYNTHETIC_ID: Long = 100L
+        const val MAX_SYNTHETIC_ID: Long = 1000L
+
         fun newId(): Long {
             return Date().time * 100
         }

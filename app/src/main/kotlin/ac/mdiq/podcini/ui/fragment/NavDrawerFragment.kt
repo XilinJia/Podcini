@@ -257,7 +257,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             navMap[LogsFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt() +
                     realm.query(SubscriptionLog::class).count().find().toInt() +
                     realm.query(DownloadResult::class).count().find().toInt()
-//            navMap[SubscriptionLogFragment.TAG]?.count = realm.query(SubscriptionLog::class).count().find().toInt()
         }
     }
 }

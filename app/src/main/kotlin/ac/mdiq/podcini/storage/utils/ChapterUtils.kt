@@ -68,22 +68,16 @@ object ChapterUtils {
                 val chapters = readId3ChaptersFrom(inVal)
                 if (chapters.isNotEmpty()) return chapters
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Unable to load ID3 chapters: " + e.message)
-        } catch (e: ID3ReaderException) {
-            Log.e(TAG, "Unable to load ID3 chapters: " + e.message)
-        }
+        } catch (e: IOException) { Log.e(TAG, "Unable to load ID3 chapters: " + e.message)
+        } catch (e: ID3ReaderException) { Log.e(TAG, "Unable to load ID3 chapters: " + e.message) }
 
         try {
             openStream(playable, context).use { inVal ->
                 val chapters = readOggChaptersFromInputStream(inVal)
                 if (chapters.isNotEmpty()) return chapters
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Unable to load vorbis chapters: " + e.message)
-        } catch (e: VorbisCommentReaderException) {
-            Log.e(TAG, "Unable to load vorbis chapters: " + e.message)
-        }
+        } catch (e: IOException) { Log.e(TAG, "Unable to load vorbis chapters: " + e.message)
+        } catch (e: VorbisCommentReaderException) { Log.e(TAG, "Unable to load vorbis chapters: " + e.message) }
         return listOf()
     }
 
@@ -128,11 +122,8 @@ object ChapterUtils {
             response = getHttpClient().newCall(request).execute()
             if (response.isSuccessful && response.body != null) return parse(response.body!!.string())
 
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            response?.close()
-        }
+        } catch (e: IOException) { e.printStackTrace()
+        } finally { response?.close() }
         return listOf()
     }
 
@@ -158,7 +149,6 @@ object ChapterUtils {
         chapters = chapters.sortedWith(ChapterStartTimeComparator())
         enumerateEmptyChapterTitles(chapters)
         if (chaptersValid(chapters)) return chapters
-
         return emptyList()
     }
 
@@ -174,7 +164,6 @@ object ChapterUtils {
 
     private fun chaptersValid(chapters: List<Chapter>): Boolean {
         if (chapters.isEmpty()) return false
-
         for (c in chapters) {
             if (c.start < 0) return false
         }
@@ -240,9 +229,7 @@ object ChapterUtils {
                 chapters.add(Chapter(startTime * 1000L, title, link, img))
             }
             return chapters
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
+        } catch (e: JSONException) { e.printStackTrace() }
         return listOf()
     }
 

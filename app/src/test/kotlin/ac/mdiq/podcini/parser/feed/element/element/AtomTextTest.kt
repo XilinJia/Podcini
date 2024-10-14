@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.feed.parser.element.element
 
-import ac.mdiq.podcini.net.feed.parser.element.AtomText
-import ac.mdiq.podcini.net.feed.parser.namespace.Atom
+import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +15,7 @@ class AtomTextTest {
     @Test
     fun testProcessingHtml() {
         for (pair in TEST_DATA) {
-            val atomText = AtomText("", Atom(), AtomText.TYPE_HTML)
+            val atomText = FeedHandler.AtomText("", FeedHandler.Atom(), FeedHandler.AtomText.TYPE_HTML)
             atomText.setContent(pair[0])
             Assert.assertEquals(pair[1], atomText.processedContent)
         }

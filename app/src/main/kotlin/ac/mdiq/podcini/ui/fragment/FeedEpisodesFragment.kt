@@ -21,7 +21,10 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
+import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
+import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
+import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
 import android.app.Activity
@@ -35,6 +38,7 @@ import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -42,11 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RenderEffect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -247,11 +247,11 @@ import java.util.concurrent.Semaphore
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
-                Image(painter = painterResource(R.drawable.ic_filter_white), colorFilter = ColorFilter.tint(filterButColor), contentDescription = "butFilter",
+                Icon(painter = painterResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
                 Spacer(modifier = Modifier.width(15.dp))
-                Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "butShowSettings",
-                    Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
+                Icon(painter = painterResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         if (feed != null) {
                             val fragment = FeedSettingsFragment.newInstance(feed)
                             activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
@@ -260,16 +260,16 @@ import java.util.concurrent.Semaphore
                 Spacer(modifier = Modifier.weight(1f))
                 Text(feed?.episodes?.size?.toString()?:"", textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
             }
-            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
-                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                })
-            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
-                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
-                    bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end)
-                })
+//            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+//                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
+//                    bottom.linkTo(parent.bottom)
+//                    start.linkTo(parent.start)
+//                })
+//            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+//                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
+//                    bottom.linkTo(parent.bottom)
+//                    end.linkTo(parent.end)
+//                })
             AsyncImage(model = feed?.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
                 modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
                     bottom.linkTo(parent.bottom)
@@ -280,7 +280,7 @@ import java.util.concurrent.Semaphore
                         activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
                     }
                 }))
-            Column(Modifier.constrainAs(taColumn) {
+            Column(Modifier.fillMaxWidth().constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
                 Text(feed?.title?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)

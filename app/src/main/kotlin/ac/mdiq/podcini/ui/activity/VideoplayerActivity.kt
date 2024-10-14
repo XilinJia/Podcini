@@ -32,8 +32,9 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.compose.ChaptersDialog
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.fragment.ChaptersFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -66,6 +67,9 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -297,7 +301,19 @@ class VideoplayerActivity : CastEnabledActivity() {
                 return true
             }
             R.id.player_show_chapters -> {
-                ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
+                val composeView = ComposeView(this).apply {
+                    setContent {
+                        val showDialog = remember { mutableStateOf(true) }
+                        CustomTheme(this@VideoplayerActivity) {
+                            ChaptersDialog(curMedia!!, onDismissRequest = {
+                                showDialog.value = false
+                                (binding.root as? ViewGroup)?.removeView(this@apply)
+                            })
+                        }
+                    }
+                }
+                (binding.root as? ViewGroup)?.addView(composeView)
+//                ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
                 return true
             }
             else -> {

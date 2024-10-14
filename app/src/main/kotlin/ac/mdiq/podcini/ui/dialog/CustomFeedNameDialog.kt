@@ -30,7 +30,6 @@ class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
             .setTitle(R.string.rename_feed_label)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                 val newTitle = binding.editText.text.toString()
-//                feed = unmanaged(feed)
                 feed = upsertBlk(feed) {
                     it.setCustomTitle1(newTitle)
                 }

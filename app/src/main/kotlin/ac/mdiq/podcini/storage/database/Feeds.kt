@@ -336,9 +336,6 @@ object Feeds {
         Logd(TAG, "setRating called $rating")
 //        return runOnIOScope {
             val result = upsertBlk(feed) { it.rating = rating }
-//            val slog = realm.query(SubscriptionLog::class).query("itemId == $0", feed.id).first().find()
-//            if (slog != null) upsertBlk(slog) { it.rating = rating }
-//            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
 //        }
     }
 

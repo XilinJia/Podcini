@@ -72,7 +72,6 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
 
     /**
      * Get the size of the content that the url is pointing by firing a HEAD request.
-     *
      * @param url an url pointing to the content
      * @return the size of the content, in bytes
      */
@@ -95,9 +94,7 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
         var requestBody: RequestBody? = null
         if (dataToSend != null) requestBody = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), dataToSend)
 
-        val requestBuilder: Builder = Builder()
-            .method(httpMethod, requestBody).url(url)
-            .addHeader("User-Agent", USER_AGENT)
+        val requestBuilder: Builder = Builder().method(httpMethod, requestBody).url(url).addHeader("User-Agent", USER_AGENT)
 
         val cookies = getCookies(url)
         if (cookies.isNotEmpty()) requestBuilder.addHeader("Cookie", cookies)
@@ -142,7 +139,6 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
 
         /**
          * It's recommended to call exactly once in the entire lifetime of the application.
-         *
          * @param builder if null, default builder will be used
          * @return a new instance of [DownloaderImpl]
          */

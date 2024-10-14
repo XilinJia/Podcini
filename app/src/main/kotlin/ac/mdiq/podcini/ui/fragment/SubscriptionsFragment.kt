@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -318,8 +319,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             R.id.new_synth_yt -> {
                 val feed = createSynthetic(0, "")
                 feed.type = Feed.FeedType.YOUTUBE.name
-//                feed.hasVideoMedia = video
-//                feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+                feed.hasVideoMedia = true
+                feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
                 CustomFeedNameDialog(activity as Activity, feed).show()
             }
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())

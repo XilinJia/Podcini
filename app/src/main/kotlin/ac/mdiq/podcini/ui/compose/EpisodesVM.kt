@@ -475,8 +475,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                 }
                 val velocityTracker = remember { VelocityTracker() }
                 val offsetX = remember { Animatable(0f) }
-                Box(
-                    modifier = Modifier.fillMaxWidth().pointerInput(Unit) {
+                Box(modifier = Modifier.fillMaxWidth().pointerInput(Unit) {
                         detectHorizontalDragGestures(
                             onDragStart = { velocityTracker.resetTracking() },
                             onHorizontalDrag = { change, dragAmount ->

@@ -11,6 +11,7 @@ import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
+import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -19,6 +20,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
@@ -36,6 +38,7 @@ import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
 import ac.mdiq.vista.extractor.stream.StreamInfo
+import android.net.Uri
 import android.text.format.Formatter
 import android.util.Log
 import android.util.TypedValue
@@ -49,6 +52,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
@@ -67,31 +71,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
+import java.io.File
 import java.net.URL
+import java.util.*
 import kotlin.math.roundToInt
 
 @Composable
-fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction?>, rightAction: MutableState<SwipeAction?>, actionConfig: () -> Unit) {
+fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, rightAction: MutableState<SwipeAction>, actionConfig: () -> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
     Logd("InforBar", "textState: ${text.value}")
     Row {
-        Icon(painter = painterResource(leftAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "left_action_icon",
+        Icon(painter = painterResource(leftAction.value.getActionIcon()), tint = textColor, contentDescription = "left_action_icon",
             modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
         Icon(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow", modifier = Modifier.width(24.dp).height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
         Text(text.value, color = textColor, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.weight(1f))
         Icon(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(24.dp).height(24.dp))
-        Icon(painter = painterResource(rightAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "right_action_icon",
+        Icon(painter = painterResource(rightAction.value.getActionIcon()), tint = textColor, contentDescription = "right_action_icon",
             modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
     }
 }
@@ -271,7 +281,7 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         val eList: MutableList<Episode> = mutableListOf()
                         for (e in selected) {
                             var e_ = e
-                            if (!removeChecked || (e.feedId != null && e.feedId!! >= 1000L)) {
+                            if (!removeChecked || (e.feedId != null && e.feedId!! >= MAX_SYNTHETIC_ID)) {
                                 e_ = realm.copyFromRealm(e)
                                 e_.id = newId()
                                 e_.media?.id = e_.id
@@ -302,10 +312,12 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     }
 }
 
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>, refreshCB: (()->Unit)? = null,
-                      leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null, actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
+fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>, feed: Feed? = null,
+                      refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
+                      actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
     val TAG = "EpisodeLazyColumn"
     var selectMode by remember { mutableStateOf(false) }
     var selectedSize by remember { mutableStateOf(0) }
@@ -317,7 +329,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
 
     val showConfirmYoutubeDialog = remember { mutableStateOf(false) }
     val youtubeUrls = remember { mutableListOf<String>() }
-    confirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = {
+    ConfirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = {
         showConfirmYoutubeDialog.value = false
     })
 
@@ -329,6 +341,60 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
 
     var showShelveDialog by remember { mutableStateOf(false) }
     if (showShelveDialog) ShelveDialog(selected) { showShelveDialog = false }
+
+    @Composable
+    fun EraseEpisodesDialog(onDismissRequest: () -> Unit) {
+        val message = stringResource(R.string.erase_episodes_confirmation_msg)
+        val textColor = MaterialTheme.colorScheme.onSurface
+        var textState by remember { mutableStateOf(TextFieldValue("")) }
+        val context = LocalContext.current
+
+        Dialog(onDismissRequest = onDismissRequest) {
+            Surface(shape = RoundedCornerShape(16.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(message + ": ${selected.size}")
+                    Text(stringResource(R.string.feed_delete_reason_msg))
+                    BasicTextField(value = textState, onValueChange = { textState = it },
+                        textStyle = TextStyle(fontSize = 16.sp, color = textColor),
+                        modifier = Modifier.fillMaxWidth().height(100.dp).padding(start = 10.dp, end = 10.dp, bottom = 10.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                    )
+                    Button(onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                for (e in selected) {
+                                    val sLog = SubscriptionLog(e.id, e.title?:"", e.media?.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
+                                    upsert(sLog) {
+                                        it.rating = e.rating
+                                        it.comment = e.comment
+                                        it.comment += "\nReason to remove:\n" + textState.text
+                                        it.cancelDate = Date().time
+                                    }
+                                }
+                                realm.write {
+                                    for (e in selected) {
+                                        val url = e.media?.fileUrl
+                                        when {
+                                            url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
+                                            url != null -> File(url).delete()
+                                        }
+                                        findLatest(feed!!)?.episodes?.remove(e)
+                                        findLatest(e)?.let { delete(it) }
+                                    }
+                                }
+                                EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
+                            } catch (e: Throwable) { Log.e("EraseEpisodesDialog", Log.getStackTraceString(e)) }
+                        }
+                        onDismissRequest()
+                    }) {
+                        Text("Confirm")
+                    }
+                }
+            }
+        }
+    }
+
+    var showEraseDialog by remember { mutableStateOf(false) }
+    if (showEraseDialog) EraseEpisodesDialog(onDismissRequest = { showEraseDialog = false })
 
     @Composable
     fun EpisodeSpeedDial(modifier: Modifier = Modifier) {
@@ -436,6 +502,20 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                     Text(stringResource(id = R.string.reserve_episodes_label))
                 }
             }
+        if (feed != null && feed.id <= MAX_SYNTHETIC_ID) {
+            options.add {
+                Row(modifier = Modifier.padding(horizontal = 16.dp)
+                    .clickable {
+                        isExpanded = false
+                        selectMode = false
+                        showEraseDialog = true
+                        Logd(TAG, "reserve: ${selected.size}")
+                    }, verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.AddCircle, "Erase episodes")
+                    Text(stringResource(id = R.string.erase_episodes_label))
+                }
+            }
+        }
 
         val scrollState = rememberScrollState()
         Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
@@ -672,7 +752,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
 }
 
 @Composable
-fun confirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
+fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
     val TAG = "confirmAddEpisode"
     var showToast by remember { mutableStateOf(false) }
     var toastMassege by remember { mutableStateOf("")}

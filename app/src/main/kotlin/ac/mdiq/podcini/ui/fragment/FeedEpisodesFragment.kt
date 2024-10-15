@@ -19,6 +19,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
@@ -76,8 +77,8 @@ import java.util.concurrent.Semaphore
     private lateinit var swipeActions: SwipeActions
 
     private var infoBarText = mutableStateOf("")
-    private var leftActionState = mutableStateOf<SwipeAction?>(null)
-    private var rightActionState = mutableStateOf<SwipeAction?>(null)
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
@@ -168,16 +169,18 @@ import java.util.concurrent.Semaphore
                 }
                 Column {
                     FeedEpisodesHeader(activity = (activity as MainActivity), feed = feed, filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
-                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-                    EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {
+                        swipeActions.showDialog()
+                    })
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
-                            if (leftActionState.value == null) swipeActions.showDialog()
-                            else leftActionState.value?.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else leftActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         rightSwipeCB = {
-                            if (rightActionState.value == null) swipeActions.showDialog()
-                            else rightActionState.value?.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else rightActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                     )
                 }
@@ -501,12 +504,13 @@ import java.util.concurrent.Semaphore
 //        if (!event.isRunning) nextPageLoader.root.visibility = View.GONE
         infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
+        if (event.isRunning == false) loadFeed()
 //        binding.swipeRefresh.isRefreshing = event.isRunning
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions?.left
-        rightActionState.value = swipeActions.actions?.right
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
     }
 
     @UnstableApi private fun refreshHeaderView() {

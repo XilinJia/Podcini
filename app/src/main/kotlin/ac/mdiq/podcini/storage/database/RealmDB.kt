@@ -13,14 +13,10 @@ import io.realm.kotlin.dynamic.DynamicMutableRealmObject
 import io.realm.kotlin.dynamic.DynamicRealmObject
 import io.realm.kotlin.dynamic.getValue
 import io.realm.kotlin.ext.isManaged
-import io.realm.kotlin.migration.AutomaticSchemaMigration
-import io.realm.kotlin.types.BaseRealmObject
-import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
 import kotlin.coroutines.ContinuationInterceptor
-import kotlin.reflect.KClass
 
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"

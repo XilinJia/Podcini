@@ -18,6 +18,7 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
@@ -63,8 +64,8 @@ import java.util.*
     private val vms = mutableStateListOf<EpisodeVM>()
 
     private var infoBarText = mutableStateOf("")
-    private var leftActionState = mutableStateOf<SwipeAction?>(null)
-    private var rightActionState = mutableStateOf<SwipeAction?>(null)
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
@@ -98,12 +99,12 @@ import java.util.*
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                         leftSwipeCB = {
-                            if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(
-                                it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else leftActionState.value.performAction(it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         rightSwipeCB = {
-                            if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(
-                                it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else rightActionState.value.performAction(it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         actionButton_ = { DeleteActionButton(it) })
                 }
@@ -332,8 +333,8 @@ import java.util.*
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions?.left
-        rightActionState.value = swipeActions.actions?.right
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
     }
 
     private var loadItemsRunning = false

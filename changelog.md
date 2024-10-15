@@ -1,3 +1,11 @@
+# 6.11.2
+
+* fixed PlayerDetailed view not showing full info on Youtube media
+* further revamped SwipeActionsDialog, now in Jetpack Compose, and related old files are removed
+* fixed again issue of rating not updating on PlayerDetailed view when episode changes
+* enabled "Erase episodes" in multi-select menu when episodes from a synthetic feed are selected
+* erased episodes are recorded in SubscriptionLog for future reference
+
 # 6.11.1
 
 * made rating icon consistent with other views and fixed issue of rating not updating on PlayerDetailed view when episode changes

@@ -22,11 +22,8 @@ import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
-import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
-import ac.mdiq.podcini.ui.fragment.DownloadsFragment
-import ac.mdiq.podcini.ui.fragment.HistoryFragment
-import ac.mdiq.podcini.ui.fragment.QueuesFragment
+import ac.mdiq.podcini.ui.fragment.*
+//import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -38,25 +35,22 @@ import android.util.TypedValue
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
@@ -74,7 +68,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     @set:JvmName("setFilterProperty")
     var filter: EpisodeFilter? = null
-    var actions: Actions? = null
+    var actions: Actions
 
     init {
         actions = getPrefs(tag)
@@ -84,9 +78,9 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         actions = getPrefs(tag)
     }
 
-    override fun onStop(owner: LifecycleOwner) {
-        actions = null
-    }
+//    override fun onStop(owner: LifecycleOwner) {
+////        actions = null
+//    }
 
     @JvmName("setFilterFunction")
     fun setFilter(filter: EpisodeFilter?) {
@@ -94,71 +88,43 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
     }
 
     fun showDialog() {
-        SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
-            override fun onCall() {
-                actions = getPrefs(tag)
-                EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
+//        SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
+//            override fun onCall() {
+//                actions = getPrefs(tag)
+//                EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
+//            }
+//        })
+        val composeView = ComposeView(fragment.requireContext()).apply {
+            setContent {
+                val showDialog = remember { mutableStateOf(true) }
+                CustomTheme(fragment.requireContext()) {
+                    SwipeActionsDialog(this@SwipeActions.tag, onDismissRequest = {
+                        showDialog.value = false
+                        (fragment.view as? ViewGroup)?.removeView(this@apply)
+                    }) {
+                        actions = getPrefs(this@SwipeActions.tag)
+                        EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
+                    }
+                }
             }
-        })
+        }
+        (fragment.view as? ViewGroup)?.addView(composeView)
     }
 
     class Actions(prefs: String?) {
         @JvmField
-        var right: SwipeAction = swipeActions[0]
+        var right: MutableList<SwipeAction> = mutableListOf(swipeActions[0], swipeActions[0])
         @JvmField
-        var left: SwipeAction = swipeActions[0]
+        var left: MutableList<SwipeAction> = mutableListOf(swipeActions[0], swipeActions[0])
 
         init {
             val actions = prefs!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (actions.size == 2) {
                 val rActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[0]) }
-                this.right = if (rActs.isEmpty()) swipeActions[0] else rActs[0]
+                this.right[0] = if (rActs.isEmpty()) swipeActions[0] else rActs[0]
                 val lActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[1]) }
-                this.left = if (lActs.isEmpty()) swipeActions[0] else lActs[0]
+                this.left[0] = if (lActs.isEmpty()) swipeActions[0] else lActs[0]
             }
-        }
-    }
-
-    companion object {
-        const val SWIPE_ACTIONS_PREF_NAME: String = "SwipeActionsPrefs"
-        const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
-        const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
-
-        var prefs: SharedPreferences? = null
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
-        }
-
-        @JvmField
-        val swipeActions: List<SwipeAction> = listOf(
-            NoActionSwipeAction(), ComboSwipeAction(), AddToQueueSwipeAction(),
-            StartDownloadSwipeAction(), SetRatingSwipeAction(),
-            TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
-            DeleteSwipeAction(), RemoveFromHistorySwipeAction())
-
-        private fun getPrefs(tag: String, defaultActions: String): Actions {
-            val prefsString = prefs!!.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)
-            return Actions(prefsString)
-        }
-
-        fun getPrefs(tag: String): Actions {
-            return getPrefs(tag, "")
-        }
-
-        @OptIn(UnstableApi::class) @JvmStatic
-        fun getPrefsWithDefaults(tag: String): Actions {
-            val defaultActions = when (tag) {
-                QueuesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                DownloadsFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                HistoryFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                AllEpisodesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                else -> "${NO_ACTION.name},${NO_ACTION.name}"
-            }
-            return getPrefs(tag, defaultActions)
-        }
-
-        fun isSwipeActionEnabled(tag: String): Boolean {
-            return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
         }
     }
 
@@ -374,7 +340,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             return true
         }
 
-        fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
+        private fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
             runOnIOScope {
                 val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
                 if (episode_ != null) {
@@ -540,6 +506,179 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
             return if (item.playState == Episode.PlayState.NEW.code) filter.showPlayed || filter.showNew
             else filter.showUnplayed || filter.showPlayed || filter.showNew
+        }
+    }
+
+    companion object {
+        private const val SWIPE_ACTIONS_PREF_NAME: String = "SwipeActionsPrefs"
+        private const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
+        private const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
+
+        var prefs: SharedPreferences? = null
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
+        }
+
+        @JvmField
+        val swipeActions: List<SwipeAction> = listOf(
+            NoActionSwipeAction(), ComboSwipeAction(), AddToQueueSwipeAction(),
+            StartDownloadSwipeAction(), SetRatingSwipeAction(),
+            TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
+            DeleteSwipeAction(), RemoveFromHistorySwipeAction())
+
+        private fun getPrefs(tag: String, defaultActions: String): Actions {
+            val prefsString = prefs!!.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)
+            return Actions(prefsString)
+        }
+
+        fun getPrefs(tag: String): Actions {
+            return getPrefs(tag, "")
+        }
+
+        @OptIn(UnstableApi::class) @JvmStatic
+        fun getPrefsWithDefaults(tag: String): Actions {
+            val defaultActions = when (tag) {
+                QueuesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                DownloadsFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                HistoryFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                AllEpisodesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
+                else -> "${NO_ACTION.name},${NO_ACTION.name}"
+            }
+            return getPrefs(tag, defaultActions)
+        }
+
+//        fun isSwipeActionEnabled(tag: String): Boolean {
+//            return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
+//        }
+
+        fun showSettingDialog(fragment: Fragment, tag: String) {
+            val composeView = ComposeView(fragment.requireContext()).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(fragment.requireContext()) {
+                        SwipeActionsDialog(tag, onDismissRequest = {
+                            showDialog.value = false
+                            (fragment.view as? ViewGroup)?.removeView(this@apply)
+                        }) {}
+                    }
+                }
+            }
+            (fragment.view as? ViewGroup)?.addView(composeView)
+        }
+
+        @Composable
+        fun SwipeActionsDialog(tag: String, onDismissRequest: () -> Unit, callback: ()->Unit) {
+            val context = LocalContext.current
+            val textColor = MaterialTheme.colorScheme.onSurface
+
+            val actions = getPrefsWithDefaults(tag)
+            val leftAction = remember { mutableStateOf(actions.left) }
+            val rightAction = remember { mutableStateOf(actions.right) }
+            var keys = swipeActions
+
+            fun savePrefs(tag: String, right: String?, left: String?) {
+                getSharedPrefs(context)
+                prefs!!.edit().putString(KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left").apply()
+            }
+            fun saveActionsEnabledPrefs(enabled: Boolean) {
+                getSharedPrefs(context)
+                prefs!!.edit().putBoolean(KEY_PREFIX_NO_ACTION + tag, enabled).apply()
+            }
+
+            var direction by remember { mutableIntStateOf(0) }
+            var showPickerDialog by remember { mutableStateOf(false) }
+            if (showPickerDialog) {
+                Dialog(onDismissRequest = { showPickerDialog = false }) {
+                    Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                        LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.padding(16.dp)) {
+                            items(keys.size) { index ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp).clickable {
+                                    when (direction) {
+                                        -1 -> leftAction.value[0] = keys[index]
+                                        1 -> rightAction.value[0] = keys[index]
+                                        else -> {}
+                                    }
+                                    showPickerDialog = false
+                                }) {
+                                    Icon(painter = painterResource(keys[index].getActionIcon()), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
+                                    Text(keys[index].getTitle(context), textAlign = TextAlign.Center)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                var forFragment = ""
+                when (tag) {
+                    AllEpisodesFragment.TAG -> {
+                        forFragment = stringResource(R.string.episodes_label)
+                        keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
+                    }
+                    DownloadsFragment.TAG -> {
+                        forFragment = stringResource(R.string.downloads_label)
+                        keys = keys.filter { a: SwipeAction ->
+                            (!a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) && !a.getId().equals(ActionTypes.START_DOWNLOAD.name)) }
+                    }
+                    FeedEpisodesFragment.TAG -> {
+                        forFragment = stringResource(R.string.subscription)
+                        keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
+                    }
+                    QueuesFragment.TAG -> {
+                        forFragment = stringResource(R.string.queue_label)
+//                keys = Stream.of(keys).filter { a: SwipeAction ->
+//                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
+                        keys = keys.filter { a: SwipeAction -> (!a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }
+                    }
+                    HistoryFragment.TAG -> {
+                        forFragment = stringResource(R.string.playback_history_label)
+                        keys = keys.toList()
+                    }
+                    else -> {}
+                }
+                if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                        Text(stringResource(R.string.swipeactions_label) + " - " + forFragment)
+                        Text(stringResource(R.string.swipe_left))
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                            Spacer(Modifier.weight(0.1f))
+                            Icon(painter = painterResource(leftAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                                .clickable(onClick = {
+                                    direction = -1
+                                    showPickerDialog = true
+                                })
+                            )
+                            Spacer(Modifier.weight(0.1f))
+                            Icon(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
+                            Spacer(Modifier.weight(0.5f))
+                        }
+                        Text(stringResource(R.string.swipe_right))
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                            Spacer(Modifier.weight(0.5f))
+                            Icon(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
+                            Spacer(Modifier.weight(0.1f))
+                            Icon(painter = painterResource(rightAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                                .clickable(onClick = {
+                                    direction = 1
+                                    showPickerDialog = true
+                                })
+                            )
+                            Spacer(Modifier.weight(0.1f))
+                        }
+                        Button(onClick = {
+                            savePrefs(tag, rightAction.value[0].getId(), leftAction.value[0].getId())
+                            saveActionsEnabledPrefs(true)
+                            EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
+                            callback()
+                            onDismissRequest()
+                        }) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+            }
         }
     }
 }

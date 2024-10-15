@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.ui.fragment
 
-//import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
@@ -27,6 +26,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.ChapterUtils
@@ -40,6 +40,7 @@ import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -98,7 +99,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     
     private lateinit var toolbar: MaterialToolbar
     private var showPlayer1 by mutableStateOf(true)
-    var isCollapsed by mutableStateOf(true)
+    private var isCollapsed by mutableStateOf(true)
 
 //    private lateinit var controllerFuture: ListenableFuture<MediaController>
     private var controller: ServiceStatusHandler? = null
@@ -133,7 +134,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var episodeDate by mutableStateOf("")
 //    private var chapterControlVisible by mutableStateOf(false)
     private var hasNextChapter by mutableStateOf(true)
-    var rating by mutableStateOf(currentItem?.rating ?: 0)
+    var rating by mutableStateOf(currentItem?.rating ?: Rating.UNRATED.code)
 
     private var displayedChapterIndex by mutableIntStateOf(-1)
     private val currentChapter: Chapter?
@@ -361,9 +362,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     }
                 }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 2.dp, bottom = 2.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp)) {
                 Spacer(modifier = Modifier.weight(0.2f))
                 val ratingIconRes = Rating.fromCode(rating).res
                 Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
@@ -399,10 +398,11 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
                 ShownotesWebView(context).apply {
                     setTimecodeSelectedListener { time: Int -> seekTo(time) }
-//                    setPageFinishedListener {
-//                        // Restoring the scroll position might not always work
+                    setPageFinishedListener {
+                        // Restoring the scroll position might not always work
 //                        postDelayed({ restoreFromPreference() }, 50)
-//                    }
+                        postDelayed({ }, 50)
+                    }
                 }
             }, update = { webView ->
                 Logd(TAG, "AndroidView update: $cleanedNotes")
@@ -475,31 +475,8 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
-//            (activity as MainActivity).setPlayerVisible(true)
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
-        if (prevMedia?.getIdentifier() != media.getIdentifier()) {
-            imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
-//                val imgLocFB = ImageResourceUtils.getFallbackImageLocation(media)
-//                val imageLoader = imgvCover.context.imageLoader
-//                val imageRequest = ImageRequest.Builder(requireContext())
-//                    .data(imgLoc)
-//                    .setHeader("User-Agent", "Mozilla/5.0")
-//                    .placeholder(R.color.light_gray)
-//                    .listener(object : ImageRequest.Listener {
-//                        override fun onError(request: ImageRequest, result: ErrorResult) {
-//                            val fallbackImageRequest = ImageRequest.Builder(requireContext())
-//                                .data(imgLocFB)
-//                                .setHeader("User-Agent", "Mozilla/5.0")
-//                                .error(R.mipmap.ic_launcher)
-//                                .target(imgvCover)
-//                                .build()
-//                            imageLoader.enqueue(fallbackImageRequest)
-//                        }
-//                    })
-//                    .target(imgvCover)
-//                    .build()
-//                imageLoader.enqueue(imageRequest)
-        }
+        if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.setLocked(true)
             (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
@@ -507,7 +484,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         prevMedia = media
     }
 
-    internal fun updateDetails() {
+    private fun updateDetails() {
 //        if (isLoading) return
         lifecycleScope.launch {
             Logd(TAG, "in updateInfo")
@@ -521,13 +498,22 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     homeText = null
                 }
                 if (currentItem != null) {
-                    rating = currentItem!!.rating
+                    if (rating == Rating.UNRATED.code || prevItem?.identifyingValue != currentItem!!.identifyingValue) rating = currentItem!!.rating
                     currentMedia = currentItem!!.media
                     if (prevItem?.identifyingValue != currentItem!!.identifyingValue) cleanedNotes = null
                     Logd(TAG, "updateInfo ${cleanedNotes == null} ${prevItem?.identifyingValue} ${currentItem!!.identifyingValue}")
                     if (cleanedNotes == null) {
-                        Logd(TAG, "calling load description ${currentItem!!.description==null} ${currentItem!!.title}")
-                        cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentMedia?.getDuration()?:0)
+                        val url = currentItem!!.media?.downloadUrl
+                        if (url?.contains("youtube.com") == true && currentItem!!.description?.startsWith("Short:") == true) {
+                            Logd(TAG, "getting extended description: ${currentItem!!.title}")
+                            try {
+                                val info = currentItem!!.streamInfo
+                                if (info?.description?.content != null) {
+                                    currentItem = upsert(currentItem!!) { it.description = info.description?.content }
+                                    cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.getDuration()?:0)
+                                } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
+                            } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
+                        } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
                     }
                     prevItem = currentItem
                 }
@@ -598,19 +584,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         titleText = currentItem?.title ?:""
         displayedChapterIndex = -1
         refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.getPosition())) //calls displayCoverImage
-//        updateChapterControlVisibility()
     }
-
-//    private fun updateChapterControlVisibility() {
-////        when {
-////            currentMedia?.getChapters() != null -> chapterControlVisible = currentMedia!!.getChapters().isNotEmpty()
-////            currentMedia is EpisodeMedia -> {
-////                val item_ = (currentMedia as EpisodeMedia).episodeOrFetch()
-////                // If an item has chapters but they are not loaded yet, still display the button.
-////                chapterControlVisible = !item_?.chapters.isNullOrEmpty()
-////            }
-////        }
-//    }
 
     private fun refreshChapterData(chapterIndex: Int) {
         Logd(TAG, "in refreshChapterData $chapterIndex")
@@ -628,56 +602,14 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun displayCoverImage() {
         if (currentMedia == null) return
-        if (displayedChapterIndex == -1 || currentMedia!!.getChapters().isEmpty() || currentMedia!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-            imgLoc = currentMedia!!.getImageLocation()
-//                val imageLoader = binding.imgvCover.context.imageLoader
-//                val imageRequest = ImageRequest.Builder(requireContext())
-//                    .data(playable!!.getImageLocation())
-//                    .setHeader("User-Agent", "Mozilla/5.0")
-//                    .placeholder(R.color.light_gray)
-//                    .listener(object : ImageRequest.Listener {
-//                        override fun onError(request: ImageRequest, result: ErrorResult) {
-//                            val fallbackImageRequest = ImageRequest.Builder(requireContext())
-//                                .data(ImageResourceUtils.getFallbackImageLocation(playable!!))
-//                                .setHeader("User-Agent", "Mozilla/5.0")
-//                                .error(R.mipmap.ic_launcher)
-//                                .target(binding.imgvCover)
-//                                .build()
-//                            imageLoader.enqueue(fallbackImageRequest)
-//                        }
-//                    })
-//                    .target(binding.imgvCover)
-//                    .build()
-//                imageLoader.enqueue(imageRequest)
-        } else {
-            imgLoc = EmbeddedChapterImage.getModelFor(currentMedia!!, displayedChapterIndex)?.toString()
-//                val imageLoader = binding.imgvCover.context.imageLoader
-//                val imageRequest = ImageRequest.Builder(requireContext())
-//                    .data(imgLoc)
-//                    .setHeader("User-Agent", "Mozilla/5.0")
-//                    .placeholder(R.color.light_gray)
-//                    .listener(object : ImageRequest.Listener {
-//                        override fun onError(request: ImageRequest, result: ErrorResult) {
-//                            val fallbackImageRequest = ImageRequest.Builder(requireContext())
-//                                .data(ImageResourceUtils.getFallbackImageLocation(playable!!))
-//                                .setHeader("User-Agent", "Mozilla/5.0")
-//                                .error(R.mipmap.ic_launcher)
-//                                .target(binding.imgvCover)
-//                                .build()
-//                            imageLoader.enqueue(fallbackImageRequest)
-//                        }
-//                    })
-//                    .target(binding.imgvCover)
-//                    .build()
-//                imageLoader.enqueue(imageRequest)
-        }
+        imgLoc = if (displayedChapterIndex == -1 || currentMedia!!.getChapters().isEmpty() || currentMedia!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty())
+            currentMedia!!.getImageLocation() else EmbeddedChapterImage.getModelFor(currentMedia!!, displayedChapterIndex)?.toString()
         Logd(TAG, "displayCoverImage: imgLoc: $imgLoc")
     }
 
     @UnstableApi private fun seekToPrevChapter() {
         val curr: Chapter? = currentChapter
         if (curr == null || displayedChapterIndex == -1) return
-
         when {
             displayedChapterIndex < 1 -> seekTo(0)
             (curPositionFB - 10000 * curSpeedFB) < curr.start -> {
@@ -748,7 +680,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //    }
 
     private var loadItemsRunning = false
-    fun loadMediaInfo(includingChapters: Boolean) {
+    fun loadMediaInfo() {
         val actMain = (activity as MainActivity)
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
@@ -757,14 +689,14 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (!loadItemsRunning) {
             loadItemsRunning = true
             if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
-            if (!isCollapsed && (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier())) updateDetails()
-
-            if (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !curMedia!!.chaptersLoaded())) {
-                Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()} chapter: $includingChapters")
+            val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
+            if (!isCollapsed && curMediaChanged) {
+                updateDetails()
+                Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()}")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         curMedia!!.apply {
-                            if (includingChapters) ChapterUtils.loadChapters(this, requireContext(), false)
+                            ChapterUtils.loadChapters(this, requireContext(), false)
                         }
                     }
                     currentMedia = curMedia
@@ -800,8 +732,8 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 setIsShowPlay(showPlay)
             }
             override fun loadMediaInfo() {
-                this@AudioPlayerFragment.loadMediaInfo(false)
-                if (!isCollapsed) updateDetails()
+                this@AudioPlayerFragment.loadMediaInfo()
+//                if (!isCollapsed) updateDetails()
             }
             override fun onPlaybackEnd() {
 //                isShowPlay = true
@@ -819,7 +751,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onResume() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
         super.onResume()
-        loadMediaInfo(false)
+        loadMediaInfo()
     }
 
     override fun onStart() {
@@ -834,7 +766,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 ////            Logd(TAG, "controllerFuture.addListener: $mediaController")
 //        }, MoreExecutors.directExecutor())
 
-        loadMediaInfo(false)
+        loadMediaInfo()
     }
 
     override fun onStop() {

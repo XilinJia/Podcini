@@ -45,7 +45,8 @@
     <string name="swipe_left">Swipe left</string>
     <string name="enable_swipeactions">Enable swipe actions for this screen</string>
     <string name="change_setting">Change</string>
-    <string name="individual_subscription">Individual subscription</string>
+    <string name="individual_subscription">Subscription</string>
+    <string name="subscription">Subscription</string>
 
     <!-- Statistics fragment -->
     <string name="statistics_include_marked">Include duration of episodes that are just marked as played</string>
@@ -215,6 +216,7 @@
     <string name="share_label">Share</string>
     <string name="share_file_label">Share file</string>
     <string name="share_notes_label">Share notes</string>
+    <string name="erase_episodes_confirmation_msg">Please confirm that you want to erase episodes.</string>
     <string name="feed_delete_confirmation_msg">Please confirm that you want to delete the podcast \"%1$s\", ALL its episodes (including downloaded episodes), and its statistics.</string>
     <string name="feed_delete_confirmation_msg_batch">Please confirm that you want to remove the selected podcasts, ALL their episodes (including downloaded episodes), and its statistics.</string>
     <string name="feed_delete_confirmation_local_msg">Please confirm that you want to remove the podcast \"%1$s\" and its statistics. The files in the local source folder will not be deleted.</string>
@@ -250,6 +252,7 @@
     <string name="play_label">Play</string>
     <string name="pause_label">Pause</string>
     <string name="stream_label">Stream</string>
+    <string name="erase_episodes_label">Erase episodes</string>
     <string name="reserve_episodes_label">Reserve episodes</string>
     <string name="delete_label">Delete</string>
     <string name="delete_failed">Unable to delete file. Rebooting the device could help.</string>

@@ -5,12 +5,10 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.confirmAddYoutubeEpisode
+import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
-import android.app.Service.START_STICKY
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -22,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
-import androidx.work.WorkerParameters
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.net.URL
 import java.net.URLDecoder
@@ -57,7 +54,7 @@ class ShareReceiverActivity : AppCompatActivity() {
             setContent {
                 val showDialog = remember { mutableStateOf(true) }
                 CustomTheme(this) {
-                    confirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
+                    ConfirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
                         showDialog.value = false
                         finish()
                     })

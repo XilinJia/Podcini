@@ -28,6 +28,7 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
@@ -96,10 +97,10 @@ import kotlin.math.max
     private var infoText = ""
     private var infoBarText = mutableStateOf("")
 
-    private var leftActionState = mutableStateOf<SwipeAction?>(null)
-    private var rightActionState = mutableStateOf<SwipeAction?>(null)
-    private var leftActionStateBin = mutableStateOf<SwipeAction?>(null)
-    private var rightActionStateBin = mutableStateOf<SwipeAction?>(null)
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
     private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
@@ -189,12 +190,12 @@ import kotlin.math.max
                     Column {
                         InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
                         val leftCB = { episode: Episode ->
-                            if (leftActionStateBin.value == null) swipeActionsBin.showDialog()
-                            else leftActionStateBin.value?.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                            if (leftActionStateBin.value == NoActionSwipeAction()) swipeActionsBin.showDialog()
+                            else leftActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
                         }
                         val rightCB = { episode: Episode ->
-                            if (rightActionStateBin.value == null) swipeActionsBin.showDialog()
-                            else rightActionStateBin.value?.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                            if (rightActionStateBin.value == NoActionSwipeAction()) swipeActionsBin.showDialog()
+                            else rightActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
                         }
                         EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
@@ -202,12 +203,12 @@ import kotlin.math.max
                     Column {
                         InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                         val leftCB = { episode: Episode ->
-                            if (leftActionState.value == null) swipeActions.showDialog()
-                            else leftActionState.value?.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else leftActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
                         val rightCB = { episode: Episode ->
-                            if (rightActionState.value == null) swipeActions.showDialog()
-                            else rightActionState.value?.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
                         EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
@@ -403,11 +404,11 @@ import kotlin.math.max
 
     private fun refreshSwipeTelltale() {
         if (showBin) {
-            leftActionStateBin.value = swipeActionsBin.actions?.left
-            rightActionStateBin.value = swipeActionsBin.actions?.right
+            leftActionStateBin.value = swipeActionsBin.actions.left[0]
+            rightActionStateBin.value = swipeActionsBin.actions.right[0]
         } else {
-            leftActionState.value = swipeActions.actions?.left
-            rightActionState.value = swipeActions.actions?.right
+            leftActionState.value = swipeActions.actions.left[0]
+            rightActionState.value = swipeActions.actions.right[0]
         }
     }
 

@@ -10,7 +10,6 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="50">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
-[<img src="./images/external/getItOpenapk.png" alt="OpenAPK" height="50">](https://www.openapk.net/podcini/ac.mdiq.podcini/)
 
 #### Podcini.R 6.10 allows creating synthetic podcast and shelving any episdes to any synthetic podcasts
 #### Podcini.R version 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Since 6.6, podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs

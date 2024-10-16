@@ -32,6 +32,8 @@ import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -455,26 +457,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             else -> txtvSize = ""
         }
-
-//        val imgLocFB = ImageResourceUtils.getFallbackImageLocation(episode!!)
-//        val imageLoader = imgvCover.context.imageLoader
-//        val imageRequest = ImageRequest.Builder(requireContext())
-//            .data(episode!!.imageLocation)
-//            .placeholder(R.color.light_gray)
-//            .listener(object : ImageRequest.Listener {
-//                override fun onError(request: ImageRequest, result: ErrorResult) {
-//                    val fallbackImageRequest = ImageRequest.Builder(requireContext())
-//                        .data(imgLocFB)
-//                        .setHeader("User-Agent", "Mozilla/5.0")
-//                        .error(R.mipmap.ic_launcher)
-//                        .target(imgvCover)
-//                        .build()
-//                    imageLoader.enqueue(fallbackImageRequest)
-//                }
-//            })
-//            .target(imgvCover)
-//            .build()
-//        imageLoader.enqueue(imageRequest)
 
         updateButtons()
     }

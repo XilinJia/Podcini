@@ -1,3 +1,14 @@
+# 6.11.3
+
+* supports Youtube live episodes received from share
+* fixed info not showing when playing video in window mode
+* AudioPlayer is fully in Compose, fixed the issue of top menu sometimes not shown
+* if you have podcast set to AudioOnly, you can tap on the square icon on the top bar of PlayerDetailed to force play video
+	* this will re-construct the media item for the current episode to include video and plays audio-video together
+	* it continues this way even after you close the video view and only listen
+	* during this mode, you can switch between video and audio and the play is uninterrupted
+	* it will resume playing audio only when you switch episodes and comeback to it
+
 # 6.11.2
 
 * fixed PlayerDetailed view not showing full info on Youtube media

@@ -9,6 +9,9 @@ import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Ignore
@@ -67,6 +70,9 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     // if null: unknown, will be checked
     var hasEmbeddedPicture: Boolean? = null
+
+    @Ignore
+    var forceVideo by mutableStateOf(false)
 
     /* Used for loading item when restoring from parcel. */
 //    var episodeId: Long = 0

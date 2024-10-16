@@ -82,6 +82,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
                     Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val label = getLabel()
+                        Logd(TAG, "button label: $label")
                         if (label != R.string.play_label && label != R.string.pause_label && label != R.string.download_label) {
                             IconButton(onClick = {
                                 PlayActionButton(item).onClick(context)
@@ -140,9 +141,9 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
         fun playVideoIfNeeded(context: Context, media: Playable) {
             val item = (media as? EpisodeMedia)?.episode
-            if (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+            if ((media as? EpisodeMedia)?.forceVideo == true || (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
                     && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
-                    && media.getMediaType() == MediaType.VIDEO)
+                    && media.getMediaType() == MediaType.VIDEO))
                 context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         }
     }
@@ -365,7 +366,6 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     companion object {
-
         fun stream(context: Context, media: Playable) {
             if (media !is EpisodeMedia || !InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()

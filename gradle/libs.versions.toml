@@ -22,7 +22,9 @@ fontawesomeTypeface = "5.13.3.0-kotlin"
 fyydlin = "v0.5.0"
 googleMaterialTypeface = "4.0.0.3-kotlin"
 googleMaterialTypefaceOutlined = "4.0.0.2-kotlin"
+gradle = "8.5.2"
 gridlayout = "1.0.0"
+groovyXml = "3.0.19"
 iconicsCore = "5.5.0-b01"
 iconicsViews = "5.5.0-b01"
 javaxInject = "1"
@@ -123,6 +125,8 @@ fontawesome-typeface = { module = "com.mikepenz:fontawesome-typeface", version.r
 fyydlin = { module = "com.github.mfietz:fyydlin", version.ref = "fyydlin" }
 google-material-typeface-outlined = { module = "com.mikepenz:google-material-typeface-outlined", version.ref = "googleMaterialTypefaceOutlined" }
 google-material-typeface = { module = "com.mikepenz:google-material-typeface", version.ref = "googleMaterialTypeface" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+groovy-xml = { module = "org.codehaus.groovy:groovy-xml", version.ref = "groovyXml" }
 iconics-views = { module = "com.mikepenz:iconics-views", version.ref = "iconicsViews" }
 iconics-core = { module = "com.mikepenz:iconics-core", version.ref = "iconicsCore" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }

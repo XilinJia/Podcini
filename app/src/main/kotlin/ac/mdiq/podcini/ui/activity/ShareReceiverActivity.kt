@@ -117,7 +117,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                     if (finish) activity.finish()
                 }
 //            Youtube media
-                (isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url) -> {
+                (isYoutubeURL(url) && (url.path.startsWith("/watch") || url.path.startsWith("/live"))) || isYoutubeServiceURL(url) -> {
                     if (log != null)  upsertBlk(log) {it.type = "youtube media" }
                     Logd(TAG, "got youtube media")
                     mediaCB()

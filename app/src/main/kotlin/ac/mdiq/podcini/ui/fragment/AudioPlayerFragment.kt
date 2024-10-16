@@ -1,16 +1,15 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
-import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
@@ -40,7 +39,6 @@ import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -52,9 +50,11 @@ import android.content.*
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
@@ -64,11 +64,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
@@ -77,7 +79,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import coil.compose.AsyncImage
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -90,15 +91,9 @@ import org.apache.commons.lang3.StringUtils
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.max
-import kotlin.math.min
 
 @UnstableApi
-class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    var _binding: AudioplayerFragmentBinding? = null
-    private val binding get() = _binding!!
-    
-    private lateinit var toolbar: MaterialToolbar
-    private var showPlayer1 by mutableStateOf(true)
+class AudioPlayerFragment : Fragment() {
     private var isCollapsed by mutableStateOf(true)
 
 //    private lateinit var controllerFuture: ListenableFuture<MediaController>
@@ -122,6 +117,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var duration by mutableIntStateOf(0)
     private var txtvLengtTexth by mutableStateOf("")
     private var sliderValue by mutableFloatStateOf(0f)
+    private var sleepTimerActive by mutableStateOf(isSleepTimerActive())
 
     private var shownotesCleaner: ShownotesCleaner? = null
 
@@ -145,48 +141,41 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        _binding = AudioplayerFragmentBinding.inflate(inflater)
-        binding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
-
         Logd(TAG, "fragment onCreateView")
-        toolbar = binding.toolbar
-        toolbar.title = ""
-        toolbar.setNavigationOnClickListener {
-            val bottomSheet = (activity as MainActivity).bottomSheet
-            bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
-        toolbar.setOnMenuItemClickListener(this)
         controller = createHandler()
         controller!!.init()
         onCollaped()
 
-        binding.player1.setContent {
-            CustomTheme(requireContext()) {
-                if (showPlayer1) PlayerUI()
-                else Spacer(modifier = Modifier.size(0.dp))
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+//                    Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding() ) {
+//                        if (isCollapsed) PlayerUI()
+////                        else Spacer(modifier = Modifier.size(0.dp))
+//                        Toolbar()
+//                        DetailUI(modifier = Modifier.weight(1f))
+//                        if (!isCollapsed) PlayerUI()
+////                        else Spacer(modifier = Modifier.size(0.dp))
+//                    }
+                    Box(modifier = Modifier.fillMaxWidth().statusBarsPadding().navigationBarsPadding()) {
+                        val aligm = if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter
+                        PlayerUI(Modifier.align(aligm).zIndex(1f))
+                        if (!isCollapsed) {
+                            Column(Modifier.padding(bottom = 90.dp)) {
+                                Toolbar()
+                                DetailUI(modifier = Modifier)
+                            }
+                        }
+                    }
+                }
             }
         }
-        binding.composeDetailView.setContent {
-            CustomTheme(requireContext()) {
-                DetailUI()
-//                if (!isCollapsed) DetailUI()
-//                else Spacer(modifier = Modifier.size(0.dp))
-            }
-        }
-        binding.player2.setContent {
-            CustomTheme(requireContext()) {
-                if (!showPlayer1) PlayerUI()
-                else Spacer(modifier = Modifier.size(0.dp))
-            }
-        }
-//        cardViewSeek = binding.cardViewSeek
         (activity as MainActivity).setPlayerVisible(false)
-        return binding.root
+        return composeView
     }
 
     override fun onDestroyView() {
         Logd(TAG, "Fragment destroyed")
-        _binding = null
         controller?.release()
         controller = null
 //        MediaController.releaseFuture(controllerFuture)
@@ -195,9 +184,9 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun PlayerUI() {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            val textColor = MaterialTheme.colorScheme.onSurface
+    fun PlayerUI(modifier: Modifier) {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
             Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.bodyMedium)
             Slider(value = sliderValue, valueRange = 0f..duration.toFloat(),
 //                colors = SliderDefaults.colors(
@@ -231,7 +220,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
                 }
                 AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
-                    modifier = Modifier.width(70.dp).height(70.dp).padding(start = 5.dp)
+                    modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
                         .clickable(onClick = {
                             Logd(TAG, "playerUiFragment icon was clicked")
                             if (isCollapsed) {
@@ -255,7 +244,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(painter = painterResource(R.drawable.ic_playback_speed), tint = textColor,
                         contentDescription = "speed",
-                        modifier = Modifier.width(48.dp).height(48.dp).clickable(onClick = {
+                        modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
                             VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
                         }))
                     Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodySmall)
@@ -264,7 +253,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(painter = painterResource(R.drawable.ic_fast_rewind), tint = textColor,
                         contentDescription = "rewind",
-                        modifier = Modifier.width(48.dp).height(48.dp).combinedClickable(onClick = {
+                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
                             if (controller != null && playbackService?.isServiceReady() == true) {
                                 playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000)
                             }
@@ -296,7 +285,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(painter = painterResource(R.drawable.ic_fast_forward), tint = textColor,
                         contentDescription = "forward",
-                        modifier = Modifier.width(48.dp).height(48.dp).combinedClickable(onClick = {
+                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
                             if (controller != null && playbackService?.isServiceReady() == true) {
                                 playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000)
                             }
@@ -317,7 +306,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                     Icon(painter = painterResource(R.drawable.ic_skip_48dp), tint = textColor,
                         contentDescription = "rewind",
-                        modifier = Modifier.width(48.dp).height(48.dp).combinedClickable(onClick = {
+                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
                             if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
                                 val speedForward = UserPreferences.speedforwardSpeed
                                 if (speedForward > 0.1f) speedForward(speedForward)
@@ -332,9 +321,72 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
+    @Composable
+    fun Toolbar() {
+        val media: Playable = curMedia ?: return
+        val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
+        val textColor = MaterialTheme.colorScheme.onSurface
+        val mediaType = curMedia?.getMediaType()
+        val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Icon(painter = painterResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
+                (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            })
+            var homeIcon by remember { mutableIntStateOf(R.drawable.baseline_home_24)}
+            Icon(painter = painterResource(homeIcon), tint = textColor, contentDescription = "Home", modifier = Modifier.clickable {
+                homeIcon = if (showHomeText) R.drawable.ic_home else R.drawable.outline_home_24
+                buildHomeReaderText()
+            })
+            if (mediaType == MediaType.VIDEO) Icon(painter = painterResource(R.drawable.baseline_fullscreen_24), tint = textColor, contentDescription = "Play video",
+                modifier = Modifier.clickable {
+                    if (notAudioOnly || (curMedia as? EpisodeMedia)?.forceVideo == true) {
+//                        playPause()
+                    } else {
+                        (curMedia as? EpisodeMedia)?.forceVideo = true
+                        status = PlayerStatus.STOPPED
+                        playbackService?.mPlayer?.pause(true, reinit = true)
+                        playbackService?.recreateMediaPlayer()
+                    }
+                    VideoPlayerActivityStarter(requireContext()).start()
+                })
+            if (controller != null) {
+                val sleepRes = if (sleepTimerActive) R.drawable.ic_sleep_off else R.drawable.ic_sleep
+                Icon(painter = painterResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable {
+                    SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
+                })
+            }
+            if (currentMedia is EpisodeMedia) Icon(painter = painterResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
+                modifier = Modifier.clickable {
+                    if (feedItem?.feedId != null) {
+                        val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId!!)
+                        startActivity(intent)
+                    }
+                })
+            Icon(painter = painterResource(R.drawable.ic_share), tint = textColor, contentDescription = "Share", modifier = Modifier.clickable {
+                if (currentItem != null) {
+                    val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
+                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+                }
+            })
+            Icon(painter = painterResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
+                val notes = if (showHomeText) readerhtml else feedItem?.description
+                if (!notes.isNullOrEmpty()) {
+                    val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    val context = requireContext()
+                    val intent = ShareCompat.IntentBuilder(context)
+                        .setType("text/plain")
+                        .setText(shareText)
+                        .setChooserTitle(R.string.share_notes_label)
+                        .createChooserIntent()
+                    context.startActivity(intent)
+                }
+            })
+        }
+    }
+
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun DetailUI() {
+    fun DetailUI(modifier: Modifier) {
         var showChooseRatingDialog by remember { mutableStateOf(false) }
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) {
             showChooseRatingDialog = false
@@ -343,7 +395,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showChaptersDialog) ChaptersDialog(media = currentMedia!!, onDismissRequest = {showChaptersDialog = false})
 
         val scrollState = rememberScrollState()
-        Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
+        Column(modifier = modifier.fillMaxWidth().verticalScroll(scrollState)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             fun copyText(text: String): Boolean {
                 val clipboardManager: ClipboardManager? = ContextCompat.getSystemService(requireContext(), ClipboardManager::class.java)
@@ -647,7 +699,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        if (isCollapsed) {
             isCollapsed = false
             if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
-            showPlayer1 = false
+//            showPlayer1 = false
             if (currentMedia != null) updateUi(currentMedia!!)
             setIsShowPlay(isShowPlay)
             updateDetails()
@@ -657,7 +709,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun onCollaped() {
         Logd(TAG, "onCollaped()")
         isCollapsed = true
-        showPlayer1 = true
+//        showPlayer1 = true
         if (currentMedia != null) updateUi(currentMedia!!)
         setIsShowPlay(isShowPlay)
     }
@@ -703,7 +755,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     val item = (currentMedia as? EpisodeMedia)?.episodeOrFetch()
                     if (item != null) setItem(item)
                     setChapterDividers()
-                    setupOptionsMenu()
+                    sleepTimerActive = isSleepTimerActive()
                     if (currentMedia != null) updateUi(currentMedia!!)
 //                TODO: disable for now
 //                if (!includingChapters) loadMediaInfo(true)
@@ -850,7 +902,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     is FlowEvent.RatingEvent -> onRatingEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
 //                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
-                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) setupOptionsMenu()
+                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) sleepTimerActive = isSleepTimerActive()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.SpeedChangedEvent -> updatePlaybackSpeedButton(event)
                     else -> {}
@@ -866,86 +918,10 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun setupOptionsMenu() {
-        if (toolbar.menu.size() == 0) toolbar.inflateMenu(R.menu.mediaplayer)
-
-        val isEpisodeMedia = currentMedia is EpisodeMedia
-        toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isEpisodeMedia)
-//        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episodeOrFetch() else null
-//        EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
-
-        val mediaType = curMedia?.getMediaType()
-        val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
-        toolbar.menu?.findItem(R.id.show_video)?.setVisible(mediaType == MediaType.VIDEO && notAudioOnly)
-
-        if (controller != null) {
-            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!isSleepTimerActive())
-            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(isSleepTimerActive())
-        }
-        (activity as? CastEnabledActivity)?.requestCastButton(toolbar.menu)
-    }
-
-    override fun onMenuItemClick(menuItem: MenuItem): Boolean {
-        val media: Playable = curMedia ?: return false
-        val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
-//        if (feedItem != null && EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) return true
-
-        val itemId = menuItem.itemId
-        when (itemId) {
-            R.id.show_home_reader_view -> {
-                if (showHomeText) menuItem.setIcon(R.drawable.ic_home)
-                else menuItem.setIcon(R.drawable.outline_home_24)
-                buildHomeReaderText()
-            }
-            R.id.show_video -> {
-                playPause()
-                VideoPlayerActivityStarter(requireContext()).start()
-            }
-            R.id.disable_sleeptimer_item, R.id.set_sleeptimer_item -> SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
-            R.id.open_feed_item -> {
-                if (feedItem?.feedId != null) {
-                    val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId!!)
-                    startActivity(intent)
-                }
-            }
-            R.id.share_notes -> {
-                val notes = if (showHomeText) readerhtml else feedItem?.description
-                if (!notes.isNullOrEmpty()) {
-                    val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-                    val context = requireContext()
-                    val intent = ShareCompat.IntentBuilder(context)
-                        .setType("text/plain")
-                        .setText(shareText)
-                        .setChooserTitle(R.string.share_notes_label)
-                        .createChooserIntent()
-                    context.startActivity(intent)
-                }
-            }
-            R.id.share_item -> {
-                if (currentItem != null) {
-                    val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
-                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
-                }
-            }
-            else -> return false
-        }
-        return true
-    }
-
 //    fun scrollToTop() {
 ////        binding.itemDescriptionFragment.scrollTo(0, 0)
 //        savePreference()
 //    }
-
-    fun fadePlayerToToolbar(slideOffset: Float) {
-        val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()
-        val player = binding.player1
-        player.alpha = 1 - playerFadeProgress
-        player.visibility = if (playerFadeProgress > 0.99f) View.GONE else View.VISIBLE
-        val toolbarFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.6f).toDouble())) / 0.2f).toFloat()
-        toolbar.setAlpha(toolbarFadeProgress)
-        toolbar.visibility = if (toolbarFadeProgress < 0.01f) View.GONE else View.VISIBLE
-    }
 
     companion object {
         val TAG = AudioPlayerFragment::class.simpleName ?: "Anonymous"

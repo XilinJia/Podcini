@@ -1436,10 +1436,10 @@ class PlaybackService : MediaLibraryService() {
                     Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
                     val audioIndex = if (isNetworkRestricted && prefLowQualityMedia) 0 else audioStreamsList.size - 1
                     val audioStream = audioStreamsList[audioIndex]
-                    Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
+                    Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
                     val aSource = DefaultMediaSourceFactory(context).createMediaSource(
                         MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
-                    if (media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+                    if (media.forceVideo || media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                         Logd(TAG, "setDataSource1 result: $streamInfo")
                         Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
                         val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
@@ -2502,12 +2502,10 @@ class PlaybackService : MediaLibraryService() {
 
         private fun setToFallbackSpeed(speed: Float) {
             if (playbackService?.mPlayer == null || playbackService!!.isSpeedForward) return
-
             if (!playbackService!!.isFallbackSpeed) {
                 playbackService!!.normalSpeed = playbackService!!.mPlayer!!.getPlaybackSpeed()
                 playbackService!!.mPlayer!!.setPlaybackParams(speed, isSkipSilence)
             } else playbackService!!.mPlayer!!.setPlaybackParams(playbackService!!.normalSpeed, isSkipSilence)
-
             playbackService!!.isFallbackSpeed = !playbackService!!.isFallbackSpeed
         }
 
@@ -2526,6 +2524,7 @@ class PlaybackService : MediaLibraryService() {
                     playbackService?.mPlayer?.pause(true, reinit = false)
                     playbackService?.isSpeedForward =  false
                     playbackService?.isFallbackSpeed = false
+                    (curMedia as? EpisodeMedia)?.forceVideo = false
                 }
                 PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
                     playbackService?.mPlayer?.resume()

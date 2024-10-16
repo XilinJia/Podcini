@@ -102,8 +102,11 @@ class VideoplayerActivity : CastEnabledActivity() {
         var vmCode = 0
         if (curMedia is EpisodeMedia) {
             val media_ = curMedia as EpisodeMedia
-            val vPol = media_.episode?.feed?.preferences?.videoModePolicy
-            if (vPol != null && vPol != VideoMode.NONE) vmCode = vPol.code
+            var vPol = media_.episode?.feed?.preferences?.videoModePolicy
+            if (vPol != null) {
+                if (vPol == VideoMode.AUDIO_ONLY && media_.forceVideo) vPol = VideoMode.WINDOW_VIEW
+                if (vPol != VideoMode.NONE) vmCode = vPol.code
+            }
         }
         Logd(TAG, "onCreate vmCode: $vmCode")
         if (vmCode == 0) vmCode = videoPlayMode
@@ -290,6 +293,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         when (item.itemId) {
             R.id.player_switch_to_audio_only -> {
                 switchToAudioOnly = true
+                (curMedia as? EpisodeMedia)?.forceVideo = false
                 finish()
                 return true
             }
@@ -703,23 +707,23 @@ class VideoplayerActivity : CastEnabledActivity() {
                 lifecycleScope.launch {
                     try {
                         episode = withContext(Dispatchers.IO) {
-                            var feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
-                            if (feedItem != null) {
-                                val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
-                                val url = feedItem.media?.downloadUrl
+                            var episode_ = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            if (episode_ != null) {
+                                val duration = episode_.media?.getDuration() ?: Int.MAX_VALUE
+                                val url = episode_.media?.downloadUrl
                                 val shownotesCleaner = ShownotesCleaner(requireContext())
-                                if (url?.contains("youtube.com") == true && feedItem.description?.startsWith("Short:") == true) {
-                                    Logd(TAG, "getting extended description: ${feedItem.title}")
+                                if (url?.contains("youtube.com") == true && episode_.description?.startsWith("Short:") == true) {
+                                    Logd(TAG, "getting extended description: ${episode_.title}")
                                     try {
-                                        val info = feedItem.streamInfo
+                                        val info = episode_.streamInfo
                                         if (info?.description?.content != null) {
-                                            feedItem = upsert(feedItem) { it.description = info.description?.content }
+                                            episode_ = upsert(episode_) { it.description = info.description?.content }
                                             webviewData = shownotesCleaner.processShownotes(info.description!!.content, duration)
-                                        } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                                        } else webviewData = shownotesCleaner.processShownotes(episode_.description ?: "", duration)
                                     } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
-                                } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                                } else webviewData = shownotesCleaner.processShownotes(episode_.description ?: "", duration)
                             }
-                            feedItem
+                            episode_
                         }
                         withContext(Dispatchers.Main) {
                             Logd(TAG, "load() item ${episode?.id}")
@@ -798,6 +802,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             binding.toggleViews.setOnClickListener { (activity as VideoplayerActivity).toggleViews() }
             binding.audioOnly.setOnClickListener {
                 (activity as? VideoplayerActivity)?.switchToAudioOnly = true
+                (curMedia as? EpisodeMedia)?.forceVideo = false
                 (activity as? VideoplayerActivity)?.finish()
             }
             if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData,

@@ -294,8 +294,7 @@ class SleepTimerDialog : DialogFragment() {
                         paintDial.strokeWidth = size * 0.01f
                         val textPos = radToPoint(i / 24.0f * 360f, size / 2 - 2.5f * padding)
                         paintText.textSize = 0.4f * padding
-                        canvas.drawText(i.toString(), textPos.x.toFloat(),
-                            textPos.y + (-paintText.descent() - paintText.ascent()) / 2, paintText)
+                        canvas.drawText(i.toString(), textPos.x.toFloat(), textPos.y + (-paintText.descent() - paintText.ascent()) / 2, paintText)
                     }
                     val outer = radToPoint(i / 24.0f * 360f, size / 2 - 1.7f * padding)
                     val inner = radToPoint(i / 24.0f * 360f, size / 2 - 1.9f * padding)

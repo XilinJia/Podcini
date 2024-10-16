@@ -138,11 +138,11 @@ class MainActivity : CastEnabledActivity() {
             }
         }
         override fun onSlide(view: View, slideOffset: Float) {
-            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
+//            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
 //            if (slideOffset == 0.0f) { //STATE_COLLAPSED
 //                audioPlayer.scrollToTop()
 //            }
-            audioPlayer.fadePlayerToToolbar(slideOffset)
+//            audioPlayer.fadePlayerToToolbar(slideOffset)
         }
     }
 
@@ -397,10 +397,10 @@ class MainActivity : CastEnabledActivity() {
             navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
 //        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
-        val playerView = findViewById<ComposeView>(R.id.player1)
-        val playerParams = playerView?.layoutParams as? MarginLayoutParams
-        playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
-        playerView?.layoutParams = playerParams
+//        val playerView = findViewById<ComposeView>(R.id.player1)
+//        val playerParams = playerView?.layoutParams as? MarginLayoutParams
+//        playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
+//        playerView?.layoutParams = playerParams
         audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

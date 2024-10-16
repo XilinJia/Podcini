@@ -679,13 +679,14 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                 if (index>=vms.size) return@LaunchedEffect
                                 if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media!!.downloadUrl!!) ?: 0
                                 Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
-                                vm.actionButton = EpisodeActionButton.forItem(vms[index].episode)
+                                vm.actionButton = EpisodeActionButton.forItem(vm.episode)
                                 vm.actionRes = vm.actionButton!!.getDrawable()
                             }
                             LaunchedEffect(key1 = status) {
                                 if (index>=vms.size) return@LaunchedEffect
                                 Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vms[index].episode.title}")
-                                vm.actionButton = EpisodeActionButton.forItem(vms[index].episode)
+                                vm.actionButton = EpisodeActionButton.forItem(vm.episode)
+                                Logd(TAG, "LaunchedEffect vm.actionButton: ${vm.actionButton?.getLabel()}")
                                 vm.actionRes = vm.actionButton!!.getDrawable()
                             }
 //                            LaunchedEffect(vm.isPlayingState) {
@@ -696,7 +697,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                         }
                         Box(modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.CenterVertically).pointerInput(Unit) {
                             detectTapGestures(onLongPress = { vm.showAltActionsDialog = true }, onTap = {
-                                vm.actionButton?.onClick(activity)
+                                vms[index].actionButton?.onClick(activity)
                             })
                         }, contentAlignment = Alignment.Center) {
 //                            actionRes = actionButton.getDrawable()

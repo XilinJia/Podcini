@@ -54,7 +54,6 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                     val eList: MutableList<Episode> = mutableListOf()
 
                     val uURL = URL(url)
-//                    if (url.startsWith("https://youtube.com/playlist?") || url.startsWith("https://music.youtube.com/playlist?")) {
                     if (uURL.path.startsWith("/playlist") || uURL.path.startsWith("/playlist")) {
                         val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return@launch
                         feed_.title = playlistInfo.name

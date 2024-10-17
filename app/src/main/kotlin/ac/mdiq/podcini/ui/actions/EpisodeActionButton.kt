@@ -440,13 +440,11 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                         j++
                         Logd(TAG, "onDone ${mediaFile.length()} $utteranceId")
                     }
-
                     @Deprecated("Deprecated in Java")
                     override fun onError(utteranceId: String) {
                         Log.e(TAG, "onError utterance error: $utteranceId")
                         Log.e(TAG, "onError $readerText")
                     }
-
                     override fun onError(utteranceId: String, errorCode: Int) {
                         Log.e(TAG, "onError1 utterance error: $utteranceId $errorCode")
                         Log.e(TAG, "onError1 $readerText")
@@ -504,11 +502,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     f.delete()
                 }
                 FeedEpisodesFragment.ttsWorking = false
-            } else withContext(Dispatchers.Main) {
-                Toast.makeText(context,
-                    R.string.episode_has_no_content,
-                    Toast.LENGTH_LONG).show()
-            }
+            } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show() }
 
             item.setPlayed(false)
             processing = 1f

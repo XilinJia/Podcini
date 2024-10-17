@@ -13,6 +13,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -210,8 +211,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Column(Modifier.constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
-                Text(feed.title ?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(txtvAuthor, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(feed.title ?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(text = txtvAuthor, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -240,50 +241,52 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
 
-            Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-            Text(text = txtvUrl?:"", color = textColor, modifier = Modifier.clickable {
-                if (feed.downloadUrl != null) {
-                    val url: String = feed.downloadUrl!!
-                    val clipData: ClipData = ClipData.newPlainText(url, url)
-                    val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    cm.setPrimaryClip(clipData)
-                    if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
-                }
-            })
-            if (feed.paymentLinks.isNotEmpty()) {
-                Text(stringResource(R.string.support_funding_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-                fun fundingText(): String {
-                    val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
-                    // Filter for duplicates, but keep items in the order that they have in the feed.
-                    val i: MutableIterator<FeedFunding> = fundingList.iterator()
-                    while (i.hasNext()) {
-                        val funding: FeedFunding = i.next()
-                        for (other in fundingList) {
-                            if (other.url == funding.url) {
-                                if (other.content != null && funding.content != null && other.content!!.length > funding.content!!.length) {
-                                    i.remove()
-                                    break
+            if (feed.id > MAX_SYNTHETIC_ID) {
+                Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+                Text(text = txtvUrl ?: "", color = textColor, modifier = Modifier.clickable {
+                    if (feed.downloadUrl != null) {
+                        val url: String = feed.downloadUrl!!
+                        val clipData: ClipData = ClipData.newPlainText(url, url)
+                        val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        cm.setPrimaryClip(clipData)
+                        if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
+                    }
+                })
+                if (feed.paymentLinks.isNotEmpty()) {
+                    Text(stringResource(R.string.support_funding_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+                    fun fundingText(): String {
+                        val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
+                        // Filter for duplicates, but keep items in the order that they have in the feed.
+                        val i: MutableIterator<FeedFunding> = fundingList.iterator()
+                        while (i.hasNext()) {
+                            val funding: FeedFunding = i.next()
+                            for (other in fundingList) {
+                                if (other.url == funding.url) {
+                                    if (other.content != null && funding.content != null && other.content!!.length > funding.content!!.length) {
+                                        i.remove()
+                                        break
+                                    }
                                 }
                             }
                         }
+                        val str = StringBuilder()
+                        for (funding in fundingList) {
+                            str.append(if (funding.content == null || funding.content!!.isEmpty()) requireContext().resources.getString(
+                                R.string.support_podcast)
+                            else funding.content).append(" ").append(funding.url)
+                            str.append("\n")
+                        }
+                        return StringBuilder(StringUtils.trim(str.toString())).toString()
                     }
-                    val str = StringBuilder()
-                    for (funding in fundingList) {
-                        str.append(if (funding.content == null || funding.content!!.isEmpty()) requireContext().resources.getString(
-                            R.string.support_podcast)
-                        else funding.content).append(" ").append(funding.url)
-                        str.append("\n")
-                    }
-                    return StringBuilder(StringUtils.trim(str.toString())).toString()
+                    val fundText = remember { fundingText() }
+                    Text(fundText, color = textColor)
                 }
-                val fundText = remember { fundingText() }
-                Text(fundText, color = textColor)
-            }
-            Button(modifier = Modifier.padding(top = 10.dp), onClick = {
-                val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
-                (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-            }) {
-                Text(stringResource(R.string.feeds_related_to_author))
+                Button(modifier = Modifier.padding(top = 10.dp), onClick = {
+                    val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
+                    (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+                }) {
+                    Text(stringResource(R.string.feeds_related_to_author))
+                }
             }
             Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             val arguments = Bundle()

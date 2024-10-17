@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.model.SubscriptionLog
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -88,12 +89,24 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             for (f in feeds) {
-                                val sLog = SubscriptionLog(f.id, f.title?:"", f.downloadUrl?:"", f.link?:"", SubscriptionLog.Type.Feed.name)
-                                upsert(sLog) {
-                                    it.rating = f.rating
-                                    it.comment = f.comment
-                                    it.comment += "\nReason to remove:\n" + textState.text
-                                    it.cancelDate = Date().time
+                                if (f.id > MAX_SYNTHETIC_ID) {
+                                    val sLog = SubscriptionLog(f.id, f.title ?: "", f.downloadUrl ?: "", f.link ?: "", SubscriptionLog.Type.Feed.name)
+                                    upsert(sLog) {
+                                        it.rating = f.rating
+                                        it.comment = f.comment
+                                        it.comment += "\nReason to remove:\n" + textState.text
+                                        it.cancelDate = Date().time
+                                    }
+                                } else {
+                                    for (e in f.episodes) {
+                                        val sLog = SubscriptionLog(e.id, e.title ?: "", e.media?.downloadUrl ?: "", e.link ?: "", SubscriptionLog.Type.Media.name)
+                                        upsert(sLog) {
+                                            it.rating = e.rating
+                                            it.comment = e.comment
+                                            it.comment += "\nReason to remove:\n" + textState.text
+                                            it.cancelDate = Date().time
+                                        }
+                                    }
                                 }
                                 deleteFeedSync(context, f.id, false)
                             }

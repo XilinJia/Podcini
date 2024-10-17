@@ -1,14 +1,14 @@
  
 [versions]
-activityCompose = "1.9.2"
-annotation = "1.8.2"
+activityCompose = "1.9.3"
+annotation = "1.9.0"
 appcompat = "1.7.0"
 awaitility = "4.2.1"
 balloon = "1.6.6"
 coil = "2.7.0"
 commonsLang3 = "3.15.0"
 commonsIo = "2.16.1"
-composeBom = "2024.09.03"
+composeBom = "2024.10.00"
 conscryptAndroid = "2.5.2"
 constraintlayoutCompose = "1.0.1"
 coordinatorlayout = "1.2.0"
@@ -63,11 +63,11 @@ runner = "1.6.2"
 rxandroid = "3.0.2"
 rxjava = "2.2.21"
 rxjavaVersion = "3.1.8"
-speedDial = "3.3.0"
+#speedDial = "3.3.0"
 searchpreference = "v2.5.0"
 stream = "1.2.2"
-uiToolingPreview = "1.7.3"
-uiTooling = "1.7.3"
+uiToolingPreview = "1.7.4"
+uiTooling = "1.7.4"
 viewpager2 = "1.1.0"
 vistaguide = "lv0.24.2.6"
 wearable = "2.9.0"
@@ -151,7 +151,7 @@ rxandroid = { module = "io.reactivex.rxjava3:rxandroid", version.ref = "rxandroi
 rxjava3-rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjavaVersion" }
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }
 searchpreference = { module = "com.github.ByteHamster:SearchPreference", version.ref = "searchpreference" }
-speed-dial = { module = "com.leinardi.android:speed-dial", version.ref = "speedDial" }
+#speed-dial = { module = "com.leinardi.android:speed-dial", version.ref = "speedDial" }
 stream = { module = "com.annimon:stream", version.ref = "stream" }
 vistaguide = { module = "com.github.XilinJia.vistaguide:VistaGuide", version.ref = "vistaguide" }
 desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugar_jdk_libs_nio" }

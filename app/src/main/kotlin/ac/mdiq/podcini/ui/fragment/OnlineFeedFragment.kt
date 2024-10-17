@@ -418,11 +418,11 @@ class OnlineFeedFragment : Fragment() {
                     Text(HtmlToPlainText.getPlainText(feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
                     val sLog = remember {feedLogsMap_[feed?.downloadUrl?:""] }
                     if (sLog != null) {
-                        val commentTextState by remember { mutableStateOf(TextFieldValue(sLog?.comment ?: "")) }
+                        val commentTextState by remember { mutableStateOf(TextFieldValue(sLog.comment ?: "")) }
                         val context = LocalContext.current
                         val cancelDate = remember { formatAbbrev(context, Date(sLog.cancelDate)) }
                         val ratingRes = remember { fromCode(sLog.rating).res }
-                        if (!commentTextState.text.isEmpty()) {
+                        if (commentTextState.text.isNotEmpty()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp)) {
                                 Text(stringResource(R.string.my_opinion_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
                                 Icon(painter = painterResource(ratingRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.padding(start = 5.dp))

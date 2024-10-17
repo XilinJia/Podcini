@@ -26,7 +26,7 @@ Apache License 2.0
 
 [com.mikepenz:iconics-core](https://github.com/mikepenz/Android-Iconics/blob/develop/LICENSE) Apache License 2.0
 
-[com.leinardi.android](https://github.com/leinardi/FloatingActionButtonSpeedDial/blob/release/LICENSE) Apache License 2.0
+[//]: # ([com.leinardi.android]&#40;https://github.com/leinardi/FloatingActionButtonSpeedDial/blob/release/LICENSE&#41; Apache License 2.0)
 
 [com.github.ByteHamster](https://github.com/ByteHamster/SearchPreference/blob/master/LICENSE) MIT License
 

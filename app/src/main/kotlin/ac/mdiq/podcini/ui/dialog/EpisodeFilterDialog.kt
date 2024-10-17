@@ -6,17 +6,12 @@ import ac.mdiq.podcini.databinding.FilterDialogRowBinding
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.util.Logd
-import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.LinearLayout
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 
@@ -89,29 +84,10 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         return layout
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setOnShowListener { dialogInterface: DialogInterface ->
-            val bottomSheetDialog = dialogInterface as BottomSheetDialog
-            setupFullHeight(bottomSheetDialog)
-        }
-        return dialog
-    }
-
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
         super.onDestroyView()
-    }
-
-    private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {
-        val bottomSheet = bottomSheetDialog.findViewById<View>(com.leinardi.android.speeddial.R.id.design_bottom_sheet) as? FrameLayout
-        if (bottomSheet != null) {
-            val behavior = BottomSheetBehavior.from(bottomSheet)
-            val layoutParams = bottomSheet.layoutParams
-            bottomSheet.layoutParams = layoutParams
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        }
     }
 
     abstract fun onFilterChanged(newFilterValues: Set<String>)

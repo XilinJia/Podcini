@@ -600,8 +600,8 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                                     }
                                     showPickerDialog = false
                                 }) {
-                                    Icon(painter = painterResource(keys[index].getActionIcon()), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
-                                    Text(keys[index].getTitle(context), textAlign = TextAlign.Center)
+                                    Icon(painter = painterResource(keys[index].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
+                                    Text(keys[index].getTitle(context), color = textColor, textAlign = TextAlign.Center)
                                 }
                             }
                         }

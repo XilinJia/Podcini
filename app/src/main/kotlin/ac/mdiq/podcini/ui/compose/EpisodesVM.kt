@@ -81,6 +81,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
@@ -602,10 +603,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                         ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                             val (imgvCover, checkMark) = createRefs()
                             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(vm.episode)
-                            Logd(TAG, "imgLoc: $imgLoc")
-                            AsyncImage(model = imgLoc, contentDescription = "imgvCover",
-                                placeholder = painterResource(R.mipmap.ic_launcher),
-                                error = painterResource(R.mipmap.ic_launcher),
+                            val painter = rememberAsyncImagePainter(model = imgLoc)
+                            Image(
+                                painter = painter,
+                                contentDescription = "imgvCover",
                                 modifier = Modifier.width(56.dp).height(56.dp)
                                     .constrainAs(imgvCover) {
                                         top.linkTo(parent.top)
@@ -615,7 +616,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                         Logd(TAG, "icon clicked!")
                                         if (selectMode) toggleSelected()
                                         else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
-                                    }))
+                                    })
+                            )
                             val alpha = if (vm.playedState) 1.0f else 0f
                             if (vm.playedState) Icon(painter = painterResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
                                 modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
@@ -645,7 +647,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                 if (index>=vms.size) return@LaunchedEffect
                                 vms[index].inQueueState = curQueue.contains(vms[index].episode)
                             }
-                            val dur =  vm.episode.media!!.getDuration()
+                            val dur =  vm.episode.media?.getDuration() ?: 0
                             val durText = DurationConverter.getDurationStringLong(dur)
                             Row {
                                 if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
@@ -656,7 +658,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                 if (vm.inQueueState)
                                     Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
                                 val curContext = LocalContext.current
-                                val dateSizeText =  " · " + formatAbbrev(curContext, vm.episode.getPubDate()) + " · " + durText + " · " + if((vm.episode.media?.size?:0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media!!.size) else ""
+                                val dateSizeText =  " · " + formatAbbrev(curContext, vm.episode.getPubDate()) + " · " + durText + " · " + if((vm.episode.media?.size?:0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
                                 Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             }
                             Text(vm.episode.title?:"", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -677,7 +679,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                         if (actionButton_ == null) {
                             LaunchedEffect(vms[index].downloadState) {
                                 if (index>=vms.size) return@LaunchedEffect
-                                if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media!!.downloadUrl!!) ?: 0
+                                if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl?:"") ?: 0
                                 Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
                                 vm.actionButton = EpisodeActionButton.forItem(vm.episode)
                                 vm.actionRes = vm.actionButton!!.getDrawable()

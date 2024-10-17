@@ -1160,29 +1160,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             return layout
         }
 
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val dialog = super.onCreateDialog(savedInstanceState)
-            dialog.setOnShowListener { dialogInterface: DialogInterface ->
-                val bottomSheetDialog = dialogInterface as BottomSheetDialog
-                setupFullHeight(bottomSheetDialog)
-            }
-            return dialog
-        }
-
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             _binding = null
             super.onDestroyView()
-        }
-
-        private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {
-            val bottomSheet = bottomSheetDialog.findViewById<View>(com.leinardi.android.speeddial.R.id.design_bottom_sheet) as? FrameLayout
-            if (bottomSheet != null) {
-                val behavior = BottomSheetBehavior.from(bottomSheet)
-                val layoutParams = bottomSheet.layoutParams
-                bottomSheet.layoutParams = layoutParams
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }
         }
 
         private fun onFilterChanged(newFilterValues: Set<String>) {

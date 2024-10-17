@@ -32,8 +32,6 @@ import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -193,8 +191,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
                 AsyncImage(model = imgLoc, contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
                 Column(modifier = Modifier.padding(start = 10.dp)) {
-                    Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.clickable { openPodcast() })
-                    Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), maxLines = 5, overflow = TextOverflow.Ellipsis)
+                    Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().clickable { openPodcast() })
+                    Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.fillMaxWidth(), maxLines = 5, overflow = TextOverflow.Ellipsis)
                     Text("$txtvPublished · $txtvDuration · $txtvSize", color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
             }

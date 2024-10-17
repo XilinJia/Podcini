@@ -29,7 +29,6 @@ import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
-import ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.EventFlow
@@ -57,7 +56,6 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.compose.ui.platform.ComposeView
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -99,7 +97,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
     private lateinit var controllerFuture: ListenableFuture<MediaController>
-    lateinit var bottomSheet: LockableBottomSheetBehavior<*>
+    lateinit var bottomSheet: BottomSheetBehavior<*>
         private set
 
     private var drawerToggle: ActionBarDrawerToggle? = null
@@ -239,10 +237,10 @@ class MainActivity : CastEnabledActivity() {
 
         runOnIOScope {  checkFirstLaunch() }
 
-        this.bottomSheet = BottomSheetBehavior.from(audioPlayerView) as LockableBottomSheetBehavior<*>
+        this.bottomSheet = BottomSheetBehavior.from(audioPlayerView)
         this.bottomSheet.isHideable = false
         this.bottomSheet.isDraggable = false
-        this.bottomSheet.setBottomSheetCallback(bottomSheetCallback)
+        this.bottomSheet.addBottomSheetCallback(bottomSheetCallback)
 
         restartUpdateAlarm(this, false)
         runOnIOScope {  SynchronizationQueueSink.syncNowIfNotSyncedRecently() }
@@ -362,6 +360,7 @@ class MainActivity : CastEnabledActivity() {
 //        WorkManager.getInstance(this).pruneWork()
         _binding = null
 //        realm.close()
+        bottomSheet.removeBottomSheetCallback(bottomSheetCallback)
         drawerLayout?.removeDrawerListener(drawerToggle!!)
         MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
@@ -380,6 +379,7 @@ class MainActivity : CastEnabledActivity() {
     private fun updateInsets() {
         setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
         val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
+        Logd(TAG, "playerHeight: $playerHeight ${navigationBarInsets.bottom}")
         bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
 
@@ -387,20 +387,16 @@ class MainActivity : CastEnabledActivity() {
         Logd(TAG, "setPlayerVisible $visible_")
         val visible = visible_ ?: (bottomSheet.state != BottomSheetBehavior.STATE_COLLAPSED)
 
-        bottomSheet.setLocked(!visible)
+//        bottomSheet.setLocked(!visible)
         if (visible) bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)    // Update toolbar visibility
         else bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
 
         val params = mainView.layoutParams as MarginLayoutParams
         val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
+        Logd(TAG, "externalPlayerHeight: $externalPlayerHeight ${navigationBarInsets.bottom}")
         params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right,
             navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
-//        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
-//        val playerView = findViewById<ComposeView>(R.id.player1)
-//        val playerParams = playerView?.layoutParams as? MarginLayoutParams
-//        playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
-//        playerView?.layoutParams = playerParams
         audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

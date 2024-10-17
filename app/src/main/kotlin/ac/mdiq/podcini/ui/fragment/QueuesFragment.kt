@@ -181,7 +181,7 @@ import kotlin.math.max
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
-        swipeActionsBin = SwipeActions(this, TAG+".Bin")
+        swipeActionsBin = SwipeActions(this, "$TAG.Bin")
         swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
 
         binding.lazyColumn.setContent {
@@ -462,6 +462,7 @@ import kotlin.math.max
                     toolbar.addView(spinnerLayout)
                 }
                 refreshMenuItems()
+                refreshSwipeTelltale()
                 if (showBin) {
                     item.setIcon(R.drawable.playlist_play)
 //                    speedDialView.addActionItem(addToQueueActionItem)

@@ -1,3 +1,15 @@
+# 6.11.4
+
+* corrected color contrast in SwipeActions dialog
+* removed the empty space on top of playerUI
+* largely improved scroll performance of episodes list caused by image loading
+* fixed title text out of screen issue in some headers
+* fixed swipe actions not initialized in Queue Bin
+* in FeedInfo details, removed inapplicable items for synthetic feeds
+* when removing synthetic feed, record all episodes in the feed in SubscriptionLog
+* updated some Compose dependencies
+* speed-dial dependency removed and old bottomSheet multi-select codes cleaned up
+
 # 6.11.3
 
 * supports Youtube live episodes received from share

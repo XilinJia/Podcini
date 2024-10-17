@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020273
-        versionName "6.11.3"
+        versionCode 3020274
+        versionName "6.11.4"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -240,7 +240,7 @@ dependencies {
     implementation libs.google.material.typeface.outlined
     implementation libs.fontawesome.typeface
 
-    implementation libs.speed.dial
+//    implementation libs.speed.dial
     implementation libs.searchpreference
     implementation libs.balloon
     implementation libs.recyclerviewswipedecorator

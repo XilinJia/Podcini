@@ -6,7 +6,6 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -149,19 +148,10 @@ class AudioPlayerFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-//                    Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding() ) {
-//                        if (isCollapsed) PlayerUI()
-////                        else Spacer(modifier = Modifier.size(0.dp))
-//                        Toolbar()
-//                        DetailUI(modifier = Modifier.weight(1f))
-//                        if (!isCollapsed) PlayerUI()
-////                        else Spacer(modifier = Modifier.size(0.dp))
-//                    }
-                    Box(modifier = Modifier.fillMaxWidth().statusBarsPadding().navigationBarsPadding()) {
-                        val aligm = if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter
-                        PlayerUI(Modifier.align(aligm).zIndex(1f))
+                    Box(modifier = Modifier.fillMaxWidth().then(if (isCollapsed) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
+                        PlayerUI(Modifier.align(if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
                         if (!isCollapsed) {
-                            Column(Modifier.padding(bottom = 90.dp)) {
+                            Column(Modifier.padding(bottom = 120.dp)) {
                                 Toolbar()
                                 DetailUI(modifier = Modifier)
                             }
@@ -269,14 +259,14 @@ class AudioPlayerFragment : Fragment() {
                         if (curMedia != null) {
                             val media = curMedia!!
                             setIsShowPlay(!isShowPlay)
-                            if (media.getMediaType() == MediaType.VIDEO && MediaPlayerBase.status != PlayerStatus.PLAYING &&
+                            if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
                                     (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
                                 playPause()
                                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
                             } else playPause()
                         }
                     }, onLongClick = {
-                        if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
+                        if (controller != null && status == PlayerStatus.PLAYING) {
                             val fallbackSpeed = UserPreferences.fallbackSpeed
                             if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
                         }
@@ -307,7 +297,7 @@ class AudioPlayerFragment : Fragment() {
                     Icon(painter = painterResource(R.drawable.ic_skip_48dp), tint = textColor,
                         contentDescription = "rewind",
                         modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                            if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
+                            if (controller != null && status == PlayerStatus.PLAYING) {
                                 val speedForward = UserPreferences.speedforwardSpeed
                                 if (speedForward > 0.1f) speedForward(speedForward)
                             }
@@ -530,9 +520,10 @@ class AudioPlayerFragment : Fragment() {
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
-            (activity as MainActivity).bottomSheet.setLocked(true)
-            (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        } else (activity as MainActivity).bottomSheet.setLocked(false)
+//            (activity as MainActivity).bottomSheet.setLocked(true)
+            (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+//        else (activity as MainActivity).bottomSheet.setLocked(false)
         prevMedia = media
     }
 

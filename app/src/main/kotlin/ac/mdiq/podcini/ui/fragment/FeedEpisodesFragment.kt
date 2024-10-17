@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.ui.fragment
 
-//import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
@@ -286,8 +285,8 @@ import java.util.concurrent.Semaphore
             Column(Modifier.fillMaxWidth().constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
-                Text(feed?.title?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(feed?.author?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(feed?.title?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(feed?.author?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -504,7 +503,7 @@ import java.util.concurrent.Semaphore
 //        if (!event.isRunning) nextPageLoader.root.visibility = View.GONE
         infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
-        if (event.isRunning == false) loadFeed()
+        if (!event.isRunning) loadFeed()
 //        binding.swipeRefresh.isRefreshing = event.isRunning
     }
 

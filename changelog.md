@@ -1,3 +1,7 @@
+# 6.11.6
+
+* fixed a serious performance issue when scrolling list of episode having no defined image url
+
 # 6.11.5
 
 * back to be built to target Android 15

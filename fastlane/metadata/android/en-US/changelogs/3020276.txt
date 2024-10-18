@@ -1,0 +1,3 @@
+ Version 6.11.5
+
+* fixed a serious performance issue when scrolling list of episode having no defined image url

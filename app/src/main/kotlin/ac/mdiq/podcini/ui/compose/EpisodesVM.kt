@@ -80,6 +80,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.documentfile.provider.DocumentFile
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
@@ -326,6 +328,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
     val lazyListState = rememberLazyListState()
     var longPressIndex by remember { mutableIntStateOf(-1) }
     val dls = remember { DownloadServiceInterface.get() }
+    val context = LocalContext.current
 
     val showConfirmYoutubeDialog = remember { mutableStateOf(false) }
     val youtubeUrls = remember { mutableListOf<String>() }
@@ -588,8 +591,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                     }
                     val textColor = MaterialTheme.colorScheme.onSurface
                     Column {
-                        val dur = vm.episode.media?.getDuration() ?: 0
-                        val durText = DurationConverter.getDurationStringLong(dur)
+                        val dur = remember { vm.episode.media?.getDuration() ?: 0 }
+                        val durText = remember { DurationConverter.getDurationStringLong(dur) }
                         Row(Modifier.background(if (vm.isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
                             if (false) {
                                 val typedValue = TypedValue()
@@ -597,10 +600,15 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                 Icon(painter = painterResource(typedValue.resourceId), tint = textColor, contentDescription = "drag handle",
                                     modifier = Modifier.width(16.dp).align(Alignment.CenterVertically))
                             }
+                            Logd(TAG, "episode.imageUrl: ${vm.episode.imageUrl}")
                             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                                 val (imgvCover, checkMark) = createRefs()
-                                val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(vm.episode)
-                                val painter = rememberAsyncImagePainter(model = imgLoc)
+                                val imgLoc = remember { ImageResourceUtils.getEpisodeListImageLocation(vm.episode) }
+                                Logd(TAG, "imgLoc: $imgLoc")
+                                val painter = rememberAsyncImagePainter(model = ImageRequest.Builder(context).data(imgLoc)
+                                    .memoryCachePolicy(CachePolicy.ENABLED)
+                                    .placeholder(R.mipmap.ic_launcher)
+                                    .error(R.mipmap.ic_launcher).build())
                                 Image(painter = painter, contentDescription = "imgvCover",
                                     modifier = Modifier.width(56.dp).height(56.dp)
                                         .constrainAs(imgvCover) {
@@ -614,9 +622,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                                         })
                                 )
                                 val alpha = if (vm.playedState) 1.0f else 0f
-                                if (vm.playedState) Icon(painter = painterResource(R.drawable.ic_check),
-                                    tint = textColor,
-                                    contentDescription = "played_mark",
+                                if (vm.playedState) Icon(painter = painterResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
                                     modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
                                         bottom.linkTo(parent.bottom)
                                         end.linkTo(parent.end)
@@ -700,7 +706,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                             if (vm.showAltActionsDialog) vm.actionButton?.AltActionsDialog(activity, vm.showAltActionsDialog,
                                 onDismiss = { vm.showAltActionsDialog = false })
                         }
-                        if (InTheatre.isCurMedia(vm.episode.media) || vm.inProgressState) {
+                        if (vm.inProgressState || InTheatre.isCurMedia(vm.episode.media)) {
                             val pos = vm.positionState
                             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
                             Logd(TAG, "$index vm.prog: ${vm.prog}")

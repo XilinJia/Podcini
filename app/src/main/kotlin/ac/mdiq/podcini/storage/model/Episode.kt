@@ -122,10 +122,9 @@ class Episode : RealmObject {
     val imageLocation: String?
         get() = when {
             imageUrl != null -> imageUrl
-            media != null && media?.hasEmbeddedPicture() == true -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
-            feed != null -> {
-                feed!!.imageUrl
-            }
+//            TODO: this can be very expensive for list
+//            media != null && media?.hasEmbeddedPicture() == true -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+            feed != null -> feed!!.imageUrl
             else -> null
         }
 

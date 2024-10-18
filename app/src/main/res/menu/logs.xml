@@ -4,6 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/show_download_logs"
+        android:title="@string/show_download_logs_label"
+        android:icon="@drawable/ic_download"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/show_shared_logs"
         android:title="@string/show_shared_logs_label"
         android:icon="@drawable/ic_share"
@@ -13,12 +19,6 @@
         android:id="@+id/show_subscription_logs"
         android:title="@string/show_subscription_logs_label"
         android:icon="@drawable/ic_subscriptions"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/show_download_logs"
-        android:title="@string/show_download_logs_label"
-        android:icon="@drawable/ic_download"
         app:showAsAction="always" />
 
     <item

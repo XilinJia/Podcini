@@ -67,6 +67,8 @@
     <string name="tts_not_available">TTS engine not available</string>
     <string name="episode_has_no_content">Episode has not content</string>
 
+    <string name="unrestricted_background_permission_text">In order to successfully play a list of episodes in the background, Podcini needs Permission for Unrestricted Background Activity. Note on some brands, there are sustomized settings for this, please ensure to set them accordingly.</string>
+
     <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
     <string name="notification_permission_denied">You denied the permission.</string>
     <string name="notification_permission_deny_warning">If you disable notifications and something goes wrong, you might be unable to find out why it went wrong.</string>
@@ -311,6 +313,8 @@
     <string name="reset_position">Reset playback position</string>
     <string name="no_items_selected">No items selected</string>
     <string name="delete_local_feed_warning_body">Warning: you are deleting local episodes. It will delete the media files from your device storage. It cannot be downloaded again through Podcini. Continue?</string>
+
+    <string name="share_existing">existing</string>
 
     <!-- Download messages and labels -->
     <string name="download_successful">successful</string>

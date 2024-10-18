@@ -33,7 +33,6 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.app.Activity
 import android.app.Activity.RESULT_OK
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
@@ -86,8 +85,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -125,7 +122,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var feedCount by mutableStateOf("")
     private var feedSorted by mutableIntStateOf(0)
 
-    private var feedList: MutableList<Feed> = mutableListOf()
+//    private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered = mutableStateListOf<Feed>()
 
     private var useGrid by mutableStateOf<Boolean?>(null)
@@ -200,7 +197,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        feedCount = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+        feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
         loadSubscriptions()
         return binding.root
     }
@@ -224,7 +221,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        feedList = mutableListOf()
+//        feedList = mutableListOf()
         feedListFiltered.clear()
         _binding = null
         super.onDestroyView()
@@ -345,10 +342,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (!loadItemsRunning) {
             loadItemsRunning = true
             lifecycleScope.launch {
+                val feedList: List<Feed>
                 try {
                     withContext(Dispatchers.IO) {
                         resetTags()
-                        filterAndSort()
+                        feedList = filterAndSort()
                     }
                     withContext(Dispatchers.Main) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
@@ -356,7 +354,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                        filterOnTag()
                         feedListFiltered.clear()
                         feedListFiltered.addAll(feedList)
-                        feedCount = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                        feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
                         infoTextFiltered = " "
                         if (feedsFilter.isNotEmpty()) infoTextFiltered = getString(R.string.filtered_label)
                         txtvInformation = (infoTextFiltered + infoTextUpdate)
@@ -368,7 +366,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun filterAndSort() {
+    private fun filterAndSort(): List<Feed> {
         var fQueryStr = FeedFilter(feedsFilter).queryString()
         val tagsQueryStr = queryStringOfTags()
         if (tagsQueryStr.isNotEmpty())  fQueryStr += " AND $tagsQueryStr"
@@ -478,8 +476,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 comparator(counterMap, dir)
             }
         }
-        synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
+//        synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
         feedSorted++
+        return feedList_.sortedWith(comparator)
     }
 
     private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {

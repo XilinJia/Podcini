@@ -441,10 +441,10 @@ object Feeds {
         return feed
     }
 
-    fun addToYoutubeSyndicate(episode: Episode, video: Boolean) {
+    fun addToYoutubeSyndicate(episode: Episode, video: Boolean) : Int {
         val feed = getYoutubeSyndicate(video, episode.media?.downloadUrl?.contains("music") == true)
         Logd(TAG, "addToYoutubeSyndicate: feed: ${feed.title}")
-        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return
+        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return 2
 
         Logd(TAG, "addToYoutubeSyndicate adding new episode: ${episode.title}")
         episode.feed = feed
@@ -455,6 +455,7 @@ object Feeds {
         feed.episodes.add(episode)
         upsertBlk(feed) {}
         EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
+        return 1
     }
 
     fun createSynthetic(feedId: Long, name: String): Feed {

@@ -12,7 +12,7 @@ class ShareLog : RealmObject {
 
     var type: String? = null
 
-    var status: Int = 0
+    var status: Int = Status.ERROR.ordinal
 
     var details: String = ""
 
@@ -21,5 +21,11 @@ class ShareLog : RealmObject {
     constructor(url: String) {
         id = Date().time
         this.url = url
+    }
+
+    enum class Status {
+        ERROR,
+        SUCCESS,
+        EXISTING
     }
 }

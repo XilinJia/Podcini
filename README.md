@@ -16,7 +16,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
-#### Since version 6.8.5, Podcini.R is built to target SDK 30 (Android 11), though built with SDK 35 and tested on Android 14. This is to counter 2-year old Google issue ForegroundServiceStartNotAllowedException. For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
+#### Since version 6.11.5, Podcini.R is back to be built to target SDK 35 (Android 15), but requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.

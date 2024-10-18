@@ -36,6 +36,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AppOpsManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
@@ -46,7 +47,9 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.StrictMode
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.KeyEvent
@@ -54,8 +57,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -107,14 +113,68 @@ class MainActivity : CastEnabledActivity() {
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
+//    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+//        if (isGranted) return@registerForActivityResult
+//        MaterialAlertDialogBuilder(this)
+//            .setMessage(R.string.notification_permission_text)
+//            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
+//            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
+//            .show()
+//    }
+
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) return@registerForActivityResult
+        Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
+//
+//        if (isGranted) return@registerForActivityResult
+
+//        MaterialAlertDialogBuilder(this)
+//            .setMessage(R.string.notification_permission_text)
+//            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+//            }
+//            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
+//            }
+//            .show()
+
+        if (isGranted) {
+            checkAndRequestUnrestrictedBackgroundActivity(this)
+            return@registerForActivityResult
+        }
+//        checkAndRequestUnrestrictedBackgroundActivity(this)
 
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.notification_permission_text)
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
-            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                checkAndRequestUnrestrictedBackgroundActivity(this)
+            }
+            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
+                checkAndRequestUnrestrictedBackgroundActivity(this)
+            }
             .show()
+    }
+
+    fun checkAndRequestUnrestrictedBackgroundActivity(context: Context) {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+
+        if (!isIgnoringBatteryOptimizations) {
+//            Toast.makeText(context, "Please allow unrestricted background activity for this app", Toast.LENGTH_LONG).show()
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.unrestricted_background_permission_text)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                    var intent = Intent()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+//                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).also {
+//                            val uri = Uri.parse("package:$packageName")
+//                            it.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//                            it.data = uri
+//                        }
+                    }
+                    context.startActivity(intent)
+                }
+                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->  }
+                .show()
+        }
     }
 
     private var prevState: Int = 0
@@ -200,10 +260,17 @@ class MainActivity : CastEnabledActivity() {
         mainView = findViewById(R.id.main_view)
 
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
-//            requestPostNotificationPermission()
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.notification_permission_text)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
+                    checkAndRequestUnrestrictedBackgroundActivity(this@MainActivity)
+                }
+                .show()
+        } else checkAndRequestUnrestrictedBackgroundActivity(this)
 
         // Consume navigation bar insets - we apply them in setPlayerVisible()
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { _: View?, insets: WindowInsetsCompat ->
@@ -749,6 +816,9 @@ class MainActivity : CastEnabledActivity() {
         private val TAG: String = MainActivity::class.simpleName ?: "Anonymous"
         const val MAIN_FRAGMENT_TAG: String = "main"
         const val PREF_NAME: String = "MainActivityPrefs"
+
+        const val REQUEST_CODE_FIRST_PERMISSION = 1001
+        const val REQUEST_CODE_SECOND_PERMISSION = 1002
 
         @JvmStatic
         fun getIntentToOpenFeed(context: Context, feedId: Long): Intent {

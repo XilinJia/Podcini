@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.LogsFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -101,10 +102,10 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun SharedLogView() {
         val lazyListState = rememberLazyListState()
-        val showDialog = remember { mutableStateOf(false) }
-        val dialogParam = remember { mutableStateOf(ShareLog()) }
-        if (showDialog.value) {
-            SharedDetailDialog(status = dialogParam.value, showDialog = showDialog.value, onDismissRequest = { showDialog.value = false })
+        val showSharedDialog = remember { mutableStateOf(false) }
+        val sharedlogState = remember { mutableStateOf(ShareLog()) }
+        if (showSharedDialog.value) {
+            SharedDetailDialog(status = sharedlogState.value, showDialog = showSharedDialog.value, onDismissRequest = { showSharedDialog.value = false })
         }
         var showYTMediaConfirmDialog by remember { mutableStateOf(false) }
         var sharedUrl by remember { mutableStateOf("") }
@@ -116,24 +117,29 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             itemsIndexed(shareLogs) { position, log ->
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Row (modifier = Modifier.clickable {
-                    if (log.status == 1) {
-                        showDialog.value = true
-                        dialogParam.value = log
-                    } else {
+                    if (log.status < ShareLog.Status.SUCCESS.ordinal) {
                         receiveShared(log.url!!, activity as AppCompatActivity, false) {
                             sharedUrl = log.url!!
                             showYTMediaConfirmDialog = true
                         }
+                    } else {
+                        Logd(TAG, "shared log url: ${log.url}")
+//                        val episode = getEpisodeByGuidOrUrl(null, log.url!!, false)
+//                        if (episode != null) (activity as MainActivity).loadChildFragment(EpisodeInfoFragment.newInstance(episode))
+//                        else {
+                            showSharedDialog.value = true
+                            sharedlogState.value = log
+//                        }
                     }
                 }) {
                     Column {
                         Row {
-                            val icon = remember { if (log.status == 1) Icons.Filled.Info else Icons.Filled.Warning }
-                            val iconColor = remember { if (log.status == 1) Color.Green else Color.Yellow }
+                            val icon = remember { if (log.status == ShareLog.Status.SUCCESS.ordinal) Icons.Filled.Info else Icons.Filled.Warning }
+                            val iconColor = remember { if (log.status == ShareLog.Status.SUCCESS.ordinal) Color.Green else Color.Yellow }
                             Icon(icon, "Info", tint = iconColor, modifier = Modifier.padding(end = 2.dp))
                             Text(formatDateTimeFlex(Date(log.id)), color = textColor)
                             Spacer(Modifier.weight(1f))
-                            var showAction by remember { mutableStateOf(log.status != 1) }
+                            var showAction by remember { mutableStateOf(log.status < ShareLog.Status.SUCCESS.ordinal) }
                             if (true || showAction) {
                                 Icon(painter = painterResource(R.drawable.ic_delete), tint = textColor, contentDescription = null,
                                     modifier = Modifier.width(25.dp).height(25.dp).clickable {
@@ -141,9 +147,18 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             }
                         }
                         Text(log.url?:"unknown", color = textColor)
-                        val statusText = remember {"" }
-                        Text(statusText, color = textColor)
-                        if (log.status != 1) {
+                        val statusText = when (log.status) {
+                            ShareLog.Status.ERROR.ordinal -> ShareLog.Status.ERROR.name
+                            ShareLog.Status.SUCCESS.ordinal -> ShareLog.Status.SUCCESS.name
+                            ShareLog.Status.EXISTING.ordinal -> ShareLog.Status.EXISTING.name
+                            else -> ""
+                        }
+                        Row {
+                            Text(statusText, color = textColor)
+                            Spacer(Modifier.weight(1f))
+                            Text(log.type?:"unknow type", color = textColor)
+                        }
+                        if (log.status < ShareLog.Status.SUCCESS.ordinal) {
                             Text(log.details, color = Color.Red)
                             Text(stringResource(R.string.download_error_tap_for_details), color = textColor)
                         }
@@ -355,9 +370,12 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun SharedDetailDialog(status: ShareLog, showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
-            var message = requireContext().getString(R.string.download_successful)
-            if (status.status == 0) message = status.details
-
+            val message = when (status.status) {
+                ShareLog.Status.ERROR.ordinal -> status.details
+                ShareLog.Status.SUCCESS.ordinal -> stringResource(R.string.download_successful)
+                ShareLog.Status.EXISTING.ordinal -> stringResource(R.string.share_existing)
+                else -> ""
+            }
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(10.dp)) {

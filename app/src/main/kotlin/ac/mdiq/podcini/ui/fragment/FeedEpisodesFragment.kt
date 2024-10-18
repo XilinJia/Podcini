@@ -86,7 +86,7 @@ import java.util.concurrent.Semaphore
     private var feedID: Long = 0
     private var feed by mutableStateOf<Feed?>(null)
 
-    private val episodes = mutableListOf<Episode>()
+    private val episodes = mutableStateListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
 
     private var ieMap: Map<Long, Int> = mapOf()
@@ -159,7 +159,7 @@ import java.util.concurrent.Semaphore
                 loadItemsRunning = false
             }
         }
-        binding.lazyColumn.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = {showRemoveFeedDialog = false}) {
                     (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
@@ -248,7 +248,7 @@ import java.util.concurrent.Semaphore
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(0.7f))
                 Icon(painter = painterResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
                 Spacer(modifier = Modifier.width(15.dp))
@@ -259,8 +259,8 @@ import java.util.concurrent.Semaphore
                             activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
                         }
                     }))
-                Spacer(modifier = Modifier.weight(1f))
-                Text(feed?.episodes?.size?.toString()?:"", textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.weight(0.5f))
+                Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
             }
 //            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {

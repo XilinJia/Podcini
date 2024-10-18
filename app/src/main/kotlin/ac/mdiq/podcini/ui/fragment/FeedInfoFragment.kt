@@ -174,7 +174,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Spacer(modifier = Modifier.weight(1f))
                 val ratingIconRes = Rating.fromCode(rating).res
                 Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.2f))

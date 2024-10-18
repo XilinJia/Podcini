@@ -1,0 +1,11 @@
+ Version 6.11.5
+
+* back to be built to target Android 15
+* request for permission for unrestricted background activity
+* requests for permission are now less aggressive: if cancelled, Podcini does not quit
+* reversed rating list in popup (favorite on top)
+* if a shared Youtube media already exists, record shared log as such
+* in episodes list, made the progress bar taking the full width
+* in FeedEpisodes header, the count now reflects filter
+* in Subscriptions, feed count now reflects filter
+* minor layout adjustments

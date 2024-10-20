@@ -20,9 +20,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -58,7 +60,7 @@ fun ChaptersDialog(media: Playable, onDismissRequest: () -> Unit) {
                                 Text(stringResource(R.string.chapter_duration0) + getDurationStringLocalized(LocalContext.current, duration), color = textColor)
                             }
                             val playRes = if (index == currentChapterIndex) R.drawable.ic_replay else R.drawable.ic_play_48dp
-                            Icon(painter = painterResource(playRes), tint = textColor, contentDescription = "play button",
+                            Icon(imageVector = ImageVector.vectorResource(playRes), tint = textColor, contentDescription = "play button",
                                 modifier = Modifier.width(28.dp).height(32.dp).clickable {
                                     if (MediaPlayerBase.status != PlayerStatus.PLAYING) playPause()
                                     seekTo(ch.start.toInt())

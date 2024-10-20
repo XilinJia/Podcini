@@ -46,8 +46,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -249,10 +251,10 @@ import java.util.concurrent.Semaphore
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.7f))
-                Icon(painter = painterResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
                 Spacer(modifier = Modifier.width(15.dp))
-                Icon(painter = painterResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         if (feed != null) {
                             val fragment = FeedSettingsFragment.newInstance(feed)
@@ -262,12 +264,12 @@ import java.util.concurrent.Semaphore
                 Spacer(modifier = Modifier.weight(0.5f))
                 Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
             }
-//            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
 //                    bottom.linkTo(parent.bottom)
 //                    start.linkTo(parent.start)
 //                })
-//            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
 //                    bottom.linkTo(parent.bottom)
 //                    end.linkTo(parent.end)

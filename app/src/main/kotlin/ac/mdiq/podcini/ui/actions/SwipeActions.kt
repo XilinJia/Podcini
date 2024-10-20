@@ -600,7 +600,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                                     }
                                     showPickerDialog = false
                                 }) {
-                                    Icon(painter = painterResource(keys[index].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
+                                    Icon(imageVector = ImageVector.vectorResource(keys[index].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
                                     Text(keys[index].getTitle(context), color = textColor, textAlign = TextAlign.Center)
                                 }
                             }
@@ -644,22 +644,22 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                         Text(stringResource(R.string.swipe_left))
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
                             Spacer(Modifier.weight(0.1f))
-                            Icon(painter = painterResource(leftAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                            Icon(imageVector = ImageVector.vectorResource(leftAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
                                 .clickable(onClick = {
                                     direction = -1
                                     showPickerDialog = true
                                 })
                             )
                             Spacer(Modifier.weight(0.1f))
-                            Icon(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
                             Spacer(Modifier.weight(0.5f))
                         }
                         Text(stringResource(R.string.swipe_right))
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
                             Spacer(Modifier.weight(0.5f))
-                            Icon(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
                             Spacer(Modifier.weight(0.1f))
-                            Icon(painter = painterResource(rightAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                            Icon(imageVector = ImageVector.vectorResource(rightAction.value[0].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
                                 .clickable(onClick = {
                                     direction = 1
                                     showPickerDialog = true

@@ -681,7 +681,8 @@ class MainActivity : CastEnabledActivity() {
             }
             intent.hasExtra(Extras.fragment_feed_url.name) -> {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
-                if (feedurl != null) loadChildFragment(OnlineFeedFragment.newInstance(feedurl))
+                val isShared = intent.getBooleanExtra(Extras.isShared.name, false)
+                if (feedurl != null) loadChildFragment(OnlineFeedFragment.newInstance(feedurl, isShared))
             }
             intent.hasExtra(Extras.search_string.name) -> {
                 val query = intent.getStringExtra(Extras.search_string.name)
@@ -810,6 +811,7 @@ class MainActivity : CastEnabledActivity() {
         add_to_back_stack,
         generated_view_id,
         search_string,
+        isShared
     }
 
     companion object {
@@ -829,9 +831,10 @@ class MainActivity : CastEnabledActivity() {
         }
 
         @JvmStatic
-        fun showOnlineFeed(context: Context, feedUrl: String): Intent {
+        fun showOnlineFeed(context: Context, feedUrl: String, isShared: Boolean = false): Intent {
             val intent = Intent(context.applicationContext, MainActivity::class.java)
             intent.putExtra(Extras.fragment_feed_url.name, feedUrl)
+            intent.putExtra(Extras.isShared.name, isShared)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             return intent
         }

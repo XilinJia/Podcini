@@ -10,6 +10,10 @@ class ShareLog : RealmObject {
 
     var url: String? = null
 
+    var title: String? = null
+
+    var author: String? = null
+
     var type: String? = null
 
     var status: Int = Status.ERROR.ordinal
@@ -21,6 +25,12 @@ class ShareLog : RealmObject {
     constructor(url: String) {
         id = Date().time
         this.url = url
+    }
+
+    enum class Type {
+        Text,
+        YTMedia,
+        Podcast
     }
 
     enum class Status {

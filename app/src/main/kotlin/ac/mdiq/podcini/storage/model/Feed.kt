@@ -89,6 +89,8 @@ class Feed : RealmObject {
 
     var preferences: FeedPreferences? = null
 
+    var totleDuration: Long = 0L
+
     // TODO: this might not be needed
     var measures: FeedMeasures? = null
 

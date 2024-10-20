@@ -43,7 +43,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.text.HtmlCompat
@@ -87,31 +89,31 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                             IconButton(onClick = {
                                 PlayActionButton(item).onClick(context)
                                 onDismiss()
-                            }) { Image(painter = painterResource(R.drawable.ic_play_24dp), contentDescription = "Play") }
+                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_play_24dp), contentDescription = "Play") }
                         }
                         if (label != R.string.stream_label && label != R.string.play_label && label != R.string.pause_label && label != R.string.delete_label) {
                             IconButton(onClick = {
                                 StreamActionButton(item).onClick(context)
                                 onDismiss()
-                            }) { Image(painter = painterResource(R.drawable.ic_stream), contentDescription = "Stream") }
+                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_stream), contentDescription = "Stream") }
                         }
                         if (label != R.string.download_label && label != R.string.play_label && label != R.string.delete_label) {
                             IconButton(onClick = {
                                 DownloadActionButton(item).onClick(context)
                                 onDismiss()
-                            }) { Image(painter = painterResource(R.drawable.ic_download), contentDescription = "Download") }
+                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "Download") }
                         }
                         if (label != R.string.delete_label && label != R.string.download_label && label != R.string.stream_label) {
                             IconButton(onClick = {
                                 DeleteActionButton(item).onClick(context)
                                 onDismiss()
-                            }) { Image(painter = painterResource(R.drawable.ic_delete), contentDescription = "Delete") }
+                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), contentDescription = "Delete") }
                         }
                         if (label != R.string.visit_website_label) {
                             IconButton(onClick = {
                                 VisitWebsiteActionButton(item).onClick(context)
                                 onDismiss()
-                            }) { Image(painter = painterResource(R.drawable.ic_web), contentDescription = "Web") }
+                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "Web") }
                         }
                     }
                 }

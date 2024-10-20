@@ -71,8 +71,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -199,7 +201,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.4f))
                 val playedIconRes = if (!isPlayed) R.drawable.ic_mark_unplayed else R.drawable.ic_mark_played
-                Icon(painter = painterResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
+                Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp)
                     .clickable(onClick = {
                         if (isPlayed) {
@@ -228,7 +230,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (episode?.media != null) {
                     Spacer(modifier = Modifier.weight(0.2f))
                     val inQueueIconRes = if (inQueue) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
-                    Icon(painter = painterResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
+                    Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
                             if (inQueue) removeFromQueue(episode!!) else addToQueue(true, episode!!)
                         }))
@@ -236,12 +238,12 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Spacer(modifier = Modifier.weight(0.2f))
                 Logd(TAG, "ratingIconRes rating: $rating")
                 val ratingIconRes = Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.2f))
-                if (hasMedia) Icon(painter = painterResource(actionButton1?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
+                if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
                     modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
                         when {
                             actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
@@ -254,7 +256,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
-                Icon(painter = painterResource(R.drawable.baseline_home_work_24), tint = textColor, contentDescription = "homeButton",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_home_work_24), tint = textColor, contentDescription = "homeButton",
                     modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
                         if (!episode?.link.isNullOrEmpty()) {
                             homeFragment = EpisodeHomeFragment.newInstance(episode!!)
@@ -263,7 +265,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Box(modifier = Modifier.width(40.dp).height(40.dp).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
-                    Icon(painter = painterResource(actionButton2?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
+                    Icon(imageVector = ImageVector.vectorResource(actionButton2?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
                         when {
                             actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
                                     && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {

@@ -69,6 +69,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         private set
 
     // if null: unknown, will be checked
+    // TODO: what to do with this? can be expensive
+    @Ignore
     var hasEmbeddedPicture: Boolean? = null
 
     @Ignore
@@ -77,10 +79,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     /* Used for loading item when restoring from parcel. */
 //    var episodeId: Long = 0
 //        private set
-
-//    @Ignore
-//    val isInProgress: Boolean
-//        get() = (this.position > 0)
 
     constructor() {}
 
@@ -215,14 +213,13 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     fun hasEmbeddedPicture(): Boolean {
 //        TODO: checkEmbeddedPicture needs to update current copy
-        if (hasEmbeddedPicture == null) unmanaged(this).checkEmbeddedPicture()
+        if (hasEmbeddedPicture == null) checkEmbeddedPicture()
         return hasEmbeddedPicture ?: false
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(id.toString())
         dest.writeString(if (episode != null) episode!!.id.toString() else "")
-
         dest.writeInt(duration)
         dest.writeInt(position)
         dest.writeLong(size)
@@ -329,7 +326,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
                 hasEmbeddedPicture = false
             }
         }
-        if (persist && episode != null) upsertBlk(episode!!) {}
+//        if (persist && episode != null) upsertBlk(episode!!) {}
     }
 
     fun episodeOrFetch(): Episode? {

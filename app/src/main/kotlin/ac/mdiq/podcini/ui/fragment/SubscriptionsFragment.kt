@@ -18,6 +18,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
@@ -71,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -84,6 +86,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -314,9 +318,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 CustomFeedNameDialog(activity as Activity, feed).show()
             }
             R.id.new_synth_yt -> {
-                val feed = createSynthetic(0, "")
+                val feed = createSynthetic(0, "", true)
                 feed.type = Feed.FeedType.YOUTUBE.name
-                feed.hasVideoMedia = true
                 feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
                 CustomFeedNameDialog(activity as Activity, feed).show()
             }
@@ -498,7 +501,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun InforBar() {
         Row(Modifier.padding(start = 20.dp, end = 20.dp)) {
             val textColor = MaterialTheme.colorScheme.onSurface
-            Icon(painter = painterResource(R.drawable.ic_info), contentDescription = "info", tint = textColor)
+            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "info", tint = textColor)
             Spacer(Modifier.weight(1f))
             Text(txtvInformation, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.clickable {
                 if (feedsFilter.isNotEmpty()) {
@@ -839,6 +842,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 refreshing = false
 //            }
         }) {
+            val context = LocalContext.current
             if (if (useGrid == null) useGridLayout else useGrid!!) {
                 val lazyGridState = rememberLazyGridState()
                 LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(80.dp),
@@ -881,8 +885,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             val textColor = MaterialTheme.colorScheme.onSurface
                             ConstraintLayout(Modifier.fillMaxSize()) {
                                 val (coverImage, episodeCount, rating, error) = createRefs()
-                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
-                                    placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
+                                val imgLoc = remember(feed) { feed.imageUrl }
+                                AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                                    .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                                    contentDescription = "coverImage",
                                     modifier = Modifier.fillMaxWidth().aspectRatio(1f)
                                         .constrainAs(coverImage) {
                                             top.linkTo(parent.top)
@@ -895,13 +901,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         top.linkTo(coverImage.top)
                                     })
                                 if (feed.rating != Rating.UNRATED.code)
-                                    Icon(painter = painterResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                                    Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
                                         start.linkTo(parent.start)
                                         centerVerticallyTo(coverImage)
                                     })
 //                                TODO: need to use state
-                                if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error",
+                                if (feed.lastUpdateFailed) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error",
                                     modifier = Modifier.background(Color.Gray).constrainAs(error) {
                                         end.linkTo(parent.end)
                                         bottom.linkTo(coverImage.bottom)
@@ -929,7 +935,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
                             ConstraintLayout {
                                 val (coverImage, rating) = createRefs()
-                                AsyncImage(model = feed.imageUrl,
+                                val imgLoc = remember(feed) { feed.imageUrl }
+                                AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                                    .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                                     contentDescription = "imgvCover",
                                     placeholder = painterResource(R.mipmap.ic_launcher),
                                     error = painterResource(R.mipmap.ic_launcher),
@@ -947,7 +955,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         })
                                 )
                                 if (feed.rating != Rating.UNRATED.code)
-                                    Icon(painter = painterResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary,
+                                    Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary,
                                         contentDescription = "rating",
                                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
                                             start.linkTo(parent.start)
@@ -980,8 +988,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                                 Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
                                 Row(Modifier.padding(top = 5.dp)) {
-                                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " episodes",
-                                        color = textColor, style = MaterialTheme.typography.bodyMedium)
+                                    val measureString = remember { NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
+                                            DurationConverter.shortLocalizedDuration(requireActivity(), feed.totleDuration/1000) }
+                                    Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.weight(1f))
                                     var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }
                                     LaunchedEffect(feedSorted) { feedSortInfo = feed.sortInfo }
@@ -989,7 +998,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 }
                             }
                             //                                TODO: need to use state
-                            if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error")
+                            if (feed.lastUpdateFailed) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error")
                         }
                     }
                 }
@@ -997,7 +1006,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             if (selectMode) {
                 Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                             .clickable(onClick = {
                                 selected.clear()
@@ -1007,7 +1016,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 selectedSize = selected.size
                                 Logd(TAG, "selectedIds: ${selected.size}")
                             }))
-                    Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                             .clickable(onClick = {
                                 selected.clear()
@@ -1018,7 +1027,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 Logd(TAG, "selectedIds: ${selected.size}")
                             }))
                     var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
-                    Icon(painter = painterResource(selectAllRes), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp)
                             .clickable(onClick = {
                                 if (selectedSize != feedListFiltered.size) {

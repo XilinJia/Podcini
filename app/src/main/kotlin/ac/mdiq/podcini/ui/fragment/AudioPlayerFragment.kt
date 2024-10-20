@@ -63,8 +63,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -78,6 +81,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -108,6 +113,7 @@ class AudioPlayerFragment : Fragment() {
     private var showTimeLeft = false
     private var titleText by mutableStateOf("")
     private var imgLoc by mutableStateOf<String?>(null)
+    private var imgLocLarge by mutableStateOf<String?>(null)
     private var txtvPlaybackSpeed by mutableStateOf("")
     private var remainingTime by mutableIntStateOf(0)
     private var isVideoScreen = false
@@ -174,140 +180,151 @@ class AudioPlayerFragment : Fragment() {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
+    fun ControlUI() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        val context = LocalContext.current
+        Row {
+            fun ensureService() {
+                if (curMedia == null) return
+                if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
+            }
+            val imgLoc_ = remember(currentItem) { imgLoc }
+            AsyncImage(model = ImageRequest.Builder(context).data(imgLoc_)
+                .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                contentDescription = "imgvCover",
+                modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
+                    .clickable(onClick = {
+                        Logd(TAG, "playerUiFragment icon was clicked")
+                        if (isCollapsed) {
+                            val media = curMedia
+                            if (media != null) {
+                                val mediaType = media.getMediaType()
+                                if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
+                                        || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                                    Logd(TAG, "popping as audio episode")
+                                    ensureService()
+                                    (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
+                                } else {
+                                    Logd(TAG, "popping video activity")
+                                    val intent = getPlayerActivityIntent(requireContext(), mediaType)
+                                    startActivity(intent)
+                                }
+                            }
+                        } else (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+                    }))
+            Spacer(Modifier.weight(0.1f))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor,
+                    contentDescription = "speed",
+                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
+                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
+                    }))
+                Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.weight(0.1f))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor,
+                    contentDescription = "rewind",
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
+                        if (controller != null && playbackService?.isServiceReady() == true)
+                            playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000)
+                    }, onLongClick = {
+                        SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND)
+                    }))
+                val rewindSecs = remember { NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()) }
+                Text(rewindSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.weight(0.1f))
+            Icon(imageVector = ImageVector.vectorResource(playButRes), tint = textColor, contentDescription = "play",
+                modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(onClick = {
+                    if (controller == null) return@combinedClickable
+                    if (curMedia != null) {
+                        val media = curMedia!!
+                        setIsShowPlay(!isShowPlay)
+                        if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
+                                (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
+                            playPause()
+                            requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
+                        } else playPause()
+                    }
+                }, onLongClick = {
+                    if (controller != null && status == PlayerStatus.PLAYING) {
+                        val fallbackSpeed = UserPreferences.fallbackSpeed
+                        if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
+                    }
+                }))
+            Spacer(Modifier.weight(0.1f))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor,
+                    contentDescription = "forward",
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
+                        if (controller != null && playbackService?.isServiceReady() == true)
+                            playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000)
+                    }, onLongClick = {
+                        SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD)
+                    }))
+                val fastForwardSecs = remember { NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong()) }
+                Text(fastForwardSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.weight(0.1f))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                fun speedForward(speed: Float) {
+                    if (playbackService?.mPlayer == null || playbackService?.isFallbackSpeed == true) return
+                    if (playbackService?.isSpeedForward == false) {
+                        playbackService?.normalSpeed = playbackService?.mPlayer!!.getPlaybackSpeed()
+                        playbackService?.mPlayer!!.setPlaybackParams(speed, isSkipSilence)
+                    } else playbackService?.mPlayer?.setPlaybackParams(playbackService!!.normalSpeed, isSkipSilence)
+                    playbackService!!.isSpeedForward = !playbackService!!.isSpeedForward
+                }
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_skip_48dp), tint = textColor,
+                    contentDescription = "rewind",
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
+                        if (controller != null && status == PlayerStatus.PLAYING) {
+                            val speedForward = UserPreferences.speedforwardSpeed
+                            if (speedForward > 0.1f) speedForward(speedForward)
+                        }
+                    }, onLongClick = {
+                        activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
+                    }))
+                if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.weight(0.1f))
+        }
+    }
+
+    @Composable
+    fun ProgressBar() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        Slider(value = sliderValue, valueRange = 0f..duration.toFloat(),
+            modifier = Modifier.height(12.dp).padding(top = 2.dp, bottom = 2.dp),
+            onValueChange = {
+                Logd(TAG, "Slider onValueChange: $it")
+                sliderValue = it
+            }, onValueChangeFinished = {
+                Logd(TAG, "Slider onValueChangeFinished: $sliderValue")
+                currentPosition = sliderValue.toInt()
+                if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
+            })
+        Row {
+            Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.weight(1f))
+            showTimeLeft = UserPreferences.shouldShowRemainingTime()
+            Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
+                if (controller == null) return@clickable
+                showTimeLeft = !showTimeLeft
+                UserPreferences.setShowRemainTimeSetting(showTimeLeft)
+                onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia, curPositionFB, curDurationFB))
+            })
+        }
+    }
+
+    @Composable
     fun PlayerUI(modifier: Modifier) {
         val textColor = MaterialTheme.colorScheme.onSurface
         Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
             Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.bodyMedium)
-            Slider(value = sliderValue, valueRange = 0f..duration.toFloat(),
-//                colors = SliderDefaults.colors(
-//                thumbColor = MaterialTheme.colorScheme.secondary,
-//                activeTrackColor = MaterialTheme.colorScheme.secondary,
-//                inactiveTrackColor = Color.Gray,
-//            ),
-                modifier = Modifier.height(12.dp).padding(top = 2.dp, bottom = 2.dp),
-                onValueChange = {
-                    Logd(TAG, "Slider onValueChange: $it")
-                    sliderValue = it
-                }, onValueChangeFinished = {
-                    Logd(TAG, "Slider onValueChangeFinished: $sliderValue")
-                    currentPosition = sliderValue.toInt()
-                    if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
-                })
-            Row {
-                Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
-                Spacer(Modifier.weight(1f))
-                showTimeLeft = UserPreferences.shouldShowRemainingTime()
-                Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
-                    if (controller == null) return@clickable
-                    showTimeLeft = !showTimeLeft
-                    UserPreferences.setShowRemainTimeSetting(showTimeLeft)
-                    onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia, curPositionFB, curDurationFB))
-                })
-            }
-            Row {
-                fun ensureService() {
-                    if (curMedia == null) return
-                    if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
-                }
-                AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
-                    modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
-                        .clickable(onClick = {
-                            Logd(TAG, "playerUiFragment icon was clicked")
-                            if (isCollapsed) {
-                                val media = curMedia
-                                if (media != null) {
-                                    val mediaType = media.getMediaType()
-                                    if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
-                                            || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
-                                        Logd(TAG, "popping as audio episode")
-                                        ensureService()
-                                        (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
-                                    } else {
-                                        Logd(TAG, "popping video activity")
-                                        val intent = getPlayerActivityIntent(requireContext(), mediaType)
-                                        startActivity(intent)
-                                    }
-                                }
-                            } else (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-                        }))
-                Spacer(Modifier.weight(0.1f))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(R.drawable.ic_playback_speed), tint = textColor,
-                        contentDescription = "speed",
-                        modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
-                            VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
-                        }))
-                    Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(Modifier.weight(0.1f))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(R.drawable.ic_fast_rewind), tint = textColor,
-                        contentDescription = "rewind",
-                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                            if (controller != null && playbackService?.isServiceReady() == true) {
-                                playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000)
-                            }
-                        }, onLongClick = {
-                            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND)
-                        }))
-                    Text(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()), color = textColor, style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(Modifier.weight(0.1f))
-                Icon(painter = painterResource(playButRes), tint = textColor, contentDescription = "play",
-                    modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(onClick = {
-                        if (controller == null) return@combinedClickable
-                        if (curMedia != null) {
-                            val media = curMedia!!
-                            setIsShowPlay(!isShowPlay)
-                            if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
-                                    (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
-                                playPause()
-                                requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
-                            } else playPause()
-                        }
-                    }, onLongClick = {
-                        if (controller != null && status == PlayerStatus.PLAYING) {
-                            val fallbackSpeed = UserPreferences.fallbackSpeed
-                            if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
-                        }
-                    }))
-                Spacer(Modifier.weight(0.1f))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(painter = painterResource(R.drawable.ic_fast_forward), tint = textColor,
-                        contentDescription = "forward",
-                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                            if (controller != null && playbackService?.isServiceReady() == true) {
-                                playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000)
-                            }
-                        }, onLongClick = {
-                            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD)
-                        }))
-                    Text(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong()), color = textColor, style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(Modifier.weight(0.1f))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    fun speedForward(speed: Float) {
-                        if (playbackService?.mPlayer == null || playbackService?.isFallbackSpeed == true) return
-                        if (playbackService?.isSpeedForward == false) {
-                            playbackService?.normalSpeed = playbackService?.mPlayer!!.getPlaybackSpeed()
-                            playbackService?.mPlayer!!.setPlaybackParams(speed, isSkipSilence)
-                        } else playbackService?.mPlayer?.setPlaybackParams(playbackService!!.normalSpeed, isSkipSilence)
-                        playbackService!!.isSpeedForward = !playbackService!!.isSpeedForward
-                    }
-                    Icon(painter = painterResource(R.drawable.ic_skip_48dp), tint = textColor,
-                        contentDescription = "rewind",
-                        modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                            if (controller != null && status == PlayerStatus.PLAYING) {
-                                val speedForward = UserPreferences.speedforwardSpeed
-                                if (speedForward > 0.1f) speedForward(speedForward)
-                            }
-                        }, onLongClick = {
-                            activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
-                        }))
-                    if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(Modifier.weight(0.1f))
-            }
+            ProgressBar()
+            ControlUI()
         }
     }
 
@@ -319,19 +336,17 @@ class AudioPlayerFragment : Fragment() {
         val mediaType = curMedia?.getMediaType()
         val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Icon(painter = painterResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
+            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
                 (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             })
             var homeIcon by remember { mutableIntStateOf(R.drawable.baseline_home_24)}
-            Icon(painter = painterResource(homeIcon), tint = textColor, contentDescription = "Home", modifier = Modifier.clickable {
+            Icon(imageVector = ImageVector.vectorResource(homeIcon), tint = textColor, contentDescription = "Home", modifier = Modifier.clickable {
                 homeIcon = if (showHomeText) R.drawable.ic_home else R.drawable.outline_home_24
                 buildHomeReaderText()
             })
-            if (mediaType == MediaType.VIDEO) Icon(painter = painterResource(R.drawable.baseline_fullscreen_24), tint = textColor, contentDescription = "Play video",
+            if (mediaType == MediaType.VIDEO) Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_fullscreen_24), tint = textColor, contentDescription = "Play video",
                 modifier = Modifier.clickable {
-                    if (notAudioOnly || (curMedia as? EpisodeMedia)?.forceVideo == true) {
-//                        playPause()
-                    } else {
+                    if (!notAudioOnly && (curMedia as? EpisodeMedia)?.forceVideo != true) {
                         (curMedia as? EpisodeMedia)?.forceVideo = true
                         status = PlayerStatus.STOPPED
                         playbackService?.mPlayer?.pause(true, reinit = true)
@@ -341,24 +356,24 @@ class AudioPlayerFragment : Fragment() {
                 })
             if (controller != null) {
                 val sleepRes = if (sleepTimerActive) R.drawable.ic_sleep_off else R.drawable.ic_sleep
-                Icon(painter = painterResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable {
+                Icon(imageVector = ImageVector.vectorResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable {
                     SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
                 })
             }
-            if (currentMedia is EpisodeMedia) Icon(painter = painterResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
+            if (currentMedia is EpisodeMedia) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
                 modifier = Modifier.clickable {
                     if (feedItem?.feedId != null) {
                         val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId!!)
                         startActivity(intent)
                     }
                 })
-            Icon(painter = painterResource(R.drawable.ic_share), tint = textColor, contentDescription = "Share", modifier = Modifier.clickable {
+            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), tint = textColor, contentDescription = "Share", modifier = Modifier.clickable {
                 if (currentItem != null) {
                     val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
                     shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
                 }
             })
-            Icon(painter = painterResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
+            Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
                 val notes = if (showHomeText) readerhtml else feedItem?.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
@@ -407,7 +422,7 @@ class AudioPlayerFragment : Fragment() {
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp)) {
                 Spacer(modifier = Modifier.weight(0.2f))
                 val ratingIconRes = Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
@@ -453,7 +468,7 @@ class AudioPlayerFragment : Fragment() {
             if (displayedChapterIndex >= 0) {
                 Row(modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(R.drawable.ic_chapter_prev), tint = textColor, contentDescription = "prev_chapter",
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chapter_prev), tint = textColor, contentDescription = "prev_chapter",
                         modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToPrevChapter() }))
                     Text("Ch " + displayedChapterIndex.toString() + ": " + currentChapter?.title,
                         color = textColor, style = MaterialTheme.typography.bodyMedium,
@@ -461,11 +476,11 @@ class AudioPlayerFragment : Fragment() {
                         modifier = Modifier.weight(1f).padding(start = 10.dp, end = 10.dp)
 //                        .clickable(onClick = { ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG) }))
                         .clickable(onClick = { showChaptersDialog = true }))
-                    if (hasNextChapter) Icon(painter = painterResource(R.drawable.ic_chapter_next), tint = textColor, contentDescription = "next_chapter",
+                    if (hasNextChapter) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chapter_next), tint = textColor, contentDescription = "next_chapter",
                         modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToNextChapter() }))
                 }
             }
-            AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
+            AsyncImage(model = imgLocLarge, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                 modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp, top = 10.dp).clickable(onClick = {
                 }))
         }
@@ -489,6 +504,7 @@ class AudioPlayerFragment : Fragment() {
     }
     @UnstableApi
     fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
+        Logd(TAG, "onPositionUpdate")
         if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == Playable.INVALID_TIME || curDurationFB == Playable.INVALID_TIME) return
         val converter = TimeSpeedConverter(curSpeedFB)
         currentPosition = converter.convert(event.position)
@@ -499,11 +515,9 @@ class AudioPlayerFragment : Fragment() {
             return
         }
         showTimeLeft = UserPreferences.shouldShowRemainingTime()
-        txtvLengtTexth = if (showTimeLeft) {
-            (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
-        } else DurationConverter.getDurationStringLong(duration)
+        txtvLengtTexth = if (showTimeLeft) (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
+        else DurationConverter.getDurationStringLong(duration)
 
-//        val progress: Float = (event.position.toFloat()) / event.duration
         sliderValue = event.position.toFloat()
     }
     private fun onPlaybackServiceChanged(event: FlowEvent.PlaybackServiceEvent) {
@@ -645,7 +659,7 @@ class AudioPlayerFragment : Fragment() {
 
     private fun displayCoverImage() {
         if (currentMedia == null) return
-        imgLoc = if (displayedChapterIndex == -1 || currentMedia!!.getChapters().isEmpty() || currentMedia!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty())
+        imgLocLarge = if (displayedChapterIndex == -1 || currentMedia!!.getChapters().isEmpty() || currentMedia!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty())
             currentMedia!!.getImageLocation() else EmbeddedChapterImage.getModelFor(currentMedia!!, displayedChapterIndex)?.toString()
         Logd(TAG, "displayCoverImage: imgLoc: $imgLoc")
     }

@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.LogsFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
+import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.*
@@ -49,8 +50,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -124,12 +127,27 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     } else {
                         Logd(TAG, "shared log url: ${log.url}")
-//                        val episode = getEpisodeByGuidOrUrl(null, log.url!!, false)
-//                        if (episode != null) (activity as MainActivity).loadChildFragment(EpisodeInfoFragment.newInstance(episode))
-//                        else {
+                        var hasError = false
+                        when(log.type) {
+                             ShareLog.Type.YTMedia.name, "youtube media" -> {
+                                val episode = realm.query(Episode::class).query("title == $0", log.title).first().find()
+                                if (episode != null) (activity as MainActivity).loadChildFragment(EpisodeInfoFragment.newInstance(episode))
+                                 else hasError = true
+                            }
+                            ShareLog.Type.Podcast.name, "podcast" -> {
+                                val feed = getFeedByTitleAndAuthor(log.title?:"", log.author?:"")
+                                if (feed != null ) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                                else hasError = true
+                            }
+                            else -> {
+                                showSharedDialog.value = true
+                                sharedlogState.value = log
+                            }
+                        }
+                        if (hasError) {
                             showSharedDialog.value = true
                             sharedlogState.value = log
-//                        }
+                        }
                     }
                 }) {
                     Column {
@@ -141,12 +159,13 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Spacer(Modifier.weight(1f))
                             var showAction by remember { mutableStateOf(log.status < ShareLog.Status.SUCCESS.ordinal) }
                             if (true || showAction) {
-                                Icon(painter = painterResource(R.drawable.ic_delete), tint = textColor, contentDescription = null,
+                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), tint = textColor, contentDescription = null,
                                     modifier = Modifier.width(25.dp).height(25.dp).clickable {
                                     })
                             }
                         }
-                        Text(log.url?:"unknown", color = textColor)
+                        Text(log.title?:"unknown title", color = textColor)
+                        Text(log.url?:"unknown url", color = textColor)
                         val statusText = when (log.status) {
                             ShareLog.Status.ERROR.ordinal -> ShareLog.Status.ERROR.name
                             ShareLog.Status.SUCCESS.ordinal -> ShareLog.Status.SUCCESS.name
@@ -185,7 +204,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     showDialog.value = true
                 }) {
                     val iconRes = remember { fromCode(log.rating).res  }
-                    Icon(painter = painterResource(iconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                    Icon(imageVector = ImageVector.vectorResource(iconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(40.dp).height(40.dp).padding(end = 15.dp))
                     Column {
                         Text(log.type + ": " + formatDateTimeFlex(Date(log.id)) + " -- " + formatDateTimeFlex(Date(log.cancelDate)), color = textColor)
@@ -245,7 +264,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                     var showAction by remember { mutableStateOf(!status.isSuccessful && !newerWasSuccessful(position, status.feedfileType, status.feedfileId)) }
                     if (showAction) {
-                        Icon(painter = painterResource(R.drawable.ic_refresh),
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_refresh),
                             tint = textColor,
                             contentDescription = null,
                             modifier = Modifier.width(28.dp).height(32.dp).clickable {

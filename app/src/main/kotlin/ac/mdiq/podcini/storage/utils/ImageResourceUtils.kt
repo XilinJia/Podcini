@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.Prefs.prefEpisodeCover
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.util.Logd
 
 /**
  * Utility class to use the appropriate image resource based on [UserPreferences].
@@ -31,6 +32,7 @@ object ImageResourceUtils {
      */
     @JvmStatic
     fun getEpisodeListImageLocation(episode: Episode): String? {
+        Logd("ImageResourceUtils", "getEpisodeListImageLocation called")
         return if (useEpisodeCoverSetting) episode.imageLocation
         else getFallbackImageLocation(episode)
     }

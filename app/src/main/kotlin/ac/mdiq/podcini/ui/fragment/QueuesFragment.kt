@@ -184,7 +184,7 @@ import kotlin.math.max
         swipeActionsBin = SwipeActions(this, "$TAG.Bin")
         swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
 
-        binding.lazyColumn.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 if (showBin) {
                     Column {

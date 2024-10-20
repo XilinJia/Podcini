@@ -10,8 +10,12 @@ import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
+import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
+import ac.mdiq.podcini.storage.database.Feeds.isSubscribed
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
 import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.feedLogsMap
@@ -44,9 +48,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -70,7 +76,6 @@ import kotlin.concurrent.Volatile
  * Downloads a feed from a feed URL and parses it. Subclasses can display the
  * feed object that was parsed. This activity MUST be started with a given URL
  * or an Exception will be thrown.
- *
  * If the feed cannot be downloaded or parsed, an error dialog will be displayed
  * and the activity will finish as soon as the error dialog is closed.
  */
@@ -84,6 +89,8 @@ class OnlineFeedFragment : Fragment() {
     var feedSource: String = ""
     private var feedUrl: String = ""
     private lateinit var feedBuilder: FeedBuilder
+
+    private var isShared: Boolean = false
 
     private var showFeedDisplay by mutableStateOf(false)
     private var showProgress by mutableStateOf(true)
@@ -123,6 +130,7 @@ class OnlineFeedFragment : Fragment() {
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
+        isShared = requireArguments().getBoolean("isShared")
         Logd(TAG, "feedUrl: $feedUrl")
         feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
 
@@ -183,6 +191,13 @@ class OnlineFeedFragment : Fragment() {
                 feedBuilder.startFeedBuilding(urlString, username, password) { feed_, map ->
                     selectedDownloadUrl = feedBuilder.selectedDownloadUrl
                     feed = feed_
+                    if (isShared) {
+                        val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
+                        if (log != null) upsertBlk(log) {
+                            it.title = feed_.title
+                            it.author = feed_.author
+                        }
+                    }
                     showFeedInformation(feed_, map)
                 }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
@@ -216,6 +231,13 @@ class OnlineFeedFragment : Fragment() {
                 feedBuilder.startFeedBuilding(url, username, password) { feed_, map ->
                     selectedDownloadUrl = feedBuilder.selectedDownloadUrl
                     feed = feed_
+                    if (isShared) {
+                        val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
+                        if (log != null) upsertBlk(log) {
+                            it.title = feed_.title
+                            it.author = feed_.author
+                        }
+                    }
                     showFeedInformation(feed_, map)
                 }
             } else {
@@ -340,7 +362,7 @@ class OnlineFeedFragment : Fragment() {
                 }) {
                 if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp).background(MaterialTheme.colorScheme.surface)) {
                     val (backgroundImage, coverImage, taColumn, buttons, closeButton) = createRefs()
-                    if (false) Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "background",
+                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), contentDescription = "background",
                         Modifier.fillMaxWidth().height(120.dp).constrainAs(backgroundImage) {
                             top.linkTo(parent.top)
                             bottom.linkTo(parent.bottom)
@@ -364,12 +386,28 @@ class OnlineFeedFragment : Fragment() {
                     }) {
                         Spacer(modifier = Modifier.weight(0.2f))
                         if (enableSubscribe) Button(onClick = {
-                            if (feedInFeedlist()) (activity as MainActivity).loadFeedFragmentById(feedId, null)
+                            if (feedInFeedlist() || isSubscribed(feed!!)) {
+                                if (isShared) {
+                                    val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
+                                    if (log != null) upsertBlk(log) {
+                                        it.status = ShareLog.Status.EXISTING.ordinal
+                                    }
+                                }
+                                val feed = getFeedByTitleAndAuthor(feed?.eigenTitle?:"", feed?.author?:"")
+                                if (feed != null ) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+//                                (activity as MainActivity).loadFeedFragmentById(feedId, null)
+                            }
                             else {
                                 enableSubscribe = false
                                 enableEpisodes = false
                                 CoroutineScope(Dispatchers.IO).launch {
                                     feedBuilder.subscribe(feed!!)
+                                    if (isShared) {
+                                        val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
+                                        if (log != null) upsertBlk(log) {
+                                            it.status = ShareLog.Status.SUCCESS.ordinal
+                                        }
+                                    }
                                     withContext(Dispatchers.Main) {
                                         enableSubscribe = true
                                         didPressSubscribe = true
@@ -386,7 +424,7 @@ class OnlineFeedFragment : Fragment() {
                         }
                         Spacer(modifier = Modifier.weight(0.2f))
                     }
-                    if (false) Icon(painter = painterResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
+                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
                         .constrainAs(closeButton) {
                             top.linkTo(parent.top)
                             end.linkTo(parent.end)
@@ -418,14 +456,14 @@ class OnlineFeedFragment : Fragment() {
                     Text(HtmlToPlainText.getPlainText(feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
                     val sLog = remember {feedLogsMap_[feed?.downloadUrl?:""] }
                     if (sLog != null) {
-                        val commentTextState by remember { mutableStateOf(TextFieldValue(sLog.comment ?: "")) }
+                        val commentTextState by remember { mutableStateOf(TextFieldValue(sLog.comment)) }
                         val context = LocalContext.current
                         val cancelDate = remember { formatAbbrev(context, Date(sLog.cancelDate)) }
                         val ratingRes = remember { fromCode(sLog.rating).res }
                         if (commentTextState.text.isNotEmpty()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp)) {
                                 Text(stringResource(R.string.my_opinion_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
-                                Icon(painter = painterResource(ratingRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.padding(start = 5.dp))
+                                Icon(imageVector = ImageVector.vectorResource(ratingRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.padding(start = 5.dp))
                             }
                             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
@@ -765,10 +803,11 @@ class OnlineFeedFragment : Fragment() {
             if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         }
 
-        fun newInstance(feedUrl: String): OnlineFeedFragment {
+        fun newInstance(feedUrl: String, isShared: Boolean = false): OnlineFeedFragment {
             val fragment = OnlineFeedFragment()
             val b = Bundle()
             b.putString(ARG_FEEDURL, feedUrl)
+            b.putBoolean("isShared", isShared)
             fragment.arguments = b
             return fragment
         }

@@ -111,22 +111,22 @@ class ShareReceiverActivity : AppCompatActivity() {
             when {
 //            plain text
                 sharedUrl.matches(Regex("^[^\\s<>/]+\$")) -> {
-                    if (log != null)  upsertBlk(log) {it.type = "text" }
+                    if (log != null)  upsertBlk(log) {it.type = ShareLog.Type.Text.name }
                     val intent = MainActivity.showOnlineSearch(activity, sharedUrl)
                     activity.startActivity(intent)
                     if (finish) activity.finish()
                 }
 //            Youtube media
                 (isYoutubeURL(url) && (url.path.startsWith("/watch") || url.path.startsWith("/live"))) || isYoutubeServiceURL(url) -> {
-                    if (log != null)  upsertBlk(log) {it.type = "youtube media" }
+                    if (log != null)  upsertBlk(log) {it.type = ShareLog.Type.YTMedia.name }
                     Logd(TAG, "got youtube media")
                     mediaCB()
                 }
 //            podcast or Youtube channel, Youtube playlist, or other?
                 else -> {
-                    if (log != null)  upsertBlk(log) {it.type = "podcast" }
+                    if (log != null)  upsertBlk(log) {it.type = ShareLog.Type.Podcast.name }
                     Logd(TAG, "Activity was started with url $sharedUrl")
-                    val intent = MainActivity.showOnlineFeed(activity, sharedUrl)
+                    val intent = MainActivity.showOnlineFeed(activity, sharedUrl, true)
                     activity.startActivity(intent)
                     if (finish) activity.finish()
                 }

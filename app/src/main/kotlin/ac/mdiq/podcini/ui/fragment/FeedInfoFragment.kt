@@ -52,9 +52,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -173,12 +175,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
                 val ratingIconRes = Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.2f))
-                Icon(painter = painterResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
                     }))
@@ -188,12 +190,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }
-//            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
 //                    bottom.linkTo(parent.bottom)
 //                    start.linkTo(parent.start)
 //                })
-//            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
 //                    bottom.linkTo(parent.bottom)
 //                    end.linkTo(parent.end)

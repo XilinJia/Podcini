@@ -184,6 +184,15 @@ object Feeds {
         return null
     }
 
+    fun isSubscribed(feed: Feed): Boolean {
+        val f = realm.query(Feed::class, "eigenTitle == $0 && author == $1", feed.eigenTitle, feed.author).first().find()
+        return f != null
+    }
+
+    fun getFeedByTitleAndAuthor(title: String, author: String): Feed? {
+        return realm.query(Feed::class, "eigenTitle == $0 && author == $1", title, author).first().find()
+    }
+
     /**
      * Adds new Feeds to the database or updates the old versions if they already exists. If another Feed with the same
      * identifying value already exists, this method will add new FeedItems from the new Feed to the existing Feed.
@@ -271,6 +280,7 @@ object Feeds {
                     }
                 }
             }
+
             if (oldItem != null) oldItem.updateFromOther(episode)
             else {
                 Logd(TAG, "Found new episode: ${episode.title}")
@@ -316,6 +326,11 @@ object Feeds {
         savedFeed.type = newFeed.type
         savedFeed.lastUpdateFailed = false
         resultFeed = savedFeed
+
+        savedFeed.totleDuration = 0
+        for (e in savedFeed.episodes) {
+            savedFeed.totleDuration += e.media?.duration ?: 0
+        }
         try {
             upsertBlk(savedFeed) {}
             if (removeUnlistedItems && unlistedItems.isNotEmpty()) runBlocking { deleteEpisodes(context, unlistedItems).join() }
@@ -357,13 +372,13 @@ object Feeds {
                     feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                 else feed.preferences!!.feedID = feed.id
 
+                feed.totleDuration = 0
                 Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
                     episode.id = idLong++
                     episode.feedId = feed.id
                     if (episode.media != null) episode.media!!.id = episode.id
-//                        copyToRealm(episode)  // no need if episodes is a relation of feed, otherwise yes.
-//                    idLong += 1
+                    feed.totleDuration += episode.media?.duration ?: 0
                 }
                 copyToRealm(feed)
             }
@@ -458,7 +473,7 @@ object Feeds {
         return 1
     }
 
-    fun createSynthetic(feedId: Long, name: String): Feed {
+    fun createSynthetic(feedId: Long, name: String, video: Boolean = false): Feed {
         val feed = Feed()
         var feedId_ = feedId
         if (feedId_ <= 0) {
@@ -473,6 +488,7 @@ object Feeds {
         feed.title = name
         feed.author = "Yours Truly"
         feed.downloadUrl = null
+        feed.hasVideoMedia = video
         feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
         feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
         feed.preferences!!.keepUpdated = false

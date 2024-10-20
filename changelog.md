@@ -1,3 +1,12 @@
+# 6.11.7
+
+* added author and title info in SharedLog
+* when shared channel, playlist or podcast from Youtube, double checks if existing and records SharedLog accordingly
+* in Shared LogsFragment, tap on a successful or existing item (media or feed) opens the corresponding fragment
+* in Subscriptions view, added total duration for every feed
+* hasEmbeddedPicture in EpisodeMedia is set to not persist for now
+* tuned Compose routines ti reduce recomposition and improve efficiency
+
 # 6.11.6
 
 * fixed a serious performance issue when scrolling list of episode having no defined image url

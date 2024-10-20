@@ -20,7 +20,6 @@ class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
 
     fun show() {
         val activity = activityRef.get() ?: return
-
         val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
         val title = feed.title
 

@@ -41,8 +41,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
@@ -120,7 +122,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                     (activity as MainActivity).loadFragment(nav.tag, null)
                     (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
                 }) {
-                    Icon(painter = painterResource(nav.iconRes), tint = textColor, contentDescription = nav.tag, modifier = Modifier.padding(start = 10.dp))
+                    Icon(imageVector = ImageVector.vectorResource(nav.iconRes), tint = textColor, contentDescription = nav.tag, modifier = Modifier.padding(start = 10.dp))
                     Text(stringResource(nav.nameRes), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
                     Spacer(Modifier.weight(1f))
                     if (nav.count > 0) Text(nav.count.toString(), color = textColor, modifier = Modifier.padding(end = 10.dp))
@@ -146,7 +148,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
                 startActivity(Intent(activity, PreferenceActivity::class.java))
             }) {
-                Icon(painter = painterResource(R.drawable.ic_settings), tint = textColor, contentDescription = "settings", modifier = Modifier.padding(start = 10.dp))
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings), tint = textColor, contentDescription = "settings", modifier = Modifier.padding(start = 10.dp))
                 Text(stringResource(R.string.settings_label), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
             }
         }

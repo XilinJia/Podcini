@@ -30,7 +30,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -41,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -160,6 +161,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
             showSubscribeDialog.value = false
         })
     }
+    val context = LocalContext.current
     Column(Modifier.padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 4.dp).combinedClickable(
         onClick = {
             if (feed.feedUrl != null) {
@@ -182,8 +184,9 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
         Row {
             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val (imgvCover, checkMark) = createRefs()
-                AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
-                    placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
+                val imgLoc = remember(feed) { feed.imageUrl }
+                AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                    .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(), contentDescription = "imgvCover",
                     modifier = Modifier.width(65.dp).height(65.dp).constrainAs(imgvCover) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
@@ -194,7 +197,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                     Logd("OnlineFeedItem", "${feed.feedId} $log")
                     val alpha = 1.0f
                     val iRes = if (feed.feedId > 0) R.drawable.ic_check else R.drawable.baseline_clear_24
-                    Icon(painter = painterResource(iRes), tint = textColor, contentDescription = "played_mark",
+                    Icon(imageVector = ImageVector.vectorResource(iRes), tint = textColor, contentDescription = "played_mark",
                         modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
                             bottom.linkTo(parent.bottom)
                             end.linkTo(parent.end)

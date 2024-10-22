@@ -3,6 +3,7 @@ package de.test.podcini.ui
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
@@ -113,7 +114,7 @@ class UITestUtils(private val context: Context) {
             val items: MutableList<Episode> = ArrayList()
             for (j in 0 until NUM_ITEMS_PER_FEED) {
                 val item = Episode(j.toLong(), "Feed " + (i + 1) + ": Item " + (j + 1), "item$j",
-                    "http://example.com/feed$i/item/$j", Date(), Episode.PlayState.UNPLAYED.code, feed)
+                    "http://example.com/feed$i/item/$j", Date(), PlayState.UNPLAYED.code, feed)
                 items.add(item)
 
                 if (!hostTextOnlyFeeds) {

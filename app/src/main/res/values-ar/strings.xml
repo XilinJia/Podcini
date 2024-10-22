@@ -228,31 +228,14 @@
     <item quantity="other">تم مسح %d حلقات منزلة.</item>
   </plurals>
 
-  <string name="removed_inbox_label">تم الإزالة من صندوق الوارد</string>
-  <string name="mark_read_label">علمها كمشغلة</string>
-  <string name="toggle_played_label">فعل حالة التشغيل</string>
-  <string name="marked_as_played_label">تم الاستماع</string>
-  <string name="marked_as_unplayed_label">لم يتم الاستماع بعد</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">علمها كمقروءة</string>
   <string name="play_this_to_seek_position">للإنتقال للتوقيتات, يجب أن تشغل الحلقة</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="zero">%d حلقة علمت كـ مقروءة.</item>
-    <item quantity="one">%d حلقة علمت كـ مقروءة.</item>
-    <item quantity="two">%d حلقتان علمتا كـ مقروءة.</item>
-    <item quantity="few">%d حلقات علمت كـ مقروءة.</item>
-    <item quantity="many">%d حلقات علمت كـ مقروءة. </item>
-    <item quantity="other">%d حلقات علمت كمقروءة.</item>
-  </plurals>
-  <string name="mark_unread_label">علمها كغير مشغلة</string>
-  <string name="mark_unread_label_no_media">علمها كغير مقروءة</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="zero">%d حلقة علمت بأنه لم يتم تشغيلها.</item>
-    <item quantity="one">%d حلقة  علمت بأنه لم يتم تشغيلها.</item>
-    <item quantity="two"> %d حلقتان  علمتا بأنه لم يتم تشغيلها.</item>
-    <item quantity="few">%d حلقات علمت بأنه لم يتم تشغيلها.</item>
-    <item quantity="many">%d حلقة علمت بأنه لم يتم تشغيلها.</item>
-    <item quantity="other">%d حلقات علمت بأنه لم يتم تشغيلها.</item>
-  </plurals>
+
   <string name="add_to_queue_label">اضف للائحة الاستماع</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="zero">%d حلقة أضيفت إلى لائحة الاستماع.</item>

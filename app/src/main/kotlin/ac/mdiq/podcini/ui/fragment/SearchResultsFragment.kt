@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FragmentSearchResultsBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
@@ -48,7 +48,7 @@ import kotlinx.coroutines.withContext
 
 class SearchResultsFragment : Fragment() {
 
-    private var _binding: FragmentSearchResultsBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var searchProvider: PodcastSearcher? = null
@@ -74,7 +74,7 @@ class SearchResultsFragment : Fragment() {
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSearchResultsBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
         binding.mainView.setContent {
             CustomTheme(requireContext()) {

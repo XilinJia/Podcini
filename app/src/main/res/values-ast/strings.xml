@@ -104,9 +104,9 @@
   <string name="stream_label">Sentir</string>
   <string name="delete_label">Desaniciar</string>
   <string name="delete_failed">Nun ye posible desaniciar el ficheru. Reaniciar el preséu podría ayudar.</string>
-  <string name="mark_read_label">Marcar como «Reprodúxose»</string>
-  <string name="mark_unread_label">Marcar como «Ensin reproducir»</string>
-  <string name="mark_unread_label_no_media">Marcar como «Ensin lleer»</string>
+
+
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">Amestóse %d episodiu a la cola.</item>
     <item quantity="other">Amestáronse %d episodios a la cola.</item>

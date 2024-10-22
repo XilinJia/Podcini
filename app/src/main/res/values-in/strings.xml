@@ -155,21 +155,14 @@
     <item quantity="other">%depisode terunduh dihapus.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Dihapus dari kotak masuk</string>
-  <string name="mark_read_label">Tandai diputar</string>
-  <string name="toggle_played_label">Aktifkan status diputar</string>
-  <string name="marked_as_played_label">Ditandai sebagai \'diputar\'</string>
-  <string name="marked_as_unplayed_label">Ditandai sebagai \'belum diputar\'</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Tandai dibaca</string>
   <string name="play_this_to_seek_position">Untuk melompat posisi waktu, Anda perlu memutar episode terlebih dahulu</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="other">%d episode ditandai sebagai telah diputar.</item>
-  </plurals>
-  <string name="mark_unread_label">Tandai belum diputar</string>
-  <string name="mark_unread_label_no_media">Tandai belum dibaca</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="other">%d episode ditandai sebagai belum diputar</item>
-  </plurals>
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="other">%d episode ditambahkan ke antrian.</item>
   </plurals>

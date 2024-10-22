@@ -29,7 +29,7 @@ class ExceptFavoriteCleanupAlgorithmTest : DbCleanupTests() {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numberOfItems, feed, items, files, Episode.PlayState.UNPLAYED.code, false, false)
+        populateItems(numberOfItems, feed, items, files, PlayState.UNPLAYED.code, false, false)
 
         performAutoCleanup(context)
         for (i in files.indices) {
@@ -48,7 +48,7 @@ class ExceptFavoriteCleanupAlgorithmTest : DbCleanupTests() {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numberOfItems, feed, items, files, Episode.PlayState.UNPLAYED.code, true, false)
+        populateItems(numberOfItems, feed, items, files, PlayState.UNPLAYED.code, true, false)
 
         performAutoCleanup(context)
         for (i in files.indices) {
@@ -67,7 +67,7 @@ class ExceptFavoriteCleanupAlgorithmTest : DbCleanupTests() {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numberOfItems, feed, items, files, Episode.PlayState.UNPLAYED.code, false, true)
+        populateItems(numberOfItems, feed, items, files, PlayState.UNPLAYED.code, false, true)
 
         performAutoCleanup(context)
         for (i in files.indices) {

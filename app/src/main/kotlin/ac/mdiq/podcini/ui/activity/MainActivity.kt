@@ -633,6 +633,10 @@ class MainActivity : CastEnabledActivity() {
         }
     }
 
+    fun openDrawer() {
+        drawerLayout?.openDrawer(navDrawer)
+    }
+
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
     private fun cancelFlowEvents() {

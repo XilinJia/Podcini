@@ -187,23 +187,14 @@
     <item quantity="other">%d deskargatutako kapituluak ezabatu egin dira</item>
   </plurals>
 
-  <string name="removed_inbox_label">Sarrerako ontzitik kenduta</string>
-  <string name="mark_read_label">Markatu entzundakotzat</string>
-  <string name="toggle_played_label">Erreprodukzio-egoera txandakatu</string>
-  <string name="marked_as_played_label">Entzundakotzat markatua</string>
-  <string name="marked_as_unplayed_label">Ez entzundakotzat markatua</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Markatu iraurrita gisa</string>
   <string name="play_this_to_seek_position">Posizioetara jauzi egiteko, pasartea erreproduzitu behar duzu</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d saio markatuta ikusita bezala.</item>
-    <item quantity="other">%d saio markatuta ikusita bezala.</item>
-  </plurals>
-  <string name="mark_unread_label">Markatu ez entzundakotzat bezala</string>
-  <string name="mark_unread_label_no_media">Markatu ez irakurrita bezala</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d saio markatuta ikusita bezala.</item>
-    <item quantity="other">%d saio markatuta ez ikusita bezala.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Gehitu ilaran</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d saio ilaran gehitua.</item>

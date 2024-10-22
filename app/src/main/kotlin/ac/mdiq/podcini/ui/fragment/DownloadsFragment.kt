@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.DownloadsFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -20,7 +20,10 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.*
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
+import ac.mdiq.podcini.ui.compose.EpisodeVM
+import ac.mdiq.podcini.ui.compose.InforBar
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
@@ -37,7 +40,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -56,7 +60,7 @@ import java.util.*
  */
 @UnstableApi class DownloadsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private var _binding: DownloadsFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var runningDownloads: Set<String> = HashSet()
@@ -74,7 +78,7 @@ import java.util.*
     private var displayUpArrow = false
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = DownloadsFragmentBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -88,12 +92,11 @@ import java.util.*
 //        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-        binding.lazyColumn.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})

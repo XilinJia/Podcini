@@ -142,25 +142,12 @@
   <string name="stream_label">Tok</string>
   <string name="delete_label">Briši</string>
   <string name="delete_failed">Ni bilo mogoče brisati datoteke. Ponovni zagon naprave bi lahko pomagal.</string>
-  <string name="mark_read_label">Označi kot predvajan</string>
-  <string name="marked_as_played_label">Označi kot predvajano.</string>
-  <string name="marked_as_unplayed_label">Označi kot ne predvajano.</string>
+
+
+
   <string name="mark_read_no_media_label">Označi kot prebrano</string>
   <string name="play_this_to_seek_position">Če želite skočiti na to mesto, morate predvajati epizodo </string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d označi kot predvajano.</item>
-    <item quantity="two">%d  označi kot predvajani.</item>
-    <item quantity="few"> %d označi kot predvajano.</item>
-    <item quantity="other">%d  označi kot predvajano.</item>
-  </plurals>
-  <string name="mark_unread_label">Označi kot ne predvajano.</string>
-  <string name="mark_unread_label_no_media">Pusti ne prebrano.</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d epizodo označi kot ne predvajano.</item>
-    <item quantity="two">%depizodi označi kot ne predvajani.</item>
-    <item quantity="few">%d epizode označi kot ne predvajane.</item>
-    <item quantity="other">%d epizode označi kot ne predvajane.</item>
-  </plurals>
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d epizoda je dodana v čakalno vrsto.</item>
     <item quantity="two">%d epizodi sta dodani v čakalno vrsto.</item>

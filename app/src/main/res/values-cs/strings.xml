@@ -217,27 +217,15 @@
     <item quantity="other">%d stažených epizod smazáno.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Odebráno z nových</string>
-  <string name="mark_read_label">Označit jako poslechnuté</string>
-  <string name="toggle_played_label">Přepnutí stavu přehrávání</string>
-  <string name="marked_as_played_label">Označeno jako poslechnuté</string>
-  <string name="marked_as_unplayed_label">Označeno jako neposlechnuté</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Označit jako poslechnuté</string>
   <string name="play_this_to_seek_position">Pro přeskočení na pozice musíte epizodu přehrát</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d epizoda označena jako přehraná</item>
-    <item quantity="few">%d epizody označeny jako přehrané</item>
-    <item quantity="many">%d epizod označeno jako přehrané</item>
-    <item quantity="other">%d epizod označeno jako přehrané</item>
-  </plurals>
-  <string name="mark_unread_label">Označit jako neposlechnuté</string>
-  <string name="mark_unread_label_no_media">Označit jako nepřečtené</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d epizoda označena jako neposlechnutá</item>
-    <item quantity="few">%d epizody označeny jako neposlechnuté</item>
-    <item quantity="many">%d epizod označeno jako neposlechnuté</item>
-    <item quantity="other">%d epizod označeno jako neposlechnuté</item>
-  </plurals>
+
+
   <string name="add_to_queue_label">Přidat do fronty</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d epizoda přidána do fronty</item>

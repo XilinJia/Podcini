@@ -160,21 +160,11 @@
     <item quantity="one">1 allalaaditud saade kustutatud.</item>
     <item quantity="other">%d allalaaditud saadet kustutatud.</item>
   </plurals>
-  <string name="mark_read_label">Märgi kuulatuks</string>
-  <string name="marked_as_played_label">Märgitud kuulatuks</string>
-  <string name="marked_as_unplayed_label">Märgitud kui kuulamata</string>
+
+
+
   <string name="mark_read_no_media_label">Märgi loetuks</string>
   <string name="play_this_to_seek_position">Asukohale hüppamiseks pead saadet esitama</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d saade märgiti kuulatuks.</item>
-    <item quantity="other">%d saadet märgiti kuulatuks.</item>
-  </plurals>
-  <string name="mark_unread_label">Märgitud kui kuulamata</string>
-  <string name="mark_unread_label_no_media">Märgi mitteloetuks</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d saade märgiti kui kuulamata.</item>
-    <item quantity="other">%d saadet märgiti kui kuulamata.</item>
-  </plurals>
   <string name="add_to_queue_label">Lisa järjekorda</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d saade lisati järjekorda.</item>

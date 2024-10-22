@@ -188,23 +188,14 @@
     <item quantity="other">%d episodis baixats, suprimits.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Eliminat de la Safata d\'entrada</string>
-  <string name="mark_read_label">Marca com a reproduït</string>
-  <string name="toggle_played_label">Commuta l\'estat de reproducció</string>
-  <string name="marked_as_played_label">Marca com a reproduït</string>
-  <string name="marked_as_unplayed_label">Marca com a no reproduït</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Marcar com a llegit</string>
   <string name="play_this_to_seek_position">Per a botar a posicions deus reproduir l\'episodi.</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d  episodi marcat com a reproduït.</item>
-    <item quantity="other">%d episodis marcats com a reproduïts. </item>
-  </plurals>
-  <string name="mark_unread_label">Marca com a pendent</string>
-  <string name="mark_unread_label_no_media">Marcar com a no llegit</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d episodi marcat com a no llegit.</item>
-    <item quantity="other">%d episodis marcats com a no llegits.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Afegeix a la cua</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d  episodi afegit a la cua.</item>

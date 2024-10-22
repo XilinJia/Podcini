@@ -29,6 +29,7 @@ interface SwipeAction {
         START_DOWNLOAD,
         MARK_FAV,
         TOGGLE_PLAYED,
+        SET_PLAY_STATE,
         REMOVE_FROM_QUEUE,
         DELETE,
         REMOVE_FROM_HISTORY

@@ -8,12 +8,12 @@
         android:icon="@drawable/playlist_play"
         custom:showAsAction="always"/>
 
-    <item
-        android:id="@+id/sort_items"
-        android:icon="@drawable/arrows_sort"
-        android:title="@string/sort"
-        custom:showAsAction="always">
-    </item>
+<!--    <item-->
+<!--        android:id="@+id/sort_items"-->
+<!--        android:icon="@drawable/arrows_sort"-->
+<!--        android:title="@string/sort"-->
+<!--        custom:showAsAction="always">-->
+<!--    </item>-->
 
 <!--    <item-->
 <!--        android:id="@+id/filter_items"-->

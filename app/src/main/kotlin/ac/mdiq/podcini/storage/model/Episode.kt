@@ -86,7 +86,7 @@ class Episode : RealmObject {
     var rating: Int = Rating.UNRATED.code
 
     @Ignore
-    var isFavorite: Boolean = (rating == 2)
+    var isFavorite: Boolean = (rating == Rating.FAVORITE.code)
         private set
 
     var comment: String = ""
@@ -142,7 +142,7 @@ class Episode : RealmObject {
     val isRemote = mutableStateOf(false)
 
     constructor() {
-        this.playState = PlayState.UNPLAYED.code
+        this.playState = PlayState.NEW.code
     }
 
     /**
@@ -313,19 +313,10 @@ class Episode : RealmObject {
         return result
     }
 
-    fun shiftRating(): Int {
-        val nr = rating + 1
-        return if (nr <= Rating.FAVORITE.code) nr else Rating.TRASH.code
-    }
-
-    enum class PlayState(val code: Int) {
-        UNSPECIFIED(-2),
-        NEW(-1),
-        UNPLAYED(0),
-        PLAYED(1),
-        BUILDING(2),
-        ABANDONED(3)
-    }
+//    fun shiftRating(): Int {
+//        val nr = rating + 1
+//        return if (nr <= Rating.FAVORITE.code) nr else Rating.TRASH.code
+//    }
 
     companion object {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"

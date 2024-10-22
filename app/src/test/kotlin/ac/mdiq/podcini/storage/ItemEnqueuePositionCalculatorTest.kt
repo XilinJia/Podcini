@@ -57,7 +57,7 @@ object ItemEnqueuePositionCalculatorTest {
 
     fun createFeedItem(id: Long): Episode {
         val item = Episode(id, "Item$id", "ItemId$id", "url",
-            Date(), Episode.PlayState.PLAYED.code, anyFeed())
+            Date(), PlayState.PLAYED.code, anyFeed())
         val media = EpisodeMedia(item, "http://download.url.net/$id", 1234567, "audio/mpeg")
         media.id = item.id
         item.setMedia(media)

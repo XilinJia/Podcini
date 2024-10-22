@@ -212,25 +212,14 @@
     <item quantity="other">%d episodi scaricati eliminati.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Rimosso dall\'inbox</string>
-  <string name="mark_read_label">Segna come riprodotto</string>
-  <string name="toggle_played_label">Cambia stato di riproduzione</string>
-  <string name="marked_as_played_label">Segnato come riprodotto</string>
-  <string name="marked_as_unplayed_label">Segnato come non riprodotto</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Segna come letto</string>
   <string name="play_this_to_seek_position">Per saltare alla posizione devi riprodurre l\'episodio</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d episodio segnato come riprodotto.</item>
-    <item quantity="many">%d di episodi segnati come riprodotti.</item>
-    <item quantity="other">%d episodi segnati come riprodotti.</item>
-  </plurals>
-  <string name="mark_unread_label">Segna come non riprodotto</string>
-  <string name="mark_unread_label_no_media">Segna come non letto</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d episodio segnato come non riprodotto.</item>
-    <item quantity="many">%d di episodi segnati come non riprodotti.</item>
-    <item quantity="other">%d episodi segnati come non riprodotti.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Aggiungi alla coda</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d episodio aggiunto alla coda.</item>

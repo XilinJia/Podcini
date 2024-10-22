@@ -2,7 +2,10 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
+import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
+import ac.mdiq.podcini.databinding.QuickFeedDiscoveryItemBinding
+import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader.Companion.prefs
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
@@ -10,9 +13,9 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -24,7 +27,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -37,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -255,7 +256,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
      * Searches iTunes store for top podcasts and displays results in a list.
      */
     class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-        private var _binding: FragmentSearchResultsBinding? = null
+        private var _binding: ComposeFragmentBinding? = null
         private val binding get() = _binding!!
 
         private lateinit var toolbar: MaterialToolbar
@@ -295,7 +296,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
         @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             // Inflate the layout for this fragment
-            _binding = FragmentSearchResultsBinding.inflate(inflater)
+            _binding = ComposeFragmentBinding.inflate(inflater)
             Logd(TAG, "fragment onCreateView")
             binding.mainView.setContent {
                 CustomTheme(requireContext()) {

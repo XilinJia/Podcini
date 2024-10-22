@@ -208,25 +208,14 @@
     <item quantity="other">%d de episoade descărcare au fost șterse.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Eliminat din inbox</string>
-  <string name="mark_read_label">Marchează ca redat</string>
-  <string name="toggle_played_label">Comută starea de redare</string>
-  <string name="marked_as_played_label">Marcat ca redat</string>
-  <string name="marked_as_unplayed_label">Marcat ca neredat</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Marcați ca citit</string>
   <string name="play_this_to_seek_position">Pentru a sări către o poziție, trebuie sa începeți redarea episodului</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">Un episod marcat ca redat.</item>
-    <item quantity="few">%d episoade marcate ca redate.</item>
-    <item quantity="other">%d de episoade marcate ca redate.</item>
-  </plurals>
-  <string name="mark_unread_label">Marchează ca neredat</string>
-  <string name="mark_unread_label_no_media">Marchează ca necitit.</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">Un episod marcat ca neredat.</item>
-    <item quantity="few">%d episoade marcate ca neredate.</item>
-    <item quantity="other">%d de episoade marcate ca neredate.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Adaugă la coadă</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">Un episod adăugat la coadă.</item>

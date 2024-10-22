@@ -381,7 +381,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
-                val queryString = "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code})"
+                val queryString = "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code})"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -403,7 +403,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
             }
             FeedSortOrder.MOST_PLAYED.index -> {
-                val queryString = "feedId == $0 AND playState == ${Episode.PlayState.PLAYED.code}"
+                val queryString = "feedId == $0 AND playState == ${PlayState.PLAYED.code}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -436,7 +436,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
                 val queryString =
-                    "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code}) SORT(pubDate DESC)"
+                    "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code}) SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
@@ -458,7 +458,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
                 val queryString =
-                    "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code}) AND media.downloaded == true"
+                    "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code}) AND media.downloaded == true"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -469,7 +469,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             //            doing FEED_ORDER_NEW
             else -> {
-                val queryString = "feedId == $0 AND playState == ${Episode.PlayState.NEW.code}"
+                val queryString = "feedId == $0 AND playState == ${PlayState.NEW.code}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -954,13 +954,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                             }
                                         })
                                 )
-                                if (feed.rating != Rating.UNRATED.code)
-                                    Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary,
-                                        contentDescription = "rating",
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                            start.linkTo(parent.start)
-                                            centerVerticallyTo(coverImage)
-                                        })
+//                                if (feed.rating != Rating.UNRATED.code)
+//                                    Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary,
+//                                        contentDescription = "rating",
+//                                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+//                                            start.linkTo(parent.start)
+//                                            centerVerticallyTo(coverImage)
+//                                        })
                             }
                             val textColor = MaterialTheme.colorScheme.onSurface
                             Column(Modifier.weight(1f).padding(start = 10.dp).combinedClickable(onClick = {
@@ -984,8 +984,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 }
                                 Logd(TAG, "long clicked: ${feed.title}")
                             })) {
-                                Text(feed.title ?: "No title", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                Row {
+                                    if (feed.rating != Rating.UNRATED.code)
+                                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer))
+                                    Text(feed.title ?: "No title", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                }
                                 Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
                                 Row(Modifier.padding(top = 5.dp)) {
                                     val measureString = remember { NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +

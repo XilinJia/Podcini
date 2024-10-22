@@ -199,23 +199,14 @@
     <item quantity="other">%d nedladdade episoder borttagna.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Tog bort från inkorg</string>
-  <string name="mark_read_label">Markera som spelad</string>
-  <string name="toggle_played_label">Växla spelläge</string>
-  <string name="marked_as_played_label">Markera som spelad</string>
-  <string name="marked_as_unplayed_label">Markera som ospelad</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Markera som läst</string>
   <string name="play_this_to_seek_position">Spela episoden för att kunna hoppa till olika positioner</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">1%d episod markerad som spelad.</item>
-    <item quantity="other">%d episoder markerade som spelade.</item>
-  </plurals>
-  <string name="mark_unread_label">Markera som ospelad</string>
-  <string name="mark_unread_label_no_media">Markera som ospelad</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">1%d episod markerad som ospelad.</item>
-    <item quantity="other">%d episoder markerade som ospelade.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Lägg till i kön</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">1%d episod tillagd i kön.</item>

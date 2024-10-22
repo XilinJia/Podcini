@@ -151,25 +151,12 @@
     <item quantity="many">%d atsiųsti epizodai ištrinti.</item>
     <item quantity="other">%d atsiųsti epizodai ištrinti.</item>
   </plurals>
-  <string name="mark_read_label">Pažymėti kaip perklausytą</string>
-  <string name="marked_as_played_label">Pažymėtas kaip perklausytas</string>
-  <string name="marked_as_unplayed_label">Pažymėtas kaip neperklausytas</string>
+
+
+
   <string name="mark_read_no_media_label">Pažymėti kaip perskaitytą</string>
   <string name="play_this_to_seek_position">Norint peršokti į poziciją reikia pradėti epizodo atkūrimą</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d epizodas pažymėtas kaip perklausytas.</item>
-    <item quantity="few">%d epizodai pažymėti kaip perklausyti.</item>
-    <item quantity="many">%d epizodai pažymėti kaip perklausyti.</item>
-    <item quantity="other">%d epizodai pažymėti kaip perklausyti.</item>
-  </plurals>
-  <string name="mark_unread_label">Pažymėti kaip neperklausytą</string>
-  <string name="mark_unread_label_no_media">Pažymėti kaip neperskaitytą</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d epizodas pažymėtas kaip neperklausytas.</item>
-    <item quantity="few">%d epizodai pažymėti kaip neperklausyti.</item>
-    <item quantity="many">%d epizodai pažymėti kaip neperklausyti.</item>
-    <item quantity="other">%d epizodai pažymėti kaip neperklausyti.</item>
-  </plurals>
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d epizodas pridėtas į eilę.</item>
     <item quantity="few">%d epizodai pridėti į eilę.</item>

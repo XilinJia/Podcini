@@ -12,6 +12,7 @@ import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
@@ -182,7 +183,7 @@ object AutoCleanups {
                 val idsInQueues = getInQueueEpisodeIds()
                 val mostRecentDateForDeletion = calcMostRecentDateForDeletion(Date())
                 for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && item.isPlayed() && !item.isFavorite) {
+                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && item.playState >= PlayState.PLAYED.code && !item.isFavorite) {
                         val media = item.media
                         // make sure this candidate was played at least the proper amount of days prior to now
                         if (media?.playbackCompletionDate != null && media.playbackCompletionDate!!.before(mostRecentDateForDeletion)) candidates.add(item)

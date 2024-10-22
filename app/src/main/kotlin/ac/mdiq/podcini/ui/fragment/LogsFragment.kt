@@ -1,9 +1,8 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.LogsFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -14,8 +13,8 @@ import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.ShareReceiverActivity.Companion.receiveShared
-import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -51,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,23 +64,26 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: LogsFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val shareLogs = mutableStateListOf<ShareLog>()
     private val subscriptionLogs = mutableStateListOf<SubscriptionLog>()
     private val downloadLogs = mutableStateListOf<DownloadResult>()
 
-//    private var showShared by mutableStateOf(true)
-//    private var showSubscription by mutableStateOf(false)
+    private var displayUpArrow = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = LogsFragmentBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
         binding.toolbar.inflateMenu(R.menu.logs)
         binding.toolbar.setOnMenuItemClickListener(this)
 
-        binding.lazyColumn.setContent {
+        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
+
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 when {
                     downloadLogs.isNotEmpty() -> DownloadLogView()
@@ -93,6 +94,11 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         loadDownloadLog()
         return binding.root
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
@@ -489,5 +495,6 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     companion object {
         val TAG: String = LogsFragment::class.simpleName ?: "Anonymous"
+        private const val KEY_UP_ARROW = "up_arrow"
     }
 }

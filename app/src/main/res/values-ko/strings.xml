@@ -178,21 +178,14 @@
     <item quantity="other">다운로드한 %d개 에피소드 삭제함.</item>
   </plurals>
 
-  <string name="removed_inbox_label">새로 받음 목록에서 제거함</string>
-  <string name="mark_read_label">재생했다고 표시</string>
-  <string name="toggle_played_label">재생함 상태 토글</string>
-  <string name="marked_as_played_label">재생했다고 표시</string>
-  <string name="marked_as_unplayed_label">재생하지 않음으로 표시</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">읽었다고 표시</string>
   <string name="play_this_to_seek_position">특정 재생 위치로 이동하려면, 에피소드를 재생해야 합니다</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="other">%d개 에피소드를 재생한 것으로 표시했습니다.</item>
-  </plurals>
-  <string name="mark_unread_label">재생하지 않음으로 표시</string>
-  <string name="mark_unread_label_no_media">읽지 않음으로 표시</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="other">%d개 에피소드를 재생하지 않은 것으로 표시했습니다.</item>
-  </plurals>
+
   <string name="add_to_queue_label">대기열에 추가</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="other">%d개 에피소드를 대기열에 추가했습니다.</item>

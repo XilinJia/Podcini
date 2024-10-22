@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.ui.actions
 
+//import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
-import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -16,21 +16,20 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes.NO_ACTION
 import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes
+import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes.NO_ACTION
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.PlayStateDialog
 import ac.mdiq.podcini.ui.fragment.*
-//import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Handler
 import android.util.TypedValue
 import android.view.ViewGroup
 import androidx.annotation.OptIn
@@ -47,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -147,7 +145,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            addToQueue( true, item)
+            addToQueue(item)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
@@ -398,7 +396,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         fun addToQueueAt(episode: Episode, index: Int) : Job {
             return runOnIOScope {
                 if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
-                if (episode.isNew) setPlayState(Episode.PlayState.UNPLAYED.code, false, episode)
+                if (episode.isNew) setPlayState(PlayState.UNPLAYED.code, false, episode)
                 curQueue = upsert(curQueue) {
                     it.episodeIds.add(index, episode.id)
                     it.update()
@@ -438,9 +436,9 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
     }
 
-    class TogglePlaybackStateSwipeAction : SwipeAction {
+    class SetPlaybackStateSwipeAction : SwipeAction {
         override fun getId(): String {
-            return ActionTypes.TOGGLE_PLAYED.name
+            return ActionTypes.SET_PLAY_STATE.name
         }
 
         override fun getActionIcon(): Int {
@@ -452,45 +450,22 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun getTitle(context: Context): String {
-            return context.getString(R.string.toggle_played_label)
+            return context.getString(R.string.set_play_state_label)
         }
 
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            val newState = if (item.playState == Episode.PlayState.UNPLAYED.code) Episode.PlayState.PLAYED.code else Episode.PlayState.UNPLAYED.code
-
-            Logd("TogglePlaybackStateSwipeAction", "performAction( ${item.id} )")
-            // we're marking it as unplayed since the user didn't actually play it
-            // but they don't want it considered 'NEW' anymore
-            var item = runBlocking {  setPlayStateSync(newState, false, item) }
-
-            val h = Handler(fragment.requireContext().mainLooper)
-            val r = Runnable {
-                val media: EpisodeMedia? = item.media
-                val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
-                if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
-                    item = deleteMediaSync(fragment.requireContext(), item)
-                    if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
-            }
-            val playStateStringRes: Int = when (newState) {
-                Episode.PlayState.UNPLAYED.code -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label    //was new
-                else R.string.marked_as_unplayed_label   //was played
-                Episode.PlayState.PLAYED.code -> R.string.marked_as_played_label
-                else -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label
-                else R.string.marked_as_unplayed_label
-            }
-            val duration: Int = Snackbar.LENGTH_LONG
-
-            if (willRemove(filter, item)) {
-                (fragment.activity as MainActivity).showSnackbarAbovePlayer(
-                    playStateStringRes, duration)
-                    .setAction(fragment.getString(R.string.undo)) {
-                        setPlayState(item.playState, false, item)
-                        // don't forget to cancel the thing that's going to remove the media
-                        h.removeCallbacks(r)
+            var showPlayStateDialog by mutableStateOf(true)
+            val composeView = ComposeView(fragment.requireContext()).apply {
+                setContent {
+                    CustomTheme(fragment.requireContext()) {
+                        if (showPlayStateDialog) PlayStateDialog(listOf(item)) {
+                            showPlayStateDialog = false
+                            (fragment.view as? ViewGroup)?.removeView(this@apply)
+                        }
                     }
+                }
             }
-
-            h.postDelayed(r, ceil((duration * 1.05f).toDouble()).toLong())
+            (fragment.view as? ViewGroup)?.addView(composeView)
         }
 
         private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
@@ -504,7 +479,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return if (item.playState == Episode.PlayState.NEW.code) filter.showPlayed || filter.showNew
+            return if (item.playState == PlayState.NEW.code) filter.showPlayed || filter.showNew
             else filter.showUnplayed || filter.showPlayed || filter.showNew
         }
     }
@@ -523,7 +498,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         val swipeActions: List<SwipeAction> = listOf(
             NoActionSwipeAction(), ComboSwipeAction(), AddToQueueSwipeAction(),
             StartDownloadSwipeAction(), SetRatingSwipeAction(),
-            TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
+            SetPlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
             DeleteSwipeAction(), RemoveFromHistorySwipeAction())
 
         private fun getPrefs(tag: String, defaultActions: String): Actions {

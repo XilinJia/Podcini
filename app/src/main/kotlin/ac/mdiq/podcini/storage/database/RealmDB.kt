@@ -40,7 +40,7 @@ object RealmDB {
                 SubscriptionLog::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(27)
+            .schemaVersion(28)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
@@ -104,8 +104,22 @@ object RealmDB {
 //                        )
 //                    }
                 }
-            })
-            .build()
+                if (oldRealm.schemaVersion() < 28) {
+                    Logd(TAG, "migrating DB from below 27")
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            if (oldObject.getValue<Long>(fieldName = "playState") == 1L) {
+                                set("playState", 10L)
+                            } else {
+                                val media = oldObject.getObject(propertyName = "media")
+                                var position = 0L
+                                if (media != null) position = media.getValue(propertyName = "position", Long::class) ?: 0
+                                if (position > 0) set("playState", 5L)
+                            }
+                        }
+                    }
+                }
+            }).build()
         realm = Realm.open(config)
     }
 

@@ -194,23 +194,14 @@
     <item quantity="other">%dقسمت بار گرفته حذف شد.</item>
   </plurals>
 
-  <string name="removed_inbox_label">حذف شده از صندوق ورودی</string>
-  <string name="mark_read_label">علامت‌گذاری به‌عنوان پخش‌شده</string>
-  <string name="toggle_played_label">وضعیت پخش را تغییر دهید</string>
-  <string name="marked_as_played_label">علامت‌گذاری شد به‌عنوان پخش‌شده</string>
-  <string name="marked_as_unplayed_label">علامت‌گذاری شد به‌عنوان پخش‌نشده</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">علامت زدن به عنوان خوانده شده</string>
   <string name="play_this_to_seek_position">برای پرش به موقعیت‌ها، می‌توانید قسمت را پخش کنید</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d قسمت به‌عنوان پخش‌شده علامت‌گذاری شد.</item>
-    <item quantity="other">%d قسمت به‌عنوان پخش‌شده علامت‌گذاری شد.</item>
-  </plurals>
-  <string name="mark_unread_label">علامت‌گذاری به‌عنوان پخش‌نشده</string>
-  <string name="mark_unread_label_no_media">علامت‌گذاری به‌عنوان نخوانده‌شده</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d قسمت به‌عنوان پخش‌نشده علامت‌گذاری شد.</item>
-    <item quantity="other">%d قسمت به‌عنوان پخش‌نشده علامت‌گذاری شد.</item>
-  </plurals>
+
   <string name="add_to_queue_label">افزودن به صف</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d قسمت به صف اضافه شد.</item>

@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
@@ -10,7 +10,10 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.*
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
+import ac.mdiq.podcini.ui.compose.EpisodeVM
+import ac.mdiq.podcini.ui.compose.InforBar
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -42,7 +45,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     protected var page: Int = 1
     private var displayUpArrow = false
 
-    var _binding: BaseEpisodesListFragmentBinding? = null
+    var _binding: ComposeFragmentBinding? = null
     protected val binding get() = _binding!!
 
     protected var infoBarText = mutableStateOf("")
@@ -59,7 +62,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        _binding = BaseEpisodesListFragmentBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
@@ -79,7 +82,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         swipeActions = SwipeActions(this, TAG)
         lifecycle.addObserver(swipeActions)
-        binding.lazyColumn.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})

@@ -38,8 +38,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
     fun matches(item: Episode): Boolean {
         when {
             showNew && !item.isNew -> return false
-            showPlayed && !item.isPlayed() -> return false
-            showUnplayed && item.isPlayed() -> return false
+            showPlayed && item.playState < PlayState.PLAYED.code -> return false
+            showUnplayed && item.playState >= PlayState.PLAYED.code -> return false
             showPaused && !item.isInProgress -> return false
             showNotPaused && item.isInProgress -> return false
             showDownloaded && !item.isDownloaded -> return false
@@ -58,18 +58,18 @@ class EpisodeFilter(vararg properties: String) : Serializable {
 
 //    filter on queues does not have a query string so it's not applied on query results, need to filter separately
     fun matchesForQueues(item: Episode): Boolean {
-        when {
-            showQueued && !inAnyQueue(item) -> return false
-            showNotQueued && inAnyQueue(item) -> return false
-            else -> return true
-        }
+    return when {
+        showQueued && !inAnyQueue(item) -> false
+        showNotQueued && inAnyQueue(item) -> false
+        else -> true
+    }
     }
 
     fun queryString(): String {
         val statements: MutableList<String> = ArrayList()
         when {
-            showPlayed -> statements.add("playState == 1 ")
-            showUnplayed -> statements.add(" playState != 1 ") // Match "New" items (read = -1) as well
+            showPlayed -> statements.add("playState >= ${PlayState.PLAYED.code}")
+            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code}> ") // Match "New" items (read = -1) as well
             showNew -> statements.add("playState == -1 ")
         }
         when {
@@ -127,8 +127,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
         auto_downloadable,
         not_auto_downloadable
     }
-    companion object {
 
+    companion object {
         @JvmStatic
         fun unfiltered(): EpisodeFilter {
             return EpisodeFilter("")

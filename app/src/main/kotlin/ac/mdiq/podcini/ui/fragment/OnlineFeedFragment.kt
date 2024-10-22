@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.OnlineFeedviewFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
@@ -81,7 +81,7 @@ import kotlin.concurrent.Volatile
  */
 @OptIn(UnstableApi::class)
 class OnlineFeedFragment : Fragment() {
-    private var _binding: OnlineFeedviewFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var displayUpArrow = false
@@ -124,7 +124,7 @@ class OnlineFeedFragment : Fragment() {
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = OnlineFeedviewFragmentBinding.inflate(layoutInflater)
+        _binding = ComposeFragmentBinding.inflate(layoutInflater)
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)

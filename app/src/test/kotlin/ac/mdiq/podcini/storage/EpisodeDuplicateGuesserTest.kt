@@ -57,7 +57,7 @@ class EpisodeDuplicateGuesserTest {
     private fun item(guid: String, title: String, downloadUrl: String,
                      date: Long, duration: Long, mime: String
     ): Episode {
-        val item = Episode(0, title, guid, "link", Date(date), Episode.PlayState.PLAYED.code, null)
+        val item = Episode(0, title, guid, "link", Date(date), PlayState.PLAYED.code, null)
         val media = EpisodeMedia(item, downloadUrl, duration, mime)
         item.setMedia(media)
         return item

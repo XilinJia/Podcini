@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.databinding.FeedinfoBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
@@ -42,8 +42,11 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -62,6 +65,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
@@ -80,7 +84,7 @@ import java.util.concurrent.ExecutionException
 
 @UnstableApi
 class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: FeedinfoBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var feed: Feed
@@ -96,7 +100,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FeedinfoBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.title = ""
@@ -108,7 +112,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvAuthor = feed.author ?: ""
         txtvUrl = feed.downloadUrl
 
-        binding.mainUI.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = {showRemoveFeedDialog = false}) {
                     (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
@@ -200,21 +204,23 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                    bottom.linkTo(parent.bottom)
 //                    end.linkTo(parent.end)
 //                })
-            AsyncImage(model = feed.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
-                modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                }.clickable(onClick = {
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).constrainAs(imgvCover) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }) {
+                AsyncImage(model = feed.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                    modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp).clickable(onClick = {
 //                    if (feed != null) {
 //                        val fragment = FeedInfoFragment.newInstance(feed)
 //                        (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
 //                    }
-                }))
-            Column(Modifier.constrainAs(taColumn) {
-                top.linkTo(imgvCover.top)
-                start.linkTo(imgvCover.end) }) {
-                Text(feed.title ?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(text = txtvAuthor, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }))
+                Column(Modifier.padding(top = 10.dp)) {
+                    Text(feed.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(text = txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     }

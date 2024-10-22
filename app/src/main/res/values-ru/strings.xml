@@ -205,27 +205,14 @@
     <item quantity="other">%d загруженных выпусков удалёно.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Убрано из входящих</string>
-  <string name="mark_read_label">Отметить как прослушанное</string>
-  <string name="toggle_played_label">Переключить состояние \"прослушано\"</string>
-  <string name="marked_as_played_label">Отмечено как прослушанное</string>
-  <string name="marked_as_unplayed_label">Отметить как непрослушанное</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Отметить как прочитанное</string>
   <string name="play_this_to_seek_position">Для переходов в выпуске нужно слушать выпуск</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d выпуск отмечен как прослушанный.</item>
-    <item quantity="few">%d выпуска отмечены как прослушанные.</item>
-    <item quantity="many">%d выпусков отмечены как прослушанные.</item>
-    <item quantity="other">%d выпусков отмечено как прослушанные.</item>
-  </plurals>
-  <string name="mark_unread_label">Отметить как непрослушанное</string>
-  <string name="mark_unread_label_no_media">Отметить как непрочитанное</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d выпуск отмечен непрослушанный.</item>
-    <item quantity="few">%d выпуска отмечены непрослушанные.</item>
-    <item quantity="many">%d выпусков отмечены непрослушанные.</item>
-    <item quantity="other">%d выпусков отмечено непрослушанные.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Добавить в очередь</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d выпуск добавлен в очередь.</item>

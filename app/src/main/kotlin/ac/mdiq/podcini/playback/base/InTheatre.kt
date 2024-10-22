@@ -82,9 +82,7 @@ object InTheatre {
                     }
                     upsert(curQueue_) {}
                 }
-                upsert(curQueue) {
-                    it.update()
-                }
+                upsert(curQueue) { it.update() }
             }
 
             Logd(TAG, "starting curState")
@@ -135,10 +133,12 @@ object InTheatre {
             val type = curState.curMediaType.toInt()
             if (type == EpisodeMedia.PLAYABLE_TYPE_FEEDMEDIA) {
                 val mediaId = curState.curMediaId
+                Logd(TAG, "loadPlayableFromPreferences getting mediaId: $mediaId")
                 if (mediaId != 0L) {
                     curMedia = getEpisodeMedia(mediaId)
                     if (curEpisode != null) curEpisode = (curMedia as EpisodeMedia).episodeOrFetch()
                 }
+                Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curMedia?.getIdentifier()}")
             } else Log.e(TAG, "Could not restore Playable object from preferences")
         }
     }

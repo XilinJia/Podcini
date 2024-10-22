@@ -270,27 +270,15 @@
     <string name="my_opinion_label">My opinion</string>
     <string name="cancelled_on_label">Cancelled on</string>
 
-    <string name="removed_inbox_label">Removed from inbox</string>
-    <string name="mark_read_label">Mark as played</string>
-    <string name="toggle_played_label">Toggle played state</string>
-    <string name="marked_as_played_label">Marked as played</string>
-    <string name="marked_as_unplayed_label">Marked as unplayed</string>
+    <string name="set_play_state_label">Set played state</string>
+
     <string name="mark_read_no_media_label">Mark as read</string>
     <string name="play_this_to_seek_position">To jump to positions, you need to play the episode</string>
     <plurals name="marked_favorite_batch_label">
         <item quantity="one">%d episode marked as favorite.</item>
         <item quantity="other">%d episodes marked as favorite.</item>
     </plurals>
-    <plurals name="marked_read_batch_label">
-        <item quantity="one">%d episode marked as played.</item>
-        <item quantity="other">%d episodes marked as played.</item>
-    </plurals>
-    <string name="mark_unread_label">Mark as unplayed</string>
-    <string name="mark_unread_label_no_media">Mark as unread</string>
-    <plurals name="marked_unread_batch_label">
-        <item quantity="one">%d episode marked as unplayed.</item>
-        <item quantity="other">%d episodes marked as unplayed.</item>
-    </plurals>
+
     <string name="shelve_label">Shelve to synthetic</string>
     <string name="add_to_queue_label">Add to active queue</string>
     <plurals name="added_to_queue_batch_label">

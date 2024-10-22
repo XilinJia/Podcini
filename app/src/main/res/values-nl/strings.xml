@@ -193,23 +193,14 @@
     <item quantity="other">%d gedownloade afleveringen verwijderd.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Verwijderd uit Postvak IN</string>
-  <string name="mark_read_label">Als afgespeeld markeren</string>
-  <string name="toggle_played_label">Afspeelstatus wijzigen</string>
-  <string name="marked_as_played_label">Gemarkeerd als afgespeeld</string>
-  <string name="marked_as_unplayed_label">Gemarkeerd als niet-afgespeeld</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Markeren als gelezen</string>
   <string name="play_this_to_seek_position">Speel de aflevering af om naar posities te springen</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d aflevering gemarkeerd als afgespeeld.</item>
-    <item quantity="other">%d afleveringen gemarkeerd als afgespeeld.</item>
-  </plurals>
-  <string name="mark_unread_label">Als niet-afgespeeld markeren</string>
-  <string name="mark_unread_label_no_media">Markeren als ongelezen</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d aflevering gemarkeerd als niet-afgespeeld.</item>
-    <item quantity="other">%d afleveringen gemarkeerd als niet-afgespeeld.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Toevoegen aan wachtrij</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d aflevering toegevoegd aan de wachtrij.</item>

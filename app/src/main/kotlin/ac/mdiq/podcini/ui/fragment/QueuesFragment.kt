@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
-import ac.mdiq.podcini.databinding.QueueFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
@@ -85,7 +85,7 @@ import kotlin.math.max
 
 @UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private var _binding: QueueFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var emptyViewHandler: EmptyViewHandler
@@ -126,7 +126,7 @@ import kotlin.math.max
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        _binding = QueueFragmentBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar

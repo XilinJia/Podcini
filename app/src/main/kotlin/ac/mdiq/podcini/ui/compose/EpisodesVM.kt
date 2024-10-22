@@ -3,18 +3,27 @@ package ac.mdiq.podcini.ui.compose
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.storage.database.Episodes
+import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
+import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -22,6 +31,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
@@ -121,7 +131,7 @@ var queueChanged by mutableIntStateOf(0)
 @Stable
 class EpisodeVM(var episode: Episode) {
     var positionState by mutableStateOf(episode.media?.position?:0)
-    var playedState by mutableStateOf(episode.isPlayed())
+    var playedState by mutableIntStateOf(episode.playState)
     var isPlayingState by mutableStateOf(false)
     var ratingState by mutableIntStateOf(episode.rating)
     var inProgressState by mutableStateOf(episode.isInProgress)
@@ -157,9 +167,9 @@ class EpisodeVM(var episode: Episode) {
                             Logd("EpisodeVM", "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
                             if (episode.id == changes.obj.id) {
                                 withContext(Dispatchers.Main) {
-                                    playedState = changes.obj.isPlayed()
+                                    playedState = changes.obj.playState
                                     ratingState = changes.obj.rating
-//                                    episode = changes.obj     // direct assignment doesn't update member like media??
+                                    episode = changes.obj     // direct assignment doesn't update member like media??
                                 }
                                 Logd("EpisodeVM", "episodeMonitor $playedState $playedState ")
                             } else Logd("EpisodeVM", "episodeMonitor index out bound")
@@ -183,7 +193,7 @@ class EpisodeVM(var episode: Episode) {
                                     positionState = changes.obj.media?.position ?: 0
                                     inProgressState = changes.obj.isInProgress
                                     Logd("EpisodeVM", "mediaMonitor $positionState $inProgressState ${episode.title}")
-//                                    episode = changes.obj
+                                    episode = changes.obj
 //                                    Logd("EpisodeVM", "mediaMonitor downloaded: ${changes.obj.media?.downloaded} ${episode.media?.downloaded}")
                                 }
                             } else Logd("EpisodeVM", "mediaMonitor index out bound")
@@ -232,6 +242,61 @@ fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 }
 
 @Composable
+fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(shape = RoundedCornerShape(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                for (state in PlayState.entries) {
+                    if (state.userSet) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)
+                            .clickable {
+                                for (item in selected) {
+                                    var item_ = runBlocking { setPlayStateSync(state.code, false, item) }
+                                    val media: EpisodeMedia? = item_.media
+                                    val shouldAutoDelete = if (item_.feed == null) false else shouldAutoDeleteItem(item_.feed!!)
+                                    if (media != null && hasAlmostEnded(media) && shouldAutoDelete) {
+                                        item_ = deleteMediaSync(context, item_)
+                                        if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item_)
+                                    }
+                                    when (state) {
+                                        PlayState.UNPLAYED -> {
+                                            if (isProviderConnected && item_?.feed?.isLocalFeed != true && item_?.media != null) {
+                                                val actionNew: EpisodeAction = EpisodeAction.Builder(item_!!, EpisodeAction.NEW).currentTimestamp().build()
+                                                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionNew)
+                                            }
+                                        }
+                                        PlayState.PLAYED -> {
+                                            if (item_?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
+                                                val media: EpisodeMedia? = item_?.media
+                                                // not all items have media, Gpodder only cares about those that do
+                                                if (isProviderConnected && media != null) {
+                                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(item_!!, EpisodeAction.PLAY)
+                                                        .currentTimestamp()
+                                                        .started(media.getDuration() / 1000)
+                                                        .position(media.getDuration() / 1000)
+                                                        .total(media.getDuration() / 1000)
+                                                        .build()
+                                                    SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionPlay)
+                                                }
+                                            }
+                                        }
+                                        else -> {}
+                                    }
+                                }
+                                onDismissRequest()
+                            }) {
+                            Icon(imageVector = ImageVector.vectorResource(id = state.res), "")
+                            Text(state.name, Modifier.padding(start = 4.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val queues = realm.query(PlayQueue::class).find()
     Dialog(onDismissRequest = onDismissRequest) {
@@ -271,7 +336,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                             if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
                         }
                         selected.forEach { e ->
-                            runBlocking { addToQueueSync(false, e, toQueue) }
+                            runBlocking { addToQueueSync(e, toQueue) }
                         }
                         onDismissRequest()
                     }) {
@@ -365,6 +430,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
 
     var showChooseRatingDialog by remember { mutableStateOf(false) }
     if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
+
+    var showPlayStateDialog by remember { mutableStateOf(false) }
+    if (showPlayStateDialog) PlayStateDialog(selected) { showPlayStateDialog = false }
 
     var showPutToQueueDialog by remember { mutableStateOf(false) }
     if (showPutToQueueDialog) PutToQueueDialog(selected) { showPutToQueueDialog = false }
@@ -460,13 +528,14 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
             { Row(modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .clickable {
+                    showPlayStateDialog = true
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_mark_played: ${selected.size}")
-                    setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
+//                    setPlayState(PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mark_played), "Toggle played state")
-                Text(stringResource(id = R.string.toggle_played_label)) } },
+                Text(stringResource(id = R.string.set_play_state_label)) } },
             { Row(modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .clickable {
@@ -483,7 +552,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_playlist_play: ${selected.size}")
-                    Queues.addToQueue(true, *selected.toTypedArray())
+                    Queues.addToQueue(*selected.toTypedArray())
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "Add to active queue")
                 Text(stringResource(id = R.string.add_to_queue_label)) } },
@@ -520,8 +589,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
         )
         if (selected.isNotEmpty() && selected[0].isRemote.value)
             options.add {
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                Row(modifier = Modifier.padding(horizontal = 16.dp)
                     .clickable {
                         isExpanded = false
                         selectMode = false
@@ -594,7 +662,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val (imgvCover, checkMark) = createRefs()
                 val imgLoc = remember(vm) { ImageResourceUtils.getEpisodeListImageLocation(vm.episode) }
-                Logd(TAG, "imgLoc: $imgLoc")
+//                Logd(TAG, "imgLoc: $imgLoc")
                 AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                     .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                     contentDescription = "imgvCover",
@@ -609,8 +677,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                             if (selectMode) toggleSelected()
                             else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
                         }))
-                val alpha = if (vm.playedState) 1.0f else 0f
-                if (vm.playedState) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
+                val alpha = if (vm.playedState >= PlayState.SKIPPED.code) 1.0f else 0f
+                if (vm.playedState >= PlayState.SKIPPED.code) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
                     modifier = Modifier.background(Color.Green).alpha(alpha)
                         .constrainAs(checkMark) {
                             bottom.linkTo(parent.bottom)
@@ -640,14 +708,16 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     vms[index].inQueueState = curQueue.contains(vms[index].episode)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Logd(TAG, "info row")
-                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
+//                    Logd(TAG, "info row")
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
                     if (vm.ratingState != Rating.UNRATED.code)
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(14.dp).height(14.dp))
+                    val playStateRes = PlayState.fromCode(vm.playedState).res
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(14.dp).height(14.dp))
                     if (vm.inQueueState)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
+                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
                     val curContext = LocalContext.current
                     val dur = remember { vm.episode.media?.getDuration() ?: 0 }
                     val durText = remember { DurationConverter.getDurationStringLong(dur) }
@@ -681,7 +751,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true },
                         onTap = { vms[index].actionButton.onClick(activity) })
                 }, ) {
-                Logd(TAG, "button box")
+//                Logd(TAG, "button box")
                 vm.actionRes = vm.actionButton.getDrawable()
                 Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                 if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },

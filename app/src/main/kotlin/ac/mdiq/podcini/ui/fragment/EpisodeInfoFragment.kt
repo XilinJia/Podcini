@@ -1,14 +1,10 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
-import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.net.utils.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre
@@ -16,7 +12,6 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -24,18 +19,12 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Rating
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.ChaptersDialog
-import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
@@ -109,7 +98,7 @@ import java.util.*
  */
 @UnstableApi
 class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: EpisodeInfoFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var homeFragment: EpisodeHomeFragment? = null
@@ -126,7 +115,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var hasMedia by mutableStateOf(true)
     var rating by mutableStateOf(episode?.rating ?: Rating.UNRATED.code)
     private var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
-    var isPlayed by mutableStateOf(episode?.isPlayed() ?: false)
+    var isPlayed by mutableIntStateOf(episode?.playState ?: PlayState.UNSPECIFIED.code)
 
     private var webviewData by mutableStateOf("")
 
@@ -141,7 +130,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        _binding = EpisodeInfoFragmentBinding.inflate(inflater, container, false)
+        _binding = ComposeFragmentBinding.inflate(inflater, container, false)
         Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
@@ -150,7 +139,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.setOnMenuItemClickListener(this)
 
-        binding.composeView.setContent{
+        binding.mainView.setContent{
             CustomTheme(requireContext()) {
                 MainView()
             }
@@ -188,6 +177,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         var showChaptersDialog by remember { mutableStateOf(false) }
         if (showChaptersDialog && episode?.media != null) ChaptersDialog(media = episode!!.media!!, onDismissRequest = {showChaptersDialog = false})
 
+        var showPlayStateDialog by remember { mutableStateOf(false) }
+        if (showPlayStateDialog) PlayStateDialog(listOf(episode!!)) { showPlayStateDialog = false }
+
         Column {
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
@@ -200,39 +192,40 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.4f))
-                val playedIconRes = if (!isPlayed) R.drawable.ic_mark_unplayed else R.drawable.ic_mark_played
+                val playedIconRes = PlayState.fromCode(isPlayed).res
                 Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp)
                     .clickable(onClick = {
-                        if (isPlayed) {
-                            setPlayState(Episode.PlayState.UNPLAYED.code, false, episode!!)
-                            if (isProviderConnected && episode?.feed?.isLocalFeed != true && episode?.media != null) {
-                                val actionNew: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.NEW).currentTimestamp().build()
-                                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionNew)
-                            }
-                        } else {
-                            setPlayState(Episode.PlayState.PLAYED.code, true, episode!!)
-                            if (episode?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
-                                val media: EpisodeMedia? = episode?.media
-                                // not all items have media, Gpodder only cares about those that do
-                                if (isProviderConnected && media != null) {
-                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.PLAY)
-                                        .currentTimestamp()
-                                        .started(media.getDuration() / 1000)
-                                        .position(media.getDuration() / 1000)
-                                        .total(media.getDuration() / 1000)
-                                        .build()
-                                    SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionPlay)
-                                }
-                            }
-                        }
+                        showPlayStateDialog = true
+//                        if (isPlayed) {
+//                            setPlayState(PlayState.UNPLAYED.code, false, episode!!)
+//                            if (isProviderConnected && episode?.feed?.isLocalFeed != true && episode?.media != null) {
+//                                val actionNew: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.NEW).currentTimestamp().build()
+//                                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionNew)
+//                            }
+//                        } else {
+//                            setPlayState(PlayState.PLAYED.code, true, episode!!)
+//                            if (episode?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
+//                                val media: EpisodeMedia? = episode?.media
+//                                // not all items have media, Gpodder only cares about those that do
+//                                if (isProviderConnected && media != null) {
+//                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.PLAY)
+//                                        .currentTimestamp()
+//                                        .started(media.getDuration() / 1000)
+//                                        .position(media.getDuration() / 1000)
+//                                        .total(media.getDuration() / 1000)
+//                                        .build()
+//                                    SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionPlay)
+//                                }
+//                            }
+//                        }
                 }))
                 if (episode?.media != null) {
                     Spacer(modifier = Modifier.weight(0.2f))
                     val inQueueIconRes = if (inQueue) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
                     Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
-                            if (inQueue) removeFromQueue(episode!!) else addToQueue(true, episode!!)
+                            if (inQueue) removeFromQueue(episode!!) else addToQueue(episode!!)
                         }))
                 }
                 Spacer(modifier = Modifier.weight(0.2f))
@@ -625,7 +618,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         if (episode != null) {
                             rating = episode!!.rating
                             inQueue = curQueue.contains(episode!!)
-                            isPlayed = episode!!.isPlayed()
+                            isPlayed = episode!!.playState
                         }
                         onFragmentLoaded()
                         itemLoaded = true

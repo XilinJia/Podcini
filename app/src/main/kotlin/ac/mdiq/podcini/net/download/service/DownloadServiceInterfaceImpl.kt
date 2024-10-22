@@ -362,7 +362,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
             if (enqueueDownloadedEpisodes()) {
                 if (item.feed?.preferences?.queue != null)
-                    runBlocking { Queues.addToQueueSync(false, item, item.feed?.preferences?.queue) }
+                    runBlocking { Queues.addToQueueSync(item, item.feed?.preferences?.queue) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
             workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())

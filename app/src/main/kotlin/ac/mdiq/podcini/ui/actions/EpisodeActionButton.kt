@@ -5,16 +5,16 @@ import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.utils.NetworkUtils
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
-import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.database.Episodes
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
@@ -36,15 +36,19 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -153,7 +157,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
 class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
-        get() = if (item.link.isNullOrEmpty()) false else true
+        get() = !item.link.isNullOrEmpty()
 
     override fun getLabel(): Int {
         return R.string.visit_website_label
@@ -222,6 +226,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
+            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, item) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         playVideoIfNeeded(context, media)
@@ -253,8 +258,7 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
 
     override val visibility: Boolean
         get() {
-            if (item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)) return true
-            return false
+            return item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)
         }
 
     override fun getLabel(): Int {
@@ -291,7 +295,7 @@ class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
 
 class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
-        get() = if (item.feed?.isLocalFeed == true) false else true
+        get() = item.feed?.isLocalFeed != true
 
     override fun getLabel(): Int {
         return R.string.download_label
@@ -371,7 +375,10 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
         fun stream(context: Context, media: Playable) {
             if (media !is EpisodeMedia || !InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
-            if (media is EpisodeMedia && media.episode != null) EventFlow.postEvent(FlowEvent.PlayEvent(media.episode!!))
+            if (media is EpisodeMedia && media.episode != null) {
+                val item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, media.episode!!) }
+                EventFlow.postEvent(FlowEvent.PlayEvent(item))
+            }
             playVideoIfNeeded(context, media)
         }
     }
@@ -382,7 +389,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
     private var readerText: String? = null
 
     override val visibility: Boolean
-        get() = if (item.link.isNullOrEmpty()) false else true
+        get() = !item.link.isNullOrEmpty()
 
     override fun getLabel(): Int {
         return R.string.TTS_label
@@ -535,30 +542,11 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
+            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, item) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context,
             MediaType.VIDEO))
         actionState.value = getLabel()
     }
-}
-
-class MarkAsPlayedActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val visibility: Boolean
-        get() = if (item.isPlayed()) false else true
-
-    override fun getLabel(): Int {
-        return (if (item.media != null) R.string.mark_read_label else R.string.mark_read_no_media_label)
-    }
-
-    override fun getDrawable(): Int {
-        return R.drawable.ic_check
-    }
-
-    @UnstableApi
-    override fun onClick(context: Context) {
-        if (!item.isPlayed()) Episodes.setPlayState(Episode.PlayState.PLAYED.code, true, item)
-        actionState.value = getLabel()
-    }
-
 }

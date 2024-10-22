@@ -61,7 +61,7 @@ class DbTasksTest {
         feed.episodes.clear()
         for (i in 0 until numItems) {
             feed.episodes.add(Episode(0, "item $i", "id $i", "link $i",
-                Date(), Episode.PlayState.UNPLAYED.code, feed))
+                Date(), PlayState.UNPLAYED.code, feed))
         }
         val newFeed = updateFeed(context, feed, false)
 
@@ -97,7 +97,7 @@ class DbTasksTest {
         feed.episodes.clear()
         for (i in 0 until numItemsOld) {
             feed.episodes.add(Episode(0, "item $i", "id $i", "link $i",
-                Date(i.toLong()), Episode.PlayState.PLAYED.code, feed))
+                Date(i.toLong()), PlayState.PLAYED.code, feed))
         }
 //        val adapter = getInstance()
 //        adapter.open()
@@ -117,7 +117,7 @@ class DbTasksTest {
 
         for (i in numItemsOld until numItemsNew + numItemsOld) {
             feed.episodes.add(0, Episode(0, "item $i", "id $i", "link $i",
-                Date(i.toLong()), Episode.PlayState.UNPLAYED.code, feed))
+                Date(i.toLong()), PlayState.UNPLAYED.code, feed))
         }
 
         val newFeed = updateFeed(context, feed, false)
@@ -134,7 +134,7 @@ class DbTasksTest {
     @Test
     fun testUpdateFeedMediaUrlResetState() {
         val feed = Feed("url", null, "title")
-        val item = Episode(0, "item", "id", "link", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "item", "id", "link", Date(), PlayState.PLAYED.code, feed)
         feed.episodes.add(item)
 
 //        val adapter = getInstance()
@@ -166,7 +166,7 @@ class DbTasksTest {
         feed.episodes.clear()
         for (i in 0..9) {
             feed.episodes.add(
-                Episode(0, "item $i", "id $i", "link $i", Date(i.toLong()), Episode.PlayState.PLAYED.code, feed))
+                Episode(0, "item $i", "id $i", "link $i", Date(i.toLong()), PlayState.PLAYED.code, feed))
         }
 //        val adapter = getInstance()
 //        adapter.open()
@@ -188,7 +188,7 @@ class DbTasksTest {
         feed.episodes.clear()
         for (i in 0..9) {
             val item =
-                Episode(0, "item $i", "id $i", "link $i", Date(i.toLong()), Episode.PlayState.PLAYED.code, feed)
+                Episode(0, "item $i", "id $i", "link $i", Date(i.toLong()), PlayState.PLAYED.code, feed)
             val media = EpisodeMedia(item, "download url $i", 123, "media/mp3")
             item.setMedia(media)
             feed.episodes.add(item)
@@ -244,7 +244,7 @@ class DbTasksTest {
             val items: MutableList<Episode> = ArrayList(numFeedItems)
             for (i in 1..numFeedItems) {
                 val item = Episode(0, "item $i of $title", "id$title$i", "link",
-                    Date(), Episode.PlayState.UNPLAYED.code, feed)
+                    Date(), PlayState.UNPLAYED.code, feed)
                 items.add(item)
             }
             feed.episodes.addAll(items)

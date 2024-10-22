@@ -193,29 +193,15 @@
     <item quantity="other">Dilamet ez eus bet %d rann pellgarget.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Tennet eo bet eus ar voest degemer</string>
-  <string name="mark_read_label">Merkañ evel lennet</string>
-  <string name="toggle_played_label">Lakaat da gemm stad al lenn</string>
-  <string name="marked_as_played_label">Lakaet war-well evel lennet</string>
-  <string name="marked_as_unplayed_label">Lakaet war-well evel lakaet da baouez</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Merkañ evel lennet</string>
   <string name="play_this_to_seek_position">Evit kemmañ al lec\'hiadur e rankit lenn ar rann</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d rann merket evel lennet</item>
-    <item quantity="two">%d rann merket evel lennet</item>
-    <item quantity="few">%d rann merket evel lennet</item>
-    <item quantity="many">%d rann merket evel lennet</item>
-    <item quantity="other">%d rann merket evel lennet</item>
-  </plurals>
-  <string name="mark_unread_label">Merkañ evel anlennet</string>
-  <string name="mark_unread_label_no_media">Merkañ evel anlennet</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d rann merket evel anlennet. </item>
-    <item quantity="two">%d rann merket evel anlennet. </item>
-    <item quantity="few">%d rann merket evel anlennet. </item>
-    <item quantity="many">%d rann merket evel anlennet.</item>
-    <item quantity="other">%d rann merket evel anlennet. </item>
-  </plurals>
+
+
   <string name="add_to_queue_label">Ouzhpennañ el lost</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d rann ouzhpennet el lost</item>

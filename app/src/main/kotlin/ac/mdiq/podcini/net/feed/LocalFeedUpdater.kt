@@ -121,7 +121,7 @@ object LocalFeedUpdater {
     }
 
     private fun createFeedItem(feed: Feed, file: FastDocumentFile, context: Context): Episode {
-        val item = Episode(0L, file.name, UUID.randomUUID().toString(), file.name, Date(file.lastModified), Episode.PlayState.UNPLAYED.code, feed)
+        val item = Episode(0L, file.name, UUID.randomUUID().toString(), file.name, Date(file.lastModified), PlayState.UNPLAYED.code, feed)
         item.disableAutoDownload()
         val size = file.length
         val media = EpisodeMedia(0, item, 0, 0, size, file.type,

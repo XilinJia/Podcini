@@ -97,7 +97,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
-        val item = Episode(0, "Item", "Item", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "Item", "Item", "url", Date(), PlayState.PLAYED.code, feed)
         items.add(item)
         val media = EpisodeMedia(0, item, duration, 1, 1, "mime_type",
             "dummy path", "download_url", true, null, 0, 0)
@@ -138,7 +138,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
-        val item = Episode(0, "Item", "Item", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "Item", "Item", "url", Date(), PlayState.PLAYED.code, feed)
 
         var media: EpisodeMedia? = EpisodeMedia(0, item, 1, 1, 1, "mime_type",
             dest.absolutePath, "download_url", true, null, 0, 0)
@@ -176,7 +176,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
-        val item = Episode(0, "Item", "Item", "url", Date(), Episode.PlayState.UNPLAYED.code, feed)
+        val item = Episode(0, "Item", "Item", "url", Date(), PlayState.UNPLAYED.code, feed)
 
         var media: EpisodeMedia? = EpisodeMedia(0, item, 1, 1, 1, "mime_type",
             dest.absolutePath, "download_url", true, null, 0, 0)
@@ -218,7 +218,7 @@ class DbWriterTest {
         val itemFiles: MutableList<File> = ArrayList()
         // create items with downloaded media files
         for (i in 0..9) {
-            val item = Episode(0, "Item $i", "Item$i", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "Item $i", "Item$i", "url", Date(), PlayState.PLAYED.code, feed)
             feed.episodes.add(item)
 
             val enc = File(destFolder, "file $i")
@@ -308,7 +308,7 @@ class DbWriterTest {
 
         // create items
         for (i in 0..9) {
-            val item = Episode(0, "Item $i", "Item$i", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "Item $i", "Item$i", "url", Date(), PlayState.PLAYED.code, feed)
             feed.episodes.add(item)
         }
 
@@ -352,7 +352,7 @@ class DbWriterTest {
 
         // create items with downloaded media files
         for (i in 0..9) {
-            val item = Episode(0, "Item $i", "Item$i", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "Item $i", "Item$i", "url", Date(), PlayState.PLAYED.code, feed)
             feed.episodes.add(item)
             val enc = File(destFolder, "file $i")
             val media = EpisodeMedia(0, item, 1, 1, 1, "mime_type",
@@ -415,7 +415,7 @@ class DbWriterTest {
 
         // create items with downloaded media files
         for (i in 0..9) {
-            val item = Episode(0, "Item $i", "Item$i", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "Item $i", "Item$i", "url", Date(), PlayState.PLAYED.code, feed)
             feed.episodes.add(item)
             val enc = File(destFolder, "file $i")
             val media = EpisodeMedia(0, item, 1, 1, 1, "mime_type",
@@ -463,7 +463,7 @@ class DbWriterTest {
 
         // create items
         for (i in 0..9) {
-            val item = Episode(0, "Item $i", "Item$i", "url", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "Item $i", "Item$i", "url", Date(), PlayState.PLAYED.code, feed)
             item.setMedia(EpisodeMedia(item, "", 0, ""))
             feed.episodes.add(item)
         }
@@ -494,7 +494,7 @@ class DbWriterTest {
     private fun playbackHistorySetup(playbackCompletionDate: Date?): EpisodeMedia {
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
-        val item = Episode(0, "title", "id", "link", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "title", "id", "link", Date(), PlayState.PLAYED.code, feed)
         val media = EpisodeMedia(0, item, 10, 0, 1, "mime", null,
             "url", false, playbackCompletionDate, 0, 0)
         feed.episodes.add(item)
@@ -547,7 +547,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
         for (i in 0 until numItems) {
-            val item = Episode(0, "title $i", "id $i", "link $i", Date(), Episode.PlayState.PLAYED.code, feed)
+            val item = Episode(0, "title $i", "id $i", "link $i", Date(), PlayState.PLAYED.code, feed)
             item.setMedia(EpisodeMedia(item, "", 0, ""))
             feed.episodes.add(item)
         }
@@ -576,7 +576,7 @@ class DbWriterTest {
     fun testAddQueueItemSingleItem() {
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
-        val item = Episode(0, "title", "id", "link", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "title", "id", "link", Date(), PlayState.PLAYED.code, feed)
         item.setMedia(EpisodeMedia(item, "", 0, ""))
         feed.episodes.add(item)
 
@@ -587,7 +587,7 @@ class DbWriterTest {
 
         Assert.assertTrue(item.id != 0L)
         runBlocking {
-            val job = addToQueue(true, item)
+            val job = addToQueue(item)
             withTimeout(TIMEOUT*1000) { job.join() }
         }
 
@@ -605,7 +605,7 @@ class DbWriterTest {
     fun testAddQueueItemSingleItemAlreadyInQueue() {
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
-        val item = Episode(0, "title", "id", "link", Date(), Episode.PlayState.PLAYED.code, feed)
+        val item = Episode(0, "title", "id", "link", Date(), PlayState.PLAYED.code, feed)
         item.setMedia(EpisodeMedia(item, "", 0, ""))
         feed.episodes.add(item)
 
@@ -616,7 +616,7 @@ class DbWriterTest {
 
         Assert.assertTrue(item.id != 0L)
         runBlocking {
-            val job = addToQueue(true, item)
+            val job = addToQueue(item)
             withTimeout(TIMEOUT*1000) { job.join() }
         }
 
@@ -629,7 +629,7 @@ class DbWriterTest {
 //        adapter.close()
 
         runBlocking {
-            val job = addToQueue(true, item)
+            val job = addToQueue(item)
             withTimeout(TIMEOUT*1000) { job.join() }
         }
 //        adapter = getInstance()
@@ -766,7 +766,7 @@ class DbWriterTest {
         feed.episodes.clear()
         for (i in 0 until numItems) {
             val item = Episode(0, "title $i", "id $i", "link $i",
-                Date(), Episode.PlayState.PLAYED.code, feed)
+                Date(), PlayState.PLAYED.code, feed)
             item.setMedia(EpisodeMedia(item, "", 0, ""))
             feed.episodes.add(item)
         }
@@ -817,7 +817,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
         for (i in 0 until numItems) {
-            val item = Episode(0, "title $i", "id $i", "link $i", Date(), Episode.PlayState.NEW.code, feed)
+            val item = Episode(0, "title $i", "id $i", "link $i", Date(), PlayState.NEW.code, feed)
             item.setMedia(EpisodeMedia(item, "", 0, ""))
             feed.episodes.add(item)
         }
@@ -848,7 +848,7 @@ class DbWriterTest {
             val feed = Feed("url", null, "title")
             feed.episodes.clear()
             for (i in 0 until numItems) {
-                val item = Episode(0, "title $i", "id $i", "link $i", Date(), Episode.PlayState.PLAYED.code, feed)
+                val item = Episode(0, "title $i", "id $i", "link $i", Date(), PlayState.PLAYED.code, feed)
                 item.setMedia(EpisodeMedia(item, "", 0, ""))
                 feed.episodes.add(item)
             }

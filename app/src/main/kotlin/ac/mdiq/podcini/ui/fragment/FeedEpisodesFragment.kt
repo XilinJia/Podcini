@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -10,11 +10,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
@@ -36,7 +33,10 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -72,7 +73,7 @@ import java.util.concurrent.Semaphore
  */
 @UnstableApi class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private var _binding: FeedItemListFragmentBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var swipeActions: SwipeActions
@@ -87,6 +88,7 @@ import java.util.concurrent.Semaphore
     private var headerCreated = false
     private var feedID: Long = 0
     private var feed by mutableStateOf<Feed?>(null)
+    var rating by mutableStateOf(Rating.UNRATED.code)
 
     private val episodes = mutableStateListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
@@ -112,7 +114,7 @@ import java.util.concurrent.Semaphore
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
 
-        _binding = FeedItemListFragmentBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
 
         binding.toolbar.inflateMenu(R.menu.feed_episodes)
         binding.toolbar.setOnMenuItemClickListener(this)
@@ -169,7 +171,7 @@ import java.util.concurrent.Semaphore
                     requireActivity().supportFragmentManager.executePendingTransactions()
                 }
                 Column {
-                    FeedEpisodesHeader(activity = (activity as MainActivity), feed = feed, filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
+                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {
                         swipeActions.showDialog()
                     })
@@ -225,8 +227,14 @@ import java.util.concurrent.Semaphore
 
     @kotlin.OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
+    fun FeedEpisodesHeader(activity: MainActivity, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
+        var showChooseRatingDialog by remember { mutableStateOf(false) }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(feed!!)) {
+            showChooseRatingDialog = false
+            feed = realm.query(Feed::class).query("id == $0", feed!!.id).first().find()!!
+            rating = feed!!.rating
+        }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
             val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
             AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
@@ -238,7 +246,7 @@ import java.util.concurrent.Semaphore
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 })
-            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f))
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f))
                 .constrainAs(bgColor) {
                     bottom.linkTo(parent.bottom)
                     top.linkTo(parent.top)
@@ -249,20 +257,30 @@ import java.util.concurrent.Semaphore
                 .constrainAs(controlRow) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
+                    width = Dimension.fillToConstraints
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.7f))
+                val ratingIconRes = Rating.fromCode(rating).res
+                Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
+                        showChooseRatingDialog = true
+                    }))
+                Spacer(modifier = Modifier.weight(0.2f))
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), tint = textColor, contentDescription = "butSort",
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = { SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog") }))
+                Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
                 Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         if (feed != null) {
-                            val fragment = FeedSettingsFragment.newInstance(feed)
+                            val fragment = FeedSettingsFragment.newInstance(feed!!)
                             activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
                         }
                     }))
-                Spacer(modifier = Modifier.weight(0.5f))
-                Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.weight(0.4f))
+                Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.End, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
             }
 //            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
 //                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
@@ -274,21 +292,23 @@ import java.util.concurrent.Semaphore
 //                    bottom.linkTo(parent.bottom)
 //                    end.linkTo(parent.end)
 //                })
-            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
-                modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                }.clickable(onClick = {
-                    if (feed != null) {
-                        val fragment = FeedInfoFragment.newInstance(feed)
-                        activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
-                    }
-                }))
-            Column(Modifier.fillMaxWidth().constrainAs(taColumn) {
-                top.linkTo(imgvCover.top)
-                start.linkTo(imgvCover.end) }) {
-                Text(feed?.title?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(feed?.author?:"", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).constrainAs(imgvCover) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }) {
+                AsyncImage(model = feed?.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                    modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp).clickable(onClick = {
+                        if (feed != null) {
+                            val fragment = FeedInfoFragment.newInstance(feed!!)
+                            activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
+                        }
+                    }))
+                Column(Modifier.padding(top = 10.dp)) {
+                    Text(feed?.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     }
@@ -386,7 +406,7 @@ import java.util.concurrent.Semaphore
                     } catch (e: InterruptedException) { throw RuntimeException(e) }
                 }.start()
             }
-            R.id.sort_items -> SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
+//            R.id.sort_items -> SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
 //            R.id.filter_items -> {}
 //            R.id.settings -> {
 //                if (feed != null) {
@@ -651,6 +671,7 @@ import java.util.concurrent.Semaphore
                     }
                     withContext(Dispatchers.Main) {
                         Logd(TAG, "loadItems subscribe called ${feed?.title}")
+                        rating = feed?.rating ?: Rating.UNRATED.code
                         swipeActions.setFilter(feed?.episodeFilter)
                         refreshHeaderView()
 //                        if (feed != null) {

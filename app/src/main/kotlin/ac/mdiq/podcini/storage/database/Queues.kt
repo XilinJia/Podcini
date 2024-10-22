@@ -6,6 +6,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -77,9 +78,9 @@ object Queues {
             appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
         }
 
-    fun queueFromName(name: String): PlayQueue? {
-        return realm.query(PlayQueue::class).query("name == $0", name).first().find()
-    }
+//    fun queueFromName(name: String): PlayQueue? {
+//        return realm.query(PlayQueue::class).query("name == $0", name).first().find()
+//    }
 
     fun getInQueueEpisodeIds(): Set<Long> {
         Logd(TAG, "getQueueIDList() called")
@@ -98,13 +99,13 @@ object Queues {
      * @param episodes               the Episode objects that should be added to the queue.
      */
     @UnstableApi @JvmStatic @Synchronized
-    fun addToQueue(markAsUnplayed: Boolean, vararg episodes: Episode) : Job {
+    fun addToQueue(vararg episodes: Episode) : Job {
         Logd(TAG, "addToQueue( ... ) called")
         return runOnIOScope {
             if (episodes.isEmpty()) return@runOnIOScope
 
             var queueModified = false
-            val markAsUnplayeds = mutableListOf<Episode>()
+            val setInQueue = mutableListOf<Episode>()
             val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<Episode> = ArrayList()
             val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
@@ -121,7 +122,7 @@ object Queues {
                 updatedItems.add(episode)
                 qItems.add(insertPosition, episode)
                 queueModified = true
-                if (episode.isNew) markAsUnplayeds.add(episode)
+                if (episode.playState < PlayState.INQUEUE.code) setInQueue.add(episode)
                 insertPosition++
             }
             if (queueModified) {
@@ -134,13 +135,13 @@ object Queues {
                 }
                 for (event in events) EventFlow.postEvent(event)
 
-                if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.PlayState.UNPLAYED.code, false, *markAsUnplayeds.toTypedArray())
+                setPlayState(PlayState.INQUEUE.code, false, *setInQueue.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
         }
     }
 
-    suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
+    suspend fun addToQueueSync(episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
         val queue = queue_ ?: curQueue
         if (queue.episodeIds.contains(episode.id)) return
@@ -157,7 +158,7 @@ object Queues {
         }
         if (queue.id == curQueue.id) curQueue = queueNew
 
-        if (markAsUnplayed && episode.isNew) setPlayState(Episode.PlayState.UNPLAYED.code, false, episode)
+        if (episode.playState < PlayState.INQUEUE.code) setPlayState(PlayState.INQUEUE.code, false, episode)
         if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
@@ -193,6 +194,9 @@ object Queues {
                 it.idsBinList.addAll(it.episodeIds)
                 it.episodeIds.clear()
                 it.update()
+            }
+            for (e in curQueue.episodes) {
+                if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
             }
             curQueue.episodes.clear()
             EventFlow.postEvent(FlowEvent.QueueEvent.cleared())
@@ -230,7 +234,7 @@ object Queues {
         var queue = queue_ ?: curQueue
         if (queue.size() == 0) return
 
-        val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
+        val events: MutableList<FlowEvent.QueueEvent> = mutableListOf()
         val indicesToRemove: MutableList<Int> = mutableListOf()
         val qItems = queue.episodes.toMutableList()
         val eList = episodes.toList()
@@ -239,6 +243,7 @@ object Queues {
             if (indexOfItemWithId(eList, episode.id) >= 0) {
                 Logd(TAG, "removing from queue: ${episode.id} ${episode.title}")
                 indicesToRemove.add(i)
+                if (episode.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, episode)
                 if (queue.id == curQueue.id) events.add(FlowEvent.QueueEvent.removed(episode))
             }
         }
@@ -270,6 +275,10 @@ object Queues {
             if (q.size() == 0 || q.id == curQueue.id) continue
             idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (idsInQueuesToRemove.isNotEmpty()) {
+                val eList = realm.query(Episode::class).query("id IN $0", idsInQueuesToRemove).find()
+                for (e in eList) {
+                    if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
+                }
                 upsert(q) {
                     it.idsBinList.removeAll(idsInQueuesToRemove)
                     it.idsBinList.addAll(idsInQueuesToRemove)
@@ -288,6 +297,10 @@ object Queues {
         }
         idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (idsInQueuesToRemove.isNotEmpty()) {
+            val eList = realm.query(Episode::class).query("id IN $0", idsInQueuesToRemove).find()
+            for (e in eList) {
+                if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
+            }
             curQueue = upsert(q) {
                 it.idsBinList.removeAll(idsInQueuesToRemove)
                 it.idsBinList.addAll(idsInQueuesToRemove)

@@ -203,23 +203,14 @@
     <item quantity="other">%d heruntergeladene Episoden gelöscht.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Aus dem Posteingang entfernt</string>
-  <string name="mark_read_label">Als gespielt markieren</string>
-  <string name="toggle_played_label">Abgespielt-Zustand umschalten</string>
-  <string name="marked_as_played_label">Als gespielt markieren</string>
-  <string name="marked_as_unplayed_label">Als ungespielt markieren</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Als gelesen markieren</string>
   <string name="play_this_to_seek_position">Um auf eine Position zu springen, musst du die Episode abspielen</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d Episode als gespielt markiert.</item>
-    <item quantity="other">%d Episoden als gespielt markiert.</item>
-  </plurals>
-  <string name="mark_unread_label">Als ungespielt markieren</string>
-  <string name="mark_unread_label_no_media">Als ungelesen markieren</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d Episode als ungespielt markiert.</item>
-    <item quantity="other">%d Episoden als ungespielt markiert.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Zur Warteschlange hinzufügen</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d Episode zur Warteschlange hinzugefügt.</item>

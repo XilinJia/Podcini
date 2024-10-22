@@ -105,17 +105,10 @@
   <string name="stream_label">串流播放</string>
   <string name="delete_label">刪除</string>
   <string name="delete_failed">刪除文件失敗。重啟設備試試看。</string>
-  <string name="mark_read_label">標記為已播放</string>
+
   <string name="mark_read_no_media_label">標示為已讀</string>
   <string name="play_this_to_seek_position">若想指定播放位置，請先播放該單集</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="other">共有 %d 集標示為已播放。</item>
-  </plurals>
-  <string name="mark_unread_label">標記為未播放</string>
-  <string name="mark_unread_label_no_media">標示為未讀</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="other">共有 %d 集標示為未播放。</item>
-  </plurals>
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="other">已將 %d 集加入待播清單。</item>
   </plurals>

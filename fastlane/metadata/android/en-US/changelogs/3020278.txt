@@ -1,0 +1,14 @@
+ Version 6.12.0
+
+* created a new play state system: Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Ignored,
+	* among which Unplayed, Later, Soon, Skipped, Played, Ignored are settable by the user
+	* when an episode is started to play, its state is set to InProgress
+	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
+	* in Episode filter, for now, Unplayed is all lower than Played, while Played includes Played, Ignore
+* fixed issues from last release: action button not update, icon at PlayUI not update
+* re-worked the header layouts of FeedInfo and FeedEpisodes
+* tuned to show PlayerUI in proper conditions
+* enabled open NavDrawer in LogsFragment
+* in list view of Subscriptions, moved the rating icon to the title
+* NavDrawer is fully in Compose
+* cleaned out some unused or redundant stuff

@@ -217,27 +217,14 @@
     <item quantity="other">%d завантажених епізодів видалено.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Вилучено з вхідних</string>
-  <string name="mark_read_label">Позначити як відтворений</string>
-  <string name="toggle_played_label">Перемикнути стан прослуханості</string>
-  <string name="marked_as_played_label">Позначено як відтворений</string>
-  <string name="marked_as_unplayed_label">Позначено як невідтворений</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Позначити як прочитане</string>
   <string name="play_this_to_seek_position">Щоб перейти до позиції, потрібно відтворити епізод</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d епізод помічено як відтворений</item>
-    <item quantity="few">%d епізоди помічено як відтворені</item>
-    <item quantity="many">%d епізодів помічено як відтворені</item>
-    <item quantity="other">%d епізодів помічено як відтворені</item>
-  </plurals>
-  <string name="mark_unread_label">Позначити як невідтворений</string>
-  <string name="mark_unread_label_no_media">Позначити як непрочитане</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d епізод помічено як невідтворений.</item>
-    <item quantity="few">%d епізоди помічено як невідтворені.</item>
-    <item quantity="many">%d епізодів помічено як невідтворені.</item>
-    <item quantity="other">%d епізодів помічено як невідтворені.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Додати до черги</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d епізод додано до черги.</item>

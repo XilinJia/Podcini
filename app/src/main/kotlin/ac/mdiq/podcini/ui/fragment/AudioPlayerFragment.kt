@@ -6,6 +6,8 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -85,11 +87,8 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
 import java.text.DecimalFormat
@@ -108,6 +107,7 @@ class AudioPlayerFragment : Fragment() {
     private var prevItem: Episode? = null
     private var currentItem: Episode? = null
 
+    private var playButInit = false
     private var isShowPlay: Boolean = true
 
     private var showTimeLeft = false
@@ -166,7 +166,10 @@ class AudioPlayerFragment : Fragment() {
                 }
             }
         }
-        (activity as MainActivity).setPlayerVisible(false)
+        Logd(TAG, "curMedia: ${curMedia?.getIdentifier()}")
+        (activity as MainActivity).setPlayerVisible(curMedia != null)
+        if (curMedia != null) updateUi(curMedia!!)
+//        if (curMedia is EpisodeMedia) setIsShowPlay(isCurrentlyPlaying(curMedia as EpisodeMedia))
         return composeView
     }
 
@@ -188,7 +191,7 @@ class AudioPlayerFragment : Fragment() {
                 if (curMedia == null) return
                 if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
             }
-            val imgLoc_ = remember(currentItem) { imgLoc }
+            val imgLoc_ = remember(currentMedia) { imgLoc }
             AsyncImage(model = ImageRequest.Builder(context).data(imgLoc_)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                 contentDescription = "imgvCover",
@@ -502,9 +505,15 @@ class AudioPlayerFragment : Fragment() {
         txtvPlaybackSpeed = speedStr
 //            binding.butPlaybackSpeed.setSpeed(event.newSpeed) TODO
     }
+
     @UnstableApi
     fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
         Logd(TAG, "onPositionUpdate")
+        if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia is EpisodeMedia) {
+            playButRes = R.drawable.ic_pause
+            playButInit = true
+        }
+
         if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == Playable.INVALID_TIME || curDurationFB == Playable.INVALID_TIME) return
         val converter = TimeSpeedConverter(curSpeedFB)
         currentPosition = converter.convert(event.position)
@@ -520,6 +529,7 @@ class AudioPlayerFragment : Fragment() {
 
         sliderValue = event.position.toFloat()
     }
+
     private fun onPlaybackServiceChanged(event: FlowEvent.PlaybackServiceEvent) {
         when (event.action) {
             FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
@@ -527,6 +537,7 @@ class AudioPlayerFragment : Fragment() {
 //                PlaybackServiceEvent.Action.SERVICE_RESTARTED -> (activity as MainActivity).setPlayerVisible(true)
         }
     }
+
     @UnstableApi
     fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
@@ -578,7 +589,8 @@ class AudioPlayerFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 Logd(TAG, "subscribe: ${currentMedia?.getEpisodeTitle()}")
                 displayMediaInfo(currentMedia!!)
-//                    shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
+                (activity as MainActivity).setPlayerVisible(curMedia != null)
+                //                    shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
                 Logd(TAG, "Webview loaded")
             }
         }.invokeOnCompletion { throwable ->
@@ -738,7 +750,10 @@ class AudioPlayerFragment : Fragment() {
 
     private var loadItemsRunning = false
     fun loadMediaInfo() {
+        Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.getIdentifier()}")
         val actMain = (activity as MainActivity)
+        var i = 0
+        while (curMedia == null && i++ < 6) runBlocking { delay(500) }
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
             return
@@ -747,6 +762,7 @@ class AudioPlayerFragment : Fragment() {
             loadItemsRunning = true
             if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
             val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
+            if (curMedia?.getIdentifier() != currentMedia?.getIdentifier()) updateUi(curMedia!!)
             if (!isCollapsed && curMediaChanged) {
                 updateDetails()
                 Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()}")
@@ -761,7 +777,6 @@ class AudioPlayerFragment : Fragment() {
                     if (item != null) setItem(item)
                     setChapterDividers()
                     sleepTimerActive = isSleepTimerActive()
-                    if (currentMedia != null) updateUi(currentMedia!!)
 //                TODO: disable for now
 //                if (!includingChapters) loadMediaInfo(true)
                 }.invokeOnCompletion { throwable ->

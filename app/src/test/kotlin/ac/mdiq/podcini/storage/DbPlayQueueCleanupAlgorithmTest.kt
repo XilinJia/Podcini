@@ -33,7 +33,7 @@ class DbPlayQueueCleanupAlgorithmTest : DbCleanupTests() {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numItems, feed, items, files, Episode.PlayState.UNPLAYED.code, false, false)
+        populateItems(numItems, feed, items, files, PlayState.UNPLAYED.code, false, false)
 
         performAutoCleanup(context)
         for (i in files.indices) {

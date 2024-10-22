@@ -183,23 +183,14 @@
     <item quantity="other">%d nedlasted episoder slettet.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Fjernet fra innboksen</string>
-  <string name="mark_read_label">Marker som avspilt</string>
-  <string name="toggle_played_label">Bytte avspilt status</string>
-  <string name="marked_as_played_label">Marker som avspilt</string>
-  <string name="marked_as_unplayed_label">Marker som ikke avspilt</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Merk som lest</string>
   <string name="play_this_to_seek_position">For å hoppe til posisjoner, må du spille episoden</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d episode merket som avspilt.</item>
-    <item quantity="other">%d episoder merket som avspilt.</item>
-  </plurals>
-  <string name="mark_unread_label">Marker som ikke avspilt</string>
-  <string name="mark_unread_label_no_media">Merk som ulest</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d episode merket som ikke avspilt.</item>
-    <item quantity="other">%d episoder merket som ikke avspilt.</item>
-  </plurals>
+
   <string name="add_to_queue_label">Legg til i kø</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d episode lagt til i køen.</item>

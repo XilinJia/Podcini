@@ -87,7 +87,7 @@ open class DbCleanupTests {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numItems, feed, items, files, Episode.PlayState.PLAYED.code, false, false)
+        populateItems(numItems, feed, items, files, PlayState.PLAYED.code, false, false)
 
         performAutoCleanup(context)
         for (i in files.indices) {
@@ -104,7 +104,7 @@ open class DbCleanupTests {
         for (i in 0 until numItems) {
             val itemDate = Date((numItems - i).toLong())
             var playbackCompletionDate: Date? = null
-            if (itemState == Episode.PlayState.PLAYED.code) {
+            if (itemState == PlayState.PLAYED.code) {
                 playbackCompletionDate = itemDate
             }
             val item = Episode(0, "title", "id$i", "link", itemDate, itemState, feed)
@@ -140,7 +140,7 @@ open class DbCleanupTests {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numItems, feed, items, files, Episode.PlayState.UNPLAYED.code, false, false)
+        populateItems(numItems, feed, items, files, PlayState.UNPLAYED.code, false, false)
 
         performAutoCleanup(context)
         for (file in files) {
@@ -157,7 +157,7 @@ open class DbCleanupTests {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numItems, feed, items, files, Episode.PlayState.PLAYED.code, true, false)
+        populateItems(numItems, feed, items, files, PlayState.PLAYED.code, true, false)
 
         performAutoCleanup(context)
         for (file in files) {
@@ -198,7 +198,7 @@ open class DbCleanupTests {
         val items: MutableList<Episode> = ArrayList()
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
-        populateItems(numItems, feed, items, files, Episode.PlayState.PLAYED.code, false, true)
+        populateItems(numItems, feed, items, files, PlayState.PLAYED.code, false, true)
 
         performAutoCleanup(context)
         for (file in files) {

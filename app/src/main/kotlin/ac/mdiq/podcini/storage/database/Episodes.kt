@@ -18,11 +18,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Episode.PlayState
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.util.EventFlow
@@ -287,7 +283,7 @@ object Episodes {
         var episode_ = episode
         if (!episode.isManaged()) episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find() ?: episode
         val result = upsert(episode_) {
-            if (played >= PlayState.NEW.code && played <= PlayState.BUILDING.code) it.playState = played
+            if (played != PlayState.UNSPECIFIED.code) it.playState = played
             else {
                 if (it.playState == PlayState.PLAYED.code) it.playState = PlayState.UNPLAYED.code
                 else it.playState = PlayState.PLAYED.code

@@ -175,23 +175,14 @@
     <item quantity="other">%d letöltött epizód törölve.</item>
   </plurals>
 
-  <string name="removed_inbox_label">Eltávolítva a beérkezők közül</string>
-  <string name="mark_read_label">Megjelölés lejátszottként</string>
-  <string name="toggle_played_label">Lejátszott állapot be/ki</string>
-  <string name="marked_as_played_label">Megjelölve lejátszottként</string>
-  <string name="marked_as_unplayed_label">Megjelölve nem lejátszottként</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">Megjelölés olvasottként</string>
   <string name="play_this_to_seek_position">A pozíciókra ugráshoz le kell játszania az epizódot</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">%d epizód megjelölve lejátszottként.</item>
-    <item quantity="other">%d epizód megjelölve lejátszottként.</item>
-  </plurals>
-  <string name="mark_unread_label">Megjelölés nem lejátszottként</string>
-  <string name="mark_unread_label_no_media">Megjelölés olvasatlanként</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">%d epizód megjelölve nem lejátszottként.</item>
-    <item quantity="other">%d epizód megjelölve nem lejátszottként.</item>
-  </plurals>
+
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">%d epizód sorbaállítva.</item>
     <item quantity="other">%d epizód sorbaállítva.</item>

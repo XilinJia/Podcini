@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.NavListBinding
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
@@ -42,6 +40,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,30 +56,30 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 
 class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
     val TAG = this::class.simpleName ?: "Anonymous"
-
-    private var _binding: NavListBinding? = null
-    private val binding get() = _binding!!
     private val feeds = mutableStateListOf<Feed>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        _binding = NavListBinding.inflate(inflater)
         checkHiddenItems()
         getRecentPodcasts()
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                MainView()
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    MainView()
+                }
             }
         }
 
         Logd(TAG, "fragment onCreateView")
-        setupDrawerRoundBackground(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view: View, insets: WindowInsetsCompat ->
+        setupDrawerRoundBackground(composeView)
+        ViewCompat.setOnApplyWindowInsetsListener(composeView) { view: View, insets: WindowInsetsCompat ->
             val bars: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, 0)
             var navigationBarHeight = 0f
@@ -94,7 +93,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             insets
         }
         prefs!!.registerOnSharedPreferenceChangeListener(this)
-        return binding.root
+        return composeView
     }
 
     private fun checkHiddenItems() {
@@ -171,7 +170,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        _binding = null
         prefs!!.unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroyView()
     }
@@ -239,7 +237,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         }
 
         fun getLastNavFragment(): String {
-            val lastFragment: String = prefs!!.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG)?:""
+            val lastFragment: String = prefs?.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG)?:""
             return lastFragment
         }
 

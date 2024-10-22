@@ -393,7 +393,7 @@ class PlaybackService : MediaLibraryService() {
                     if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
-                        item = setPlayStateSync(Episode.PlayState.PLAYED.code, ended || (skipped && smartMarkAsPlayed), item!!)
+                        item = setPlayStateSync(PlayState.PLAYED.code, ended || (skipped && smartMarkAsPlayed), item!!)
                         val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
@@ -1189,7 +1189,7 @@ class PlaybackService : MediaLibraryService() {
                         if (media != null) {
                             media.setPosition(position)
                             media.setLastPlayedTime(System.currentTimeMillis())
-                            if (it.isNew) it.playState = Episode.PlayState.UNPLAYED.code
+                            if (it.isNew) it.playState = PlayState.UNPLAYED.code
                             if (media.startPosition >= 0 && media.getPosition() > media.startPosition)
                                 media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
                         }

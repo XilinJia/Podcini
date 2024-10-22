@@ -217,27 +217,14 @@
     <item quantity="other">%d פרקים שהורדו נמחקו.</item>
   </plurals>
 
-  <string name="removed_inbox_label">הוסר מהדואר הנכנס</string>
-  <string name="mark_read_label">סימון כנצפה</string>
-  <string name="toggle_played_label">החלפת מצב נגינה</string>
-  <string name="marked_as_played_label">סומן כהתנגן</string>
-  <string name="marked_as_unplayed_label">סומן שלא התנגן</string>
+
+
+
+
+
   <string name="mark_read_no_media_label">סימון כנקרא</string>
   <string name="play_this_to_seek_position">כדי לקפוץ למיקומים, עליך לנגן את הפרק</string>
-  <plurals name="marked_read_batch_label">
-    <item quantity="one">פרק אחד סומן שנוגן.</item>
-    <item quantity="two">%d פרקים סומנו שנוגנו.</item>
-    <item quantity="many">%d פרקים סומנו שנוגנו.</item>
-    <item quantity="other">%d פרקים סומנו שנוגנו.</item>
-  </plurals>
-  <string name="mark_unread_label">סימון כלא נוגן</string>
-  <string name="mark_unread_label_no_media">סימון כלא נקרא</string>
-  <plurals name="marked_unread_batch_label">
-    <item quantity="one">פרק אחד סומן שטרם נוגן.</item>
-    <item quantity="two">%d פרקים סומנו שטרם נוגנו.</item>
-    <item quantity="many">%d פרקים סומנו שטרם נוגנו.</item>
-    <item quantity="other">%d פרקים סומנו שטרם נוגנו.</item>
-  </plurals>
+
   <string name="add_to_queue_label">הוספה לתור</string>
   <plurals name="added_to_queue_batch_label">
     <item quantity="one">פרק אחד נוסף לתור.</item>

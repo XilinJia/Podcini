@@ -287,6 +287,7 @@ object Feeds {
                 episode.feed = savedFeed
                 episode.id = idLong++
                 episode.feedId = savedFeed.id
+                episode.playState = PlayState.NEW.code
                 if (episode.media != null) {
                     episode.media!!.id = episode.id
                     if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
@@ -300,7 +301,7 @@ object Feeds {
                     episode.setNew()
                     if (savedFeed.preferences?.autoAddNewToQueue == true) {
                         val q = savedFeed.preferences?.queue
-                        if (q != null) runOnIOScope {  addToQueueSync(false, episode, q) }
+                        if (q != null) runOnIOScope {  addToQueueSync(episode, q) }
                     }
                 }
             }

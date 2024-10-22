@@ -117,6 +117,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
 * FeedInfo view has feed setting in the header
 * instead of isFavorite, there is a new rating system for every episode: Trash, Bad, Neutral, Good, Favorite
+* instead of Played or Unplayed, there is a new play state system settable by the user: Unplayed, Later, Soon, Skipped, Played, Ignored
 * in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue"
 * in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for every episode
 * New episode home view with two display modes: webpage or reader

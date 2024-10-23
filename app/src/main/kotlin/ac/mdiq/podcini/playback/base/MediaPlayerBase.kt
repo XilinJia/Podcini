@@ -271,11 +271,13 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         Log.d(TAG, "${this.javaClass.simpleName}: Setting player status to $newStatus")
         this.oldStatus = status
         status = newStatus
-        if (newMedia != null) setPlayable(newMedia)
-        if (newMedia != null && newStatus != PlayerStatus.INDETERMINATE) {
-            when {
-                oldStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> callback.onPlaybackPause(newMedia, position)
-                oldStatus != PlayerStatus.PLAYING && newStatus == PlayerStatus.PLAYING -> callback.onPlaybackStart(newMedia, position)
+        if (newMedia != null) {
+            setPlayable(newMedia)
+            if (newStatus != PlayerStatus.INDETERMINATE) {
+                when {
+                    oldStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> callback.onPlaybackPause(newMedia, position)
+                    oldStatus != PlayerStatus.PLAYING && newStatus == PlayerStatus.PLAYING -> callback.onPlaybackStart(newMedia, position)
+                }
             }
         }
         callback.statusChanged(MediaPlayerInfo(oldStatus, status, curMedia))

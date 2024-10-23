@@ -903,6 +903,8 @@
     <string name="custom_speed">Custom play speed</string>
     <string name="has_skips">Skips set</string>
     <string name="no_skips">No Skips set</string>
+    <string name="has_comments">Has commented</string>
+    <string name="no_comments">Not commented</string>
     <string name="always_auto_delete">Always auto delete</string>
     <string name="never_auto_delete">Never auto delete</string>
     <string name="auto_download">Auto download enabled</string>

@@ -11,6 +11,8 @@ class FeedFilter(vararg properties: String) : Serializable {
     val showNotKeepUpdated: Boolean = hasProperty(States.not_keepUpdated.name)
     val showGlobalPlaySpeed: Boolean = hasProperty(States.global_playSpeed.name)
     val showCustomPlaySpeed: Boolean = hasProperty(States.custom_playSpeed.name)
+    val showHasComments: Boolean = hasProperty(States.has_comments.name)
+    val showNoComments: Boolean = hasProperty(States.no_comments.name)
     val showHasSkips: Boolean = hasProperty(States.has_skips.name)
     val showNoSkips: Boolean = hasProperty(States.no_skips.name)
     val showAlwaysAutoDelete: Boolean = hasProperty(States.always_auto_delete.name)
@@ -36,6 +38,8 @@ class FeedFilter(vararg properties: String) : Serializable {
             showNotKeepUpdated && feed.preferences?.keepUpdated != false  -> return false
             showGlobalPlaySpeed && feed.preferences?.playSpeed != SPEED_USE_GLOBAL -> return false
             showCustomPlaySpeed && feed.preferences?.playSpeed == SPEED_USE_GLOBAL -> return false
+            showHasComments && feed.comment.isEmpty() -> return false
+            showNoComments && feed.comment.isEmpty()  -> return false
             showHasSkips && feed.preferences?.introSkip == 0 && feed.preferences?.endingSkip == 0  -> return false
             showNoSkips && (feed.preferences?.introSkip != 0 || feed.preferences?.endingSkip != 0)  -> return false
             showAlwaysAutoDelete && feed.preferences?.autoDeleteAction != FeedPreferences.AutoDeleteAction.ALWAYS  -> return false
@@ -59,6 +63,10 @@ class FeedFilter(vararg properties: String) : Serializable {
         when {
             showHasSkips -> statements.add(" preferences.introSkip != 0 OR preferences.endingSkip != 0 ")
             showNoSkips -> statements.add(" preferences.introSkip == 0 AND preferences.endingSkip == 0 ")
+        }
+        when {
+            showHasComments -> statements.add(" comment != '' ")
+            showNoComments -> statements.add(" comment == '' ")
         }
         when {
             showAlwaysAutoDelete -> statements.add(" preferences.autoDelete == ${FeedPreferences.AutoDeleteAction.ALWAYS.code} ")
@@ -89,6 +97,8 @@ class FeedFilter(vararg properties: String) : Serializable {
         custom_playSpeed,
         has_skips,
         no_skips,
+        has_comments,
+        no_comments,
 //        global_auto_delete,
         always_auto_delete,
         never_auto_delete,

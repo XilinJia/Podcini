@@ -389,15 +389,23 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
             if (item != null) {
+//                fun shouldSkipKeepEpisode(): Boolean {
+//                    return appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
+//                }
+//                fun shouldFavoriteKeepEpisode(): Boolean {
+//                    return appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
+//                }
                 runOnIOScope {
-                    if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
+                    val shouldSkipKeepEpisode = appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
+                    val shouldFavoriteKeepEpisode = appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
+                    if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode)) {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
                         item = setPlayStateSync(PlayState.PLAYED.code, ended || (skipped && smartMarkAsPlayed), item!!)
                         val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
-                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode())) {
+                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode)) {
                             item = deleteMediaSync(this@PlaybackService, item!!)
                             if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
                         }
@@ -405,14 +413,6 @@ class PlaybackService : MediaLibraryService() {
                     if (playable is EpisodeMedia && (ended || skipped || playingNext)) setCompletionDate(item!!)
                 }
             }
-        }
-
-        fun shouldSkipKeepEpisode(): Boolean {
-            return appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
-        }
-
-        fun shouldFavoriteKeepEpisode(): Boolean {
-            return appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
         }
 
         override fun onPlaybackStart(playable: Playable, position: Int) {
@@ -747,12 +747,10 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onDestroy() {
         Logd(TAG, "Service is about to be destroyed")
-
         playbackService = null
         isRunning = false
         currentMediaType = MediaType.UNKNOWN
         castStateListener.destroy()
-
         currentitem = null
 
         LocalMediaPlayer.cleanup()
@@ -1967,8 +1965,8 @@ class PlaybackService : MediaLibraryService() {
                 }
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
 //                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
-//                    TODO: test
-                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.INDETERMINATE
+//                    TODO: test: changing PAUSED to STOPPED or INDETERMINATE makes resume not possible if interrupted
+                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
                     setPlayerStatus(stat, curMedia)
                     Logd(TAG, "onIsPlayingChanged $isPlaying")
                 }

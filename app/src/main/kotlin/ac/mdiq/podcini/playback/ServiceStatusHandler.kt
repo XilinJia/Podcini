@@ -45,7 +45,7 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
                     Logd(TAG, "statusUpdate onReceive doing updates")
                     MediaPlayerBase.status = info.playerStatus
                     prevStatus = MediaPlayerBase.status
-                    curMedia = info.playable
+//                    curMedia = info.playable
                     handleStatus()
                 }
             } else {
@@ -177,7 +177,7 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
         Logd(TAG, "Querying service info")
         if (playbackService != null && PlaybackService.mPlayerInfo != null) {
             MediaPlayerBase.status = PlaybackService.mPlayerInfo!!.playerStatus
-            curMedia = PlaybackService.mPlayerInfo!!.playable
+//            curMedia = PlaybackService.mPlayerInfo!!.playable
             // make sure that new media is loaded if it's available
             mediaInfoLoaded = false
             handleStatus()

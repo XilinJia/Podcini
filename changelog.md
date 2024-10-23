@@ -1,3 +1,13 @@
+# 6.12.2
+
+* fixed play not resuming after interruption (watch for any side effects)
+* fixed incorrect initial play button on PlayerUI
+* fixed startup delay when curMedia is null
+* rating list in popup for Subscriptions is reversed (favorite on top)
+* first migration of Episodes and Feeds filters to Jetpack Compose
+* added has/no comments in the filters
+* fixed some errors in Episodes filter
+
 # 6.12.1
 
 * fixed circular calling functions when PlayerDetailed view is open

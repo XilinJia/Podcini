@@ -20,6 +20,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
     val showNotAutoDownloadable: Boolean = hasProperty(States.not_auto_downloadable.name)
     val showHasMedia: Boolean = hasProperty(States.has_media.name)
     val showNoMedia: Boolean = hasProperty(States.no_media.name)
+    val showHasComments: Boolean = hasProperty(States.has_comments.name)
+    val showNoComments: Boolean = hasProperty(States.no_comments.name)
     val showIsFavorite: Boolean = hasProperty(States.is_favorite.name)
     val showNotFavorite: Boolean = hasProperty(States.not_favorite.name)
 
@@ -48,6 +50,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
             showNotAutoDownloadable && item.isAutoDownloadEnabled -> return false
             showHasMedia && item.media == null -> return false
             showNoMedia && item.media != null -> return false
+            showHasComments && item.comment.isEmpty() -> return false
+            showNoComments && item.comment.isNotEmpty() -> return false
             showIsFavorite && !item.isFavorite -> return false
             showNotFavorite && item.isFavorite -> return false
             showQueued && !inAnyQueue(item) -> return false
@@ -69,7 +73,7 @@ class EpisodeFilter(vararg properties: String) : Serializable {
         val statements: MutableList<String> = ArrayList()
         when {
             showPlayed -> statements.add("playState >= ${PlayState.PLAYED.code}")
-            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code}> ") // Match "New" items (read = -1) as well
+            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code} ") // Match "New" items (read = -1) as well
             showNew -> statements.add("playState == -1 ")
         }
         when {
@@ -93,8 +97,12 @@ class EpisodeFilter(vararg properties: String) : Serializable {
             showNoMedia -> statements.add("media == nil ")
         }
         when {
-            showIsFavorite -> statements.add("isFavorite == true ")
-            showNotFavorite -> statements.add("isFavorite == false ")
+            showHasComments -> statements.add(" comment != '' ")
+            showNoComments -> statements.add(" comment == '' ")
+        }
+        when {
+            showIsFavorite -> statements.add("rating == ${Rating.FAVORITE.code} ")
+            showNotFavorite -> statements.add("rating != ${Rating.FAVORITE.code} ")
         }
 
         if (statements.isEmpty()) return "id > 0"
@@ -120,6 +128,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
         not_favorite,
         has_media,
         no_media,
+        has_comments,
+        no_comments,
         queued,
         not_queued,
         downloaded,

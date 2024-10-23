@@ -72,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -650,7 +651,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Dialog(onDismissRequest = onDismissRequest) {
                 Surface(shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        for (rating in Rating.entries) {
+                        for (rating in Rating.entries.reversed()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                                 for (item in selected) Feeds.setRating(item, rating.code)
                                 onDismissRequest()
@@ -1105,77 +1106,72 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     class FeedFilterDialog : BottomSheetDialogFragment() {
-        private lateinit var rows: LinearLayout
-        private var _binding: FilterDialogBinding? = null
-        private val binding get() = _binding!!
-
         var filter: FeedFilter? = null
-        private val buttonMap: MutableMap<String, Button> = mutableMapOf()
-
-        private val newFilterValues: Set<String>
-            get() {
-                val newFilterValues: MutableSet<String> = HashSet()
-                for (i in 0 until rows.childCount) {
-                    if (rows.getChildAt(i) !is MaterialButtonToggleGroup) continue
-                    val group = rows.getChildAt(i) as MaterialButtonToggleGroup
-                    if (group.checkedButtonId == View.NO_ID) continue
-                    val tag = group.findViewById<View>(group.checkedButtonId).tag as? String ?: continue
-                    newFilterValues.add(tag)
-                }
-                return newFilterValues
-            }
+        private val filterValues: MutableSet<String> = mutableSetOf()
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-            val layout = inflater.inflate(R.layout.filter_dialog, container, false)
-            _binding = FilterDialogBinding.bind(layout)
-            rows = binding.filterRows
-            Logd("FeedFilterDialog", "fragment onCreateView")
-
-            //add filter rows
-            for (item in FeedFilterGroup.entries) {
-//            Logd("EpisodeFilterDialog", "FeedItemFilterGroup: ${item.values[0].filterId} ${item.values[1].filterId}")
-                val rBinding = FilterDialogRowBinding.inflate(inflater)
-//            rowBinding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
-//                onFilterChanged(newFilterValues)
-//            }
-                rBinding.filterButton1.setOnClickListener { onFilterChanged(newFilterValues) }
-                rBinding.filterButton2.setOnClickListener { onFilterChanged(newFilterValues) }
-
-                rBinding.filterButton1.setText(item.values[0].displayName)
-                rBinding.filterButton1.tag = item.values[0].filterId
-                buttonMap[item.values[0].filterId] = rBinding.filterButton1
-                rBinding.filterButton2.setText(item.values[1].displayName)
-                rBinding.filterButton2.tag = item.values[1].filterId
-                buttonMap[item.values[1].filterId] = rBinding.filterButton2
-                rBinding.filterButton1.maxLines = 3
-                rBinding.filterButton1.isSingleLine = false
-                rBinding.filterButton2.maxLines = 3
-                rBinding.filterButton2.isSingleLine = false
-                rows.addView(rBinding.root, rows.childCount - 1)
-            }
-
-            binding.confirmFiltermenu.setOnClickListener { dismiss() }
-            binding.resetFiltermenu.setOnClickListener {
-                onFilterChanged(emptySet())
-                for (i in 0 until rows.childCount) {
-                    if (rows.getChildAt(i) is MaterialButtonToggleGroup) (rows.getChildAt(i) as MaterialButtonToggleGroup).clearChecked()
-                }
-            }
-
-            if (filter != null) {
-                for (filterId in filter!!.values) {
-                    if (filterId.isNotEmpty()) {
-                        val button = buttonMap[filterId]
-                        if (button != null) (button.parent as MaterialButtonToggleGroup).check(button.id)
+            val composeView = ComposeView(requireContext()).apply {
+                setContent {
+                    CustomTheme(requireContext()) {
+                        MainView()
                     }
                 }
             }
-            return layout
+            return composeView
+        }
+
+        @Composable
+        fun MainView() {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Column {
+                for (item in FeedFilterGroup.entries) {
+                    Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                        var selectedIndex by remember { mutableStateOf(-1) }
+                        LaunchedEffect(Unit) {
+                            if (filter != null) {
+                                if (item.values[0].filterId in filter!!.values) selectedIndex = 0
+                                else if (item.values[1].filterId in filter!!.values) selectedIndex = 1
+                            }
+                        }
+                        OutlinedButton(modifier = Modifier.padding(2.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
+                            onClick = {
+                                if (selectedIndex != 0) {
+                                    selectedIndex = 0
+                                    filterValues.add(item.values[0].filterId)
+                                    filterValues.remove(item.values[1].filterId)
+                                } else {
+                                    selectedIndex = -1
+                                    filterValues.remove(item.values[0].filterId)
+                                }
+                                onFilterChanged(filterValues)
+                            },
+                        ) {
+                            Text(text = stringResource(item.values[0].displayName), color = textColor)
+                        }
+                        Spacer(Modifier.width(5.dp))
+                        OutlinedButton(modifier = Modifier.padding(2.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
+                            onClick = {
+                                if (selectedIndex != 1) {
+                                    selectedIndex = 1
+                                    filterValues.add(item.values[1].filterId)
+                                    filterValues.remove(item.values[0].filterId)
+                                } else {
+                                    selectedIndex = -1
+                                    filterValues.remove(item.values[1].filterId)
+                                }
+                                onFilterChanged(filterValues)
+                            },
+                        ) {
+                            Text(text = stringResource(item.values[1].displayName), color = textColor)
+                        }
+                    }
+                }
+            }
         }
 
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
-            _binding = null
+//            _binding = null
             super.onDestroyView()
         }
 
@@ -1188,6 +1184,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         enum class FeedFilterGroup(vararg values: ItemProperties) {
             KEEP_UPDATED(ItemProperties(R.string.keep_updated, FeedFilter.States.keepUpdated.name), ItemProperties(R.string.not_keep_updated, FeedFilter.States.not_keepUpdated.name)),
             PLAY_SPEED(ItemProperties(R.string.global_speed, FeedFilter.States.global_playSpeed.name), ItemProperties(R.string.custom_speed, FeedFilter.States.custom_playSpeed.name)),
+            OPINION(ItemProperties(R.string.has_comments, FeedFilter.States.has_comments.name), ItemProperties(R.string.no_comments, FeedFilter.States.no_comments.name)),
             SKIPS(ItemProperties(R.string.has_skips, FeedFilter.States.has_skips.name), ItemProperties(R.string.no_skips, FeedFilter.States.no_skips.name)),
             AUTO_DELETE(ItemProperties(R.string.always_auto_delete, FeedFilter.States.always_auto_delete.name), ItemProperties(R.string.never_auto_delete, FeedFilter.States.never_auto_delete.name)),
             AUTO_DOWNLOAD(ItemProperties(R.string.auto_download, FeedFilter.States.autoDownload.name), ItemProperties(R.string.not_auto_download, FeedFilter.States.not_autoDownload.name));

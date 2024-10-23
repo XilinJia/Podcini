@@ -6,6 +6,7 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -510,7 +511,7 @@ class AudioPlayerFragment : Fragment() {
     fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
         Logd(TAG, "onPositionUpdate")
         if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia is EpisodeMedia) {
-            playButRes = R.drawable.ic_pause
+            if (isCurrentlyPlaying(curMedia as? EpisodeMedia)) playButRes = R.drawable.ic_pause
             playButInit = true
         }
 
@@ -753,14 +754,15 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.getIdentifier()}")
         val actMain = (activity as MainActivity)
         var i = 0
-        while (curMedia == null && i++ < 6) runBlocking { delay(500) }
+//        while (curMedia == null && i++ < 6) runBlocking { delay(500) }
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
             return
         }
+        if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
+//            if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
             val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
             if (curMedia?.getIdentifier() != currentMedia?.getIdentifier()) updateUi(curMedia!!)
             if (!isCollapsed && curMediaChanged) {

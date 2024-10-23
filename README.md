@@ -117,7 +117,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
 * FeedInfo view has feed setting in the header
 * instead of isFavorite, there is a new rating system for every episode: Trash, Bad, Neutral, Good, Favorite
-* instead of Played or Unplayed, there is a new play state system settable by the user: Unplayed, Later, Soon, Skipped, Played, Ignored
+* instead of Played or Unplayed, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Ignored
+  	* among which Unplayed, Later, Soon, Skipped, Played, Ignored are settable by the user
+	* when an episode is started to play, its state is set to InProgress
+	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
 * in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue"
 * in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for every episode
 * New episode home view with two display modes: webpage or reader

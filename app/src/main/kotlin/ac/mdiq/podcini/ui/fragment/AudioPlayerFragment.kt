@@ -6,11 +6,10 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
@@ -338,7 +337,7 @@ class AudioPlayerFragment : Fragment() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val mediaType = curMedia?.getMediaType()
         val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
-        Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
                 (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             })
@@ -389,6 +388,7 @@ class AudioPlayerFragment : Fragment() {
                     context.startActivity(intent)
                 }
             })
+            (activity as? CastEnabledActivity)?.CastIconButton()
         }
     }
 
@@ -555,7 +555,7 @@ class AudioPlayerFragment : Fragment() {
     private fun updateDetails() {
 //        if (isLoading) return
         lifecycleScope.launch {
-            Logd(TAG, "in updateInfo")
+            Logd(TAG, "in updateDetails")
             isLoading = true
             withContext(Dispatchers.IO) {
                 currentMedia = curMedia
@@ -589,7 +589,7 @@ class AudioPlayerFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 Logd(TAG, "subscribe: ${currentMedia?.getEpisodeTitle()}")
                 displayMediaInfo(currentMedia!!)
-                (activity as MainActivity).setPlayerVisible(curMedia != null)
+//                (activity as MainActivity).setPlayerVisible(curMedia != null)
                 //                    shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
                 Logd(TAG, "Webview loaded")
             }

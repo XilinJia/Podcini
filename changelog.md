@@ -1,3 +1,8 @@
+# 6.12.1
+
+* fixed circular calling functions when PlayerDetailed view is open
+* in the Play apk, added back the cast button that's been missing after 6.10.0
+
 # 6.12.0
 
 * created a new play state system: Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Ignored,

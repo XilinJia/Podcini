@@ -9,7 +9,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.util.EventFlow
@@ -90,9 +89,12 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         if (super.onOptionsItemSelected(item)) return true
 
         when (item.itemId) {
-            R.id.filter_items -> AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
+            R.id.filter_items -> {
+                showFilterDialog = true
+//                AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
+            }
             R.id.action_favorites -> {
-                val filter = ArrayList(getFilter().valuesList)
+                val filter = getFilter().properties.toMutableSet()
                 if (filter.contains(EpisodeFilter.States.is_favorite.name)) filter.remove(EpisodeFilter.States.is_favorite.name)
                 else filter.add(EpisodeFilter.States.is_favorite.name)
                 onFilterChanged(FlowEvent.AllEpisodesFilterEvent(HashSet(filter)))
@@ -135,12 +137,16 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
     override fun updateToolbar() {
         swipeActions.setFilter(getFilter())
         var info = "${episodes.size} episodes"
-        if (getFilter().values.isNotEmpty()) {
+        if (getFilter().properties.isNotEmpty()) {
             info += " - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else emptyView.setMessage(R.string.no_all_episodes_label)
         infoBarText.value = info
         toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
+    }
+
+    override fun onFilterChanged(filterValues: Set<String>) {
+        EventFlow.postEvent(FlowEvent.AllEpisodesFilterEvent(filterValues))
     }
 
     class AllEpisodesSortDialog : EpisodeSortDialog() {
@@ -164,18 +170,18 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    class AllEpisodesFilterDialog : EpisodeFilterDialog() {
-        override fun onFilterChanged(newFilterValues: Set<String>) {
-            EventFlow.postEvent(FlowEvent.AllEpisodesFilterEvent(newFilterValues))
-        }
-        companion object {
-            fun newInstance(filter: EpisodeFilter?): AllEpisodesFilterDialog {
-                val dialog = AllEpisodesFilterDialog()
-                dialog.filter = filter
-                return dialog
-            }
-        }
-    }
+//    class AllEpisodesFilterDialog : EpisodeFilterDialog() {
+//        override fun onFilterChanged(newFilterValues: Set<String>) {
+//            EventFlow.postEvent(FlowEvent.AllEpisodesFilterEvent(newFilterValues))
+//        }
+//        companion object {
+//            fun newInstance(filter: EpisodeFilter?): AllEpisodesFilterDialog {
+//                val dialog = AllEpisodesFilterDialog()
+//                dialog.filter = filter
+//                return dialog
+//            }
+//        }
+//    }
 
     companion object {
         val TAG = AllEpisodesFragment::class.simpleName ?: "Anonymous"

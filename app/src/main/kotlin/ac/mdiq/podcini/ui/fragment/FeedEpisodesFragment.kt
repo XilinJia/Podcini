@@ -19,7 +19,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
-import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
@@ -31,7 +30,6 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -100,6 +98,7 @@ import java.util.concurrent.Semaphore
     private var filterButColor = mutableStateOf(Color.White)
 
     private var showRemoveFeedDialog by mutableStateOf(false)
+    var showFilterDialog by mutableStateOf(false)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -133,9 +132,10 @@ import java.util.concurrent.Semaphore
         swipeActions = SwipeActions(this, TAG)
         fun filterClick() {
             if (enableFilter && feed != null) {
-                val dialog = FeedEpisodeFilterDialog(feed)
-                dialog.filter = feed!!.episodeFilter
-                dialog.show(childFragmentManager, null)
+                showFilterDialog = true
+//                val dialog = FeedEpisodeFilterDialog(feed)
+//                dialog.filter = feed!!.episodeFilter
+//                dialog.show(childFragmentManager, null)
             }
         }
         fun filterLongClick() {
@@ -146,7 +146,8 @@ import java.util.concurrent.Semaphore
                 val etmp = mutableListOf<Episode>()
                 if (enableFilter) {
                     filterButColor.value = Color.White
-                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
+                    val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
+//                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
                     etmp.addAll(episodes_)
                 } else {
                     filterButColor.value = Color.Red
@@ -169,6 +170,17 @@ import java.util.concurrent.Semaphore
                     (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
                     // Make sure fragment is hidden before actually starting to delete
                     requireActivity().supportFragmentManager.executePendingTransactions()
+                }
+                if (showFilterDialog) EpisodesFilterDialog(filter = feed!!.episodeFilter,
+                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
+                    onDismissRequest = { showFilterDialog = false } ) { filterValues ->
+                    if (feed != null) {
+                        Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
+                        runOnIOScope {
+                            val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
+                            if (feed_ != null) upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+                        }
+                    }
                 }
                 Column {
                     FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
@@ -455,7 +467,7 @@ import java.util.concurrent.Semaphore
         if (feed != null) {
             val pos: Int = ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
-                if (!filterOutEpisode(event.episode)) vms[pos].isPlayingState = event.isPlaying()
+                if (!isFilteredOut(event.episode)) vms[pos].isPlayingState = event.isPlaying()
                 if (event.isPlaying()) upsertBlk(feed!!) { it.lastPlayed = Date().time }
             }
         }
@@ -552,7 +564,7 @@ import java.util.concurrent.Semaphore
         infoTextFiltered = ""
         if (!feed?.preferences?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter
-            if (filter.values.isNotEmpty()) {
+            if (filter.properties.isNotEmpty()) {
                 infoTextFiltered = this.getString(R.string.filtered_label)
 //                binding.header.txtvInformation.setOnClickListener {
 //                    val dialog = FeedEpisodeFilterDialog(feed)
@@ -601,12 +613,16 @@ import java.util.concurrent.Semaphore
         while (loadItemsRunning) Thread.sleep(50)
     }
 
-    private fun filterOutEpisode(episode: Episode): Boolean {
-        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
-            episodes.remove(episode)
-            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-            ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
-            return true
+    private fun isFilteredOut(episode: Episode): Boolean {
+        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
+            val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
+            if (!episodes_.contains(episode)) {
+                episodes.remove(episode)
+                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
+                return true
+            }
+            return false
         }
         return false
     }
@@ -633,7 +649,8 @@ import java.util.concurrent.Semaphore
                             Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                             val etmp = mutableListOf<Episode>()
                             if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
-                                val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
+                                val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
+//                                val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
                                 etmp.addAll(episodes_)
                             } else etmp.addAll(feed_.episodes)
                             val sortOrder = feed_.sortOrder
@@ -700,17 +717,17 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
-        @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {
-            if (feed != null) {
-                Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
-                runOnIOScope {
-                    val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-                    if (feed_ != null) upsert(feed_) { it.preferences?.filterString = newFilterValues.joinToString() }
-                }
-            }
-        }
-    }
+//    class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
+//        @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {
+//            if (feed != null) {
+//                Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
+//                runOnIOScope {
+//                    val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
+//                    if (feed_ != null) upsert(feed_) { it.preferences?.filterString = newFilterValues.joinToString() }
+//                }
+//            }
+//        }
+//    }
 
     class SingleFeedSortDialog(val feed: Feed?) : EpisodeSortDialog() {
         override fun onCreate(savedInstanceState: Bundle?) {

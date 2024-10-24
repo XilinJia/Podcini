@@ -13,7 +13,6 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
-import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
@@ -52,6 +51,7 @@ import android.net.Uri
 import android.text.format.Formatter
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -77,15 +77,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
@@ -261,21 +265,21 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                     }
                                     when (state) {
                                         PlayState.UNPLAYED -> {
-                                            if (isProviderConnected && item_?.feed?.isLocalFeed != true && item_?.media != null) {
-                                                val actionNew: EpisodeAction = EpisodeAction.Builder(item_!!, EpisodeAction.NEW).currentTimestamp().build()
+                                            if (isProviderConnected && item_.feed?.isLocalFeed != true && item_.media != null) {
+                                                val actionNew: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.NEW).currentTimestamp().build()
                                                 SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionNew)
                                             }
                                         }
                                         PlayState.PLAYED -> {
-                                            if (item_?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
-                                                val media: EpisodeMedia? = item_?.media
+                                            if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
+                                                val media_: EpisodeMedia? = item_.media
                                                 // not all items have media, Gpodder only cares about those that do
-                                                if (isProviderConnected && media != null) {
-                                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(item_!!, EpisodeAction.PLAY)
+                                                if (isProviderConnected && media_ != null) {
+                                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.PLAY)
                                                         .currentTimestamp()
-                                                        .started(media.getDuration() / 1000)
-                                                        .position(media.getDuration() / 1000)
-                                                        .total(media.getDuration() / 1000)
+                                                        .started(media_.getDuration() / 1000)
+                                                        .position(media_.getDuration() / 1000)
+                                                        .total(media_.getDuration() / 1000)
                                                         .build()
                                                     SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionPlay)
                                                 }
@@ -711,13 +715,13 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
 //                    Logd(TAG, "info row")
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
                     if (vm.ratingState != Rating.UNRATED.code)
-                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(14.dp).height(14.dp))
+                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(18.dp).height(18.dp))
                     val playStateRes = PlayState.fromCode(vm.playedState).res
-                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(14.dp).height(14.dp))
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(18.dp).height(18.dp))
                     if (vm.inQueueState)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(18.dp).height(18.dp))
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(18.dp).height(18.dp))
                     val curContext = LocalContext.current
                     val dur = remember { vm.episode.media?.getDuration() ?: 0 }
                     val durText = remember { DurationConverter.getDurationStringLong(dur) }
@@ -786,7 +790,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
         refreshing = false
     }) {
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(vms, key = {index, vm -> vm.episode.id}) { index, vm ->
+            itemsIndexed(vms, key = { _, vm -> vm.episode.id}) { index, vm ->
                 vm.startMonitoring()
                 DisposableEffect(Unit) {
                     onDispose {
@@ -922,6 +926,121 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                         }
                     } else CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp,
                         modifier = Modifier.padding(start = 20.dp, end = 20.dp).width(30.dp).height(30.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: MutableSet<EpisodeFilter.EpisodesFilterGroup> = mutableSetOf(),
+                         onDismissRequest: () -> Unit, onFilterChanged: (Set<String>) -> Unit) {
+    val filterValues: MutableSet<String> = mutableSetOf()
+
+    Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
+        val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+        dialogWindowProvider?.window?.let { window ->
+            window.setGravity(Gravity.BOTTOM)
+            window.setDimAmount(0f)
+        }
+        Surface(modifier = Modifier.fillMaxWidth().height(500.dp), shape = RoundedCornerShape(16.dp)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            val scrollState = rememberScrollState()
+            Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                var selectNone by remember { mutableStateOf(false) }
+                for (item in EpisodeFilter.EpisodesFilterGroup.entries) {
+                    if (item in filtersDisabled) continue
+                    if (item.values.size == 2) {
+                        Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                            var selectedIndex by remember { mutableStateOf(-1) }
+                            if (selectNone) selectedIndex = -1
+                            LaunchedEffect(Unit) {
+                                if (filter != null) {
+                                    if (item.values[0].filterId in filter.properties) selectedIndex = 0
+                                    else if (item.values[1].filterId in filter.properties) selectedIndex = 1
+                                }
+                            }
+                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+                            Spacer(Modifier.weight(0.3f))
+                            OutlinedButton(
+                                modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
+                                onClick = {
+                                    if (selectedIndex != 0) {
+                                        selectNone = false
+                                        selectedIndex = 0
+                                        filterValues.add(item.values[0].filterId)
+                                        filterValues.remove(item.values[1].filterId)
+                                    } else {
+                                        selectedIndex = -1
+                                        filterValues.remove(item.values[0].filterId)
+                                    }
+                                    onFilterChanged(filterValues)
+                                },
+                            ) {
+                                Text(text = stringResource(item.values[0].displayName), color = textColor)
+                            }
+                            Spacer(Modifier.weight(0.1f))
+                            OutlinedButton(
+                                modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
+                                onClick = {
+                                    if (selectedIndex != 1) {
+                                        selectNone = false
+                                        selectedIndex = 1
+                                        filterValues.add(item.values[1].filterId)
+                                        filterValues.remove(item.values[0].filterId)
+                                    } else {
+                                        selectedIndex = -1
+                                        filterValues.remove(item.values[1].filterId)
+                                    }
+                                    onFilterChanged(filterValues)
+                                },
+                            ) {
+                                Text(text = stringResource(item.values[1].displayName), color = textColor)
+                            }
+                            Spacer(Modifier.weight(0.5f))
+                        }
+                    } else {
+                        Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
+                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
+                            NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
+                                var selected by remember { mutableStateOf(false) }
+                                if (selectNone) selected = false
+                                LaunchedEffect(Unit) {
+                                    if (filter != null) {
+                                        if (item.values[index].filterId in filter.properties) selected = true
+                                    }
+                                }
+                                OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
+                                    border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
+                                    onClick = {
+                                        selectNone = false
+                                        selected = !selected
+                                        if (selected) filterValues.add(item.values[index].filterId)
+                                        else filterValues.remove(item.values[index].filterId)
+                                        onFilterChanged(filterValues)
+                                    },
+                                ) {
+                                    Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
+                                }
+                            }
+                        }
+                    }
+                }
+                Row {
+                    Spacer(Modifier.weight(0.3f))
+                    Button(onClick = {
+                        selectNone = true
+                        onFilterChanged(setOf(""))
+                    }) {
+                        Text(stringResource(R.string.reset))
+                    }
+                    Spacer(Modifier.weight(0.4f))
+                    Button(onClick = {
+                        onDismissRequest()
+                    }) {
+                        Text(stringResource(R.string.close_label))
+                    }
+                    Spacer(Modifier.weight(0.3f))
                 }
             }
         }

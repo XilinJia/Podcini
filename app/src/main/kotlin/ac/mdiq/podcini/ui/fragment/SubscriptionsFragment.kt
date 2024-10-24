@@ -1,7 +1,9 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
+import ac.mdiq.podcini.databinding.FragmentSubscriptionsBinding
+import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
@@ -21,6 +23,7 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOpt
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.NonlazyGrid
 import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
 import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
@@ -41,11 +44,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.*
+import android.view.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.CompoundButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
@@ -72,8 +74,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -81,6 +83,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
@@ -90,8 +94,6 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
@@ -129,6 +131,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
 //    private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered = mutableStateListOf<Feed>()
+    var showFilterDialog by mutableStateOf(false)
 
     private var useGrid by mutableStateOf<Boolean?>(null)
     private val useGridLayout by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false))
@@ -167,6 +170,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
+                if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
                 LazyList()
             }
         }
@@ -310,7 +314,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
-            R.id.subscriptions_filter -> FeedFilterDialog.newInstance(FeedFilter(feedsFilter)).show(childFragmentManager, null)
+            R.id.subscriptions_filter -> {
+                showFilterDialog = true
+//                FeedFilterDialog.newInstance(FeedFilter(feedsFilter)).show(childFragmentManager, null)
+            }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
             R.id.new_synth -> {
@@ -506,9 +513,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Spacer(Modifier.weight(1f))
             Text(txtvInformation, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.clickable {
                 if (feedsFilter.isNotEmpty()) {
-                    val filter = FeedFilter(feedsFilter)
-                    val dialog = FeedFilterDialog.newInstance(filter)
-                    dialog.show(childFragmentManager, null)
+                    showFilterDialog = true
+//                    val filter = FeedFilter(feedsFilter)
+//                    val dialog = FeedFilterDialog.newInstance(filter)
+//                    dialog.show(childFragmentManager, null)
                 }
             } )
             Spacer(Modifier.weight(1f))
@@ -1074,6 +1082,124 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         } catch (e: Exception) { Log.e(TAG, "exportOPML error: ${e.message}") }
     }
 
+    @Composable
+    fun FilterDialog(filter: FeedFilter? = null, onDismissRequest: () -> Unit) {
+        val filterValues: MutableSet<String> = mutableSetOf()
+
+        fun onFilterChanged(newFilterValues: Set<String>) {
+            feedsFilter = StringUtils.join(newFilterValues, ",")
+            Logd(TAG, "onFilterChanged: $feedsFilter")
+            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
+        }
+        Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
+            val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+            dialogWindowProvider?.window?.let { window ->
+                window.setGravity(Gravity.BOTTOM)
+                window.setDimAmount(0f)
+            }
+            Surface(modifier = Modifier.fillMaxWidth().height(500.dp), shape = RoundedCornerShape(16.dp)) {
+                val textColor = MaterialTheme.colorScheme.onSurface
+                val scrollState = rememberScrollState()
+                Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                    var selectNone by remember { mutableStateOf(false) }
+                    for (item in FeedFilter.FeedFilterGroup.entries) {
+                        if (item.values.size == 2) {
+                            Row(modifier = Modifier.padding(start = 5.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Absolute.Left, verticalAlignment = Alignment.CenterVertically) {
+                                var selectedIndex by remember { mutableStateOf(-1) }
+                                if (selectNone) selectedIndex = -1
+                                LaunchedEffect(Unit) {
+                                    if (filter != null) {
+                                        if (item.values[0].filterId in filter!!.properties) selectedIndex = 0
+                                        else if (item.values[1].filterId in filter!!.properties) selectedIndex = 1
+                                    }
+                                }
+                                Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+                                Spacer(Modifier.weight(0.3f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
+                                    onClick = {
+                                        if (selectedIndex != 0) {
+                                            selectNone = false
+                                            selectedIndex = 0
+                                            filterValues.add(item.values[0].filterId)
+                                            filterValues.remove(item.values[1].filterId)
+                                        } else {
+                                            selectedIndex = -1
+                                            filterValues.remove(item.values[0].filterId)
+                                        }
+                                        onFilterChanged(filterValues)
+                                    },
+                                ) {
+                                    Text(text = stringResource(item.values[0].displayName), color = textColor)
+                                }
+                                Spacer(Modifier.weight(0.1f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
+                                    onClick = {
+                                        if (selectedIndex != 1) {
+                                            selectNone = false
+                                            selectedIndex = 1
+                                            filterValues.add(item.values[1].filterId)
+                                            filterValues.remove(item.values[0].filterId)
+                                        } else {
+                                            selectedIndex = -1
+                                            filterValues.remove(item.values[1].filterId)
+                                        }
+                                        onFilterChanged(filterValues)
+                                    },
+                                ) {
+                                    Text(text = stringResource(item.values[1].displayName), color = textColor)
+                                }
+                                Spacer(Modifier.weight(0.5f))
+                            }
+                        } else {
+                            Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
+                                Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
+                                NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
+                                    var selected by remember { mutableStateOf(false) }
+                                    if (selectNone) selected = false
+                                    LaunchedEffect(Unit) {
+                                        if (filter != null) {
+                                            if (item.values[index].filterId in filter.properties) selected = true
+                                        }
+                                    }
+                                    OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
+                                        border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
+                                        onClick = {
+                                            selectNone = false
+                                            selected = !selected
+                                            if (selected) filterValues.add(item.values[index].filterId)
+                                            else filterValues.remove(item.values[index].filterId)
+                                            onFilterChanged(filterValues)
+                                        },
+                                    ) {
+                                        Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Row {
+                        Spacer(Modifier.weight(0.3f))
+                        Button(onClick = {
+                            selectNone = true
+                            onFilterChanged(setOf(""))
+                        }) {
+                            Text(stringResource(R.string.reset))
+                        }
+                        Spacer(Modifier.weight(0.4f))
+                        Button(onClick = {
+                            onDismissRequest()
+                        }) {
+                            Text(stringResource(R.string.close_label))
+                        }
+                        Spacer(Modifier.weight(0.3f))
+                    }
+                }
+            }
+        }
+    }
+
     class PreferenceSwitchDialog(private var context: Context, private val title: String, private val text: String) {
         private var onPreferenceChangedListener: OnPreferenceChangedListener? = null
         interface OnPreferenceChangedListener {
@@ -1105,104 +1231,136 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    class FeedFilterDialog : BottomSheetDialogFragment() {
-        var filter: FeedFilter? = null
-        private val filterValues: MutableSet<String> = mutableSetOf()
-
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-            val composeView = ComposeView(requireContext()).apply {
-                setContent {
-                    CustomTheme(requireContext()) {
-                        MainView()
-                    }
-                }
-            }
-            return composeView
-        }
-
-        @Composable
-        fun MainView() {
-            val textColor = MaterialTheme.colorScheme.onSurface
-            Column {
-                for (item in FeedFilterGroup.entries) {
-                    Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                        var selectedIndex by remember { mutableStateOf(-1) }
-                        LaunchedEffect(Unit) {
-                            if (filter != null) {
-                                if (item.values[0].filterId in filter!!.values) selectedIndex = 0
-                                else if (item.values[1].filterId in filter!!.values) selectedIndex = 1
-                            }
-                        }
-                        OutlinedButton(modifier = Modifier.padding(2.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
-                            onClick = {
-                                if (selectedIndex != 0) {
-                                    selectedIndex = 0
-                                    filterValues.add(item.values[0].filterId)
-                                    filterValues.remove(item.values[1].filterId)
-                                } else {
-                                    selectedIndex = -1
-                                    filterValues.remove(item.values[0].filterId)
-                                }
-                                onFilterChanged(filterValues)
-                            },
-                        ) {
-                            Text(text = stringResource(item.values[0].displayName), color = textColor)
-                        }
-                        Spacer(Modifier.width(5.dp))
-                        OutlinedButton(modifier = Modifier.padding(2.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
-                            onClick = {
-                                if (selectedIndex != 1) {
-                                    selectedIndex = 1
-                                    filterValues.add(item.values[1].filterId)
-                                    filterValues.remove(item.values[0].filterId)
-                                } else {
-                                    selectedIndex = -1
-                                    filterValues.remove(item.values[1].filterId)
-                                }
-                                onFilterChanged(filterValues)
-                            },
-                        ) {
-                            Text(text = stringResource(item.values[1].displayName), color = textColor)
-                        }
-                    }
-                }
-            }
-        }
-
-        override fun onDestroyView() {
-            Logd(TAG, "onDestroyView")
-//            _binding = null
-            super.onDestroyView()
-        }
-
-        private fun onFilterChanged(newFilterValues: Set<String>) {
-            feedsFilter = StringUtils.join(newFilterValues, ",")
-            Logd(TAG, "onFilterChanged: $feedsFilter")
-            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
-        }
-
-        enum class FeedFilterGroup(vararg values: ItemProperties) {
-            KEEP_UPDATED(ItemProperties(R.string.keep_updated, FeedFilter.States.keepUpdated.name), ItemProperties(R.string.not_keep_updated, FeedFilter.States.not_keepUpdated.name)),
-            PLAY_SPEED(ItemProperties(R.string.global_speed, FeedFilter.States.global_playSpeed.name), ItemProperties(R.string.custom_speed, FeedFilter.States.custom_playSpeed.name)),
-            OPINION(ItemProperties(R.string.has_comments, FeedFilter.States.has_comments.name), ItemProperties(R.string.no_comments, FeedFilter.States.no_comments.name)),
-            SKIPS(ItemProperties(R.string.has_skips, FeedFilter.States.has_skips.name), ItemProperties(R.string.no_skips, FeedFilter.States.no_skips.name)),
-            AUTO_DELETE(ItemProperties(R.string.always_auto_delete, FeedFilter.States.always_auto_delete.name), ItemProperties(R.string.never_auto_delete, FeedFilter.States.never_auto_delete.name)),
-            AUTO_DOWNLOAD(ItemProperties(R.string.auto_download, FeedFilter.States.autoDownload.name), ItemProperties(R.string.not_auto_download, FeedFilter.States.not_autoDownload.name));
-
-            @JvmField
-            val values: Array<ItemProperties> = arrayOf(*values)
-
-            class ItemProperties(@JvmField val displayName: Int, @JvmField val filterId: String)
-        }
-
-        companion object {
-            fun newInstance(filter: FeedFilter?): FeedFilterDialog {
-                val dialog = FeedFilterDialog()
-                dialog.filter = filter
-                return dialog
-            }
-        }
-    }
+//    class FeedFilterDialog : BottomSheetDialogFragment() {
+//        var filter: FeedFilter? = null
+//        private val filterValues: MutableSet<String> = mutableSetOf()
+//
+//        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+//            val composeView = ComposeView(requireContext()).apply {
+//                setContent {
+//                    CustomTheme(requireContext()) {
+//                        MainView()
+//                    }
+//                }
+//            }
+//            return composeView
+//        }
+//
+//        @Composable
+//        fun MainView() {
+//            val textColor = MaterialTheme.colorScheme.onSurface
+//            val scrollState = rememberScrollState()
+//            Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+//                var selectNone by remember { mutableStateOf(false) }
+//                for (item in FeedFilter.FeedFilterGroup.entries) {
+//                    if (item.values.size == 2) {
+//                        Row(modifier = Modifier.padding(start = 5.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Absolute.Left, verticalAlignment = Alignment.CenterVertically) {
+//                            var selectedIndex by remember { mutableStateOf(-1) }
+//                            if (selectNone) selectedIndex = -1
+//                            LaunchedEffect(Unit) {
+//                                if (filter != null) {
+//                                    if (item.values[0].filterId in filter!!.properties) selectedIndex = 0
+//                                    else if (item.values[1].filterId in filter!!.properties) selectedIndex = 1
+//                                }
+//                            }
+//                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+//                            Spacer(Modifier.weight(0.3f))
+//                            OutlinedButton(
+//                                modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
+//                                onClick = {
+//                                    if (selectedIndex != 0) {
+//                                        selectNone = false
+//                                        selectedIndex = 0
+//                                        filterValues.add(item.values[0].filterId)
+//                                        filterValues.remove(item.values[1].filterId)
+//                                    } else {
+//                                        selectedIndex = -1
+//                                        filterValues.remove(item.values[0].filterId)
+//                                    }
+//                                    onFilterChanged(filterValues)
+//                                },
+//                            ) {
+//                                Text(text = stringResource(item.values[0].displayName), color = textColor)
+//                            }
+//                            Spacer(Modifier.weight(0.1f))
+//                            OutlinedButton(
+//                                modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
+//                                onClick = {
+//                                    if (selectedIndex != 1) {
+//                                        selectNone = false
+//                                        selectedIndex = 1
+//                                        filterValues.add(item.values[1].filterId)
+//                                        filterValues.remove(item.values[0].filterId)
+//                                    } else {
+//                                        selectedIndex = -1
+//                                        filterValues.remove(item.values[1].filterId)
+//                                    }
+//                                    onFilterChanged(filterValues)
+//                                },
+//                            ) {
+//                                Text(text = stringResource(item.values[1].displayName), color = textColor)
+//                            }
+//                            Spacer(Modifier.weight(0.5f))
+//                        }
+//                    } else {
+//                        Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
+//                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
+//                            val lazyGridState = rememberLazyGridState()
+//                            LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(100.dp),
+//                                verticalArrangement = Arrangement.spacedBy(2.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+//                                items(item.values.size) { index ->
+//                                    var selected by remember { mutableStateOf(false) }
+//                                    if (selectNone) selected = false
+//                                    OutlinedButton(
+//                                        modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
+//                                        border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
+//                                        onClick = {
+//                                            selectNone = false
+//                                            selected = !selected
+//                                            if (selected) filterValues.add(item.values[index].filterId)
+//                                            else filterValues.remove(item.values[index].filterId)
+//                                            onFilterChanged(filterValues)
+//                                        },
+//                                    ) {
+//                                        Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                Row {
+//                    Spacer(Modifier.weight(0.3f))
+//                    Button(onClick = {
+//                        selectNone = true
+//                        onFilterChanged(setOf(""))
+//                    }) {
+//                        Text(stringResource(R.string.reset))
+//                    }
+//                    Spacer(Modifier.weight(0.4f))
+//                    Button(onClick = {
+//                        dismiss()
+//                    }) {
+//                        Text(stringResource(R.string.close_label))
+//                    }
+//                    Spacer(Modifier.weight(0.3f))
+//                }
+//            }
+//        }
+//        private fun onFilterChanged(newFilterValues: Set<String>) {
+//            feedsFilter = StringUtils.join(newFilterValues, ",")
+//            Logd(TAG, "onFilterChanged: $feedsFilter")
+//            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
+//        }
+//
+//        companion object {
+//            fun newInstance(filter: FeedFilter?): FeedFilterDialog {
+//                val dialog = FeedFilterDialog()
+//                dialog.filter = filter
+//                return dialog
+//            }
+//        }
+//    }
 
     companion object {
         val TAG = SubscriptionsFragment::class.simpleName ?: "Anonymous"

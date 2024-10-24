@@ -125,7 +125,7 @@ import kotlin.math.min
 
         swipeActions.setFilter(getFilter())
         var info = "${episodes.size} episodes"
-        if (getFilter().values.isNotEmpty()) {
+        if (getFilter().properties.isNotEmpty()) {
             info += " - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else emptyView.setMessage(R.string.no_all_episodes_label)

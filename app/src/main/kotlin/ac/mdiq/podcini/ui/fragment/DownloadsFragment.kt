@@ -20,11 +20,7 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.EpisodeVM
-import ac.mdiq.podcini.ui.compose.InforBar
-import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
@@ -40,8 +36,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -70,6 +68,7 @@ import java.util.*
     private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    var showFilterDialog by mutableStateOf(false)
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
@@ -98,6 +97,11 @@ import java.util.*
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
+                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(),
+                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
+                    onDismissRequest = { showFilterDialog = false } ) {
+                    EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(it))
+                }
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
@@ -158,7 +162,10 @@ import java.util.*
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.filter_items -> DownloadsFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
+            R.id.filter_items -> {
+                showFilterDialog = true
+//                DownloadsFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
+            }
 //            R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
@@ -398,8 +405,8 @@ import java.util.*
             for (item in episodes) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
-        Logd(TAG, "refreshInfoBar filter value: ${getFilter().values.size} ${getFilter().values.joinToString()}")
-        if (getFilter().values.size > 1) info += " - ${getString(R.string.filtered_label)}"
+        Logd(TAG, "refreshInfoBar filter value: ${getFilter().properties.size} ${getFilter().properties.joinToString()}")
+        if (getFilter().properties.size > 1) info += " - ${getString(R.string.filtered_label)}"
         infoBarText.value = info
     }
 
@@ -427,20 +434,20 @@ import java.util.*
         }
     }
 
-    class DownloadsFilterDialog : EpisodeFilterDialog() {
-        override fun onFilterChanged(newFilterValues: Set<String>) {
-            EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(newFilterValues))
-        }
-        companion object {
-            fun newInstance(filter: EpisodeFilter?): DownloadsFilterDialog {
-                val dialog = DownloadsFilterDialog()
-                dialog.filter = filter
-                dialog.filtersDisabled.add(FeedItemFilterGroup.DOWNLOADED)
-                dialog.filtersDisabled.add(FeedItemFilterGroup.MEDIA)
-                return dialog
-            }
-        }
-    }
+//    class DownloadsFilterDialog : EpisodeFilterDialog() {
+//        override fun onFilterChanged(newFilterValues: Set<String>) {
+//            EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(newFilterValues))
+//        }
+//        companion object {
+//            fun newInstance(filter: EpisodeFilter?): DownloadsFilterDialog {
+//                val dialog = DownloadsFilterDialog()
+//                dialog.filter = filter
+//                dialog.filtersDisabled.add(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED)
+//                dialog.filtersDisabled.add(EpisodeFilter.EpisodesFilterGroup.MEDIA)
+//                return dialog
+//            }
+//        }
+//    }
 
     companion object {
         val TAG = DownloadsFragment::class.simpleName ?: "Anonymous"

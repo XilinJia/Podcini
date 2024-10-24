@@ -10,10 +10,7 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.EpisodeVM
-import ac.mdiq.podcini.ui.compose.InforBar
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -23,8 +20,10 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -58,6 +57,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
     val episodes = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
+    var showFilterDialog by mutableStateOf(false)
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -84,6 +84,9 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         lifecycle.addObserver(swipeActions)
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
+                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), onDismissRequest = { showFilterDialog = false } ) {
+                    onFilterChanged(it)
+                }
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(
@@ -114,6 +117,8 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         return binding.root
     }
+
+    open fun onFilterChanged(filterValues: Set<String>) {}
 
     open fun createListAdaptor() {}
 

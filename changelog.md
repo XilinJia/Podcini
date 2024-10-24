@@ -1,3 +1,11 @@
+# 6.12.3
+
+* reworked and expanded the filters routines for episodes and feeds
+	* various criteria have been added
+	* if a group of criteria has two options, they are mutually exclusive
+	* if there are more options in a group, multi-select is allowed and filter uses OR for the intra-group selections
+	* on selections across groups, the filter uses AND
+
 # 6.12.2
 
 * fixed play not resuming after interruption (watch for any side effects)

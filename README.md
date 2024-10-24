@@ -88,7 +88,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 ### Podcast list and Episode list
 
-* A whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page,
 * Subscriptions page by default has a list layout and can be opted for a grid layout
 * New and efficient ways of click and long-click operations on lists:
   * click on title area opens the podcast/episode
@@ -99,14 +98,14 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
 * Played or new episodes have clearer markings
 * Sort dialog no longer dims the main view
-* download date can be used to sort both feeds and episodes
-* Subscriptions view has a filter based on feed preferences, in the same style as episodes filter
+* An all new way of filtering for both podcasts and episodes
 * Subscriptions sorting is now bi-directional based on various explicit measures, and sorting info is shown on every feed (List Layout only)
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * in all episodes list views, click on an episode image brings up the FeedInfo view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * on action bar of FeedEpisodes view there is a direct access to Queue
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
+* Long-press on the action button on the right of any episode in the list brings up more options
 * History view shows time of last play, and allows filters and sorts
 
 ### Podcast/Episode

@@ -52,7 +52,7 @@ fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                for (rating in Rating.entries) {
+                for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                         for (item in selected) Feeds.setRating(item, rating.code)
                         onDismissRequest()

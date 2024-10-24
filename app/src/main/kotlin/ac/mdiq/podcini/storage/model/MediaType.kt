@@ -10,7 +10,7 @@ enum class MediaType {
 //            "application/x-flac"
 //        ))
 
-        private val AUDIO_APPLICATION_MIME_STRINGS: HashSet<String> = hashSetOf(
+        val AUDIO_APPLICATION_MIME_STRINGS: HashSet<String> = hashSetOf(
             "application/ogg",
             "application/opus",
             "application/x-flac"

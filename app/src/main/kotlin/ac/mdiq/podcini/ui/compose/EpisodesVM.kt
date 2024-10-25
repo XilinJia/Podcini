@@ -943,7 +943,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
             window.setGravity(Gravity.BOTTOM)
             window.setDimAmount(0f)
         }
-        Surface(modifier = Modifier.fillMaxWidth().height(500.dp), shape = RoundedCornerShape(16.dp)) {
+        Surface(modifier = Modifier.fillMaxWidth().height(350.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             val scrollState = rememberScrollState()
             Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {

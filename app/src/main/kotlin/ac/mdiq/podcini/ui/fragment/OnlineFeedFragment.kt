@@ -720,14 +720,14 @@ class OnlineFeedFragment : Fragment() {
             updateToolbar()
             return root
         }
-        override fun onStart() {
-            super.onStart()
-            procFlowEvents()
-        }
-        override fun onStop() {
-            super.onStop()
-            cancelFlowEvents()
-        }
+//        override fun onStart() {
+//            super.onStart()
+////            procFlowEvents()
+//        }
+//        override fun onStop() {
+//            super.onStop()
+////            cancelFlowEvents()
+//        }
         override fun onDestroyView() {
             episodeList.clear()
             super.onDestroyView()
@@ -750,7 +750,7 @@ class OnlineFeedFragment : Fragment() {
             binding.toolbar.menu.findItem(R.id.episodes_sort).setVisible(false)
 //        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
             binding.toolbar.menu.findItem(R.id.action_search).setVisible(false)
-            binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
+//            binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
             binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)
             infoBarText.value = "${episodes.size} episodes"
         }
@@ -760,23 +760,23 @@ class OnlineFeedFragment : Fragment() {
                 else -> return false
             }
         }
-        private var eventSink: Job?     = null
-        private fun cancelFlowEvents() {
-            eventSink?.cancel()
-            eventSink = null
-        }
-        private fun procFlowEvents() {
-            if (eventSink != null) return
-            eventSink = lifecycleScope.launch {
-                EventFlow.events.collectLatest { event ->
-                    Logd(TAG, "Received event: ${event.TAG}")
-                    when (event) {
-                        is FlowEvent.AllEpisodesFilterEvent -> page = 1
-                        else -> {}
-                    }
-                }
-            }
-        }
+//        private var eventSink: Job?     = null
+//        private fun cancelFlowEvents() {
+//            eventSink?.cancel()
+//            eventSink = null
+//        }
+//        private fun procFlowEvents() {
+//            if (eventSink != null) return
+//            eventSink = lifecycleScope.launch {
+//                EventFlow.events.collectLatest { event ->
+//                    Logd(TAG, "Received event: ${event.TAG}")
+//                    when (event) {
+//                        is FlowEvent.AllEpisodesFilterEvent -> page = 1
+//                        else -> {}
+//                    }
+//                }
+//            }
+//        }
 
         companion object {
             const val PREF_NAME: String = "EpisodesListFragment"

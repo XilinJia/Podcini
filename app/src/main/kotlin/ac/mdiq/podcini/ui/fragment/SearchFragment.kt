@@ -2,49 +2,60 @@ package ac.mdiq.podcini.ui.fragment
 
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
 import ac.mdiq.podcini.ui.compose.EpisodeVM
-import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
-import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
-import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
-import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.SquareImageView
+import ac.mdiq.podcini.ui.compose.NonlazyGrid
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Pair
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
-import androidx.cardview.widget.CardView
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
-import coil.load
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
@@ -53,7 +64,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.ref.WeakReference
+import java.text.NumberFormat
 
 /**
  * Performs a search operation on all feeds or one specific feed and displays the search result.
@@ -63,12 +74,11 @@ class SearchFragment : Fragment() {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapterFeeds: HorizontalFeedListAdapter
-    private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var searchView: SearchView
     private lateinit var chip: Chip
     private lateinit var automaticSearchDebouncer: Handler
 
+    private val resultFeeds = mutableStateListOf<Feed>()
     private val results = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
 
@@ -86,34 +96,20 @@ class SearchFragment : Fragment() {
         Logd(TAG, "fragment onCreateView")
         setupToolbar(binding.toolbar)
 
-        binding.lazyColumn.setContent {
+        binding.resultsListView.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, vms = vms)
+                Column {
+                    CriteriaList()
+                    FeedsRow()
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms)
+                }
             }
         }
-
-        val recyclerViewFeeds = binding.recyclerViewFeeds
-        val layoutManagerFeeds = LinearLayoutManager(activity)
-        layoutManagerFeeds.orientation = RecyclerView.HORIZONTAL
-        recyclerViewFeeds.layoutManager = layoutManagerFeeds
-        adapterFeeds = object : HorizontalFeedListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
-                super.onCreateContextMenu(contextMenu, view, contextMenuInfo)
-                MenuItemUtils.setOnClickListeners(contextMenu) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
-            }
-        }
-        recyclerViewFeeds.adapter = adapterFeeds
-
-        emptyViewHandler = EmptyViewHandler(requireContext())
-//        emptyViewHandler.attachToRecyclerView(recyclerView)
-        emptyViewHandler.setIcon(R.drawable.ic_search)
-        emptyViewHandler.setTitle(R.string.search_status_no_results)
-        emptyViewHandler.setMessage(R.string.type_to_search)
 
         chip = binding.feedTitleChip
         chip.setOnCloseIconClickListener {
             requireArguments().putLong(ARG_FEED, 0)
-            searchWithProgressBar()
+            search()
         }
         chip.visibility = if (requireArguments().getLong(ARG_FEED, 0) == 0L) View.GONE else View.VISIBLE
         chip.text = requireArguments().getString(ARG_FEED_NAME, "")
@@ -139,6 +135,7 @@ class SearchFragment : Fragment() {
         Logd(TAG, "onDestroyView")
         _binding = null
         results.clear()
+        resultFeeds.clear()
         vms.clear()
         super.onDestroyView()
     }
@@ -157,7 +154,7 @@ class SearchFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             @UnstableApi override fun onQueryTextSubmit(s: String): Boolean {
                 searchView.clearFocus()
-                searchWithProgressBar()
+                search()
                 return true
             }
             @UnstableApi override fun onQueryTextChange(s: String): Boolean {
@@ -181,24 +178,24 @@ class SearchFragment : Fragment() {
         })
     }
 
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
-        if (selectedFeedItem != null && onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
-        return super.onContextItemSelected(item)
-    }
+//    override fun onContextItemSelected(item: MenuItem): Boolean {
+////        val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
+////        if (selectedFeedItem != null && onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
+//        return super.onContextItemSelected(item)
+//    }
 
-    private fun onMenuItemClicked(fragment: Fragment, menuItemId: Int, selectedFeed: Feed, callback: Runnable): Boolean {
-        val context = fragment.requireContext()
-        when (menuItemId) {
-//            R.id.rename_folder_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
-            R.id.edit_tags -> if (selectedFeed.preferences != null) TagSettingsDialog.newInstance(listOf(selectedFeed))
-                .show(fragment.childFragmentManager, TagSettingsDialog.TAG)
-            R.id.rename_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
-            R.id.remove_feed -> RemoveFeedDialog.show(context, selectedFeed, null)
-            else -> return false
-        }
-        return true
-    }
+//    private fun onMenuItemClicked(fragment: Fragment, menuItemId: Int, selectedFeed: Feed, callback: Runnable): Boolean {
+//        val context = fragment.requireContext()
+//        when (menuItemId) {
+////            R.id.rename_folder_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
+//            R.id.edit_tags -> if (selectedFeed.preferences != null) TagSettingsDialog.newInstance(listOf(selectedFeed))
+//                .show(fragment.childFragmentManager, TagSettingsDialog.TAG)
+//            R.id.rename_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
+//            R.id.remove_feed -> RemoveFeedDialog.show(context, selectedFeed, null)
+//            else -> return false
+//        }
+//        return true
+//    }
 
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
@@ -240,14 +237,9 @@ class SearchFragment : Fragment() {
         }
     }
 
-    @UnstableApi private fun searchWithProgressBar() {
-        emptyViewHandler.hide()
-        search()
-    }
-
     @SuppressLint("StringFormatMatches")
     @UnstableApi private fun search() {
-        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
+//        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
 
         lifecycleScope.launch {
@@ -262,12 +254,40 @@ class SearchFragment : Fragment() {
                         for (e in first_) { vms.add(EpisodeVM(e)) }
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                        if (results_.second != null) adapterFeeds.updateData(results_.second!!)
-                    } else adapterFeeds.updateData(emptyList())
-                    if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
-                    else emptyViewHandler.setMessage(getString(R.string.no_results_for_query, searchView.query))
+                        if (results_.second != null) {
+                            resultFeeds.clear()
+                            resultFeeds.addAll(results_.second!!)
+                        }
+                    } else resultFeeds.clear()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
+        }
+    }
+
+    enum class SearchBy(val nameRes: Int, var selected: Boolean = true) {
+        TITLE(R.string.title),
+        AUTHOR(R.string.author),
+        DESCRIPTION(R.string.description_label),
+        COMMENT(R.string.my_opinion_label),
+    }
+
+    @Composable
+    fun CriteriaList() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        NonlazyGrid(columns = 2, itemCount = SearchBy.entries.size) { index ->
+            val c = SearchBy.entries[index]
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                var isChecked by remember { mutableStateOf(true) }
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { newValue ->
+                        c.selected = newValue
+                        isChecked = newValue
+                    }
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(stringResource(c.nameRes), color = textColor)
+            }
         }
     }
 
@@ -282,43 +302,39 @@ class SearchFragment : Fragment() {
         return Pair<List<Episode>, List<Feed>>(items, feeds)
     }
 
-    private fun prepareFeedQueryString(query: String): String {
+    private fun searchFeeds(query: String): List<Feed> {
+        Logd(TAG, "searchFeeds called ${SearchBy.AUTHOR.selected}")
         val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val sb = StringBuilder()
         for (i in queryWords.indices) {
             sb.append("(")
-                .append("eigenTitle TEXT '${queryWords[i]}'")
-                .append(" OR ")
-                .append("customTitle TEXT '${queryWords[i]}'")
-                .append(" OR ")
-                .append("author TEXT '${queryWords[i]}'")
-                .append(" OR ")
-                .append("description TEXT '${queryWords[i]}'")
-                .append(") ")
+            var isStart = true
+            if (SearchBy.TITLE.selected) {
+                sb.append("eigenTitle TEXT '${queryWords[i]}'")
+                sb.append(" OR ")
+                sb.append("customTitle TEXT '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.AUTHOR.selected) {
+                if (!isStart) sb.append(" OR ")
+                sb.append("author TEXT '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.DESCRIPTION.selected) {
+                if (!isStart) sb.append(" OR ")
+                sb.append("description TEXT '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.COMMENT.selected) {
+                if (!isStart) sb.append(" OR ")
+                sb.append("comment TEXT '${queryWords[i]}'")
+            }
+            sb.append(") ")
             if (i != queryWords.size - 1) sb.append("AND ")
         }
-        return sb.toString()
-    }
-
-    private fun searchFeeds(query: String): List<Feed> {
-        Logd(TAG, "searchFeeds called")
-        val queryString = prepareFeedQueryString(query)
+        val queryString = sb.toString()
         Logd(TAG, "searchFeeds queryString: $queryString")
         return realm.query(Feed::class).query(queryString).find()
-    }
-
-    private fun prepareEpisodeQueryString(query: String): String {
-        val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val sb = StringBuilder()
-        for (i in queryWords.indices) {
-            sb.append("(")
-                .append("description TEXT '${queryWords[i]}'")
-                .append(" OR ")
-                .append("title TEXT '${queryWords[i]}'" )
-                .append(") ")
-            if (i != queryWords.size - 1) sb.append("AND ")
-        }
-        return sb.toString()
     }
 
     /**
@@ -330,7 +346,30 @@ class SearchFragment : Fragment() {
      */
     private fun searchEpisodes(feedID: Long, query: String): List<Episode> {
         Logd(TAG, "searchEpisodes called")
-        var queryString = prepareEpisodeQueryString(query)
+        val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val sb = StringBuilder()
+        for (i in queryWords.indices) {
+            sb.append("(")
+            var isStart = true
+            if (SearchBy.TITLE.selected) {
+                sb.append("title TEXT '${queryWords[i]}'" )
+                isStart = false
+            }
+            if (SearchBy.DESCRIPTION.selected) {
+                if (!isStart) sb.append(" OR ")
+                sb.append("description TEXT '${queryWords[i]}'")
+                sb.append(" OR ")
+                sb.append("transcript TEXT '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.COMMENT.selected) {
+                if (!isStart) sb.append(" OR ")
+                sb.append("comment TEXT '${queryWords[i]}'")
+            }
+            sb.append(") ")
+            if (i != queryWords.size - 1) sb.append("AND ")
+        }
+        var queryString = sb.toString()
         if (feedID != 0L) queryString = "(feedId == $feedID) AND $queryString"
         Logd(TAG, "searchEpisodes queryString: $queryString")
         return realm.query(Episode::class).query(queryString).find()
@@ -354,89 +393,49 @@ class SearchFragment : Fragment() {
         (activity as MainActivity).loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
     }
 
-    open class HorizontalFeedListAdapter(mainActivity: MainActivity)
-        : RecyclerView.Adapter<HorizontalFeedListAdapter.Holder>(), View.OnCreateContextMenuListener {
-
-        private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
-        private val data: MutableList<Feed> = ArrayList()
-        private var dummyViews = 0
-        var longPressedItem: Feed? = null
-        @StringRes
-        private var endButtonText = 0
-        private var endButtonAction: Runnable? = null
-
-        fun updateData(newData: List<Feed>?) {
-            data.clear()
-            data.addAll(newData!!)
-            notifyDataSetChanged()
-        }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-            val convertView = View.inflate(mainActivityRef.get(), R.layout.horizontal_feed_item, null)
-            return Holder(convertView)
-        }
-        @UnstableApi override fun onBindViewHolder(holder: Holder, position: Int) {
-            if (position == itemCount - 1 && endButtonAction != null) {
-                holder.cardView.visibility = View.GONE
-                holder.actionButton.visibility = View.VISIBLE
-                holder.actionButton.setText(endButtonText)
-                holder.actionButton.setOnClickListener { endButtonAction!!.run() }
-                return
-            }
-            holder.cardView.visibility = View.VISIBLE
-            holder.actionButton.visibility = View.GONE
-            if (position >= data.size) {
-                holder.itemView.alpha = 0.1f
-//            Glide.with(mainActivityRef.get()!!).clear(holder.imageView)
-                val imageLoader = ImageLoader.Builder(mainActivityRef.get()!!).build()
-                imageLoader.enqueue(ImageRequest.Builder(mainActivityRef.get()!!).data(null).target(holder.imageView).build())
-                holder.imageView.setImageResource(R.color.medium_gray)
-                return
-            }
-            holder.itemView.alpha = 1.0f
-            val podcast: Feed = data[position]
-            holder.imageView.setContentDescription(podcast.title)
-            holder.imageView.setOnClickListener {
-                mainActivityRef.get()?.loadChildFragment(FeedEpisodesFragment.newInstance(podcast.id))
-            }
-            holder.imageView.setOnCreateContextMenuListener(this)
-            holder.imageView.setOnLongClickListener {
-                val currentItemPosition = holder.bindingAdapterPosition
-                longPressedItem = data[currentItemPosition]
-                false
-            }
-            holder.imageView.load(podcast.imageUrl) {
-                placeholder(R.color.light_gray)
-                error(R.mipmap.ic_launcher)
-            }
-        }
-        override fun getItemId(position: Int): Long {
-            if (position >= data.size) return RecyclerView.NO_ID // Dummy views
-            return data[position].id
-        }
-        override fun getItemCount(): Int {
-            return dummyViews + data.size + (if ((endButtonAction == null)) 0 else 1)
-        }
-        override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
-            val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
-            if (longPressedItem == null) return
-            inflater.inflate(R.menu.feed_context, contextMenu)
-            contextMenu.setHeaderTitle(longPressedItem!!.title)
-        }
-        fun setEndButton(@StringRes text: Int, action: Runnable?) {
-            endButtonAction = action
-            endButtonText = text
-            notifyDataSetChanged()
-        }
-        class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val binding = HorizontalFeedItemBinding.bind(itemView)
-            var imageView: SquareImageView = binding.discoveryCover
-            var cardView: CardView
-            var actionButton: Button
-
-            init {
-                imageView.setDirection(SquareImageView.DIRECTION_HEIGHT)
-                actionButton = binding.actionButton
-                cardView = binding.cardView
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun FeedsRow() {
+        val context = LocalContext.current
+        val lazyGridState = rememberLazyListState()
+        LazyRow (state = lazyGridState, horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
+        )  {
+            items(resultFeeds.size, key = {index -> resultFeeds[index].id}) { index ->
+                val feed by remember { mutableStateOf(resultFeeds[index]) }
+                ConstraintLayout {
+                    val (coverImage, episodeCount, rating, error) = createRefs()
+                    val imgLoc = remember(feed) { feed.imageUrl }
+                    AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                        contentDescription = "coverImage",
+                        modifier = Modifier.height(100.dp).aspectRatio(1f)
+                            .constrainAs(coverImage) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                            }.combinedClickable(onClick = {
+                                Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
+                                (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                            }, onLongClick = {
+                                Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
+//                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
+//                                inflater.inflate(R.menu.feed_context, contextMenu)
+//                                contextMenu.setHeaderTitle(feed.title)
+                            })
+                    )
+                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
+                        modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
+                            end.linkTo(parent.end)
+                            top.linkTo(coverImage.top)
+                        })
+                    if (feed.rating != Rating.UNRATED.code)
+                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+                                start.linkTo(parent.start)
+                                centerVerticallyTo(coverImage)
+                            })
+                }
             }
         }
     }

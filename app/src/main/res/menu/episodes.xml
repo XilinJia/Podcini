@@ -9,12 +9,12 @@
         custom:showAsAction="always"
         android:title="@string/search_label"/>
 
-    <item
-        android:id="@+id/action_favorites"
-        android:icon="@drawable/ic_star_border"
-        android:menuCategory="container"
-        android:title="@string/favorite_episodes_label"
-        custom:showAsAction="always"/>
+<!--    <item-->
+<!--        android:id="@+id/action_favorites"-->
+<!--        android:icon="@drawable/ic_star_border"-->
+<!--        android:menuCategory="container"-->
+<!--        android:title="@string/favorite_episodes_label"-->
+<!--        custom:showAsAction="always"/>-->
 
     <item
         android:id="@+id/filter_items"

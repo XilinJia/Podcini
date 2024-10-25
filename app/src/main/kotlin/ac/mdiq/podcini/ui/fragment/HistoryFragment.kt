@@ -42,7 +42,6 @@ import kotlin.math.min
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-
         Logd(TAG, "fragment onCreateView")
         toolbar.inflateMenu(R.menu.playback_history)
         toolbar.setTitle(R.string.playback_history_label)
@@ -50,7 +49,6 @@ import kotlin.math.min
         emptyView.setIcon(R.drawable.ic_history)
         emptyView.setTitle(R.string.no_history_head_label)
         emptyView.setMessage(R.string.no_history_label)
-
         return root
     }
 
@@ -130,7 +128,7 @@ import kotlin.math.min
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else emptyView.setMessage(R.string.no_all_episodes_label)
         infoBarText.value = info
-        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
+//        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
     private var eventSink: Job?     = null

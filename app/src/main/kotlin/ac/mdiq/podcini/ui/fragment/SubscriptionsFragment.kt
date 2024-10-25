@@ -285,7 +285,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
-                    is FlowEvent.FeedsFilterEvent -> loadSubscriptions()
+//                    is FlowEvent.FeedsFilterEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
                     is FlowEvent.FeedPrefsChangeEvent -> loadSubscriptions()
@@ -1089,7 +1089,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun onFilterChanged(newFilterValues: Set<String>) {
             feedsFilter = StringUtils.join(newFilterValues, ",")
             Logd(TAG, "onFilterChanged: $feedsFilter")
-            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
+            loadSubscriptions()
+//            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
         }
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
@@ -1097,7 +1098,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 window.setGravity(Gravity.BOTTOM)
                 window.setDimAmount(0f)
             }
-            Surface(modifier = Modifier.fillMaxWidth().height(500.dp), shape = RoundedCornerShape(16.dp)) {
+            Surface(modifier = Modifier.fillMaxWidth().height(350.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp)) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 val scrollState = rememberScrollState()
                 Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
@@ -1109,8 +1110,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 if (selectNone) selectedIndex = -1
                                 LaunchedEffect(Unit) {
                                     if (filter != null) {
-                                        if (item.values[0].filterId in filter!!.properties) selectedIndex = 0
-                                        else if (item.values[1].filterId in filter!!.properties) selectedIndex = 1
+                                        if (item.values[0].filterId in filter.properties) selectedIndex = 0
+                                        else if (item.values[1].filterId in filter.properties) selectedIndex = 1
                                     }
                                 }
                                 Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
@@ -1230,137 +1231,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             this.onPreferenceChangedListener = onPreferenceChangedListener
         }
     }
-
-//    class FeedFilterDialog : BottomSheetDialogFragment() {
-//        var filter: FeedFilter? = null
-//        private val filterValues: MutableSet<String> = mutableSetOf()
-//
-//        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-//            val composeView = ComposeView(requireContext()).apply {
-//                setContent {
-//                    CustomTheme(requireContext()) {
-//                        MainView()
-//                    }
-//                }
-//            }
-//            return composeView
-//        }
-//
-//        @Composable
-//        fun MainView() {
-//            val textColor = MaterialTheme.colorScheme.onSurface
-//            val scrollState = rememberScrollState()
-//            Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
-//                var selectNone by remember { mutableStateOf(false) }
-//                for (item in FeedFilter.FeedFilterGroup.entries) {
-//                    if (item.values.size == 2) {
-//                        Row(modifier = Modifier.padding(start = 5.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Absolute.Left, verticalAlignment = Alignment.CenterVertically) {
-//                            var selectedIndex by remember { mutableStateOf(-1) }
-//                            if (selectNone) selectedIndex = -1
-//                            LaunchedEffect(Unit) {
-//                                if (filter != null) {
-//                                    if (item.values[0].filterId in filter!!.properties) selectedIndex = 0
-//                                    else if (item.values[1].filterId in filter!!.properties) selectedIndex = 1
-//                                }
-//                            }
-//                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
-//                            Spacer(Modifier.weight(0.3f))
-//                            OutlinedButton(
-//                                modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
-//                                onClick = {
-//                                    if (selectedIndex != 0) {
-//                                        selectNone = false
-//                                        selectedIndex = 0
-//                                        filterValues.add(item.values[0].filterId)
-//                                        filterValues.remove(item.values[1].filterId)
-//                                    } else {
-//                                        selectedIndex = -1
-//                                        filterValues.remove(item.values[0].filterId)
-//                                    }
-//                                    onFilterChanged(filterValues)
-//                                },
-//                            ) {
-//                                Text(text = stringResource(item.values[0].displayName), color = textColor)
-//                            }
-//                            Spacer(Modifier.weight(0.1f))
-//                            OutlinedButton(
-//                                modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
-//                                onClick = {
-//                                    if (selectedIndex != 1) {
-//                                        selectNone = false
-//                                        selectedIndex = 1
-//                                        filterValues.add(item.values[1].filterId)
-//                                        filterValues.remove(item.values[0].filterId)
-//                                    } else {
-//                                        selectedIndex = -1
-//                                        filterValues.remove(item.values[1].filterId)
-//                                    }
-//                                    onFilterChanged(filterValues)
-//                                },
-//                            ) {
-//                                Text(text = stringResource(item.values[1].displayName), color = textColor)
-//                            }
-//                            Spacer(Modifier.weight(0.5f))
-//                        }
-//                    } else {
-//                        Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
-//                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
-//                            val lazyGridState = rememberLazyGridState()
-//                            LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(100.dp),
-//                                verticalArrangement = Arrangement.spacedBy(2.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-//                                items(item.values.size) { index ->
-//                                    var selected by remember { mutableStateOf(false) }
-//                                    if (selectNone) selected = false
-//                                    OutlinedButton(
-//                                        modifier = Modifier.padding(2.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
-//                                        border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
-//                                        onClick = {
-//                                            selectNone = false
-//                                            selected = !selected
-//                                            if (selected) filterValues.add(item.values[index].filterId)
-//                                            else filterValues.remove(item.values[index].filterId)
-//                                            onFilterChanged(filterValues)
-//                                        },
-//                                    ) {
-//                                        Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                Row {
-//                    Spacer(Modifier.weight(0.3f))
-//                    Button(onClick = {
-//                        selectNone = true
-//                        onFilterChanged(setOf(""))
-//                    }) {
-//                        Text(stringResource(R.string.reset))
-//                    }
-//                    Spacer(Modifier.weight(0.4f))
-//                    Button(onClick = {
-//                        dismiss()
-//                    }) {
-//                        Text(stringResource(R.string.close_label))
-//                    }
-//                    Spacer(Modifier.weight(0.3f))
-//                }
-//            }
-//        }
-//        private fun onFilterChanged(newFilterValues: Set<String>) {
-//            feedsFilter = StringUtils.join(newFilterValues, ",")
-//            Logd(TAG, "onFilterChanged: $feedsFilter")
-//            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
-//        }
-//
-//        companion object {
-//            fun newInstance(filter: FeedFilter?): FeedFilterDialog {
-//                val dialog = FeedFilterDialog()
-//                dialog.filter = filter
-//                return dialog
-//            }
-//        }
-//    }
 
     companion object {
         val TAG = SubscriptionsFragment::class.simpleName ?: "Anonymous"

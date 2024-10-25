@@ -141,7 +141,7 @@ sealed class FlowEvent {
 
     data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
 
-    data class FeedsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
+//    data class FeedsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
 //    data class SkipIntroEndingChangedEvent(val skipIntro: Int, val skipEnding: Int, val feedId: Long) : FlowEvent()
 
@@ -167,11 +167,11 @@ sealed class FlowEvent {
 
     data class RatingEvent(val episode: Episode, val rating: Int = Rating.FAVORITE.code) : FlowEvent()
 
-    data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
+//    data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
     data class AllEpisodesSortEvent(val dummy: Unit = Unit) : FlowEvent()
 
-    data class DownloadsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
+//    data class DownloadsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
     data class EpisodeEvent(val episodes: List<Episode>) : FlowEvent() {
         companion object {

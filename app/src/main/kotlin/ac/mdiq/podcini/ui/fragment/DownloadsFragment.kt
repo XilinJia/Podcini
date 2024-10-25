@@ -100,7 +100,12 @@ import java.util.*
                 if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(),
                     filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
                     onDismissRequest = { showFilterDialog = false } ) {
-                    EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(it))
+//                    EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(it))
+                    val fSet = it.toMutableSet()
+                    fSet.add(EpisodeFilter.States.downloaded.name)
+                    prefFilterDownloads = StringUtils.join(fSet, ",")
+                    Logd(TAG, "onFilterChanged: $prefFilterDownloads")
+                    loadItems()
                 }
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
@@ -261,7 +266,7 @@ import java.util.*
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.DownloadsFilterEvent -> onFilterChanged(event)
+//                    is FlowEvent.DownloadsFilterEvent -> onFilterChanged(event)
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
                     is FlowEvent.DownloadLogEvent -> loadItems()
@@ -283,13 +288,13 @@ import java.util.*
 //        }
     }
 
-    private fun onFilterChanged(event: FlowEvent.DownloadsFilterEvent) {
-        val fSet = event.filterValues?.toMutableSet() ?: mutableSetOf()
-        fSet.add(EpisodeFilter.States.downloaded.name)
-        prefFilterDownloads = StringUtils.join(fSet, ",")
-        Logd(TAG, "onFilterChanged: $prefFilterDownloads")
-        loadItems()
-    }
+//    private fun onFilterChanged(event: FlowEvent.DownloadsFilterEvent) {
+//        val fSet = event.filterValues?.toMutableSet() ?: mutableSetOf()
+//        fSet.add(EpisodeFilter.States.downloaded.name)
+//        prefFilterDownloads = StringUtils.join(fSet, ",")
+//        Logd(TAG, "onFilterChanged: $prefFilterDownloads")
+//        loadItems()
+//    }
 
     private fun addEmptyView() {
         emptyView = EmptyViewHandler(requireContext())
@@ -433,21 +438,6 @@ import java.util.*
             EventFlow.postEvent(FlowEvent.DownloadLogEvent())
         }
     }
-
-//    class DownloadsFilterDialog : EpisodeFilterDialog() {
-//        override fun onFilterChanged(newFilterValues: Set<String>) {
-//            EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(newFilterValues))
-//        }
-//        companion object {
-//            fun newInstance(filter: EpisodeFilter?): DownloadsFilterDialog {
-//                val dialog = DownloadsFilterDialog()
-//                dialog.filter = filter
-//                dialog.filtersDisabled.add(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED)
-//                dialog.filtersDisabled.add(EpisodeFilter.EpisodesFilterGroup.MEDIA)
-//                return dialog
-//            }
-//        }
-//    }
 
     companion object {
         val TAG = DownloadsFragment::class.simpleName ?: "Anonymous"

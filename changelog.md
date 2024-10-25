@@ -1,3 +1,9 @@
+# 6.12.4
+
+* bug fixes and enhancements in filters routines
+* in SearchFragment, added search criteria options: title, author(feed only), description(including transcript in episodes), and comment (My opinion)
+* feed list in SearchFragment is in Compose
+
 # 6.12.3
 
 * reworked and expanded the filters routines for episodes and feeds

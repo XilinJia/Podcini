@@ -40,9 +40,6 @@ import org.apache.commons.io.input.BOMInputStream
 import java.io.InputStreamReader
 import java.io.Reader
 
-/**
- * Activity for Opml Import.
- */
 class OpmlImportActivity : AppCompatActivity() {
     private var uri: Uri? = null
     private var _binding: OpmlSelectionBinding? = null
@@ -82,6 +79,7 @@ class OpmlImportActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         _binding = OpmlSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Logd(TAG, "onCreate")
 
         binding.feedlist.choiceMode = ListView.CHOICE_MODE_MULTIPLE
         binding.feedlist.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, _: View?, _: Int, _: Long ->
@@ -106,7 +104,6 @@ class OpmlImportActivity : AppCompatActivity() {
         }
         binding.butConfirm.setOnClickListener {
             binding.progressBar.visibility = View.VISIBLE
-
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {

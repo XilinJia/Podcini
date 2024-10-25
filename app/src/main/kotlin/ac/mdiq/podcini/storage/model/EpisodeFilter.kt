@@ -2,7 +2,6 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Queues.inAnyQueue
-import ac.mdiq.podcini.storage.model.MediaType.Companion.AUDIO_APPLICATION_MIME_STRINGS
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties_: String) : Serializable {
@@ -19,29 +18,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
     val showNotFavorite: Boolean = properties.contains(States.not_favorite.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
-
-//    fun matches(item: Episode): Boolean {
-//        when {
-//            showNew && !item.isNew -> return false
-//            showPlayed && item.playState < PlayState.PLAYED.code -> return false
-//            showUnplayed && item.playState >= PlayState.PLAYED.code -> return false
-//            properties.contains(States.paused.name) && !item.isInProgress -> return false
-//            properties.contains(States.not_paused.name) && item.isInProgress -> return false
-//            showDownloaded && !item.isDownloaded -> return false
-//            showNotDownloaded && item.isDownloaded -> return false
-//            properties.contains(States.auto_downloadable.name) && !item.isAutoDownloadEnabled -> return false
-//            properties.contains(States.not_auto_downloadable.name) && item.isAutoDownloadEnabled -> return false
-//            properties.contains(States.has_media.name) && item.media == null -> return false
-//            properties.contains(States.no_media.name) && item.media != null -> return false
-//            properties.contains(States.has_comments.name) && item.comment.isEmpty() -> return false
-//            properties.contains(States.no_comments.name) && item.comment.isNotEmpty() -> return false
-//            showIsFavorite && !item.isFavorite -> return false
-//            showNotFavorite && item.isFavorite -> return false
-//            showQueued && !inAnyQueue(item) -> return false
-//            showNotQueued && inAnyQueue(item) -> return false
-//            else -> return true
-//        }
-//    }
 
 //    filter on queues does not have a query string so it's not applied on query results, need to filter separately
     fun matchesForQueues(item: Episode): Boolean {
@@ -64,10 +40,10 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.unknown.name)) mediaTypeQuerys.add(" media == nil OR media.mimeType == nil OR media.mimeType == '' ")
         if (properties.contains(States.audio.name)) mediaTypeQuerys.add(" media.mimeType BEGINSWITH 'audio' ")
         if (properties.contains(States.video.name)) mediaTypeQuerys.add(" media.mimeType BEGINSWITH 'video' ")
-        if (properties.contains(States.audio_app.name)) mediaTypeQuerys.add(" media.mimeType IN ${AUDIO_APPLICATION_MIME_STRINGS.toList()} ")
+        if (properties.contains(States.audio_app.name)) mediaTypeQuerys.add(" media.mimeType IN {\"application/ogg\", \"application/opus\", \"application/x-flac\"} ")
         if (mediaTypeQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + mediaTypeQuerys[0])
-            if (mediaTypeQuerys.size > 1) for (r in statements.subList(1, mediaTypeQuerys.size)) {
+            if (mediaTypeQuerys.size > 1) for (r in mediaTypeQuerys.subList(1, mediaTypeQuerys.size)) {
                 query.append(" OR ")
                 query.append(r)
             }
@@ -84,7 +60,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.favorite.name)) ratingQuerys.add(" rating == ${Rating.FAVORITE.code} ")
         if (ratingQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + ratingQuerys[0])
-            if (ratingQuerys.size > 1) for (r in statements.subList(1, ratingQuerys.size)) {
+            if (ratingQuerys.size > 1) for (r in ratingQuerys.subList(1, ratingQuerys.size)) {
                 query.append(" OR ")
                 query.append(r)
             }
@@ -106,7 +82,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.ignored.name)) stateQuerys.add(" playState == ${PlayState.IGNORED.code} ")
         if (stateQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + stateQuerys[0])
-            if (stateQuerys.size > 1) for (r in statements.subList(1, stateQuerys.size)) {
+            if (stateQuerys.size > 1) for (r in stateQuerys.subList(1, stateQuerys.size)) {
                 query.append(" OR ")
                 query.append(r)
             }
@@ -198,11 +174,10 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         favorite,
     }
 
-    enum class EpisodesFilterGroup(val nameRes: Int, vararg values: ItemProperties) {
+    enum class EpisodesFilterGroup(val nameRes: Int, vararg values_: ItemProperties) {
 //        PLAYED(ItemProperties(R.string.hide_played_episodes_label, States.played.name), ItemProperties(R.string.not_played, States.unplayed.name)),
 //        PAUSED(ItemProperties(R.string.hide_paused_episodes_label, States.paused.name), ItemProperties(R.string.not_paused, States.not_paused.name)),
 //        FAVORITE(ItemProperties(R.string.hide_is_favorite_label, States.is_favorite.name), ItemProperties(R.string.not_favorite, States.not_favorite.name)),
-        MEDIA(R.string.has_media, ItemProperties(R.string.yes, States.has_media.name), ItemProperties(R.string.no, States.no_media.name)),
         RATING(R.string.rating_label, ItemProperties(R.string.unrated, States.unrated.name),
             ItemProperties(R.string.trash, States.trash.name),
             ItemProperties(R.string.bad, States.bad.name),
@@ -224,6 +199,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         ),
         OPINION(R.string.has_comments, ItemProperties(R.string.yes, States.has_comments.name), ItemProperties(R.string.no, States.no_comments.name)),
 //        QUEUED(ItemProperties(R.string.queued_label, States.queued.name), ItemProperties(R.string.not_queued_label, States.not_queued.name)),
+        MEDIA(R.string.has_media, ItemProperties(R.string.yes, States.has_media.name), ItemProperties(R.string.no, States.no_media.name)),
         DOWNLOADED(R.string.downloaded_label, ItemProperties(R.string.yes, States.downloaded.name), ItemProperties(R.string.no, States.not_downloaded.name)),
         CHAPTERS(R.string.has_chapters, ItemProperties(R.string.yes, States.has_chapters.name), ItemProperties(R.string.no, States.no_chapters.name)),
         MEDIA_TYPE(R.string.media_type, ItemProperties(R.string.unknown, States.unknown.name),
@@ -233,10 +209,9 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         ),
         AUTO_DOWNLOADABLE(R.string.auto_downloadable_label, ItemProperties(R.string.yes, States.auto_downloadable.name), ItemProperties(R.string.no, States.not_auto_downloadable.name));
 
-        @JvmField
-        val values: Array<ItemProperties> = arrayOf(*values)
+        val values: Array<ItemProperties> = arrayOf(*values_)
 
-        class ItemProperties(@JvmField val displayName: Int, @JvmField val filterId: String)
+        class ItemProperties(val displayName: Int, val filterId: String)
     }
 
     companion object {

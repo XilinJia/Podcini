@@ -89,6 +89,7 @@ class Episode : RealmObject {
     var isFavorite: Boolean = (rating == Rating.FAVORITE.code)
         private set
 
+    @FullText
     var comment: String = ""
 
     @Ignore

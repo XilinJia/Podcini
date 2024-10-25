@@ -49,6 +49,7 @@ class Feed : RealmObject {
 
     @FullText
     var author: String? = null
+
     var imageUrl: String? = null
 
     var episodes: RealmList<Episode> = realmListOf()
@@ -98,6 +99,7 @@ class Feed : RealmObject {
 
     var rating: Int =  Rating.NEUTRAL.code
 
+    @FullText
     var comment: String = ""
 
     /**

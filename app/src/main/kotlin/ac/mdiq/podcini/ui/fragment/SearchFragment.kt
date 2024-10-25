@@ -233,7 +233,6 @@ class SearchFragment : Fragment() {
 //                results[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
-
         }
     }
 
@@ -287,6 +286,53 @@ class SearchFragment : Fragment() {
                 )
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(stringResource(c.nameRes), color = textColor)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun FeedsRow() {
+        val context = LocalContext.current
+        val lazyGridState = rememberLazyListState()
+        LazyRow (state = lazyGridState, horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
+        )  {
+            items(resultFeeds.size, key = {index -> resultFeeds[index].id}) { index ->
+                val feed by remember { mutableStateOf(resultFeeds[index]) }
+                ConstraintLayout {
+                    val (coverImage, episodeCount, rating, error) = createRefs()
+                    val imgLoc = remember(feed) { feed.imageUrl }
+                    AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                        contentDescription = "coverImage",
+                        modifier = Modifier.height(100.dp).aspectRatio(1f)
+                            .constrainAs(coverImage) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                            }.combinedClickable(onClick = {
+                                Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
+                                (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                            }, onLongClick = {
+                                Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
+//                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
+//                                inflater.inflate(R.menu.feed_context, contextMenu)
+//                                contextMenu.setHeaderTitle(feed.title)
+                            })
+                    )
+                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
+                        modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
+                            end.linkTo(parent.end)
+                            top.linkTo(coverImage.top)
+                        })
+                    if (feed.rating != Rating.UNRATED.code)
+                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+                                start.linkTo(parent.start)
+                                centerVerticallyTo(coverImage)
+                            })
+                }
             }
         }
     }
@@ -391,53 +437,6 @@ class SearchFragment : Fragment() {
             return
         }
         (activity as MainActivity).loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
-    }
-
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    fun FeedsRow() {
-        val context = LocalContext.current
-        val lazyGridState = rememberLazyListState()
-        LazyRow (state = lazyGridState, horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
-        )  {
-            items(resultFeeds.size, key = {index -> resultFeeds[index].id}) { index ->
-                val feed by remember { mutableStateOf(resultFeeds[index]) }
-                ConstraintLayout {
-                    val (coverImage, episodeCount, rating, error) = createRefs()
-                    val imgLoc = remember(feed) { feed.imageUrl }
-                    AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
-                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                        contentDescription = "coverImage",
-                        modifier = Modifier.height(100.dp).aspectRatio(1f)
-                            .constrainAs(coverImage) {
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                            }.combinedClickable(onClick = {
-                                Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
-                                (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-                            }, onLongClick = {
-                                Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
-//                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
-//                                inflater.inflate(R.menu.feed_context, contextMenu)
-//                                contextMenu.setHeaderTitle(feed.title)
-                            })
-                    )
-                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
-                        modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
-                            end.linkTo(parent.end)
-                            top.linkTo(coverImage.top)
-                        })
-                    if (feed.rating != Rating.UNRATED.code)
-                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                start.linkTo(parent.start)
-                                centerVerticallyTo(coverImage)
-                            })
-                }
-            }
-        }
     }
 
     companion object {

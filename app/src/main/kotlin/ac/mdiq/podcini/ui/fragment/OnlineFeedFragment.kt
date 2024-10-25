@@ -720,14 +720,6 @@ class OnlineFeedFragment : Fragment() {
             updateToolbar()
             return root
         }
-//        override fun onStart() {
-//            super.onStart()
-////            procFlowEvents()
-//        }
-//        override fun onStop() {
-//            super.onStop()
-////            cancelFlowEvents()
-//        }
         override fun onDestroyView() {
             episodeList.clear()
             super.onDestroyView()
@@ -760,23 +752,6 @@ class OnlineFeedFragment : Fragment() {
                 else -> return false
             }
         }
-//        private var eventSink: Job?     = null
-//        private fun cancelFlowEvents() {
-//            eventSink?.cancel()
-//            eventSink = null
-//        }
-//        private fun procFlowEvents() {
-//            if (eventSink != null) return
-//            eventSink = lifecycleScope.launch {
-//                EventFlow.events.collectLatest { event ->
-//                    Logd(TAG, "Received event: ${event.TAG}")
-//                    when (event) {
-//                        is FlowEvent.AllEpisodesFilterEvent -> page = 1
-//                        else -> {}
-//                    }
-//                }
-//            }
-//        }
 
         companion object {
             const val PREF_NAME: String = "EpisodesListFragment"

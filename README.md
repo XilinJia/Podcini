@@ -56,7 +56,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
     * single tap not during play has no effect
 * Added preference "Fallback Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 1.5)
 * if the user customizes "Fallback speed" to a value greater than 0.1, long-press the Play button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
-* Various efficiency improvements
 * streamed media somewhat equivalent to downloaded media
   * enabled episode description on player detailed view
   * enabled intro- and end- skipping
@@ -65,7 +64,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * new video episode view, with video player on top and episode descriptions in portrait mode
 * easy switches on video player to other video mode or audio only, in seamless way
 * video player automatically switch to audio when app invisible
-* default video player mode setting in preferences
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
 * "Prefer streaming over download" is now on setting of individual feed
 * added setting in individual feed to play audio only for video feeds,
@@ -115,13 +113,11 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue
 * FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
-* FeedInfo view has feed setting in the header
 * instead of isFavorite, there is a new rating system for every episode: Trash, Bad, Neutral, Good, Favorite
 * instead of Played or Unplayed, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Ignored
   	* among which Unplayed, Later, Soon, Skipped, Played, Ignored are settable by the user
 	* when an episode is started to play, its state is set to InProgress
 	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
-* in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue"
 * in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
 * in FeedInfo view, one can enter personal comments/notes under "My opinion" for the feed
 * New episode home view with two display modes: webpage or reader
@@ -133,7 +129,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * Long-press on a feed in online feed list prompts to subscribe it straight out.
 * More info about feeds are shown in the online search view
-* Ability to open podcast from webpage address
+* Ability to open podcast with webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
 * Online feed episodes can be selectively reserved into synthetic podcasts

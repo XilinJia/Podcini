@@ -204,7 +204,6 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             } while (nextPlayable != null && !CastUtils.isCastable(nextPlayable, castContext.sessionManager.currentCastSession))
 
             if (nextPlayable != null) playMediaObject(nextPlayable, stream, startWhenPrepared, prepareImmediately, forceReset)
-
             return
         }
 
@@ -224,11 +223,10 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
                     callback.onPlaybackPause(curMedia, pos)
                 }
 
-                if (prevMedia != null && curMedia!!.getIdentifier() != prevMedia?.getIdentifier()) {
+                if (prevMedia != null && curMedia!!.getIdentifier() != prevMedia?.getIdentifier())
                     callback.onPostPlayback(prevMedia, false, skipped = false, playingNext = true)
-                }
-                prevMedia = curMedia
 
+                prevMedia = curMedia
                 setPlayerStatus(PlayerStatus.INDETERMINATE, null)
             }
         }
@@ -275,7 +273,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
 
     override fun seekTo(t: Int) {
         Exception("Seeking to $t").printStackTrace()
-        remoteMediaClient!!.seek(MediaSeekOptions.Builder().setPosition(t.toLong()).build())
+        remoteMediaClient!!.seek(MediaSeekOptions.Builder().setPosition(t.toLong()).setResumeState(MediaSeekOptions.RESUME_STATE_PLAY).build())
     }
 
     override fun getDuration(): Int {

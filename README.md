@@ -95,10 +95,11 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * options to select all above or below are shown action bar together with Select All
   * operations are only on the selected (single or multiple)
 * List info is shown in Queue and Downloads views
+* Local search for feeds or episodes can be separately specified on title, author(feed only), description(including transcript in episodes), and comment (My opinion)
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
 * Played or new episodes have clearer markings
 * Sort dialog no longer dims the main view
-* An all new way of filtering for both podcasts and episodes
+* An all new way of filtering for both podcasts and episodes with expanded criteria
 * Subscriptions sorting is now bi-directional based on various explicit measures, and sorting info is shown on every feed (List Layout only)
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * in all episodes list views, click on an episode image brings up the FeedInfo view
@@ -121,7 +122,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 	* when an episode is started to play, its state is set to InProgress
 	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
 * in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue"
-* in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for every episode
+* in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
+* in FeedInfo view, one can enter personal comments/notes under "My opinion" for the feed
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
 * RSS feeds with no playable media can be subscribed and read/listened (via TTS)

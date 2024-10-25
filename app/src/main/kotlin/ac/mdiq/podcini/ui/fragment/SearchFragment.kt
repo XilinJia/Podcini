@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.ui.fragment
 
-
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus

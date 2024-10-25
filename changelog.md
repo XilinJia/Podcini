@@ -1,3 +1,7 @@
+# 6.12.5
+
+* fixed a long-standing issue in the play apk where rewind/forward buttons don't work during cast
+
 # 6.12.4
 
 * bug fixes and enhancements in filters routines

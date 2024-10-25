@@ -229,7 +229,8 @@ class AudioPlayerFragment : Fragment() {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor,
                     contentDescription = "rewind",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                        if (controller != null && playbackService?.isServiceReady() == true)
+                        // TODO: the check appears not necessary and hurting cast
+//                        if (controller != null && playbackService?.isServiceReady() == true)
                             playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000)
                     }, onLongClick = {
                         SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND)
@@ -251,7 +252,8 @@ class AudioPlayerFragment : Fragment() {
                         } else playPause()
                     }
                 }, onLongClick = {
-                    if (controller != null && status == PlayerStatus.PLAYING) {
+//                    if (controller != null && status == PlayerStatus.PLAYING) {
+                    if (status == PlayerStatus.PLAYING) {
                         val fallbackSpeed = UserPreferences.fallbackSpeed
                         if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
                     }
@@ -261,7 +263,8 @@ class AudioPlayerFragment : Fragment() {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor,
                     contentDescription = "forward",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                        if (controller != null && playbackService?.isServiceReady() == true)
+                        // TODO: the check appears not necessary and hurting cast
+//                        if (controller != null && playbackService?.isServiceReady() == true)
                             playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000)
                     }, onLongClick = {
                         SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD)
@@ -282,7 +285,8 @@ class AudioPlayerFragment : Fragment() {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_skip_48dp), tint = textColor,
                     contentDescription = "rewind",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                        if (controller != null && status == PlayerStatus.PLAYING) {
+//                        if (controller != null && status == PlayerStatus.PLAYING) {
+                        if (status == PlayerStatus.PLAYING) {
                             val speedForward = UserPreferences.speedforwardSpeed
                             if (speedForward > 0.1f) speedForward(speedForward)
                         }

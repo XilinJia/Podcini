@@ -959,7 +959,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
             val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
             val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
-            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.is_favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
+            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
             val comItems = mutableSetOf<Episode>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)
@@ -1018,7 +1018,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             val favTemplate = IOUtils.toString(favTemplateStream, UTF_8)
             val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
             val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
-            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.is_favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
+            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
             val favoritesByFeed = buildFeedMap(allFavorites)
             writer!!.append(templateParts[0])
             for (feedId in favoritesByFeed.keys) {

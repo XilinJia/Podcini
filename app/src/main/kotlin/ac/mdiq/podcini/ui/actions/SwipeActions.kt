@@ -28,6 +28,7 @@ import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.TypedValue
@@ -92,6 +93,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 //                EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
 //            }
 //        })
+        Logd("SwipeActions", "showDialog()")
         val composeView = ComposeView(fragment.requireContext()).apply {
             setContent {
                 val showDialog = remember { mutableStateOf(true) }
@@ -101,6 +103,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                         (fragment.view as? ViewGroup)?.removeView(this@apply)
                     }) {
                         actions = getPrefs(this@SwipeActions.tag)
+                        // TODO: remove the need of event
                         EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
                     }
                 }
@@ -149,7 +152,8 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return filter.showQueued || filter.showNew
+            return false
+//            return filter.showQueued || filter.showNew
         }
     }
 
@@ -208,7 +212,8 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return filter.showQueued || filter.showNew
+            return false
+//            return filter.showQueued || filter.showNew
         }
     }
 
@@ -274,7 +279,8 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return filter.showIsFavorite || filter.showNotFavorite
+            return false
+//            return filter.showIsFavorite || filter.showNotFavorite
         }
     }
 
@@ -479,8 +485,9 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-            return if (item.playState == PlayState.NEW.code) filter.showPlayed || filter.showNew
-            else filter.showUnplayed || filter.showPlayed || filter.showNew
+            return false
+//            return if (item.playState == PlayState.NEW.code) filter.showPlayed || filter.showNew
+//            else filter.showUnplayed || filter.showPlayed || filter.showNew
         }
     }
 

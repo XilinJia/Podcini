@@ -19,6 +19,9 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
 import java.util.*
@@ -29,12 +32,6 @@ object Queues {
     enum class EnqueueLocation {
         BACK, FRONT, AFTER_CURRENTLY_PLAYING, RANDOM
     }
-
-    var isQueueLocked: Boolean
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, false)
-        set(locked) {
-            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
-        }
 
     /**
      * Returns if the queue is in keep sorted mode.
@@ -66,8 +63,7 @@ object Queues {
     var enqueueLocation: EnqueueLocation
         get() {
             val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)
-            try {
-                return EnqueueLocation.valueOf(valStr!!)
+            try { return EnqueueLocation.valueOf(valStr!!)
             } catch (t: Throwable) {
                 // should never happen but just in case
                 Log.e(TAG, "getEnqueueLocation: invalid value '$valStr' Use default.", t)

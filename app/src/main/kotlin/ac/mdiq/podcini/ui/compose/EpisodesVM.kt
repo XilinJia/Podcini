@@ -55,8 +55,7 @@ import android.view.Gravity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -77,6 +76,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -410,10 +410,10 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     }
 }
 
-
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? = null,
+fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null,
+                      isDraggable: Boolean = false, dragCB: ((Int, Int)->Unit)? = null,
                       refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
                       actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
     val TAG = "EpisodeLazyColumn"
@@ -457,10 +457,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     Text(stringResource(R.string.feed_delete_reason_msg))
                     BasicTextField(value = textState, onValueChange = { textState = it },
                         textStyle = TextStyle(fontSize = 16.sp, color = textColor),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                        modifier = Modifier.fillMaxWidth().height(100.dp).padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
                             .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
                     )
                     Button(onClick = {
@@ -649,19 +646,26 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
     }
 
     @Composable
-    fun MainRow(vm: EpisodeVM, index: Int) {
+    fun MainRow(vm: EpisodeVM, index: Int, isBeingDragged: Boolean, yOffset: Float, onDragStart: () -> Unit, onDrag: (Float) -> Unit, onDragEnd: () -> Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
         fun toggleSelected() {
             vm.isSelected = !vm.isSelected
             if (vm.isSelected) selected.add(vms[index].episode)
             else selected.remove(vms[index].episode)
         }
-        Row(Modifier.background(if (vm.isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
-            if (false) {
+        val density = LocalDensity.current
+        Row(Modifier.background(if (vm.isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
+            .offset(y = with(density) { yOffset.toDp() })) {
+            if (isDraggable) {
                 val typedValue = TypedValue()
-                LocalContext.current.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
+                context.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
                 Icon(imageVector = ImageVector.vectorResource(typedValue.resourceId), tint = textColor, contentDescription = "drag handle",
-                    modifier = Modifier.width(16.dp).align(Alignment.CenterVertically))
+                    modifier = Modifier.width(50.dp).align(Alignment.CenterVertically).padding(start = 10.dp, end = 15.dp)
+                        .draggable(orientation = Orientation.Vertical,
+                            state = rememberDraggableState { delta -> onDrag(delta) },
+                            onDragStarted = { onDragStart() },
+                            onDragStopped = { onDragEnd() }
+                        ))
             }
             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val (imgvCover, checkMark) = createRefs()
@@ -727,7 +731,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     val durText = remember { DurationConverter.getDurationStringLong(dur) }
                     val dateSizeText = " · " + formatAbbrev(curContext, vm.episode.getPubDate()) + " · " + durText + " · " +
                             if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
-                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Text(vm.episode.title ?: "", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
@@ -774,7 +778,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
             val dur = remember { vm.episode.media?.getDuration() ?: 0 }
             val durText = remember { DurationConverter.getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
-            Logd(TAG, "$index vm.prog: ${vm.prog}")
+//            Logd(TAG, "$index vm.prog: ${vm.prog}")
             Row {
                 Text(DurationConverter.getDurationStringLong(vm.positionState), color = textColor, style = MaterialTheme.typography.bodySmall)
                 LinearProgressIndicator(progress = { vm.prog }, modifier = Modifier.weight(1f).height(4.dp).align(Alignment.CenterVertically))
@@ -789,6 +793,13 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
         refreshCB?.invoke()
         refreshing = false
     }) {
+        fun <T> MutableList<T>.move(fromIndex: Int, toIndex: Int) {
+            if (fromIndex != toIndex && fromIndex in indices && toIndex in indices) {
+                val item = removeAt(fromIndex)
+                add(toIndex, item)
+            }
+        }
+        val rowHeightPx = with(LocalDensity.current) { 56.dp.toPx() }
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(vms, key = { _, vm -> vm.episode.id}) { index, vm ->
                 vm.startMonitoring()
@@ -801,7 +812,6 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                 val velocityTracker = remember { VelocityTracker() }
                 val offsetX = remember { Animatable(0f) }
                 Box(modifier = Modifier.fillMaxWidth().pointerInput(Unit) {
-                    Logd(TAG, "top box")
                     detectHorizontalDragGestures(onDragStart = { velocityTracker.resetTracking() },
                         onHorizontalDrag = { change, dragAmount ->
                             Logd(TAG, "onHorizontalDrag $dragAmount")
@@ -829,7 +839,25 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                         Logd(TAG, "LaunchedEffect $index ${vm.isSelected} ${selected.size}")
                     }
                     Column {
-                        MainRow(vm, index)
+                        var yOffset by remember { mutableStateOf(0f) }
+                        var draggedIndex by remember { mutableStateOf<Int?>(null) }
+                        MainRow(vm, index, isBeingDragged = draggedIndex == index,
+                            yOffset = if (draggedIndex == index) yOffset else 0f,
+                            onDragStart = { draggedIndex = index },
+                            onDrag = { delta -> yOffset += delta },
+                            onDragEnd = {
+                                draggedIndex?.let { startIndex ->
+                                    val newIndex = (startIndex + (yOffset / rowHeightPx).toInt()).coerceIn(0, vms.lastIndex)
+                                    Logd(TAG, "onDragEnd draggedIndex: $draggedIndex newIndex: $newIndex")
+                                    if (newIndex != startIndex) {
+                                        dragCB?.invoke(startIndex, newIndex)
+                                        val item = vms.removeAt(startIndex)
+                                        vms.add(newIndex, item)
+                                    }
+                                }
+                                draggedIndex = null
+                                yOffset = 0f
+                            })
                         ProgressRow(vm, index)
                     }
                 }
@@ -842,9 +870,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
                         selected.clear()
-                        for (i in 0..longPressIndex) {
-                            selected.add(vms[i].episode)
-                        }
+                        for (i in 0..longPressIndex) selected.add(vms[i].episode)
                         selectedSize = selected.size
                         Logd(TAG, "selectedIds: ${selected.size}")
                     }))
@@ -852,9 +878,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
                         selected.clear()
-                        for (i in longPressIndex..<vms.size) {
-                            selected.add(vms[i].episode)
-                        }
+                        for (i in longPressIndex..<vms.size) selected.add(vms[i].episode)
                         selectedSize = selected.size
                         Logd(TAG, "selectedIds: ${selected.size}")
                     }))
@@ -863,9 +887,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: List<EpisodeVM>, feed: Feed? 
                     .clickable(onClick = {
                         if (selectedSize != vms.size) {
                             selected.clear()
-                            for (vm in vms) {
-                                selected.add(vm.episode)
-                            }
+                            for (vm in vms) selected.add(vm.episode)
                             selectAllRes = R.drawable.ic_select_none
                         } else {
                             selected.clear()
@@ -924,8 +946,7 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                         }) {
                             Text("Confirm")
                         }
-                    } else CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp,
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp).width(30.dp).height(30.dp))
+                    } else CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp, modifier = Modifier.padding(start = 20.dp, end = 20.dp).width(30.dp).height(30.dp))
                 }
             }
         }
@@ -936,7 +957,6 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
 fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: MutableSet<EpisodeFilter.EpisodesFilterGroup> = mutableSetOf(),
                          onDismissRequest: () -> Unit, onFilterChanged: (Set<String>) -> Unit) {
     val filterValues: MutableSet<String> = mutableSetOf()
-
     Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
         val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
         dialogWindowProvider?.window?.let { window ->
@@ -1001,21 +1021,74 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                         }
                     } else {
                         Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
-                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
-                            NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
-                                var selected by remember { mutableStateOf(false) }
-                                if (selectNone) selected = false
+                            val selectedList = remember { MutableList(item.values.size) { mutableStateOf(false)} }
+                            var expandRow by remember { mutableStateOf(false) }
+                            Row {
+                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
+                                    expandRow = !expandRow
+                                })
+                                var lowerSelected by remember { mutableStateOf(false) }
+                                var higherSelected by remember { mutableStateOf(false) }
+                                Spacer(Modifier.weight(1f))
+                                if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                    val hIndex = selectedList.indexOfLast { it.value }
+                                    if (hIndex < 0) return@clickable
+                                    if (!lowerSelected) {
+                                        for (i in 0..hIndex) selectedList[i].value = true
+                                    } else {
+                                        for (i in 0..hIndex) selectedList[i].value = false
+                                        selectedList[hIndex].value = true
+                                    }
+                                    lowerSelected = !lowerSelected
+                                    for (i in item.values.indices) {
+                                        if (selectedList[i].value) filterValues.add(item.values[i].filterId)
+                                        else filterValues.remove(item.values[i].filterId)
+                                    }
+                                    onFilterChanged(filterValues)
+                                })
+                                Spacer(Modifier.weight(1f))
+                                if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                    lowerSelected = false
+                                    higherSelected = false
+                                    for (i in item.values.indices) {
+                                        selectedList[i].value = false
+                                        filterValues.remove(item.values[i].filterId)
+                                    }
+                                    onFilterChanged(filterValues)
+                                })
+                                Spacer(Modifier.weight(1f))
+                                if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                    val lIndex = selectedList.indexOfFirst { it.value }
+                                    if (lIndex < 0) return@clickable
+                                    if (!higherSelected) {
+                                        for (i in lIndex..item.values.size - 1) selectedList[i].value = true
+                                    } else {
+                                        for (i in lIndex..item.values.size - 1) selectedList[i].value = false
+                                        selectedList[lIndex].value = true
+                                    }
+                                    higherSelected = !higherSelected
+                                    for (i in item.values.indices) {
+                                        if (selectedList[i].value) filterValues.add(item.values[i].filterId)
+                                        else filterValues.remove(item.values[i].filterId)
+                                    }
+                                    onFilterChanged(filterValues)
+                                })
+                                Spacer(Modifier.weight(1f))
+                            }
+                            if (expandRow) NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
+                                if (selectNone) selectedList[index].value = false
                                 LaunchedEffect(Unit) {
                                     if (filter != null) {
-                                        if (item.values[index].filterId in filter.properties) selected = true
+                                        if (item.values[index].filterId in filter.properties) selectedList[index].value = true
                                     }
                                 }
-                                OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
-                                    border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
+                                    border = BorderStroke(2.dp, if (selectedList[index].value) Color.Green else textColor),
                                     onClick = {
                                         selectNone = false
-                                        selected = !selected
-                                        if (selected) filterValues.add(item.values[index].filterId)
+                                        selectedList[index].value = !selectedList[index].value
+                                        if (selectedList[index].value) filterValues.add(item.values[index].filterId)
                                         else filterValues.remove(item.values[index].filterId)
                                         onFilterChanged(filterValues)
                                     },

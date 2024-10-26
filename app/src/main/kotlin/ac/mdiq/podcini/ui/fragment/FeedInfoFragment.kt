@@ -347,7 +347,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.visit_website_item -> if (feed.link != null) IntentUtils.openInBrowser(requireContext(), feed.link!!)
-            R.id.share_item -> ShareUtils.shareFeedLink(requireContext(), feed)
+            R.id.share_item -> ShareUtils.shareFeedLinkNew(requireContext(), feed)
             R.id.reconnect_local_folder -> {
                 val alert = MaterialAlertDialogBuilder(requireContext())
                 alert.setMessage(R.string.reconnect_local_folder_warning)

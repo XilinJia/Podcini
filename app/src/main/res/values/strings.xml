@@ -419,6 +419,7 @@
     <string name="duration">Duration</string>
     <string name="episode_title">Episode title</string>
     <string name="feed_title">Podcast title</string>
+    <string name="show_criteria">Show criteria</string>
     <string name="title">Title</string>
     <string name="author">Author</string>
     <string name="random">Random</string>

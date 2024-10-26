@@ -36,10 +36,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -272,19 +269,30 @@ class SearchFragment : Fragment() {
     @Composable
     fun CriteriaList() {
         val textColor = MaterialTheme.colorScheme.onSurface
-        NonlazyGrid(columns = 2, itemCount = SearchBy.entries.size) { index ->
-            val c = SearchBy.entries[index]
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
-                var isChecked by remember { mutableStateOf(true) }
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { newValue ->
-                        c.selected = newValue
-                        isChecked = newValue
-                    }
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                Text(stringResource(c.nameRes), color = textColor)
+        var showGrid by remember { mutableStateOf(false) }
+        Column {
+            Row {
+                Button(onClick = {showGrid = !showGrid}) {
+                    Text(stringResource(R.string.show_criteria))
+                }
+                Button(onClick = { searchOnline() }) {
+                    Text(stringResource(R.string.search_online))
+                }
+            }
+            if (showGrid) NonlazyGrid(columns = 2, itemCount = SearchBy.entries.size) { index ->
+                val c = SearchBy.entries[index]
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                    var isChecked by remember { mutableStateOf(true) }
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = { newValue ->
+                            c.selected = newValue
+                            isChecked = newValue
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(stringResource(c.nameRes), color = textColor)
+                }
             }
         }
     }

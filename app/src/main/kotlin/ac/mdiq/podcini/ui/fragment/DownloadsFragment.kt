@@ -111,11 +111,11 @@ import java.util.*
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                         leftSwipeCB = {
-                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else leftActionState.value.performAction(it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         rightSwipeCB = {
-                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else rightActionState.value.performAction(it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         actionButton_ = { DeleteActionButton(it) })

@@ -92,11 +92,11 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                     EpisodeLazyColumn(
                         activity as MainActivity, vms = vms,
                         leftSwipeCB = {
-                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else leftActionState.value.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         rightSwipeCB = {
-                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else rightActionState.value.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                     )

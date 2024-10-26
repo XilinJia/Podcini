@@ -2,20 +2,21 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Queues.inAnyQueue
+import ac.mdiq.podcini.util.Logd
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties_: String) : Serializable {
     val properties: HashSet<String> = setOf(*properties_).filter { it.isNotEmpty() }.map {it.trim()}.toHashSet()
 
-    val showPlayed: Boolean = properties.contains(States.played.name)
-    val showUnplayed: Boolean = properties.contains(States.unplayed.name)
-    val showNew: Boolean = properties.contains(States.new.name)
+//    val showPlayed: Boolean = properties.contains(States.played.name)
+//    val showUnplayed: Boolean = properties.contains(States.unplayed.name)
+//    val showNew: Boolean = properties.contains(States.new.name)
     val showQueued: Boolean = properties.contains(States.queued.name)
     val showNotQueued: Boolean = properties.contains(States.not_queued.name)
     val showDownloaded: Boolean = properties.contains(States.downloaded.name)
     val showNotDownloaded: Boolean = properties.contains(States.not_downloaded.name)
-    val showIsFavorite: Boolean = properties.contains(States.is_favorite.name)
-    val showNotFavorite: Boolean = properties.contains(States.not_favorite.name)
+//    val showIsFavorite: Boolean = properties.contains(States.is_favorite.name)
+//    val showNotFavorite: Boolean = properties.contains(States.not_favorite.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
 
@@ -30,11 +31,11 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
 
     fun queryString(): String {
         val statements: MutableList<String> = mutableListOf()
-        when {
-            showPlayed -> statements.add("playState >= ${PlayState.PLAYED.code}")
-            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code} ") // Match "New" items (read = -1) as well
-            showNew -> statements.add("playState == -1 ")
-        }
+//        when {
+////            showPlayed -> statements.add("playState >= ${PlayState.PLAYED.code}")
+////            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code} ") // Match "New" items (read = -1) as well
+////            showNew -> statements.add("playState == -1 ")
+//        }
 
         val mediaTypeQuerys = mutableListOf<String>()
         if (properties.contains(States.unknown.name)) mediaTypeQuerys.add(" media == nil OR media.mimeType == nil OR media.mimeType == '' ")
@@ -118,10 +119,10 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             properties.contains(States.has_comments.name) -> statements.add(" comment != '' ")
             properties.contains(States.no_comments.name) -> statements.add(" comment == '' ")
         }
-        when {
-            showIsFavorite -> statements.add("rating == ${Rating.FAVORITE.code} ")
-            showNotFavorite -> statements.add("rating != ${Rating.FAVORITE.code} ")
-        }
+//        when {
+//            showIsFavorite -> statements.add("rating == ${Rating.FAVORITE.code} ")
+//            showNotFavorite -> statements.add("rating != ${Rating.FAVORITE.code} ")
+//        }
 
         if (statements.isEmpty()) return "id > 0"
         val query = StringBuilder(" (" + statements[0])
@@ -130,6 +131,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             query.append(r)
         }
         query.append(") ")
+        Logd("EpisodeFilter", "queryString: $query")
         return query.toString()
     }
 
@@ -154,8 +156,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         audio_app,
         paused,
         not_paused,
-        is_favorite,
-        not_favorite,
+//        is_favorite,
+//        not_favorite,
         has_media,
         no_media,
         has_comments,

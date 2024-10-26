@@ -47,6 +47,10 @@ object ShareUtils {
         shareLink(context, text)
     }
 
+    fun shareFeedLinkNew(context: Context, feed: Feed) {
+        shareLink(context, feed.downloadUrl?:"")
+    }
+
     @JvmStatic
     fun hasLinkToShare(item: Episode?): Boolean {
         return item?.getLinkWithFallback() != null

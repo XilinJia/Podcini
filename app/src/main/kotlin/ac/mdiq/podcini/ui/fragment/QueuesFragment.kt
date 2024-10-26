@@ -11,9 +11,10 @@ import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.mediaBrowser
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
-import ac.mdiq.podcini.storage.database.Queues.isQueueLocked
+import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -33,7 +34,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -88,7 +88,7 @@ import kotlin.math.max
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var emptyViewHandler: EmptyViewHandler
+//    private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
     private lateinit var swipeActionsBin: SwipeActions
@@ -101,6 +101,8 @@ import kotlin.math.max
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+
+    var isQueueLocked = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true)
 
     private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
@@ -115,7 +117,7 @@ import kotlin.math.max
 
     private var showBin by mutableStateOf(false)
 
-//    private var dragDropEnabled: Boolean = !(isQueueKeepSorted || isQueueLocked)
+    private var dragDropEnabled by mutableStateOf(!(isQueueKeepSorted || isQueueLocked))
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
@@ -190,11 +192,11 @@ import kotlin.math.max
                     Column {
                         InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
                         val leftCB = { episode: Episode ->
-                            if (leftActionStateBin.value == NoActionSwipeAction()) swipeActionsBin.showDialog()
+                            if (leftActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
                             else leftActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
                         }
                         val rightCB = { episode: Episode ->
-                            if (rightActionStateBin.value == NoActionSwipeAction()) swipeActionsBin.showDialog()
+                            if (rightActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
                             else rightActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
                         }
                         EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
@@ -203,14 +205,16 @@ import kotlin.math.max
                     Column {
                         InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                         val leftCB = { episode: Episode ->
-                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else leftActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
                         val rightCB = { episode: Episode ->
-                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
-                        EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                        EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                            isDraggable = dragDropEnabled, dragCB = { iFrom, iTo -> moveInQueue(iFrom, iTo, true) },
+                            leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 }
             }
@@ -218,13 +222,6 @@ import kotlin.math.max
 
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-
-        emptyViewHandler = EmptyViewHandler(requireContext())
-//        emptyViewHandler.attachToRecyclerView(recyclerView)
-        emptyViewHandler.setIcon(R.drawable.ic_playlist_play)
-        emptyViewHandler.setTitle(R.string.no_items_header_label)
-        emptyViewHandler.setMessage(R.string.no_items_label)
-//        emptyViewHandler.updateAdapter(adapter)
 
         return binding.root
     }
@@ -612,10 +609,10 @@ import kotlin.math.max
 
     @UnstableApi private fun toggleQueueLock() {
         val isLocked: Boolean = isQueueLocked
-        if (isLocked) setQueueLocked(false)
+        if (isLocked) setQueueLock(false)
         else {
             val shouldShowLockWarning: Boolean = prefs!!.getBoolean(PREF_SHOW_LOCK_WARNING, true)
-            if (!shouldShowLockWarning) setQueueLocked(true)
+            if (!shouldShowLockWarning) setQueueLock(true)
             else {
                 val builder = MaterialAlertDialogBuilder(requireContext())
                 builder.setTitle(R.string.lock_queue)
@@ -628,7 +625,7 @@ import kotlin.math.max
 
                 builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
                     prefs!!.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
-                    setQueueLocked(true)
+                    setQueueLock(true)
                 }
                 builder.setNegativeButton(R.string.cancel_label, null)
                 builder.show()
@@ -636,8 +633,10 @@ import kotlin.math.max
         }
     }
 
-    @UnstableApi private fun setQueueLocked(locked: Boolean) {
+    @UnstableApi private fun setQueueLock(locked: Boolean) {
         isQueueLocked = locked
+        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
+        dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         refreshMenuItems()
 //        adapter?.updateDragDropEnabled()
 
@@ -677,7 +676,7 @@ import kotlin.math.max
             loadItemsRunning = true
             Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
-            if (queueItems.isNotEmpty()) emptyViewHandler.hide()
+//            if (queueItems.isNotEmpty()) emptyViewHandler.hide()
             queueItems.clear()
             vms.clear()
             if (showBin) queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
@@ -748,7 +747,6 @@ import kotlin.math.max
         val TAG = QueuesFragment::class.simpleName ?: "Anonymous"
 
         private const val KEY_UP_ARROW = "up_arrow"
-
         private const val PREFS = "QueueFragment"
         private const val PREF_SHOW_LOCK_WARNING = "show_lock_warning"
 

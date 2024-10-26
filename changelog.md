@@ -1,3 +1,16 @@
+# 6.12.6
+
+* in SearchFragment, made search criteria options are togglable, and added back search online option
+* further enhanced filtering routines
+	* categories with multi-selections are expandable/collapsable
+	* once expanded, added three icons: <<<, X, >>>
+	* tapping on <<< will select all lower items, >>> all higher items, X to clear selection in the category
+* manual sorting of Queues is back.
+	* The way to enable/disable it, uncheck/check "Lock queue" in menu
+	* if "Lock queue" doesn't appear, top "Sort" in the menu and then, uncheck "Keep sorted" in the popup
+* in episodes lists, swipe dialog shows up when the swipe has not been configured
+* changed the info shared from FeedInfo and FeedEpisodes, now it shares simply the download url of the feed
+
 # 6.12.5
 
 * fixed a long-standing issue in the play apk where rewind/forward buttons don't work during cast

@@ -190,11 +190,12 @@ import java.util.concurrent.Semaphore
                     EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
-                            if (leftActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else leftActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                         rightSwipeCB = {
-                            if (rightActionState.value == NoActionSwipeAction()) swipeActions.showDialog()
+                            Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
+                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
                             else rightActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
                         },
                     )
@@ -402,7 +403,7 @@ import java.util.concurrent.Semaphore
         }
         when (item.itemId) {
             R.id.visit_website_item -> if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
-            R.id.share_feed -> ShareUtils.shareFeedLink(requireContext(), feed!!)
+            R.id.share_feed -> ShareUtils.shareFeedLinkNew(requireContext(), feed!!)
             R.id.refresh_feed -> FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
             R.id.refresh_complete_item -> {
                 Thread {

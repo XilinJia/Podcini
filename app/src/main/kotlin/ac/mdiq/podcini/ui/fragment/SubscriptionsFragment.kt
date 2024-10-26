@@ -1155,21 +1155,73 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             }
                         } else {
                             Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
-                                Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor)
-                                NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
-                                    var selected by remember { mutableStateOf(false) }
-                                    if (selectNone) selected = false
+                                val selectedList = remember { MutableList(item.values.size) { mutableStateOf(false)} }
+                                var expandRow by remember { mutableStateOf(false) }
+                                Row {
+                                    Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
+                                        expandRow = !expandRow
+                                    })
+                                    var lowerSelected by remember { mutableStateOf(false) }
+                                    var higherSelected by remember { mutableStateOf(false) }
+                                    Spacer(Modifier.weight(1f))
+                                    if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                        val hIndex = selectedList.indexOfLast { it.value }
+                                        if (hIndex < 0) return@clickable
+                                        if (!lowerSelected) {
+                                            for (i in 0..hIndex) selectedList[i].value = true
+                                        } else {
+                                            for (i in 0..hIndex) selectedList[i].value = false
+                                            selectedList[hIndex].value = true
+                                        }
+                                        lowerSelected = !lowerSelected
+                                        for (i in item.values.indices) {
+                                            if (selectedList[i].value) filterValues.add(item.values[i].filterId)
+                                            else filterValues.remove(item.values[i].filterId)
+                                        }
+                                        onFilterChanged(filterValues)
+                                    })
+                                    Spacer(Modifier.weight(1f))
+                                    if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                        lowerSelected = false
+                                        higherSelected = false
+                                        for (i in item.values.indices) {
+                                            selectedList[i].value = false
+                                            filterValues.remove(item.values[i].filterId)
+                                        }
+                                        onFilterChanged(filterValues)
+                                    })
+                                    Spacer(Modifier.weight(1f))
+                                    if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                        val lIndex = selectedList.indexOfFirst { it.value }
+                                        if (lIndex < 0) return@clickable
+                                        if (!higherSelected) {
+                                            for (i in lIndex..item.values.size - 1) selectedList[i].value = true
+                                        } else {
+                                            for (i in lIndex..item.values.size - 1) selectedList[i].value = false
+                                            selectedList[lIndex].value = true
+                                        }
+                                        higherSelected = !higherSelected
+                                        for (i in item.values.indices) {
+                                            if (selectedList[i].value) filterValues.add(item.values[i].filterId)
+                                            else filterValues.remove(item.values[i].filterId)
+                                        }
+                                        onFilterChanged(filterValues)
+                                    })
+                                    Spacer(Modifier.weight(1f))
+                                }
+                                if (expandRow) NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
+                                    if (selectNone) selectedList[index].value = false
                                     LaunchedEffect(Unit) {
                                         if (filter != null) {
-                                            if (item.values[index].filterId in filter.properties) selected = true
+                                            if (item.values[index].filterId in filter.properties) selectedList[index].value = true
                                         }
                                     }
                                     OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
-                                        border = BorderStroke(2.dp, if (selected) Color.Green else textColor),
+                                        border = BorderStroke(2.dp, if (selectedList[index].value) Color.Green else textColor),
                                         onClick = {
                                             selectNone = false
-                                            selected = !selected
-                                            if (selected) filterValues.add(item.values[index].filterId)
+                                            selectedList[index].value = !selectedList[index].value
+                                            if (selectedList[index].value) filterValues.add(item.values[index].filterId)
                                             else filterValues.remove(item.values[index].filterId)
                                             onFilterChanged(filterValues)
                                         },

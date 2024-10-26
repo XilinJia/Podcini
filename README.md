@@ -188,10 +188,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 <img src="./images/2_setting2.jpg" width="238" /> <img src="./images/2_setting3.jpg" width="238" />
 
 ### Subscriptions
-<img src="./images/3_subscriptions.jpg" width="238" /> <img src="./images/3_subscriptions1.jpg" width="238" /> <img src="./images/3_subscriptions2.jpg" width="238" /> 
-
-### Multiple Queues
-<img src="./images/4_queue.jpg" width="238" /> <img src="./images/4_queue1.jpg" width="238" />  
+<img src="./images/3_subscriptions.jpg" width="238" /> <img src="./images/3_subscriptions2.jpg" width="238" /> <img src="./images/3_subscriptions1.jpg" width="238" />
 
 ### Podcast
 <img src="./images/5_podcast_0.jpg" width="238" /> <img src="./images/5_podcast_1.jpg" width="238" /> 
@@ -202,8 +199,14 @@ For more details of the changes, see the [Changelog](changelog.md)
 ### Episode and player details
 <img src="./images/6_episode.jpg" width="238" /> <img src="./images/6_player_details.jpg" width="238" /> 
 
+### Youtube share, syndicates and media
+<img src="./images/7_youtube_share.jpg" width="238" /> <img src="./images/7_youtube_shared.jpg" width="238" /> <img src="./images/7_youtube_syndicate.jpg" width="238" /> <img src="./images/7_youtube_episode.jpg" width="238" /> 
+
+### Multiple Queues
+<img src="./images/4_queue.jpg" width="238" /> <img src="./images/4_queue1.jpg" width="238" />  
+
 ### Usage customization
-<img src="./images/7_speed.jpg" width="238" /> <img src="./images/8_swipe_setting.jpg" width="238" /> <img src="./images/8_swipe_setting1.jpg" width="238" />
+<img src="./images/8_speed.jpg" width="238" /> <img src="./images/8_swipe_setting.jpg" width="238" /> <img src="./images/8_swipe_setting1.jpg" width="238" /> <img src="./images/8_multi_selection.jpg" width="238" />
 
 ### Get feeds online
 <img src="./images/9_feed_search.jpg" width="238" /> <img src="./images/9_online_feed_info.jpg" width="238" /> <img src="./images/91_online_episodes.jpg" width="238" />

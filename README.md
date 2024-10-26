@@ -200,7 +200,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 <img src="./images/6_episode.jpg" width="238" /> <img src="./images/6_player_details.jpg" width="238" /> 
 
 ### Youtube share, syndicates and media
-<img src="./images/7_youtube_share.jpg" width="238" /> <img src="./images/7_youtube_shared.jpg" width="238" /> <img src="./images/7_youtube_syndicate.jpg" width="238" /> <img src="./images/7_youtube_episode.jpg" width="238" /> 
+<img src="./images/7_youtube_share.jpg" width="238" /> <img src="./images/7_youtube_syndicate.jpg" width="238" /> <img src="./images/7_youtube_shared.jpg" width="238" /> <img src="./images/7_youtube_episode.jpg" width="238" /> 
 
 ### Multiple Queues
 <img src="./images/4_queue.jpg" width="238" /> <img src="./images/4_queue1.jpg" width="238" />  

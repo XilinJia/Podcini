@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020284
-        versionName "6.12.6"
+        versionCode 3020285
+        versionName "6.12.7"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -171,7 +171,7 @@ android {
 
 dependencies {
     implementation libs.androidx.material3.android
-    implementation libs.androidx.material3
+//    implementation libs.androidx.material3
 //    implementation libs.androidx.ui.viewbinding
     implementation libs.androidx.fragment.compose
 //    implementation libs.androidx.material.icons.extended
@@ -182,7 +182,7 @@ dependencies {
 
     def composeBom = libs.androidx.compose.bom
     implementation composeBom
-    androidTestImplementation composeBom
+//    androidTestImplementation composeBom
 //    implementation libs.androidx.material
     implementation libs.androidx.ui.tooling.preview
     debugImplementation libs.androidx.ui.tooling
@@ -257,24 +257,24 @@ dependencies {
     compileOnly libs.wearable
 
 //    this one can not be updated?   TODO: need to get an alternative
-    androidTestImplementation libs.nanohttpd
-
-    androidTestImplementation libs.androidx.espresso.core
-    androidTestImplementation libs.androidx.espresso.contrib
-    androidTestImplementation libs.androidx.espresso.intents
-    androidTestImplementation libs.androidx.runner
-    androidTestImplementation libs.androidx.rules
-    androidTestImplementation libs.androidx.junit
-    androidTestImplementation libs.awaitility
+//    androidTestImplementation libs.nanohttpd
+//
+//    androidTestImplementation libs.androidx.espresso.core
+//    androidTestImplementation libs.androidx.espresso.contrib
+//    androidTestImplementation libs.androidx.espresso.intents
+//    androidTestImplementation libs.androidx.runner
+//    androidTestImplementation libs.androidx.rules
+//    androidTestImplementation libs.androidx.junit
+//    androidTestImplementation libs.awaitility
 
     // Non-free dependencies:
 
-    testImplementation libs.androidx.core
-    testImplementation libs.awaitility
-    testImplementation libs.junit
-    testImplementation libs.mockito.inline
-    testImplementation libs.robolectric
-    testImplementation libs.javax.inject
+//    testImplementation libs.androidx.core
+//    testImplementation libs.awaitility
+//    testImplementation libs.junit
+//    testImplementation libs.mockito.inline
+//    testImplementation libs.robolectric
+//    testImplementation libs.javax.inject
 
     playImplementation libs.play.services.base
     freeImplementation libs.conscrypt.android

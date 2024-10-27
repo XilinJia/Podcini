@@ -206,28 +206,6 @@ object Episodes {
         }
     }
 
-//    only used in tests
-    fun persistEpisodeMedia(media: EpisodeMedia) : Job {
-        Logd(TAG, "persistEpisodeMedia called")
-        return runOnIOScope {
-            var episode = media.episodeOrFetch()
-            if (episode != null) {
-                episode = upsert(episode) { it.media = media }
-                EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
-            } else Log.e(TAG, "persistEpisodeMedia media.episode is null")
-        }
-    }
-
-    fun persistEpisode(episode: Episode?, isPositionChange: Boolean = false) : Job {
-        Logd(TAG, "persistEpisode called")
-        return runOnIOScope {
-            if (episode != null) {
-                upsert(episode) {}
-                if (!isPositionChange) EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
-            }
-        }
-    }
-
     /**
      * This method will set the playback completion date to the current date regardless of the current value.
      * @param episode Episode that should be added to the playback history.

@@ -26,11 +26,6 @@ class DownloadRequest private constructor(
     var size: Long = 0
     private var statusMsg = 0
 
-    // only used in tests
-    constructor(destination: String, source: String, title: String, feedfileId: Long,
-                feedfileType: Int, username: String?, password: String?, arguments: Bundle?, initiatedByUser: Boolean)
-            : this(destination, source, title, feedfileId, feedfileType, null, username, password, false, arguments, initiatedByUser)
-
     private constructor(builder: Builder) : this(builder.destination,
         builder.source,
         builder.title,

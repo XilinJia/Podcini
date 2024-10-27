@@ -88,7 +88,6 @@ import kotlin.math.max
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
-//    private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
     private lateinit var swipeActionsBin: SwipeActions

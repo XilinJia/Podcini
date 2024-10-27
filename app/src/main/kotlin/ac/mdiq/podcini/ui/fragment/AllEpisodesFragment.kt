@@ -139,8 +139,9 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         var info = "${episodes.size} episodes"
         if (getFilter().properties.isNotEmpty()) {
             info += " - ${getString(R.string.filtered_label)}"
-            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
-        } else emptyView.setMessage(R.string.no_all_episodes_label)
+//            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
+        }
+//        else emptyView.setMessage(R.string.no_all_episodes_label)
         infoBarText.value = info
 //        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }

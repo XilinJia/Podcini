@@ -1,3 +1,11 @@
+# 6.12.7
+
+* fixed issue in auto-download where number of played is not correctly counted
+* in AutoDownloadPolicy, Newer or Older now means include episodes with playState not being Skipped, Played, and Ignored
+* in Subscriptions sorting, Played means Skipped, Played, or Ignored, Unplayed means any state lower than Skipped
+* fixed high CPU usage in Download view
+* removed a few useless classes and the useless test modules
+
 # 6.12.6
 
 * in SearchFragment, made search criteria options are togglable, and added back search online option

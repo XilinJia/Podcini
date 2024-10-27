@@ -722,8 +722,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(18.dp).height(18.dp))
                     val playStateRes = PlayState.fromCode(vm.playedState).res
                     Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(18.dp).height(18.dp))
-                    if (vm.inQueueState)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(18.dp).height(18.dp))
+//                    if (vm.inQueueState)
+//                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(18.dp).height(18.dp))
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(18.dp).height(18.dp))
                     val curContext = LocalContext.current
@@ -748,7 +748,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 //                                    vm.actionRes = vm.actionButton!!.getDrawable()
                 }
             } else {
-                LaunchedEffect(vm.actionButton) {
+                LaunchedEffect(Unit) {
                     Logd(TAG, "LaunchedEffect init actionButton")
                     vm.actionButton =  actionButton_(vm.episode)
 //                                  vm.actionRes = vm.actionButton!!.getDrawable()

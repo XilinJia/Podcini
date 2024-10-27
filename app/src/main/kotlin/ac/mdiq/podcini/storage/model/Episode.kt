@@ -211,7 +211,7 @@ class Episode : RealmObject {
     }
 
     fun isPlayed(): Boolean {
-        return playState == PlayState.PLAYED.code
+        return playState >= PlayState.SKIPPED.code
     }
 
     fun setPlayed(played: Boolean) {

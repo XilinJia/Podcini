@@ -227,21 +227,6 @@ object UserPreferences {
         return fullNotificationButtons.contains(buttonId)
     }
 
-//    only used in test
-    fun showSkipOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON.SKIP.ordinal)
-    }
-
-    //    only used in test
-    fun showNextChapterOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON.NEXT_CHAPTER.ordinal)
-    }
-
-    //    only used in test
-    fun showPlaybackSpeedOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal)
-    }
-
     /**
      * @return `true` if we should show remaining time or the duration
      */
@@ -256,11 +241,6 @@ object UserPreferences {
      */
     fun setShowRemainTimeSetting(showRemain: Boolean?) {
         appPrefs.edit().putBoolean(Prefs.showTimeLeft.name, showRemain!!).apply()
-    }
-
-//   only used in test
-    fun shouldPauseForFocusLoss(): Boolean {
-        return appPrefs.getBoolean(Prefs.prefPauseForFocusLoss.name, true)
     }
 
     fun backButtonOpensDrawer(): Boolean {

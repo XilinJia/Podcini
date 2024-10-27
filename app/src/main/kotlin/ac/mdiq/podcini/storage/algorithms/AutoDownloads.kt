@@ -110,7 +110,8 @@ object AutoDownloads {
                             var episodes = mutableListOf<Episode>()
                             val dlFilter =
                                 if (f.preferences?.countingPlayed == true) EpisodeFilter(EpisodeFilter.States.downloaded.name)
-                                else EpisodeFilter(EpisodeFilter.States.downloaded.name, EpisodeFilter.States.unplayed.name)
+                                else EpisodeFilter(EpisodeFilter.States.downloaded.name, EpisodeFilter.States.unplayed.name, EpisodeFilter.States.inQueue.name,
+                                    EpisodeFilter.States.inProgress.name, EpisodeFilter.States.skipped.name)
                             val downloadedCount = getEpisodesCount(dlFilter, f.id)
                             val allowedDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
                             Logd(TAG, "autoDownloadEpisodeMedia ${f.preferences?.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
@@ -118,15 +119,15 @@ object AutoDownloads {
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
                                     FeedPreferences.AutoDownloadPolicy.ONLY_NEW -> {
-                                        queryString += " AND playState == -1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                        queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDownloadPolicy.NEWER -> {
-                                        queryString += " AND playState != 1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                        queryString += " AND playState < ${PlayState.SKIPPED.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDownloadPolicy.OLDER -> {
-                                        queryString += " AND playState != 1 SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
+                                        queryString += " AND playState < ${PlayState.SKIPPED.code} SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     else -> {}
@@ -149,7 +150,7 @@ object AutoDownloads {
                         runOnIOScope {
                             realm.write {
                                 while (true) {
-                                    val episodesNew = query(Episode::class, "feedId == ${f.id} AND playState == -1 LIMIT(20)").find()
+                                    val episodesNew = query(Episode::class, "feedId == ${f.id} AND playState == ${PlayState.NEW.code} LIMIT(20)").find()
                                     if (episodesNew.isEmpty()) break
                                     Logd(TAG, "autoDownloadEpisodeMedia episodesNew: ${episodesNew.size}")
                                     episodesNew.map { e ->

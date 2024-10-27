@@ -34,16 +34,6 @@ object EpisodeUtil {
         return -1
     }
 
-//    only used in tests
-    @JvmStatic
-    fun getIdList(items: List<Episode>): List<Long> {
-        val result: MutableList<Long> = ArrayList()
-        for (item in items) {
-            result.add(item.id)
-        }
-        return result
-    }
-
     @JvmStatic
     fun hasAlmostEnded(media: Playable): Boolean {
         return media.getDuration() > 0 && media.getPosition() >= media.getDuration() - smartMarkAsPlayedSecs * 1000

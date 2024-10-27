@@ -11,7 +11,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -51,7 +50,6 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
-    lateinit var emptyView: EmptyViewHandler
     lateinit var toolbar: MaterialToolbar
     lateinit var swipeActions: SwipeActions
 
@@ -106,15 +104,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         swipeActions.setFilter(getFilter())
         refreshSwipeTelltale()
-
         createListAdaptor()
-
-        emptyView = EmptyViewHandler(requireContext())
-        emptyView.setIcon(R.drawable.ic_feed)
-        emptyView.setTitle(R.string.no_all_episodes_head_label)
-        emptyView.setMessage(R.string.no_all_episodes_label)
-        emptyView.hide()
-
         return binding.root
     }
 

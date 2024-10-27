@@ -23,7 +23,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -72,8 +71,7 @@ import java.util.*
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
-    private lateinit var emptyView: EmptyViewHandler
-    
+
     private var displayUpArrow = false
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -129,7 +127,7 @@ import java.util.*
         refreshSwipeTelltale()
 //        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) DownloadLogFragment().show(childFragmentManager, null)
 
-        addEmptyView()
+//        addEmptyView()
         return binding.root
     }
 
@@ -296,13 +294,6 @@ import java.util.*
 //        loadItems()
 //    }
 
-    private fun addEmptyView() {
-        emptyView = EmptyViewHandler(requireContext())
-        emptyView.setIcon(R.drawable.ic_download)
-        emptyView.setTitle(R.string.no_comp_downloads_head_label)
-        emptyView.setMessage(R.string.no_comp_downloads_label)
-    }
-
     private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
 //        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
         var i = 0
@@ -354,7 +345,7 @@ import java.util.*
 
     private var loadItemsRunning = false
     private fun loadItems() {
-        emptyView.hide()
+//        emptyView.hide()
         Logd(TAG, "loadItems() called")
         if (!loadItemsRunning) {
             loadItemsRunning = true

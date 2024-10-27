@@ -452,7 +452,6 @@ class PlaybackService : MediaLibraryService() {
 //            EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
             return if (nextItem.media == null) null else unmanaged(nextItem.media!!)
         }
-        // only used in test
         override fun findMedia(url: String): Playable? {
             val item = getEpisodeByGuidOrUrl(null, url)
             return item?.media

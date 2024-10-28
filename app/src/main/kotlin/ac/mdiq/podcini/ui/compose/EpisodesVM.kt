@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.compose
 
+//import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
@@ -32,9 +33,7 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
-import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
-//import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
 import ac.mdiq.podcini.ui.actions.NullActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -750,7 +749,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vms[index].episode.title}")
                     Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
                     vm.actionButton = vm.actionButton.forItem()
-                    actionButton = vm.actionButton
+                    if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
                 }
             } else {
                 LaunchedEffect(Unit) {

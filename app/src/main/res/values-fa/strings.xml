@@ -376,7 +376,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">وصل دوبارهٔ گوشی</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">وصل دوبارهٔ بلوتوث</string>
   <string name="pref_stream_over_download_title">ترجیح جریان</string>
-  <string name="pref_mobileUpdate_title">به‌روز رسانی‌های همراه</string>
+
   <string name="pref_mobileUpdate_sum">آنچه که باید از طریق اتصال داده تلفن همراه مجاز است را انتخاب کنید</string>
   <string name="pref_mobileUpdate_refresh">تازه سازی پادکست</string>
   <string name="pref_mobileUpdate_images">تصویر جلد</string>

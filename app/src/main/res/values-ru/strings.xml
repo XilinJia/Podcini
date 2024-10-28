@@ -393,7 +393,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">При подключении наушников</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">При подключении Bluetooth</string>
   <string name="pref_stream_over_download_title">Трансляция вместо загрузки</string>
-  <string name="pref_mobileUpdate_title">Обновления в мобильной сети</string>
+
   <string name="pref_mobileUpdate_sum">Выберите, что разрешено загружать через мобильное подключение</string>
   <string name="pref_mobileUpdate_refresh">Обновление подкастов</string>
   <string name="pref_mobileUpdate_images">Обложки</string>

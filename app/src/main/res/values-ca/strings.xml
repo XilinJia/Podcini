@@ -372,7 +372,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">Reconnexió d\'auriculars</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">Reconnexió de Bluetooth</string>
   <string name="pref_stream_over_download_title">Preferir escoltar en directe</string>
-  <string name="pref_mobileUpdate_title">Actualitza fent servir dades mòbils</string>
+
   <string name="pref_mobileUpdate_sum">Selecciona què és permès a la connexió de la xarxa mòbil</string>
   <string name="pref_mobileUpdate_refresh">Refrescar podcast</string>
   <string name="pref_mobileUpdate_images">Cobre images</string>

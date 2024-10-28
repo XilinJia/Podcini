@@ -413,7 +413,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Повторне підключення через Bluetooth</string>
   <string name="pref_stream_over_download_title">Надавати перевагу стрімінгу</string>
   <string name="pref_stream_over_download_sum">Відображати кнопку стріму замість кнопки завантаження у списках</string>
-  <string name="pref_mobileUpdate_title">Оновлення через мобільні дані</string>
+
   <string name="pref_mobileUpdate_sum">Виберіть, що має бути дозволено через мобільне з\'єднання для передачі даних</string>
   <string name="pref_mobileUpdate_refresh">Оновлення подкасту</string>
   <string name="pref_mobileUpdate_images">Обкладинки зображень</string>

@@ -404,7 +404,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Ligação bluetooth</string>
   <string name="pref_stream_over_download_title">Preferir emissão</string>
   <string name="pref_stream_over_download_sum">Mostrar botão de emissão em vez do botão para descarregar</string>
-  <string name="pref_mobileUpdate_title">Dados móveis</string>
+
   <string name="pref_mobileUpdate_sum">Selecione o que pode ser permitido através de dados móveis</string>
   <string name="pref_mobileUpdate_refresh">Atualização de podcasts</string>
   <string name="pref_mobileUpdate_images">Descarga de imagens</string>

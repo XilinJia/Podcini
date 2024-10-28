@@ -220,7 +220,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                            }
 //                        }
                 }))
-                if (episode?.media != null) {
+                if (episode?.media != null && !inQueue) {
                     Spacer(modifier = Modifier.weight(0.2f))
                     val inQueueIconRes = if (inQueue) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
                     Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",

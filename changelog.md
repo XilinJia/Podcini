@@ -1,7 +1,21 @@
+# 6.12.8
+
+* set episode's playState to Skipped when its media file is removed
+* in AutoDownloadPolicy, Newer or Older now include episodes with playState of New, Unplayed, Later and Soon
+* naming change in Rating: Neutral -> OK, Favorite -> Super
+* in EpisodeInfo header, only show "add to queue" icon when the episode is not in queue
+* in-queue icon is no longer shown on episodes lists
+* reduced start lag when opening a large episodes list
+* likely fixed the action button not updating issue after download in episodes lists
+* in grid layout of Subscriptions view, moved the rating icon to the lower left corner
+* in FeedEpisodes view, enabled Downloaded and HasMedia filters
+* changed in Settings -> Downloads, "Mobile updates" to "Metered network settings"
+	* the setting applies to metered mobile and wifi networks
+
 # 6.12.7
 
 * fixed issue in auto-download where number of played is not correctly counted
-* in AutoDownloadPolicy, Newer or Older now means include episodes with playState not being Skipped, Played, and Ignored
+* in AutoDownloadPolicy, Newer or Older now include episodes with playState not being Skipped, Played, and Ignored
 * in Subscriptions sorting, Played means Skipped, Played, or Ignored, Unplayed means any state lower than Skipped
 * fixed high CPU usage in Download view
 * removed a few useless classes and the useless test modules

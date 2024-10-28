@@ -97,7 +97,7 @@ class Feed : RealmObject {
 
     var hasVideoMedia: Boolean = false
 
-    var rating: Int =  Rating.NEUTRAL.code
+    var rating: Int =  Rating.OK.code
 
     @FullText
     var comment: String = ""

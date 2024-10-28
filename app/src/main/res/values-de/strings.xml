@@ -393,7 +393,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth wieder verbunden</string>
   <string name="pref_stream_over_download_title">Streaming bevorzugen</string>
   <string name="pref_stream_over_download_sum">Stream-Button anstatt Download-Button in Listen anzeigen</string>
-  <string name="pref_mobileUpdate_title">Mobile Aktualisierungen</string>
+
   <string name="pref_mobileUpdate_sum">Auswählen, was über mobile Daten erlaubt sein soll</string>
   <string name="pref_mobileUpdate_refresh">Aktualisierung der Podcasts</string>
   <string name="pref_mobileUpdate_images">Titelbilder</string>

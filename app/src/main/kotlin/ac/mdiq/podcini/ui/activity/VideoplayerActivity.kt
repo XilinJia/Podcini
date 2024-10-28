@@ -728,7 +728,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                         withContext(Dispatchers.Main) {
                             Logd(TAG, "load() item ${episode?.id}")
                             if (episode != null) {
-                                val isFav = episode!!.isFavorite
+                                val isFav = episode!!.isSUPER
                                 if (isFavorite != isFav) {
                                     isFavorite = isFav
                                     invalidateOptionsMenu(activity)

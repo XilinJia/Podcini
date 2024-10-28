@@ -129,7 +129,9 @@ object Episodes {
                 episode = upsertBlk(episode) {
                     it.media?.setfileUrlOrNull(null)
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
+                    it.playState = PlayState.SKIPPED.code
                 }
+                EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
                 localDelete = true
             }
             url != null -> {
@@ -145,8 +147,10 @@ object Episodes {
                     it.media?.downloaded = false
                     it.media?.setfileUrlOrNull(null)
                     it.media?.hasEmbeddedPicture = false
+                    it.playState = PlayState.SKIPPED.code
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
                 }
+                EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
             }
         }
 

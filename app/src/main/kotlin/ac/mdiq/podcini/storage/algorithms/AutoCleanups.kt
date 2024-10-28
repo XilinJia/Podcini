@@ -64,7 +64,7 @@ object AutoCleanups {
                 val candidates: MutableList<Episode> = ArrayList()
                 val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !item.isFavorite) candidates.add(item)
+                    if (item.media != null && item.media!!.downloaded && !item.isSUPER) candidates.add(item)
                 }
                 return candidates
             }
@@ -117,7 +117,7 @@ object AutoCleanups {
                 val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isFavorite)
+                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isSUPER)
                         candidates.add(item)
                 }
                 return candidates
@@ -183,7 +183,7 @@ object AutoCleanups {
                 val idsInQueues = getInQueueEpisodeIds()
                 val mostRecentDateForDeletion = calcMostRecentDateForDeletion(Date())
                 for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && item.playState >= PlayState.PLAYED.code && !item.isFavorite) {
+                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && item.playState >= PlayState.PLAYED.code && !item.isSUPER) {
                         val media = item.media
                         // make sure this candidate was played at least the proper amount of days prior to now
                         if (media?.playbackCompletionDate != null && media.playbackCompletionDate!!.before(mostRecentDateForDeletion)) candidates.add(item)

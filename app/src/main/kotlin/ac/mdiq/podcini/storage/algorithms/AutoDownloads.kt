@@ -123,11 +123,11 @@ object AutoDownloads {
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDownloadPolicy.NEWER -> {
-                                        queryString += " AND playState < ${PlayState.SKIPPED.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                        queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDownloadPolicy.OLDER -> {
-                                        queryString += " AND playState < ${PlayState.SKIPPED.code} SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
+                                        queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     else -> {}

@@ -165,7 +165,7 @@ sealed class FlowEvent {
     //    TODO: need better handling at receving end
     data class EpisodePlayedEvent(val episode: Episode? = null) : FlowEvent()
 
-    data class RatingEvent(val episode: Episode, val rating: Int = Rating.FAVORITE.code) : FlowEvent()
+    data class RatingEvent(val episode: Episode, val rating: Int = Rating.SUPER.code) : FlowEvent()
 
 //    data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 

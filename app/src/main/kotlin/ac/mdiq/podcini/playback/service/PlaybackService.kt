@@ -368,7 +368,7 @@ class PlaybackService : MediaLibraryService() {
                         val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
-                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode)) {
+                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isSUPER != true || !shouldFavoriteKeepEpisode)) {
                             item = deleteMediaSync(this@PlaybackService, item!!)
                             if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
                         }

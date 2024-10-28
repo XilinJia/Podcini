@@ -357,7 +357,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">헤드폰 재연결</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">블루투스 다시 연결</string>
   <string name="pref_stream_over_download_title">스트리밍 선호</string>
-  <string name="pref_mobileUpdate_title">휴대전화 망 업데이트</string>
+
   <string name="pref_mobileUpdate_sum">휴대전화 데이터 연결을 통해 무엇을 허용할지 선택합니다.</string>
   <string name="pref_mobileUpdate_refresh">팟캐스트 새로 고침</string>
   <string name="pref_mobileUpdate_images">커버 이미지</string>

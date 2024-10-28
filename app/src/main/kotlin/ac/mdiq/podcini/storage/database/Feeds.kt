@@ -287,7 +287,6 @@ object Feeds {
                 episode.feed = savedFeed
                 episode.id = idLong++
                 episode.feedId = savedFeed.id
-                episode.playState = PlayState.NEW.code
                 if (episode.media != null) {
                     episode.media!!.id = episode.id
                     if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
@@ -298,7 +297,8 @@ object Feeds {
                 val pubDate = episode.getPubDate()
                 if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                     Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
-                    episode.setNew()
+                    episode.playState = PlayState.NEW.code
+//                    episode.setNew()
                     if (savedFeed.preferences?.autoAddNewToQueue == true) {
                         val q = savedFeed.preferences?.queue
                         if (q != null) runOnIOScope {  addToQueueSync(episode, q) }

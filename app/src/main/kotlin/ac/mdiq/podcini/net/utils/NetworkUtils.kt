@@ -44,7 +44,10 @@ object NetworkUtils {
             return when (networkInfo.type) {
                 ConnectivityManager.TYPE_WIFI -> {
                     if (isEnableAutodownloadWifiFilter) isInAllowedWifiNetwork
-                    else !isNetworkMetered
+                    else {
+                        if (!isNetworkMetered) true
+                        else isAllowMobileAutoDownload
+                    }
                 }
                 ConnectivityManager.TYPE_ETHERNET -> true
                 else -> isAllowMobileAutoDownload || !isNetworkRestricted
@@ -158,7 +161,6 @@ object NetworkUtils {
         val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
         if (allow) allowed.add(type)
         else allowed.remove(type)
-
         appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, allowed).apply()
     }
 

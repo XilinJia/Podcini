@@ -405,7 +405,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Riconnessione Bluetooth</string>
   <string name="pref_stream_over_download_title">Preferisci streaming</string>
   <string name="pref_stream_over_download_sum">Negli elenchi mostra il tasto stream al posto del tasto download</string>
-  <string name="pref_mobileUpdate_title">Aggiornamenti su rete mobile</string>
+
   <string name="pref_mobileUpdate_sum">Seleziona quali operazioni sono consentite su reti mobili</string>
   <string name="pref_mobileUpdate_refresh">Aggiornamento podcast</string>
   <string name="pref_mobileUpdate_images">Copertine</string>

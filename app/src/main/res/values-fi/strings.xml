@@ -366,7 +366,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">Kuulokkeiden uudelleenyhdistyminen</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">Bluetoothin uudelleenyhdistyminen</string>
   <string name="pref_stream_over_download_title">Suosi suoratoistoa</string>
-  <string name="pref_mobileUpdate_title">Mobiilipäivitykset</string>
+
   <string name="pref_mobileUpdate_sum">Valitse, mikä on sallittua mobiiliyhteydellä</string>
   <string name="pref_mobileUpdate_refresh">Podcastien päivitys</string>
   <string name="pref_mobileUpdate_images">Kansikuvat</string>

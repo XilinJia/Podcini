@@ -56,9 +56,9 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.unrated.name)) ratingQuerys.add(" rating == ${Rating.UNRATED.code} ")
         if (properties.contains(States.trash.name)) ratingQuerys.add(" rating == ${Rating.TRASH.code} ")
         if (properties.contains(States.bad.name)) ratingQuerys.add(" rating == ${Rating.BAD.code} ")
-        if (properties.contains(States.neutral.name)) ratingQuerys.add(" rating == ${Rating.NEUTRAL.code} ")
+        if (properties.contains(States.neutral.name)) ratingQuerys.add(" rating == ${Rating.OK.code} ")
         if (properties.contains(States.good.name)) ratingQuerys.add(" rating == ${Rating.GOOD.code} ")
-        if (properties.contains(States.favorite.name)) ratingQuerys.add(" rating == ${Rating.FAVORITE.code} ")
+        if (properties.contains(States.favorite.name)) ratingQuerys.add(" rating == ${Rating.SUPER.code} ")
         if (ratingQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + ratingQuerys[0])
             if (ratingQuerys.size > 1) for (r in ratingQuerys.subList(1, ratingQuerys.size)) {
@@ -183,9 +183,9 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         RATING(R.string.rating_label, ItemProperties(R.string.unrated, States.unrated.name),
             ItemProperties(R.string.trash, States.trash.name),
             ItemProperties(R.string.bad, States.bad.name),
-            ItemProperties(R.string.neutral, States.neutral.name),
+            ItemProperties(R.string.OK, States.neutral.name),
             ItemProperties(R.string.good, States.good.name),
-            ItemProperties(R.string.favorite, States.favorite.name),
+            ItemProperties(R.string.Super, States.favorite.name),
         ),
         PLAY_STATE(R.string.playstate, ItemProperties(R.string.unspecified, States.unspecified.name),
             ItemProperties(R.string.building, States.building.name),

@@ -32,8 +32,10 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
+import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
-import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
+//import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
+import ac.mdiq.podcini.ui.actions.NullActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
@@ -140,11 +142,12 @@ class EpisodeVM(var episode: Episode) {
     var ratingState by mutableIntStateOf(episode.rating)
     var inProgressState by mutableStateOf(episode.isInProgress)
     var downloadState by mutableIntStateOf(if (episode.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
-    var actionButton by mutableStateOf(forItem(episode))
+//    var actionButton by mutableStateOf(forItem(episode))
+    var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode))
     var actionRes by mutableIntStateOf(actionButton.getDrawable())
     var showAltActionsDialog by mutableStateOf(false)
     var dlPercent by mutableIntStateOf(0)
-    var inQueueState by mutableStateOf(curQueue.contains(episode))
+//    var inQueueState by mutableStateOf(curQueue.contains(episode))
     var isSelected by mutableStateOf(false)
     var prog by mutableFloatStateOf(0f)
 
@@ -196,6 +199,7 @@ class EpisodeVM(var episode: Episode) {
                                 withContext(Dispatchers.Main) {
                                     positionState = changes.obj.media?.position ?: 0
                                     inProgressState = changes.obj.isInProgress
+                                    downloadState = if (changes.obj.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal
                                     Logd("EpisodeVM", "mediaMonitor $positionState $inProgressState ${episode.title}")
                                     episode = changes.obj
 //                                    Logd("EpisodeVM", "mediaMonitor downloaded: ${changes.obj.media?.downloaded} ${episode.media?.downloaded}")
@@ -711,10 +715,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     }
                     Logd(TAG, "long clicked: ${vm.episode.title}")
                 })) {
-                LaunchedEffect(key1 = queueChanged) {
-                    if (index >= vms.size) return@LaunchedEffect
-                    vms[index].inQueueState = curQueue.contains(vms[index].episode)
-                }
+//                LaunchedEffect(key1 = queueChanged) {
+//                    if (index >= vms.size) return@LaunchedEffect
+//                    vms[index].inQueueState = curQueue.contains(vms[index].episode)
+//                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
 //                    Logd(TAG, "info row")
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
@@ -735,6 +739,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 }
                 Text(vm.episode.title ?: "", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
+            var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem()) }
             fun isDownloading(): Boolean {
                 return vms[index].downloadState > DownloadStatus.State.UNKNOWN.ordinal && vms[index].downloadState < DownloadStatus.State.COMPLETED.ordinal
             }
@@ -744,28 +749,32 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
                     Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vms[index].episode.title}")
                     Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
-                    vm.actionButton = forItem(vm.episode)
-//                                    vm.actionRes = vm.actionButton!!.getDrawable()
+                    vm.actionButton = vm.actionButton.forItem()
+                    actionButton = vm.actionButton
                 }
             } else {
                 LaunchedEffect(Unit) {
                     Logd(TAG, "LaunchedEffect init actionButton")
                     vm.actionButton =  actionButton_(vm.episode)
+                    actionButton = vm.actionButton
 //                                  vm.actionRes = vm.actionButton!!.getDrawable()
                 }
             }
             Box(contentAlignment = Alignment.Center, modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.CenterVertically)
                 .pointerInput(Unit) {
                     detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true },
-                        onTap = { vms[index].actionButton.onClick(activity) })
+                        onTap = {
+//                            vms[index].actionButton.onClick(activity)
+                            actionButton.onClick(activity)
+                        })
                 }, ) {
 //                Logd(TAG, "button box")
-                vm.actionRes = vm.actionButton.getDrawable()
+                vm.actionRes = actionButton.getDrawable()
                 Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                 if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                     strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(30.dp).height(35.dp))
             }
-            if (vm.showAltActionsDialog) vm.actionButton.AltActionsDialog(activity, vm.showAltActionsDialog,
+            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, vm.showAltActionsDialog,
                 onDismiss = { vm.showAltActionsDialog = false })
         }
     }

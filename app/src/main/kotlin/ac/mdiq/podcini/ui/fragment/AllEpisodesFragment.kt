@@ -69,7 +69,7 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
             loadItemsRunning = false
         }
         if (allEpisodes.isEmpty()) return listOf()
-        allEpisodes = allEpisodes.filter { filter.matchesForQueues(it) }
+//        allEpisodes = allEpisodes.filter { filter.matchesForQueues(it) }
         return allEpisodes
     }
 

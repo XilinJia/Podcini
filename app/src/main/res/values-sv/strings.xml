@@ -389,7 +389,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Blutetooth återansluts</string>
   <string name="pref_stream_over_download_title">Föredra strömmning</string>
   <string name="pref_stream_over_download_sum">Visa knappen för strömming iställer för nedladdning i listor</string>
-  <string name="pref_mobileUpdate_title">Mobila uppdateringar</string>
+
   <string name="pref_mobileUpdate_sum">Välj vad som ska tillåtas över mobila dataanslutningar</string>
   <string name="pref_mobileUpdate_refresh">Uppdatera podcasts</string>
   <string name="pref_mobileUpdate_images">Omslagsbilder</string>

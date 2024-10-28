@@ -369,7 +369,7 @@ import java.util.*
                             episodes.clear()
                             episodes.addAll(currentDownloads)
                         }
-                        episodes.retainAll { filter.matchesForQueues(it) }
+//                        episodes.retainAll { filter.matchesForQueues(it) }
                         withContext(Dispatchers.Main) {
                             vms.clear()
                             for (e in episodes) vms.add(EpisodeVM(e))

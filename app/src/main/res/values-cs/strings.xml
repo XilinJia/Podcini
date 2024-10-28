@@ -414,7 +414,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Opětovné připojení Bluetooth</string>
   <string name="pref_stream_over_download_title">Upřednostnit streamování</string>
   <string name="pref_stream_over_download_sum">Zobrazit tlačítko streamovat místo tlačítka stáhnout v seznamech.</string>
-  <string name="pref_mobileUpdate_title">Aktualizace přes mobilní data</string>
+
   <string name="pref_mobileUpdate_sum">Vyberte, co by mělo být povoleno přes mobilní data</string>
   <string name="pref_mobileUpdate_refresh">Obnovit podcast</string>
   <string name="pref_mobileUpdate_images">Obrázky podcastů/epizod</string>

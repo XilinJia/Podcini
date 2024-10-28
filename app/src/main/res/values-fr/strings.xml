@@ -405,7 +405,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Connexion du Bluetooth</string>
   <string name="pref_stream_over_download_title">Préférer le streaming</string>
   <string name="pref_stream_over_download_sum">Afficher dans les listes le bouton du streaming au lieu de celui du téléchargement</string>
-  <string name="pref_mobileUpdate_title">Utilisation de la connexion mobile</string>
+
   <string name="pref_mobileUpdate_sum">Choisir ce qui est autorisé lorsque la connexion mobile est utilisée</string>
   <string name="pref_mobileUpdate_refresh">Mise à jour des podcasts</string>
   <string name="pref_mobileUpdate_images">Récupération des images</string>

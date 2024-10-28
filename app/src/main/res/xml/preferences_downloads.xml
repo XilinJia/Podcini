@@ -53,7 +53,7 @@
                 android:entryValues="@array/mobile_update_values"
                 android:key="prefMobileUpdateTypes"
                 android:summary="@string/pref_mobileUpdate_sum"
-                android:title="@string/pref_mobileUpdate_title"/>
+                android:title="@string/pref_metered_network_title"/>
         <Preference
                 android:key="prefProxy"
                 android:summary="@string/pref_proxy_sum"

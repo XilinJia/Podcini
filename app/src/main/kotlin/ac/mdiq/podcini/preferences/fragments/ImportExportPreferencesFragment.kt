@@ -938,7 +938,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
                 it.media!!.setLastPlayedTime(action.timestamp!!.time)
-                it.rating = if (action.isFavorite) Rating.FAVORITE.code else Rating.UNRATED.code
+                it.rating = if (action.isFavorite) Rating.SUPER.code else Rating.UNRATED.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
                     Logd(TAG, "Marking as played: $action")
@@ -973,7 +973,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     .position(media.getPosition() / 1000)
                     .playedDuration(media.playedDuration / 1000)
                     .total(media.getDuration() / 1000)
-                    .isFavorite(item.isFavorite)
+                    .isFavorite(item.isSUPER)
                     .playState(item.playState)
                     .build()
                 queuedEpisodeActions.add(played)

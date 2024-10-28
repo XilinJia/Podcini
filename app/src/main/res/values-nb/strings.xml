@@ -364,7 +364,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">Gjeninnkopling av hodetelefoner</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">Blutetooth tilkoblet igjen</string>
   <string name="pref_stream_over_download_title">Foretrekk strømming</string>
-  <string name="pref_mobileUpdate_title">Mobiloppdateringer</string>
+
   <string name="pref_mobileUpdate_sum">Velg hva som skal tillates over mobildata</string>
   <string name="pref_mobileUpdate_refresh">Last podkast på nytt</string>
   <string name="pref_mobileUpdate_images">Cover-bilder</string>

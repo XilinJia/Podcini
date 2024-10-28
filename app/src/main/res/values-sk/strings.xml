@@ -413,7 +413,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth znovu pripojené</string>
   <string name="pref_stream_over_download_title">Uprednostniť streamovanie</string>
   <string name="pref_stream_over_download_sum">V zoznamoch zobraziť tlačidlo streamovať namiesto tlačidla stiahnuť</string>
-  <string name="pref_mobileUpdate_title">Mobilná aktualizácia</string>
+
   <string name="pref_mobileUpdate_sum">Vyberte, co by malo byť povolené cez mobilné dáta</string>
   <string name="pref_mobileUpdate_refresh">Obnoviť podcast</string>
   <string name="pref_mobileUpdate_images">Obrázky podcastov/epizód</string>

@@ -375,6 +375,20 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val feedList_ = getFeedList(fQueryStr).toMutableList()
         val feedOrder = feedOrderBy
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
+
+        fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
+            return Comparator { lhs: Feed, rhs: Feed ->
+                val counterLhs = counterMap[lhs.id]?:0
+                val counterRhs = counterMap[rhs.id]?:0
+                when {
+                    // reverse natural order: podcast with most unplayed episodes first
+                    counterLhs > counterRhs -> -dir
+                    counterLhs == counterRhs -> (lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1) * dir
+                    else -> dir
+                }
+            }
+        }
+
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
 //                val queryString = "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code})"
@@ -481,19 +495,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
         feedSorted++
         return feedList_.sortedWith(comparator)
-    }
-
-    private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
-        return Comparator { lhs: Feed, rhs: Feed ->
-            val counterLhs = counterMap[lhs.id]?:0
-            val counterRhs = counterMap[rhs.id]?:0
-            when {
-                // reverse natural order: podcast with most unplayed episodes first
-                counterLhs > counterRhs -> -dir
-                counterLhs == counterRhs -> (lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1) * dir
-                else -> dir
-            }
-        }
     }
 
     @Composable
@@ -903,8 +904,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 if (feed.rating != Rating.UNRATED.code)
                                     Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                        start.linkTo(parent.start)
-                                        centerVerticallyTo(coverImage)
+                                        start.linkTo(coverImage.start)
+                                        bottom.linkTo(coverImage.bottom)
                                     })
 //                                TODO: need to use state
                                 if (feed.lastUpdateFailed) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error",

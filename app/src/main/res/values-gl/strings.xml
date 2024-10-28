@@ -388,7 +388,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Reconexión bluetooth</string>
   <string name="pref_stream_over_download_title">Preferir retransmisión</string>
   <string name="pref_stream_over_download_sum">Nas listas, mostrar botón de difusión no lugar do botón de descarga</string>
-  <string name="pref_mobileUpdate_title">Actualización con móbil</string>
+
   <string name="pref_mobileUpdate_sum">Escolle o que estará permitido utilizando conexión de datos do móbil</string>
   <string name="pref_mobileUpdate_refresh">Actualizar podcast</string>
   <string name="pref_mobileUpdate_images">Imaxes de portadas</string>

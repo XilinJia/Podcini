@@ -381,7 +381,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">蓝牙重连</string>
   <string name="pref_stream_over_download_title">偏好在线</string>
   <string name="pref_stream_over_download_sum">在列表中显示在线播放按钮而不是下载按钮</string>
-  <string name="pref_mobileUpdate_title">移动数据更新</string>
+
   <string name="pref_mobileUpdate_sum">选择使用移动数据连接时应当允许的内容</string>
   <string name="pref_mobileUpdate_refresh">播客刷新 </string>
   <string name="pref_mobileUpdate_images">封面图片</string>

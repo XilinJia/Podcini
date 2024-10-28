@@ -374,7 +374,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">Kulaklıklar yeniden bağlanıyor</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth yeniden bağlanıyor</string>
   <string name="pref_stream_over_download_title">İndirmeden dinle</string>
-  <string name="pref_mobileUpdate_title">Mobil güncellemeler</string>
+
   <string name="pref_mobileUpdate_sum">Mobil veri üzerinden nelere izin verileceğini seçiniz</string>
   <string name="pref_mobileUpdate_refresh">Podcast yenileme</string>
   <string name="pref_mobileUpdate_images">Kapak görselleri</string>

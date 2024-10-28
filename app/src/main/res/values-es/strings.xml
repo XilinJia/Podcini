@@ -404,7 +404,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Reconectar con Bluetooth</string>
   <string name="pref_stream_over_download_title">Preferir escuchar en directo</string>
   <string name="pref_stream_over_download_sum">Mostrar el botón de escuchar en directo en vez del botón de descarga en las listas</string>
-  <string name="pref_mobileUpdate_title">Actualizaciones vía datos móviles</string>
+
   <string name="pref_mobileUpdate_sum">Seleccionar lo que se debe permitir descargar con datos móviles</string>
   <string name="pref_mobileUpdate_refresh">Actualizar podcast</string>
   <string name="pref_mobileUpdate_images">Imágenes de portada</string>

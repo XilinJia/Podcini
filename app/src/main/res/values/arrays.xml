@@ -68,7 +68,6 @@
         <item>@string/pref_mobileUpdate_images</item>
         <item>@string/synchronization_pref</item>
     </string-array>
-
     <string-array name="mobile_update_values">
         <item>feed_refresh</item>
         <item>episode_download</item>

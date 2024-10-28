@@ -389,7 +389,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth forbundet igen</string>
   <string name="pref_stream_over_download_title">Foretræk streaming</string>
   <string name="pref_stream_over_download_sum">Vis stream-knap i stedet for overfør-knap i lister</string>
-  <string name="pref_mobileUpdate_title">Mobilopdateringer</string>
+
   <string name="pref_mobileUpdate_sum">Vælg hvad der skal være tilladt via mobil dataforbindelse</string>
   <string name="pref_mobileUpdate_refresh">Opdatering af podcast</string>
   <string name="pref_mobileUpdate_images">Billeder</string>

@@ -380,7 +380,7 @@
   <string name="pref_pauseOnHeadsetDisconnect_title">Fones de ouvido ou Bluetooth desconectado</string>
   <string name="pref_unpauseOnHeadsetReconnect_title">Fones de ouvido reconectados</string>
   <string name="pref_stream_over_download_title">Preferir streaming</string>
-  <string name="pref_mobileUpdate_title">Atualização usando dados móveis</string>
+
   <string name="pref_mobileUpdate_sum">Selecione o que deve ser permitido na conexão de dados móveis</string>
   <string name="pref_mobileUpdate_refresh">Atualizar podcast</string>
   <string name="pref_mobileUpdate_images">Imagens de capa</string>

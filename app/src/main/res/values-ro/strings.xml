@@ -401,7 +401,7 @@
   <string name="pref_unpauseOnBluetoothReconnect_title">Reconectare Bluetooth</string>
   <string name="pref_stream_over_download_title">Preferă streamingul</string>
   <string name="pref_stream_over_download_sum">Afișează butonul de stream în locul butonului de descărcare</string>
-  <string name="pref_mobileUpdate_title">Actualizări mobile</string>
+
   <string name="pref_mobileUpdate_sum">Selectează ce ar trebui să fie permis să folosească conexiunea de date mobile</string>
   <string name="pref_mobileUpdate_refresh">Reîmprospătare podcast</string>
   <string name="pref_mobileUpdate_images">Imagine de copertă</string>

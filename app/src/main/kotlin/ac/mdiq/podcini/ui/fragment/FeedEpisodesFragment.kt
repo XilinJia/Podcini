@@ -172,7 +172,7 @@ import java.util.concurrent.Semaphore
                     requireActivity().supportFragmentManager.executePendingTransactions()
                 }
                 if (showFilterDialog) EpisodesFilterDialog(filter = feed!!.episodeFilter,
-                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
+//                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
                     onDismissRequest = { showFilterDialog = false } ) { filterValues ->
                     if (feed != null) {
                         Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
@@ -238,7 +238,7 @@ import java.util.concurrent.Semaphore
         cancelFlowEvents()
     }
 
-    @kotlin.OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun FeedEpisodesHeader(activity: MainActivity, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface

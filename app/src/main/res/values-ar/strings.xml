@@ -422,7 +422,7 @@
   <string name="pref_unpauseOnHeadsetReconnect_title">إعادة توصيل سماعات الرأس</string>
   <string name="pref_unpauseOnBluetoothReconnect_title">إعادة توصيل البلوتوث</string>
   <string name="pref_stream_over_download_title">أفضّل البث التدفقي</string>
-  <string name="pref_mobileUpdate_title">التحديث باستخدام شبكة الجوال</string>
+
   <string name="pref_mobileUpdate_sum">حدد ما يجب السماح به أثناء الاتصال على شبكة الجوال</string>
   <string name="pref_mobileUpdate_refresh">تحديث البودكاست</string>
   <string name="pref_mobileUpdate_images">صور الغلاف</string>

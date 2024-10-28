@@ -81,6 +81,24 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     abstract fun onClick(context: Context)
 
+    fun forItem(): EpisodeActionButton {
+        val media = item.media ?: return TTSActionButton(item)
+        val isDownloadingMedia = when (media.downloadUrl) {
+            null -> false
+            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
+        }
+        Logd("ItemActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${item.title} ")
+        return when {
+            isCurrentlyPlaying(media) -> PauseActionButton(item)
+            item.feed != null && item.feed!!.isLocalFeed -> PlayLocalActionButton(item)
+            media.downloaded -> PlayActionButton(item)
+            isDownloadingMedia -> CancelDownloadActionButton(item)
+            isStreamOverDownload || item.feed == null || item.feedId == null || item.feed?.type == Feed.FeedType.YOUTUBE.name
+                    || item.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(item)
+            else -> DownloadActionButton(item)
+        }
+    }
+
     @Composable
     fun AltActionsDialog(context: Context, showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
@@ -127,23 +145,23 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     @UnstableApi
     companion object {
-        fun forItem(episode: Episode): EpisodeActionButton {
-            val media = episode.media ?: return TTSActionButton(episode)
-            val isDownloadingMedia = when (media.downloadUrl) {
-                null -> false
-                else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
-            }
-            Logd("ItemActionButton", "forItem: local feed: ${episode.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${episode.title} ")
-            return when {
-                isCurrentlyPlaying(media) -> PauseActionButton(episode)
-                episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
-                media.downloaded -> PlayActionButton(episode)
-                isDownloadingMedia -> CancelDownloadActionButton(episode)
-                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.type == Feed.FeedType.YOUTUBE.name
-                        || episode.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(episode)
-                else -> DownloadActionButton(episode)
-            }
-        }
+//        fun forItem(episode: Episode): EpisodeActionButton {
+//            val media = episode.media ?: return TTSActionButton(episode)
+//            val isDownloadingMedia = when (media.downloadUrl) {
+//                null -> false
+//                else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
+//            }
+//            Logd("ItemActionButton", "forItem: local feed: ${episode.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${episode.title} ")
+//            return when {
+//                isCurrentlyPlaying(media) -> PauseActionButton(episode)
+//                episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
+//                media.downloaded -> PlayActionButton(episode)
+//                isDownloadingMedia -> CancelDownloadActionButton(episode)
+//                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.type == Feed.FeedType.YOUTUBE.name
+//                        || episode.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(episode)
+//                else -> DownloadActionButton(episode)
+//            }
+//        }
 
         fun playVideoIfNeeded(context: Context, media: Playable) {
             val item = (media as? EpisodeMedia)?.episode
@@ -255,7 +273,6 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
 }
 
 class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
-
     override val visibility: Boolean
         get() {
             return item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)
@@ -272,6 +289,17 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
         LocalDeleteModal.deleteEpisodesWarnLocal(context, listOf(item))
         actionState.value = getLabel()
     }
+}
+
+class NullActionButton(item: Episode) : EpisodeActionButton(item) {
+    override fun getLabel(): Int {
+        return R.string.null_label
+    }
+    override fun getDrawable(): Int {
+        return R.drawable.ic_questionmark
+    }
+    @UnstableApi
+    override fun onClick(context: Context) {}
 }
 
 class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
@@ -405,7 +433,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
             return
         }
         processing = 0.01f
-        item.setBuilding()
+        item.playState = PlayState.BUILDING.code
         EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
         RealmDB.runOnIOScope {
             if (item.transcript == null) {

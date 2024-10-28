@@ -86,7 +86,7 @@ class Episode : RealmObject {
     var rating: Int = Rating.UNRATED.code
 
     @Ignore
-    var isFavorite: Boolean = (rating == Rating.FAVORITE.code)
+    var isSUPER: Boolean = (rating == Rating.SUPER.code)
         private set
 
     @FullText
@@ -172,7 +172,8 @@ class Episode : RealmObject {
                 media == null -> {
                     setMedia(other.media)
                     // reset to new if feed item did link to a file before
-                    setNew()
+//                    setNew()
+                    playState = PlayState.NEW.code
                 }
                 media!!.compareWithOther(other.media!!) -> media!!.updateFromOther(other.media!!)
             }
@@ -206,9 +207,9 @@ class Episode : RealmObject {
         this.media = media
     }
 
-    fun setNew() {
-        playState = PlayState.NEW.code
-    }
+//    fun setNew() {
+//        playState = PlayState.NEW.code
+//    }
 
     fun isPlayed(): Boolean {
         return playState >= PlayState.SKIPPED.code
@@ -218,9 +219,9 @@ class Episode : RealmObject {
         playState = if (played) PlayState.PLAYED.code else PlayState.UNPLAYED.code
     }
 
-    fun setBuilding() {
-        playState = PlayState.BUILDING.code
-    }
+//    fun setBuilding() {
+//        playState = PlayState.BUILDING.code
+//    }
 
     /**
      * Updates this item's description property if the given argument is longer than the already stored description

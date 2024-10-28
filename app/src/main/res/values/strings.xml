@@ -256,6 +256,7 @@
     <string name="stream_label">Stream</string>
     <string name="erase_episodes_label">Erase episodes</string>
     <string name="reserve_episodes_label">Reserve episodes</string>
+    <string name="null_label">Null</string>
     <string name="delete_label">Delete</string>
     <string name="delete_failed">Unable to delete file. Rebooting the device could help.</string>
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
@@ -303,9 +304,9 @@
     <string name="unrated">Unrated</string>
     <string name="trash">Trash</string>
     <string name="bad">Bad</string>
-    <string name="neutral">Neutral</string>
+    <string name="OK">OK</string>
     <string name="good">Good</string>
-    <string name="favorite">Favorite</string>
+    <string name="Super">Super</string>
     <string name="set_rating_label">Set rating</string>
     <string name="playstate">Play state</string>
     <string name="unspecified">Unspecified</string>
@@ -520,7 +521,7 @@
     <string name="pref_stream_over_download_sum">Display stream button instead of download button in lists</string>
     <string name="pref_low_quality_on_mobile_title">Prefer low quality on mobile</string>
     <string name="pref_low_quality_on_mobile_sum">On metered network, only low quality media (if available) is fetched</string>
-    <string name="pref_mobileUpdate_title">Mobile updates</string>
+    <string name="pref_metered_network_title">Metered network settings</string>
     <string name="pref_mobileUpdate_sum">Select what should be allowed over the mobile data connection</string>
     <string name="pref_mobileUpdate_refresh">Podcast refresh</string>
     <string name="pref_mobileUpdate_images">Cover images</string>

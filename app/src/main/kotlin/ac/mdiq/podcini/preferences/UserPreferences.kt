@@ -203,6 +203,12 @@ object UserPreferences {
             appPrefs.edit().putBoolean(Prefs.prefLowQualityOnMobile.name, stream).apply()
         }
 
+    var prefAdaptiveProgressUpdate: Boolean
+        get() = appPrefs.getBoolean(Prefs.prefUseAdaptiveProgressUpdate.name, false)
+        set(value) {
+            appPrefs.edit().putBoolean(Prefs.prefUseAdaptiveProgressUpdate.name, value).apply()
+        }
+
     /**
      * Sets up the UserPreferences class.
      * @throws IllegalArgumentException if context is null
@@ -313,6 +319,7 @@ object UserPreferences {
         prefStreamOverDownload,
         prefLowQualityOnMobile,
         prefSpeedforwardSpeed,
+        prefUseAdaptiveProgressUpdate,
 
         // Network
         prefEnqueueDownloaded,

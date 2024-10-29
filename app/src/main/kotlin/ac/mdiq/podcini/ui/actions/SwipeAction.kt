@@ -20,16 +20,20 @@ interface SwipeAction {
 
     fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter)
 
-    fun willRemove(filter: EpisodeFilter, item: Episode): Boolean
+    fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+        return false
+    }
 
     enum class ActionTypes {
         NO_ACTION,
         COMBO,
         ADD_TO_QUEUE,
+        PUT_TO_QUEUE,
         START_DOWNLOAD,
         MARK_FAV,
-        TOGGLE_PLAYED,
         SET_PLAY_STATE,
+        SHELVE,
+        ERASE,
         REMOVE_FROM_QUEUE,
         DELETE,
         REMOVE_FROM_HISTORY

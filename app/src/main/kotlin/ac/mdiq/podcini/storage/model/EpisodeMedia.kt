@@ -3,6 +3,7 @@ package ac.mdiq.podcini.storage.model
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.showStackTrace
@@ -67,6 +68,16 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     var playedDurationWhenStarted: Int = 0
         private set
+
+    @Ignore
+    var volumeAdaptionSetting: VolumeAdaptionSetting = VolumeAdaptionSetting.OFF
+        get() = fromInteger(volumeAdaption)
+        set(value) {
+            field = value
+            volumeAdaption = field.toInteger()
+        }
+    @Ignore
+    var volumeAdaption: Int = 0
 
     // if null: unknown, will be checked
     // TODO: what to do with this? can be expensive

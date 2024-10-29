@@ -165,10 +165,12 @@
     <string name="feed_auto_download_new">Only new items</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
+    <string name="feed_auto_download_soon">Marked as Soon</string>
 
     <string name="put_in_queue_label">Add to queue…</string>
     <string name="remove_from_other_queues">Remove from other queues</string>
 
+    <string name="create_synthetic_first_note">You need to create some synthetic feeds first</string>
     <string name="remove_from_current_feed">Remove from current feed</string>
 
     <string name="feed_new_episodes_action_nothing">Nothing</string>
@@ -223,6 +225,7 @@
     <string name="feed_delete_confirmation_msg_batch">Please confirm that you want to remove the selected podcasts, ALL their episodes (including downloaded episodes), and its statistics.</string>
     <string name="feed_delete_confirmation_local_msg">Please confirm that you want to remove the podcast \"%1$s\" and its statistics. The files in the local source folder will not be deleted.</string>
     <string name="feed_remover_msg">Removing podcast</string>
+    <string name="not_erase_message">Only episodes from synthetic feeds can be erased.</string>
     <string name="feed_delete_reason_msg">For future reference, you can record a reason here:</string>
     <string name="load_complete_feed">Refresh complete podcast</string>
     <string name="multi_select">Multi select</string>
@@ -258,6 +261,7 @@
     <string name="reserve_episodes_label">Reserve episodes</string>
     <string name="null_label">Null</string>
     <string name="delete_label">Delete</string>
+    <string name="delete_failed_simple">Unable to delete file.</string>
     <string name="delete_failed">Unable to delete file. Rebooting the device could help.</string>
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Delete episode media</string>
@@ -280,6 +284,7 @@
         <item quantity="other">%d episodes marked as favorite.</item>
     </plurals>
 
+    <string name="combo_action">Combo action</string>
     <string name="shelve_label">Shelve to synthetic</string>
     <string name="add_to_queue_label">Add to active queue</string>
     <plurals name="added_to_queue_batch_label">
@@ -521,6 +526,8 @@
     <string name="pref_stream_over_download_sum">Display stream button instead of download button in lists</string>
     <string name="pref_low_quality_on_mobile_title">Prefer low quality on mobile</string>
     <string name="pref_low_quality_on_mobile_sum">On metered network, only low quality media (if available) is fetched</string>
+    <string name="pref_use_adaptive_progress_title">Update progress adaptively</string>
+    <string name="pref_use_adaptive_progress_sum">Update the progress in an adaptive interval set as the higher of 5 seconds or 2 percent of the media duration. This saves some energy. Otherwise it\'s updated every 5 seconds.</string>
     <string name="pref_metered_network_title">Metered network settings</string>
     <string name="pref_mobileUpdate_sum">Select what should be allowed over the mobile data connection</string>
     <string name="pref_mobileUpdate_refresh">Podcast refresh</string>

@@ -126,6 +126,10 @@ object AutoDownloads {
                                         queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
+                                    FeedPreferences.AutoDownloadPolicy.SOON -> {
+                                        queryString += " AND playState == ${PlayState.SOON.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                        episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                    }
                                     FeedPreferences.AutoDownloadPolicy.OLDER -> {
                                         queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
@@ -136,7 +140,7 @@ object AutoDownloads {
                                     var count = 0
                                     for (e in episodes) {
                                         if (isCurMedia(e.media)) continue
-                                        if (f.preferences?.autoDownloadFilter?.shouldAutoDownload(e) == true) {
+                                        if (f.preferences?.autoDownloadFilter?.meetsAutoDLCriteria(e) == true) {
                                             Logd(TAG, "autoDownloadEpisodeMedia add to cadidates: ${e.title} ${e.isDownloaded}")
                                             candidates.add(e)
                                             if (++count >= allowedDLCount) break

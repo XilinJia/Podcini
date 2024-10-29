@@ -58,10 +58,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,11 +67,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.core.app.ShareCompat
 import androidx.core.content.ContextCompat
@@ -310,7 +310,8 @@ class AudioPlayerFragment : Fragment() {
             }, onValueChangeFinished = {
                 Logd(TAG, "Slider onValueChangeFinished: $sliderValue")
                 currentPosition = sliderValue.toInt()
-                if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
+//                if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
+                seekTo(currentPosition)
             })
         Row {
             Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
@@ -336,12 +337,53 @@ class AudioPlayerFragment : Fragment() {
     }
 
     @Composable
+    fun VolumeAdaptionDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
+        if (showDialog) {
+            val (selectedOption, onOptionSelected) = remember { mutableStateOf((currentMedia as? EpisodeMedia)?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column {
+                            VolumeAdaptionSetting.entries.forEach { item ->
+                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(checked = (item == selectedOption),
+                                        onCheckedChange = { _ ->
+                                            Logd(TAG, "row clicked: $item $selectedOption")
+                                            if (item != selectedOption) {
+                                                onOptionSelected(item)
+//                                                currentItem = upsertBlk(currentItem!!) {
+//                                                    it.media?.volumeAdaptionSetting = item
+//                                                }
+                                                if (currentMedia is EpisodeMedia) {
+                                                    (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
+                                                    currentMedia = currentItem!!.media
+                                                    curMedia = currentMedia
+                                                    playbackService?.mPlayer?.pause(false, reinit = true)
+                                                    playbackService?.mPlayer?.resume()
+                                                }
+                                                onDismissRequest()
+                                            }
+                                        }
+                                    )
+                                    Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
     fun Toolbar() {
         val media: Playable = curMedia ?: return
         val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
         val textColor = MaterialTheme.colorScheme.onSurface
         val mediaType = curMedia?.getMediaType()
         val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        var showVolumeDialog by remember { mutableStateOf(false) }
+        if (showVolumeDialog) VolumeAdaptionDialog(showVolumeDialog, onDismissRequest = { showVolumeDialog = false })
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
                 (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
@@ -378,6 +420,11 @@ class AudioPlayerFragment : Fragment() {
                 if (currentItem != null) {
                     val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
                     shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+                }
+            })
+            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_volume_adaption), tint = textColor, contentDescription = "Volume adaptation", modifier = Modifier.clickable {
+                if (currentItem != null) {
+                    showVolumeDialog = true
                 }
             })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
@@ -547,7 +594,6 @@ class AudioPlayerFragment : Fragment() {
     fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
-        onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
 //            (activity as MainActivity).bottomSheet.setLocked(true)
@@ -722,7 +768,7 @@ class AudioPlayerFragment : Fragment() {
             isCollapsed = false
             if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
 //            showPlayer1 = false
-            if (currentMedia != null) updateUi(currentMedia!!)
+//            if (currentMedia != null) updateUi(currentMedia!!)
             setIsShowPlay(isShowPlay)
             updateDetails()
 //        }
@@ -732,7 +778,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "onCollaped()")
         isCollapsed = true
 //        showPlayer1 = true
-        if (currentMedia != null) updateUi(currentMedia!!)
+//        if (currentMedia != null) updateUi(currentMedia!!)
         setIsShowPlay(isShowPlay)
     }
 
@@ -821,15 +867,16 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        retainInstance = true
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        retainInstance = true
+//    }
 
     override fun onResume() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
         super.onResume()
         loadMediaInfo()
+        if (curMedia != null) onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia!!, curMedia!!.getPosition(), curMedia!!.getDuration()))
     }
 
     override fun onStart() {
@@ -844,7 +891,7 @@ class AudioPlayerFragment : Fragment() {
 ////            Logd(TAG, "controllerFuture.addListener: $mediaController")
 //        }, MoreExecutors.directExecutor())
 
-        loadMediaInfo()
+//        loadMediaInfo()
     }
 
     override fun onStop() {
@@ -883,6 +930,7 @@ class AudioPlayerFragment : Fragment() {
         val currentitem = event.episode
         if (currentMedia?.getIdentifier() == null || currentitem.media?.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = currentitem.media
+            updateUi(currentMedia!!)
             setItem(currentitem)
         }
         (activity as MainActivity).setPlayerVisible(true)

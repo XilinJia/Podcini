@@ -1,3 +1,18 @@
+# 6.13.0
+
+* updates playback position adaptively (in app and in widget) in an interval being the longer of 5 seconds and 2 percent of the media duration
+	* this can be enabled/disabled in Settings->Playback->"Update progress adaptively", default to true
+	* unadaptive interval, same as the previous, is 2 seconds
+* added volume adaptation control to player detailed view to set for current media and it takes precedence over that in feed settings
+* tuned the AudioPlayer fragment
+* added a few new actions to swipe, bring it essentially equivalent to multi-select menus
+* added auto-download policy: "Marked as Soon"
+* when deleting media file, set the playState to Skipped only if the current state is lower than Skipped
+* during cast to speaker (in the Play app), tap on the position bar in the PlayerUI changes the position
+* avoided the snack message "can't delete file ..." after streaming an episode
+* fixed (again, sorry) the action button not updating issue after download in episodes lists
+* google cast framework is updated to 22.0 (in the Play apk)
+
 # 6.12.8
 
 * set episode's playState to Skipped when its media file is removed

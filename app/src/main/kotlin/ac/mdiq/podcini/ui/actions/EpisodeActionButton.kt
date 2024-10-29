@@ -81,7 +81,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     abstract fun onClick(context: Context)
 
-    fun forItem(): EpisodeActionButton {
+    open fun forItem(item_: Episode): EpisodeActionButton {
+        item = item_
         val media = item.media ?: return TTSActionButton(item)
         val isDownloadingMedia = when (media.downloadUrl) {
             null -> false
@@ -188,6 +189,11 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun onClick(context: Context) {
         if (!item.link.isNullOrEmpty()) IntentUtils.openInBrowser(context, item.link!!)
         actionState.value = getLabel()
+    }
+
+    override fun forItem(item_: Episode): EpisodeActionButton {
+        item = item_
+        return this
     }
 }
 
@@ -358,6 +364,21 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
         return isDownloading || media.downloaded
     }
+
+//    override fun forItem(item_: Episode): EpisodeActionButton {
+//        item = item_
+//        val media = item.media ?: return TTSActionButton(item)
+//        val isDownloadingMedia = when (media.downloadUrl) {
+//            null -> false
+//            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
+//        }
+//        Logd("DownloadActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${item.title} ")
+//        return when {
+//            media.downloaded -> PlayActionButton(item)
+//            isDownloadingMedia -> CancelDownloadActionButton(item)
+//            else -> DownloadActionButton(item)
+//        }
+//    }
 }
 
 class StreamActionButton(item: Episode) : EpisodeActionButton(item) {

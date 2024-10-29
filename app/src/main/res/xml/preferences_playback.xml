@@ -66,6 +66,11 @@
             android:key="prefLowQualityOnMobile"
             android:summary="@string/pref_low_quality_on_mobile_sum"
             android:title="@string/pref_low_quality_on_mobile_title"/>
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="prefUseAdaptiveProgressUpdate"
+            android:summary="@string/pref_use_adaptive_progress_sum"
+            android:title="@string/pref_use_adaptive_progress_title"/>
         <Preference
             android:title="@string/pref_playback_video_mode"
             android:key="prefPlaybackVideoModeLauncher"

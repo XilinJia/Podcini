@@ -28,11 +28,11 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        testApplicationId "ac.mdiq.podcini.tests"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+//        testApplicationId "ac.mdiq.podcini.tests"
+//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020286
-        versionName "6.12.8"
+        versionCode 3020287
+        versionName "6.13.0"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

@@ -13,10 +13,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -518,10 +515,16 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         Logd(TAG, "setVolume: $volumeLeft $volumeRight")
         val playable = curMedia
         if (playable is EpisodeMedia) {
-            val preferences = playable.episodeOrFetch()?.feed?.preferences
-            if (preferences != null) {
-                val volumeAdaptionSetting = preferences.volumeAdaptionSetting
-                val adaptionFactor = volumeAdaptionSetting.adaptionFactor
+            var adaptionFactor = 1f
+            if (playable.volumeAdaptionSetting != VolumeAdaptionSetting.OFF) adaptionFactor = playable.volumeAdaptionSetting.adaptionFactor
+            else {
+                val preferences = playable.episodeOrFetch()?.feed?.preferences
+                if (preferences != null) {
+                    val volumeAdaptionSetting = preferences.volumeAdaptionSetting
+                    adaptionFactor = volumeAdaptionSetting.adaptionFactor
+                }
+            }
+            if (adaptionFactor != 1f) {
                 volumeLeft *= adaptionFactor
                 volumeRight *= adaptionFactor
             }

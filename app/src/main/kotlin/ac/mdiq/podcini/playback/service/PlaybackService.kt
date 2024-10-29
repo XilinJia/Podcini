@@ -18,6 +18,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybac
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 import ac.mdiq.podcini.playback.cast.CastMediaPlayer
 import ac.mdiq.podcini.playback.cast.CastStateListener
+import ac.mdiq.podcini.playback.service.PlaybackService.TaskManager.Companion.positionUpdateInterval
 import ac.mdiq.podcini.preferences.SleepTimerPreferences
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
@@ -28,6 +29,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.UserPreferences.prefAdaptiveProgressUpdate
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
@@ -369,7 +371,7 @@ class PlaybackService : MediaLibraryService() {
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
                         if (playable is EpisodeMedia && shouldAutoDelete && (item?.isSUPER != true || !shouldFavoriteKeepEpisode)) {
-                            item = deleteMediaSync(this@PlaybackService, item!!)
+                            if (playable.localFileAvailable()) item = deleteMediaSync(this@PlaybackService, item!!)
                             if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
                         }
                     }
@@ -380,11 +382,12 @@ class PlaybackService : MediaLibraryService() {
 
         override fun onPlaybackStart(playable: Playable, position: Int) {
             Logd(TAG, "onPlaybackStart position: $position")
-            taskManager.startWidgetUpdater()
-            if (position != Playable.INVALID_TIME) playable.setPosition(position)
+            val delayInterval = positionUpdateInterval(playable.getDuration())
+            taskManager.startWidgetUpdater(delayInterval)
+            if (position != Playable.INVALID_TIME) playable.setPosition(position + (delayInterval/2).toInt())
             else skipIntro(playable)
             playable.onPlaybackStart()
-            taskManager.startPositionSaver()
+            taskManager.startPositionSaver(delayInterval)
         }
 
         override fun onPlaybackPause(playable: Playable?, position: Int) {
@@ -1310,12 +1313,14 @@ class PlaybackService : MediaLibraryService() {
             get() = positionSaverFuture != null && !positionSaverFuture!!.isCancelled && !positionSaverFuture!!.isDone
 
         @Synchronized
-        fun startPositionSaver() {
+        fun startPositionSaver(delayInterval: Long) {
             if (!isPositionSaverActive) {
                 var positionSaver = Runnable { callback.positionSaverTick() }
                 positionSaver = useMainThreadIfNecessary(positionSaver)
-                positionSaverFuture = schedExecutor.scheduleWithFixedDelay(
-                    positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(), POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
+//                val delayInterval = positionUpdateInterval(duration)
+//                positionSaverFuture = schedExecutor.scheduleWithFixedDelay(
+//                    positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(), POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
+                positionSaverFuture = schedExecutor.scheduleWithFixedDelay(positionSaver, delayInterval, delayInterval, TimeUnit.MILLISECONDS)
                 Logd(TAG, "Started PositionSaver")
             } else Logd(TAG, "Call to startPositionSaver was ignored.")
         }
@@ -1329,12 +1334,14 @@ class PlaybackService : MediaLibraryService() {
         }
 
         @Synchronized
-        fun startWidgetUpdater() {
+        fun startWidgetUpdater(delayInterval: Long) {
             if (!isWidgetUpdaterActive && !schedExecutor.isShutdown) {
                 var widgetUpdater = Runnable { this.requestWidgetUpdate() }
                 widgetUpdater = useMainThreadIfNecessary(widgetUpdater)
-                widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(
-                    widgetUpdater, WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
+//                val delayInterval = positionUpdateInterval(duration)
+//                widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(
+//                    widgetUpdater, WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
+                widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(widgetUpdater, delayInterval, delayInterval, TimeUnit.MILLISECONDS)
                 Logd(TAG, "Started WidgetUpdater")
             }
         }
@@ -1401,7 +1408,6 @@ class PlaybackService : MediaLibraryService() {
         fun startChapterLoader(media: Playable) {
 //        chapterLoaderFuture?.dispose()
 //        chapterLoaderFuture = null
-
             if (!media.chaptersLoaded()) {
                 val scope = CoroutineScope(Dispatchers.Main)
                 scope.launch(Dispatchers.IO) {
@@ -1423,7 +1429,6 @@ class PlaybackService : MediaLibraryService() {
             cancelPositionSaver()
             cancelWidgetUpdater()
             disableSleepTimer()
-
 //        chapterLoaderFuture?.dispose()
 //        chapterLoaderFuture = null
         }
@@ -1557,8 +1562,13 @@ class PlaybackService : MediaLibraryService() {
 
             private const val SLEEP_TIMER_UPDATE_INTERVAL = 10000L  // in millisoconds
             const val POSITION_SAVER_WAITING_INTERVAL: Int = 5000   // in millisoconds
-            const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000  // in millisoconds
+//            const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000  // in millisoconds
             const val NOTIFICATION_THRESHOLD: Long = 10000  // in millisoconds
+
+            fun positionUpdateInterval(duration: Int): Long {
+                return if (prefAdaptiveProgressUpdate) max(POSITION_SAVER_WAITING_INTERVAL, duration/50).toLong()
+                else POSITION_SAVER_WAITING_INTERVAL.toLong()
+            }
         }
     }
 

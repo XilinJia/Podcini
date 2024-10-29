@@ -65,6 +65,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -366,16 +367,18 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                 .padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 var removeChecked by remember { mutableStateOf(false) }
                 var toFeed by remember { mutableStateOf<Feed?>(null) }
-                for (f in synthetics) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = toFeed == f, onClick = { toFeed = f })
-                        Text(f.title ?: "No title")
+                if (synthetics.isNotEmpty()) {
+                    for (f in synthetics) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = toFeed == f, onClick = { toFeed = f })
+                            Text(f.title ?: "No title")
+                        }
                     }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = removeChecked, onCheckedChange = { removeChecked = it })
-                    Text(text = stringResource(R.string.remove_from_current_feed), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
-                }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = removeChecked, onCheckedChange = { removeChecked = it })
+                        Text(text = stringResource(R.string.remove_from_current_feed), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+                    }
+                } else Text(text = stringResource(R.string.create_synthetic_first_note))
                 if (toFeed != null) Row {
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
@@ -407,6 +410,58 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                     }) {
                         Text("Confirm")
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: () -> Unit) {
+    val message = stringResource(R.string.erase_episodes_confirmation_msg)
+    val textColor = MaterialTheme.colorScheme.onSurface
+    var textState by remember { mutableStateOf(TextFieldValue("")) }
+    val context = LocalContext.current
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(shape = RoundedCornerShape(16.dp)) {
+            if (feed == null || feed.id > MAX_SYNTHETIC_ID) Text(stringResource(R.string.not_erase_message), modifier = Modifier.padding(10.dp))
+            else Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(message + ": ${selected.size}")
+                Text(stringResource(R.string.feed_delete_reason_msg))
+                BasicTextField(value = textState, onValueChange = { textState = it }, textStyle = TextStyle(fontSize = 16.sp, color = textColor),
+                    modifier = Modifier.fillMaxWidth().height(100.dp).padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                )
+                Button(onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            for (e in selected) {
+                                val sLog = SubscriptionLog(e.id, e.title?:"", e.media?.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
+                                upsert(sLog) {
+                                    it.rating = e.rating
+                                    it.comment = e.comment
+                                    it.comment += "\nReason to remove:\n" + textState.text
+                                    it.cancelDate = Date().time
+                                }
+                            }
+                            realm.write {
+                                for (e in selected) {
+                                    val url = e.media?.fileUrl
+                                    when {
+                                        url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
+                                        url != null -> File(url).delete()
+                                    }
+                                    findLatest(feed)?.episodes?.remove(e)
+                                    findLatest(e)?.let { delete(it) }
+                                }
+                            }
+                            EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
+                        } catch (e: Throwable) { Log.e("EraseEpisodesDialog", Log.getStackTraceString(e)) }
+                    }
+                    onDismissRequest()
+                }) {
+                    Text("Confirm")
                 }
             }
         }
@@ -447,59 +502,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
     var showShelveDialog by remember { mutableStateOf(false) }
     if (showShelveDialog) ShelveDialog(selected) { showShelveDialog = false }
 
-    @Composable
-    fun EraseEpisodesDialog(onDismissRequest: () -> Unit) {
-        val message = stringResource(R.string.erase_episodes_confirmation_msg)
-        val textColor = MaterialTheme.colorScheme.onSurface
-        var textState by remember { mutableStateOf(TextFieldValue("")) }
-
-        Dialog(onDismissRequest = onDismissRequest) {
-            Surface(shape = RoundedCornerShape(16.dp)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(message + ": ${selected.size}")
-                    Text(stringResource(R.string.feed_delete_reason_msg))
-                    BasicTextField(value = textState, onValueChange = { textState = it },
-                        textStyle = TextStyle(fontSize = 16.sp, color = textColor),
-                        modifier = Modifier.fillMaxWidth().height(100.dp).padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                            .border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
-                    )
-                    Button(onClick = {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                for (e in selected) {
-                                    val sLog = SubscriptionLog(e.id, e.title?:"", e.media?.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
-                                    upsert(sLog) {
-                                        it.rating = e.rating
-                                        it.comment = e.comment
-                                        it.comment += "\nReason to remove:\n" + textState.text
-                                        it.cancelDate = Date().time
-                                    }
-                                }
-                                realm.write {
-                                    for (e in selected) {
-                                        val url = e.media?.fileUrl
-                                        when {
-                                            url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
-                                            url != null -> File(url).delete()
-                                        }
-                                        findLatest(feed!!)?.episodes?.remove(e)
-                                        findLatest(e)?.let { delete(it) }
-                                    }
-                                }
-                                EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
-                            } catch (e: Throwable) { Log.e("EraseEpisodesDialog", Log.getStackTraceString(e)) }
-                        }
-                        onDismissRequest()
-                    }) {
-                        Text("Confirm")
-                    }
-                }
-            }
-        }
-    }
-
     var showEraseDialog by remember { mutableStateOf(false) }
-    if (showEraseDialog) EraseEpisodesDialog(onDismissRequest = { showEraseDialog = false })
+    if (showEraseDialog && feed != null) EraseEpisodesDialog(selected, feed, onDismissRequest = { showEraseDialog = false })
 
     @Composable
     fun EpisodeSpeedDial(modifier: Modifier = Modifier) {
@@ -627,7 +631,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         showEraseDialog = true
                         Logd(TAG, "reserve: ${selected.size}")
                     }, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.AddCircle, "Erase episodes")
+                    Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_delete_forever_24), "Erase episodes")
                     Text(stringResource(id = R.string.erase_episodes_label))
                 }
             }
@@ -722,13 +726,14 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 //                    Logd(TAG, "info row")
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
                     if (vm.ratingState != Rating.UNRATED.code)
-                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(18.dp).height(18.dp))
+                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
                     val playStateRes = PlayState.fromCode(vm.playedState).res
-                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(18.dp).height(18.dp))
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(16.dp).height(16.dp))
 //                    if (vm.inQueueState)
-//                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(18.dp).height(18.dp))
+//                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(16.dp).height(16.dp))
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(18.dp).height(18.dp))
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val curContext = LocalContext.current
                     val dur = remember { vm.episode.media?.getDuration() ?: 0 }
                     val durText = remember { DurationConverter.getDurationStringLong(dur) }
@@ -738,7 +743,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 }
                 Text(vm.episode.title ?: "", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
-            var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem()) }
+            var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
             fun isDownloading(): Boolean {
                 return vms[index].downloadState > DownloadStatus.State.UNKNOWN.ordinal && vms[index].downloadState < DownloadStatus.State.COMPLETED.ordinal
             }
@@ -748,7 +753,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
                     Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vms[index].episode.title}")
                     Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
-                    vm.actionButton = vm.actionButton.forItem()
+                    vm.actionButton = vm.actionButton.forItem(vm.episode)
                     if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
                 }
             } else {

@@ -29,14 +29,14 @@ object InTheatre {
                 value != null -> {
                     field = unmanaged(value)
                     if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = unmanaged(field!!.media!!)
+//                    field = value
+//                    if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = field!!.media!!
                 }
                 else -> {
                     field = null
                     if (curMedia != null) curMedia = null
                 }
             }
-//            field = if (value != null) unmanaged(value) else null
-//            if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = unmanaged(field!!.media!!)
         }
 
     var curMedia: Playable? = null      // unmanged if EpisodeMedia
@@ -45,6 +45,8 @@ object InTheatre {
                 value is EpisodeMedia -> {
                     field = unmanaged(value)
                     if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
+//                    field = value
+//                    if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = value.episode!!
                 }
                 value == null -> {
                     field = null
@@ -52,12 +54,6 @@ object InTheatre {
                 }
                 else -> field = value
             }
-//            if (value is EpisodeMedia) {
-//                field = unmanaged(value)
-//                if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
-//            } else {
-//                field = value
-//            }
         }
 
     var curState: CurrentState      // managed

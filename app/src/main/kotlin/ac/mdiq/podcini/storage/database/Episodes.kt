@@ -129,7 +129,7 @@ object Episodes {
                 episode = upsertBlk(episode) {
                     it.media?.setfileUrlOrNull(null)
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
-                    it.playState = PlayState.SKIPPED.code
+                    if (it.playState < PlayState.SKIPPED.code) it.playState = PlayState.SKIPPED.code
                 }
                 EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
                 localDelete = true
@@ -139,7 +139,7 @@ object Episodes {
                 val mediaFile = File(url)
                 if (!mediaFile.delete()) {
                     Log.e(TAG, "delete media file failed: $url")
-                    val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed))
+                    val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed_simple) + ": $url")
                     EventFlow.postEvent(evt)
                     return episode
                 }
@@ -147,7 +147,7 @@ object Episodes {
                     it.media?.downloaded = false
                     it.media?.setfileUrlOrNull(null)
                     it.media?.hasEmbeddedPicture = false
-                    it.playState = PlayState.SKIPPED.code
+                    if (it.playState < PlayState.SKIPPED.code) it.playState = PlayState.SKIPPED.code
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
                 }
                 EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))

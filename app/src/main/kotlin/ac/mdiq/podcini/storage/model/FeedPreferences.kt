@@ -172,7 +172,8 @@ class FeedPreferences : EmbeddedRealmObject {
     enum class AutoDownloadPolicy(val code: Int, val resId: Int) {
         ONLY_NEW(0, R.string.feed_auto_download_new),
         NEWER(1, R.string.feed_auto_download_newer),
-        OLDER(2, R.string.feed_auto_download_older);
+        OLDER(2, R.string.feed_auto_download_older),
+        SOON(3, R.string.feed_auto_download_soon);
 
         companion object {
             fun fromCode(code: Int): AutoDownloadPolicy {

@@ -35,7 +35,7 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
      * @param item
      * @return true if the item should be downloaded
      */
-    fun shouldAutoDownload(item: Episode): Boolean {
+    fun meetsAutoDLCriteria(item: Episode): Boolean {
 //        if (includeTerms == null) includeTerms = parseTerms(includeFilterRaw)
 //        if (excludeTerms == null)  excludeTerms = parseTerms(excludeFilterRaw)
 

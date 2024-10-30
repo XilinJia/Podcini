@@ -46,6 +46,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * More convenient player control displayed on all pages
 * Revamped and more efficient expanded player view showing episode description on the front
 * Playback speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global
+* There are two mechanisms in updating playback progress (configurable in Settings): every 5 seconds or adaptively at the interval of 2 percent of the media duration
+* Volume adaptation control is added to player detailed view to set for current media and it takes precedence over that in feed settings
 * Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a number between 0.0 and 10.0
 * The "Skip to next episode" button on the player
   * long-press moves to the next episode
@@ -95,6 +97,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * List info is shown in Queue and Downloads views
 * Local search for feeds or episodes can be separately specified on title, author(feed only), description(including transcript in episodes), and comment (My opinion)
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
+* Swipe actions are brought to perform anything on the multi-select menu, and there is a Combo swipe action
 * Played or new episodes have clearer markings
 * Sort dialog no longer dims the main view
 * An all new way of filtering for both podcasts and episodes with expanded criteria
@@ -113,9 +116,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue
 * FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
-* instead of isFavorite, there is a new rating system for every episode: Trash, Bad, Neutral, Good, Favorite
-* instead of Played or Unplayed, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Ignored
-  	* among which Unplayed, Later, Soon, Skipped, Played, Ignored are settable by the user
+* instead of isFavorite, there is a new rating system for every episode: Trash, Bad, OK, Good, Super
+* instead of Played or Unplayed, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Again, Forever, Ignored
+  	* among which Unplayed, Later, Soon, Skipped, Played, Again, Forever, Ignored are settable by the user
 	* when an episode is started to play, its state is set to InProgress
 	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
 * in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
@@ -155,7 +158,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * auto download algorithm is changed to individual feed based.
   * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
-  * Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
+  * Each feed also has its own download policy (only new episodes, newest episodes, oldest episodes or episodes marked as Soon. "newest episodes" meaning most recent episodes, new or old)
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
   * Auto downloads run feeds or feed refreshes, scheduled or manual
   * auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue

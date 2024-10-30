@@ -1,3 +1,10 @@
+# 6.13.1
+
+* fixed the misbehavior (from 6.13.0) of rewind/forward/progress in PlayerUI
+* added Again and Forever in PlayState, and changed some PlayState icons
+* in episodes list, when an episode's play state is higher than Skipped, state icon (rather than only a check) is on the cover image
+* in Combo swipe actions, removed NoAction and ComboAction
+
 # 6.13.0
 
 * updates playback position adaptively (in app and in widget) in an interval being the longer of 5 seconds and 2 percent of the media duration

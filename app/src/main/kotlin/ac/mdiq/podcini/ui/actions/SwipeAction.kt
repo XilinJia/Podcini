@@ -27,15 +27,15 @@ interface SwipeAction {
     enum class ActionTypes {
         NO_ACTION,
         COMBO,
+        RATING,
+        SET_PLAY_STATE,
         ADD_TO_QUEUE,
         PUT_TO_QUEUE,
-        START_DOWNLOAD,
-        MARK_FAV,
-        SET_PLAY_STATE,
-        SHELVE,
-        ERASE,
         REMOVE_FROM_QUEUE,
+        START_DOWNLOAD,
         DELETE,
-        REMOVE_FROM_HISTORY
+        REMOVE_FROM_HISTORY,
+        SHELVE,
+        ERASE
     }
 }

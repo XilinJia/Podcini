@@ -163,6 +163,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                             Surface(shape = RoundedCornerShape(16.dp)) {
                                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                     for (action in swipeActions) {
+                                        if (action.getId() == NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
                                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                                             action.performAction(item, fragment, filter)
                                             showDialog = false
@@ -212,7 +213,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class SetRatingSwipeAction : SwipeAction {
         override fun getId(): String {
-            return ActionTypes.MARK_FAV.name
+            return ActionTypes.RATING.name
         }
         override fun getActionIcon(): Int {
             return R.drawable.ic_star
@@ -221,7 +222,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             return R.attr.icon_yellow
         }
         override fun getTitle(context: Context): String {
-            return context.getString(R.string.switch_rating_label)
+            return context.getString(R.string.set_rating_label)
         }
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {

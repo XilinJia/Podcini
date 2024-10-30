@@ -298,7 +298,6 @@
     </plurals>
     <string name="show_video_label">Play video</string>
     <string name="add_to_favorite_label">Add to favorites</string>
-    <string name="switch_rating_label">Swtich rating</string>
     <string name="toggle_favorite_label">Toggle favorites</string>
     <string name="media_type">Media type</string>
     <string name="unknown">Unknown</string>

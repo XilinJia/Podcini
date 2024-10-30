@@ -30,6 +30,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
+import ac.mdiq.podcini.storage.model.PlayState.Companion.fromCode
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
@@ -692,13 +693,14 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                             if (selectMode) toggleSelected()
                             else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
                         }))
-                val alpha = if (vm.playedState >= PlayState.SKIPPED.code) 1.0f else 0f
-                if (vm.playedState >= PlayState.SKIPPED.code) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
-                    modifier = Modifier.background(Color.Green).alpha(alpha)
-                        .constrainAs(checkMark) {
-                            bottom.linkTo(parent.bottom)
-                            end.linkTo(parent.end)
-                        })
+                if (vm.playedState >= PlayState.SKIPPED.code) {
+                    Icon(imageVector = ImageVector.vectorResource(fromCode(vm.playedState).res), tint = textColor, contentDescription = "play state",
+                        modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(20.dp).height(20.dp)
+                            .constrainAs(checkMark) {
+                                bottom.linkTo(parent.bottom)
+                                end.linkTo(parent.end)
+                            })
+                }
             }
             Column(Modifier.weight(1f).padding(start = 6.dp, end = 6.dp)
                 .combinedClickable(onClick = {

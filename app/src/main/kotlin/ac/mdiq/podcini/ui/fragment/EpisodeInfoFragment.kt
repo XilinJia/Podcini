@@ -13,7 +13,6 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
@@ -222,10 +221,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }))
                 if (episode?.media != null && !inQueue) {
                     Spacer(modifier = Modifier.weight(0.2f))
-                    val inQueueIconRes = if (inQueue) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
+                    val inQueueIconRes = R.drawable.ic_playlist_remove
                     Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
-                            if (inQueue) removeFromQueue(episode!!) else addToQueue(episode!!)
+                            addToQueue(episode!!)
                         }))
                 }
                 Spacer(modifier = Modifier.weight(0.2f))

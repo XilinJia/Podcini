@@ -366,8 +366,8 @@
   <string name="pref_smart_mark_as_played_title">Marcado intelixente como escoitado</string>
   <string name="pref_skip_keeps_episodes_sum">Manter os episodios cando son omitidos</string>
   <string name="pref_skip_keeps_episodes_title">Manter episodios omitidos</string>
-  <string name="pref_favorite_keeps_episodes_sum">Manter episodios cando están marcados como favoritos</string>
-  <string name="pref_favorite_keeps_episodes_title">Manter episodios favoritos</string>
+
+
   <string name="playback_pref">Reprodución</string>
   <string name="playback_pref_sum">Control de auriculares, Intervalos de salto, Cola</string>
   <string name="downloads_pref">Descargas</string>

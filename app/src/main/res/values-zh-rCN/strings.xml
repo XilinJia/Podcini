@@ -359,8 +359,8 @@
   <string name="pref_smart_mark_as_played_title">智能标记为已播放</string>
   <string name="pref_skip_keeps_episodes_sum">当剧集被跳过时保留它们</string>
   <string name="pref_skip_keeps_episodes_title">保留跳过的节目</string>
-  <string name="pref_favorite_keeps_episodes_sum">标记节目为收藏时保留节目</string>
-  <string name="pref_favorite_keeps_episodes_title">保留收藏的节目</string>
+
+
   <string name="playback_pref">播放</string>
   <string name="playback_pref_sum">耳机控制、跳过间隔、排队</string>
   <string name="downloads_pref">下载</string>

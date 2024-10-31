@@ -217,8 +217,7 @@ class AudioPlayerFragment : Fragment() {
                     }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor,
-                    contentDescription = "speed",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor, contentDescription = "speed",
                     modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
                         VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
                     }))
@@ -555,7 +554,6 @@ class AudioPlayerFragment : Fragment() {
     private fun updatePlaybackSpeedButton(event: FlowEvent.SpeedChangedEvent) {
         val speedStr: String = DecimalFormat("0.00").format(event.newSpeed.toDouble())
         txtvPlaybackSpeed = speedStr
-//            binding.butPlaybackSpeed.setSpeed(event.newSpeed) TODO
     }
 
     @UnstableApi
@@ -594,6 +592,7 @@ class AudioPlayerFragment : Fragment() {
     fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
+        txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
 //            (activity as MainActivity).bottomSheet.setLocked(true)
@@ -803,8 +802,6 @@ class AudioPlayerFragment : Fragment() {
     fun loadMediaInfo() {
         Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.getIdentifier()}")
         val actMain = (activity as MainActivity)
-        var i = 0
-//        while (curMedia == null && i++ < 6) runBlocking { delay(500) }
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
             return

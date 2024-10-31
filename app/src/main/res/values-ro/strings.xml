@@ -379,8 +379,8 @@
   <string name="pref_smart_mark_as_played_title">Marchează inteligent ca fiind redate</string>
   <string name="pref_skip_keeps_episodes_sum">Păstrează episoade când acestea sunt sărite</string>
   <string name="pref_skip_keeps_episodes_title">Păstrează episoadele sărite</string>
-  <string name="pref_favorite_keeps_episodes_sum">Păstrează episoadele când sunt marcate ca favorite</string>
-  <string name="pref_favorite_keeps_episodes_title">Păstrează episoadele favorite</string>
+
+
   <string name="playback_pref">Ascultare</string>
   <string name="playback_pref_sum">Controlul căștilor, Sari peste un interval de timp, Coadă</string>
   <string name="downloads_pref">Descărcări</string>

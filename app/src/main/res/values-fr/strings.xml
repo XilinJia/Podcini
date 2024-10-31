@@ -383,8 +383,8 @@
   <string name="pref_smart_mark_as_played_title">Marquer comme lu intelligemment</string>
   <string name="pref_skip_keeps_episodes_sum">Garder les épisodes quand ils sont passés</string>
   <string name="pref_skip_keeps_episodes_title">Garder les épisodes passés</string>
-  <string name="pref_favorite_keeps_episodes_sum">Garder les épisodes marqués comme favoris</string>
-  <string name="pref_favorite_keeps_episodes_title">Garder les épisodes favoris</string>
+
+
   <string name="playback_pref">Lecture</string>
   <string name="playback_pref_sum">Contrôles du casque, durée des sauts, liste de lecture</string>
   <string name="downloads_pref">Téléchargements</string>

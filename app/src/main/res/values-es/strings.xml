@@ -382,8 +382,8 @@
   <string name="pref_smart_mark_as_played_title">Marcado inteligente como reproducido</string>
   <string name="pref_skip_keeps_episodes_sum">Conservar los episodios cuando son saltados</string>
   <string name="pref_skip_keeps_episodes_title">Conservar episodios saltados</string>
-  <string name="pref_favorite_keeps_episodes_sum">Conservar los episodios cuando se marcan como favoritos</string>
-  <string name="pref_favorite_keeps_episodes_title">Conservar episodios favoritos</string>
+
+
   <string name="playback_pref">Reproducción</string>
   <string name="playback_pref_sum">Control de auriculares, Saltar intervalos, Cola</string>
   <string name="downloads_pref">Descargas</string>

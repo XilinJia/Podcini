@@ -363,8 +363,8 @@
   <string name="pref_smart_mark_as_played_title">Marcação inteligente quando reproduzido</string>
   <string name="pref_skip_keeps_episodes_sum">Mantém os episódios quando eles forem pulados</string>
   <string name="pref_skip_keeps_episodes_title">Manter episódios ignorados</string>
-  <string name="pref_favorite_keeps_episodes_sum">Manter os episódios quando eles estiverem marcados como favoritos</string>
-  <string name="pref_favorite_keeps_episodes_title">Manter episódios favoritos</string>
+
+
   <string name="playback_pref">Reprodução</string>
   <string name="playback_pref_sum">Controles de fone de ouvido, intervalos para saltar, Fila</string>
   <string name="downloads_pref">Downloads</string>

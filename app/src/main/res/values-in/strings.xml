@@ -282,8 +282,8 @@
   <string name="pref_auto_delete_sum">Hapus episode ketika pemutaran selesai</string>
   <string name="pref_smart_mark_as_played_sum">Tandai episode sebagai telah diputar jika kurang dari beberapa detik waktu masih tersisa</string>
   <string name="pref_skip_keeps_episodes_sum">Simpan episode ketika dilewatkan</string>
-  <string name="pref_favorite_keeps_episodes_sum">Simpan episode saat difavoritkan</string>
-  <string name="pref_favorite_keeps_episodes_title">Simpan episode favorit</string>
+
+
   <string name="playback_pref">Pemutaran</string>
   <string name="playback_pref_sum">Kontrol headphone, Jangka waktu lewati, Antrean</string>
   <string name="downloads_pref_sum">Waktu pembaharuan, Jaringan seluler, Unduh otomatis, Hapus otomatis</string>

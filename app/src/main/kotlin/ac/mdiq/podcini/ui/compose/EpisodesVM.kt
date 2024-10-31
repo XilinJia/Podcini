@@ -12,19 +12,23 @@ import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.storage.database.Episodes
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
+import ac.mdiq.podcini.storage.database.Episodes.prefDeleteRemovesFromQueue
+import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
-import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
-import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
+import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -40,7 +44,6 @@ import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
-import ac.mdiq.podcini.ui.utils.LocalDeleteModal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -66,14 +69,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -261,13 +262,9 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)
                             .clickable {
                                 for (item in selected) {
-                                    var item_ = runBlocking { setPlayStateSync(state.code, false, item) }
-                                    val media: EpisodeMedia? = item_.media
-                                    val shouldAutoDelete = if (item_.feed == null) false else shouldAutoDeleteItem(item_.feed!!)
-                                    if (media != null && hasAlmostEnded(media) && shouldAutoDelete) {
-                                        item_ = deleteMediaSync(context, item_)
-                                        if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item_)
-                                    }
+                                    var media: EpisodeMedia? = item.media
+                                    val hasAlmostEnded = if (media != null) hasAlmostEnded(media) else false
+                                    var item_ = runBlocking { setPlayStateSync(state.code, item, hasAlmostEnded, false) }
                                     when (state) {
                                         PlayState.UNPLAYED -> {
                                             if (isProviderConnected && item_.feed?.isLocalFeed != true && item_.media != null) {
@@ -276,6 +273,13 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                             }
                                         }
                                         PlayState.PLAYED -> {
+                                            if (hasAlmostEnded) item_ = upsertBlk(item_) { it.media?.playbackCompletionDate = Date() }
+                                            val shouldAutoDelete = if (item_.feed == null) false else allowForAutoDelete(item_.feed!!)
+                                            media = item_.media
+                                            if (media != null && hasAlmostEnded && shouldAutoDelete) {
+                                                item_ = deleteMediaSync(context, item_)
+                                                if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item_)
+                                            } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item_)
                                             if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                                                 val media_: EpisodeMedia? = item_.media
                                                 // not all items have media, Gpodder only cares about those that do
@@ -516,7 +520,20 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_delete: ${selected.size}")
-                    LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
+                    runOnIOScope {
+                        for (item_ in selected) {
+                            var item = item_
+                            if (!item.isDownloaded && item.feed?.isLocalFeed != true) continue
+                            val media = item.media
+                            if (media != null) {
+                                val almostEnded = hasAlmostEnded(media)
+                                if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                                if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
+                                deleteEpisodeMedia(activity, item)
+                            }
+                        }
+                    }
+//                    LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "Delete media")
                 Text(stringResource(id = R.string.delete_episode_label)) } },
@@ -527,9 +544,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     selectMode = false
                     Logd(TAG, "ic_download: ${selected.size}")
                     for (episode in selected) {
-                        if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface
-                            .get()
-                            ?.download(activity, episode)
+                        if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
                     }
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "Download")
@@ -551,7 +566,20 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_playlist_remove: ${selected.size}")
-                    removeFromQueue(*selected.toTypedArray())
+                    runOnIOScope {
+                        for (item_ in selected) {
+                            var item = item_
+                            val media = item.media
+                            if (media != null) {
+                                val almostEnded = hasAlmostEnded(media)
+                                if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                                if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
+                            }
+                            if (item.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, item)
+                        }
+                        removeFromQueueSync(curQueue, *selected.toTypedArray())
+//                        removeFromQueue(*selected.toTypedArray())
+                    }
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_remove), "Remove from active queue")
                 Text(stringResource(id = R.string.remove_from_queue_label)) } },

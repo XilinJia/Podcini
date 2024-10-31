@@ -435,7 +435,7 @@ object Feeds {
     }
 
     @JvmStatic
-    fun shouldAutoDeleteItem(feed: Feed): Boolean {
+    fun allowForAutoDelete(feed: Feed): Boolean {
         if (!isAutoDelete) return false
         return !feed.isLocalFeed || isAutoDeleteLocal
     }

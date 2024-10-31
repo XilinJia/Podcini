@@ -391,8 +391,8 @@
   <string name="pref_smart_mark_as_played_title">סימון חכם כנוגנו</string>
   <string name="pref_skip_keeps_episodes_sum">להשאיר פרקים למרות שדילגת עליהם</string>
   <string name="pref_skip_keeps_episodes_title">להשאיר פרקים שדולגו</string>
-  <string name="pref_favorite_keeps_episodes_sum">להשאיר פרקים כשהם מסומנים כמועדפים</string>
-  <string name="pref_favorite_keeps_episodes_title">להשאיר פרקים מועדפים</string>
+
+
   <string name="playback_pref">ניגון</string>
   <string name="playback_pref_sum">שליטה דרך האוזניות, מרחקי דילוג, תור</string>
   <string name="downloads_pref">הורדות</string>

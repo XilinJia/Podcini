@@ -34,14 +34,16 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
-import ac.mdiq.podcini.storage.database.Episodes.setCompletionDate
+import ac.mdiq.podcini.storage.database.Episodes.prefDeleteRemovesFromQueue
+import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
-import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
+import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
+import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
@@ -218,7 +220,9 @@ class PlaybackService : MediaLibraryService() {
             // sound is about to change, eg. bluetooth -> speaker
             Log.d(TAG, "audioBecomingNoisy onReceive called with action: ${intent.action}")
             Logd(TAG, "Pausing playback because audio is becoming noisy")
-            pauseIfPauseOnDisconnect()
+//            pauseIfPauseOnDisconnect()
+            transientPause = (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
+            if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(!isPersistNotify, false)
         }
     }
 
@@ -270,6 +274,9 @@ class PlaybackService : MediaLibraryService() {
         Logd(TAG, "mediaItemsInQueue: ${list.size}")
         list
     }
+
+    val shouldSkipKeepEpisode by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true) }
+    val shouldKeepSuperEpisode by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true) }
 
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
@@ -354,35 +361,31 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
             if (item != null) {
-//                fun shouldSkipKeepEpisode(): Boolean {
-//                    return appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
-//                }
-//                fun shouldFavoriteKeepEpisode(): Boolean {
-//                    return appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
-//                }
                 runOnIOScope {
-                    val shouldSkipKeepEpisode = appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
-                    val shouldFavoriteKeepEpisode = appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
                     if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode)) {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
-                        item = setPlayStateSync(PlayState.PLAYED.code, ended || (skipped && smartMarkAsPlayed), item!!)
+                        item = setPlayStateSync(PlayState.PLAYED.code, item!!, ended || (skipped && smartMarkAsPlayed), false)
+                        if (playable is EpisodeMedia && (ended || skipped || playingNext)) {
+                            item = upsert(item!!) { it.media?.playbackCompletionDate = Date() }
+                            EventFlow.postEvent(FlowEvent.HistoryEvent())
+                        }
                         val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
-                                (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
-                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isSUPER != true || !shouldFavoriteKeepEpisode)) {
+                                (action == AutoDeleteAction.GLOBAL && item?.feed != null && allowForAutoDelete(item!!.feed!!)))
+                        val isItemdeletable = (!shouldKeepSuperEpisode || (item?.isSUPER != true && item?.playState != PlayState.AGAIN.code && item?.playState != PlayState.FOREVER.code))
+                        if (playable is EpisodeMedia && shouldAutoDelete && isItemdeletable) {
                             if (playable.localFileAvailable()) item = deleteMediaSync(this@PlaybackService, item!!)
-                            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
-                        }
+                            if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item!!)
+                        } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item!!)
                     }
-                    if (playable is EpisodeMedia && (ended || skipped || playingNext)) setCompletionDate(item!!)
                 }
             }
         }
 
         override fun onPlaybackStart(playable: Playable, position: Int) {
-            Logd(TAG, "onPlaybackStart position: $position")
             val delayInterval = positionUpdateInterval(playable.getDuration())
+            Logd(TAG, "onPlaybackStart position: $position delayInterval: $delayInterval")
             taskManager.startWidgetUpdater(delayInterval)
 //            if (position != Playable.INVALID_TIME) playable.setPosition(position + (delayInterval/2).toInt())
             if (position != Playable.INVALID_TIME) playable.setPosition(position)
@@ -453,7 +456,7 @@ class PlaybackService : MediaLibraryService() {
                 writeNoMediaPlaying()
                 return null
             }
-//            EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
+            EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
             return if (nextItem.media == null) null else unmanaged(nextItem.media!!)
         }
         override fun findMedia(url: String): Playable? {
@@ -1183,11 +1186,11 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    private fun pauseIfPauseOnDisconnect() {
-        Logd(TAG, "pauseIfPauseOnDisconnect()")
-        transientPause = (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
-        if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(!isPersistNotify, false)
-    }
+//    private fun pauseIfPauseOnDisconnect() {
+//        Logd(TAG, "pauseIfPauseOnDisconnect()")
+//        transientPause = (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
+//        if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(!isPersistNotify, false)
+//    }
 
     /**
      * @param bluetooth true if the event for unpausing came from bluetooth
@@ -1318,9 +1321,6 @@ class PlaybackService : MediaLibraryService() {
             if (!isPositionSaverActive) {
                 var positionSaver = Runnable { callback.positionSaverTick() }
                 positionSaver = useMainThreadIfNecessary(positionSaver)
-//                val delayInterval = positionUpdateInterval(duration)
-//                positionSaverFuture = schedExecutor.scheduleWithFixedDelay(
-//                    positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(), POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
                 positionSaverFuture = schedExecutor.scheduleWithFixedDelay(positionSaver, delayInterval, delayInterval, TimeUnit.MILLISECONDS)
                 Logd(TAG, "Started PositionSaver")
             } else Logd(TAG, "Call to startPositionSaver was ignored.")
@@ -1493,7 +1493,6 @@ class PlaybackService : MediaLibraryService() {
                         Logd(TAG, "Sleep timer expired")
                         shakeListener?.pause()
                         shakeListener = null
-
                         hasVibrated = false
                     }
                 }
@@ -1547,7 +1546,6 @@ class PlaybackService : MediaLibraryService() {
                 val gX = event.values[0] / SensorManager.GRAVITY_EARTH
                 val gY = event.values[1] / SensorManager.GRAVITY_EARTH
                 val gZ = event.values[2] / SensorManager.GRAVITY_EARTH
-
                 val gForce = sqrt((gX * gX + gY * gY + gZ * gZ).toDouble())
                 if (gForce > 2.25) {
                     Logd(TAG, "Detected shake $gForce")
@@ -1562,13 +1560,12 @@ class PlaybackService : MediaLibraryService() {
             private const val SCHED_EX_POOL_SIZE = 2
 
             private const val SLEEP_TIMER_UPDATE_INTERVAL = 10000L  // in millisoconds
-            const val POSITION_SAVER_WAITING_INTERVAL: Int = 5000   // in millisoconds
-//            const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000  // in millisoconds
+            const val MIN_POSITION_SAVER_INTERVAL: Int = 5000   // in millisoconds
             const val NOTIFICATION_THRESHOLD: Long = 10000  // in millisoconds
 
             fun positionUpdateInterval(duration: Int): Long {
-                return if (prefAdaptiveProgressUpdate) max(POSITION_SAVER_WAITING_INTERVAL, duration/50).toLong()
-                else POSITION_SAVER_WAITING_INTERVAL.toLong()
+                return if (prefAdaptiveProgressUpdate) max(MIN_POSITION_SAVER_INTERVAL, duration/50).toLong()
+                else MIN_POSITION_SAVER_INTERVAL.toLong()
             }
         }
     }
@@ -1622,23 +1619,17 @@ class PlaybackService : MediaLibraryService() {
         /**
          * @return `true` if notifications are persistent, `false`  otherwise
          */
-        val isPersistNotify: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true)
+        val isPersistNotify: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true) }
 
-        val isPauseOnHeadsetDisconnect: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true)
+        val isPauseOnHeadsetDisconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true) }
 
-        val isUnpauseOnHeadsetReconnect: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, true)
+        val isUnpauseOnHeadsetReconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, true) }
 
-        val isUnpauseOnBluetoothReconnect: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, false)
+        val isUnpauseOnBluetoothReconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, false) }
 
-        val hardwareForwardButton: Int
-            get() = appPrefs.getString(UserPreferences.Prefs.prefHardwareForwardButton.name, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
+        val hardwareForwardButton: Int by lazy { appPrefs.getString(UserPreferences.Prefs.prefHardwareForwardButton.name, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
 
-        val hardwarePreviousButton: Int
-            get() = appPrefs.getString(UserPreferences.Prefs.prefHardwarePreviousButton.name, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
+        val hardwarePreviousButton: Int by lazy { appPrefs.getString(UserPreferences.Prefs.prefHardwarePreviousButton.name, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
 
         /**
          * Set to true to enable Continuous Playback

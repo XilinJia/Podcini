@@ -96,21 +96,22 @@ object Episodes {
     }
 
 // @JvmStatic is needed because some Runnable blocks call this
-    @OptIn(UnstableApi::class) @JvmStatic
+    @JvmStatic
     fun deleteEpisodeMedia(context: Context, episode: Episode) : Job {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")
         return runOnIOScope {
             if (episode.media == null) return@runOnIOScope
             val episode_ = deleteMediaSync(context, episode)
-            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, episode_)
+            if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, episode_)
         }
     }
 
-    fun shouldDeleteRemoveFromQueue(): Boolean {
-        return appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
-    }
+    val prefDeleteRemovesFromQueue: Boolean
+        get() = appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
+//    fun shouldDeleteRemoveFromQueue(): Boolean {
+//        return appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
+//    }
 
-    @OptIn(UnstableApi::class)
     fun deleteMediaSync(context: Context, episode: Episode): Episode {
         Logd(TAG, "deleteMediaSync called")
         val media = episode.media ?: return episode
@@ -176,6 +177,7 @@ object Episodes {
     }
 
     /**
+     * This is used when the episodes are not listed with the feed.
      * Remove the listed episodes and their EpisodeMedia entries.
      * Deleting media also removes the download log entries.
      */
@@ -210,31 +212,6 @@ object Episodes {
         }
     }
 
-    /**
-     * This method will set the playback completion date to the current date regardless of the current value.
-     * @param episode Episode that should be added to the playback history.
-     * @param date PlaybackCompletionDate for `media`
-     */
-    fun setCompletionDate(episode: Episode, date: Date? = Date()) : Job {
-        Logd(TAG, "setCompletionDate called played: ${episode.playState}")
-        return runOnIOScope {
-            val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
-            if (episode_ != null) {
-                upsert(episode_) { it.media?.playbackCompletionDate = date }
-                EventFlow.postEvent(FlowEvent.HistoryEvent())
-            }
-        }
-    }
-
-//    @JvmStatic
-//    fun setFavorite(episode: Episode, stat: Boolean?) : Job {
-//        Logd(TAG, "setFavorite called $stat")
-//        return runOnIOScope {
-//            val result = upsert(episode) { it.rating = if (stat ?: !it.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code }
-//            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
-//        }
-//    }
-
     fun setRating(episode: Episode, rating: Int) : Job {
         Logd(TAG, "setRating called $rating")
         return runOnIOScope {
@@ -254,13 +231,12 @@ object Episodes {
         Logd(TAG, "setPlayState called")
         return runOnIOScope {
             for (episode in episodes) {
-                setPlayStateSync(played, resetMediaPosition, episode)
+                setPlayStateSync(played, episode, resetMediaPosition)
             }
         }
     }
 
-    @OptIn(UnstableApi::class)
-    suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
+    suspend fun setPlayStateSync(played: Int, episode: Episode, resetMediaPosition: Boolean, removeFromQueue: Boolean = true) : Episode {
         Logd(TAG, "setPlayStateSync called played: $played resetMediaPosition: $resetMediaPosition ${episode.title}")
         var episode_ = episode
         if (!episode.isManaged()) episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find() ?: episode
@@ -273,15 +249,18 @@ object Episodes {
             if (resetMediaPosition) it.media?.setPosition(0)
         }
         Logd(TAG, "setPlayStateSync played0: ${result.playState}")
-        if (played == PlayState.PLAYED.code && shouldMarkedPlayedRemoveFromQueues()) removeFromAllQueuesSync(result)
+        if (removeFromQueue && played == PlayState.PLAYED.code && prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(result)
         Logd(TAG, "setPlayStateSync played1: ${result.playState}")
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }
 
-    private fun shouldMarkedPlayedRemoveFromQueues(): Boolean {
-        return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
-    }
+    val prefRemoveFromQueueMarkedPlayed: Boolean
+        get() = appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
+
+//    fun shouldMarkedPlayedRemoveFromQueues(): Boolean {
+//        return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
+//    }
 
     fun episodeFromStreamInfoItem(item: StreamInfoItem): Episode {
         val e = Episode()

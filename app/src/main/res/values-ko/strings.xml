@@ -336,8 +336,8 @@
   <string name="pref_smart_mark_as_played_title">똑똑하게 재생한 것으로 표시</string>
   <string name="pref_skip_keeps_episodes_sum">에피소드를 넘겼을 경우에도 유지</string>
   <string name="pref_skip_keeps_episodes_title">넘긴 에피소드 유지</string>
-  <string name="pref_favorite_keeps_episodes_sum">즐겨 찾기로 표시한 에피소드를 유지합니다</string>
-  <string name="pref_favorite_keeps_episodes_title">즐겨 찾기 에피소드 유지</string>
+
+
   <string name="playback_pref">재생</string>
   <string name="playback_pref_sum">헤드폰 조작, 구간 넘기기, 대기열</string>
   <string name="downloads_pref">다운로드</string>

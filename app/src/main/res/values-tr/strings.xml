@@ -353,8 +353,8 @@
   <string name="pref_smart_mark_as_played_title">Oynatıldı olarak işaretle</string>
   <string name="pref_skip_keeps_episodes_sum">Bölümler atlandığında tutmaya devam et</string>
   <string name="pref_skip_keeps_episodes_title">Atlanan bölümleri sakla</string>
-  <string name="pref_favorite_keeps_episodes_sum">Bölümler favori olarak işaretlendiğinde tut</string>
-  <string name="pref_favorite_keeps_episodes_title">Favori bölümleri tut</string>
+
+
   <string name="playback_pref">Çalma</string>
   <string name="playback_pref_sum">Kulaklık kontrolleri, Atlama aralığı ve Kuyruk ayarları</string>
   <string name="downloads_pref">İndirilenler</string>

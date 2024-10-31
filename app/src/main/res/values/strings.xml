@@ -323,6 +323,8 @@
     <string name="in_progress">In progress</string>
     <string name="skipped">Skipped</string>
     <string name="played">Played</string>
+    <string name="again">Again</string>
+    <string name="forever">Forever</string>
     <string name="ignored">Ignored</string>
     <string name="remove_from_favorite_label">Remove from favorites</string>
     <string name="visit_website_label">Visit website</string>
@@ -499,8 +501,9 @@
     <string name="pref_smart_mark_as_played_title">Smart mark as played</string>
     <string name="pref_skip_keeps_episodes_sum">Keep episodes when they are skipped</string>
     <string name="pref_skip_keeps_episodes_title">Keep skipped episodes</string>
-    <string name="pref_favorite_keeps_episodes_sum">Keep episodes when they are marked favorite</string>
-    <string name="pref_favorite_keeps_episodes_title">Keep favorite episodes</string>
+
+    <string name="pref_keeps_important_episodes_sum">Keep episodes when they are marked Super or set as Again or Forever.</string>
+    <string name="pref_keeps_important_episodes_title">Keep important episodes</string>
     <string name="playback_pref">Playback</string>
     <string name="playback_pref_sum">Headphone controls, Skip intervals, Queue</string>
     <string name="downloads_pref">Downloads</string>

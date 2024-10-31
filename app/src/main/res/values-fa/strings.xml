@@ -355,8 +355,8 @@
   <string name="pref_smart_mark_as_played_title">علامت گذاری هوشمند به پخش شده</string>
   <string name="pref_skip_keeps_episodes_sum">نگه داشتن قسمت‌ها هنگام پریدن از رویشان</string>
   <string name="pref_skip_keeps_episodes_title">نگه‌داری قسمت‌های پریده</string>
-  <string name="pref_favorite_keeps_episodes_sum">نگه داری قسمت‌ها هنکامی که علامت محبوب خورده‌اند</string>
-  <string name="pref_favorite_keeps_episodes_title">نگه داری قسمت‌های محبوب</string>
+
+
   <string name="playback_pref">پخش</string>
   <string name="playback_pref_sum">کنترل هدفون ، رد کردن فواصل ، صف</string>
   <string name="downloads_pref">بارگیری‌ها</string>

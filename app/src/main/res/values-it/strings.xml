@@ -383,8 +383,8 @@
   <string name="pref_smart_mark_as_played_title">Marcatura intelligente</string>
   <string name="pref_skip_keeps_episodes_sum">Mantiene gli episodi nella coda quando vengono saltati</string>
   <string name="pref_skip_keeps_episodes_title">Manteni gli episodi saltati</string>
-  <string name="pref_favorite_keeps_episodes_sum">Mantiene gli episodi se sono segnati come preferiti</string>
-  <string name="pref_favorite_keeps_episodes_title">Mantieni episodi preferiti</string>
+
+
   <string name="playback_pref">Riproduzione</string>
   <string name="playback_pref_sum">Controllo cuffie, salto intervalli, coda</string>
   <string name="downloads_pref">Download</string>

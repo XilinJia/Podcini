@@ -401,8 +401,8 @@
   <string name="pref_smart_mark_as_played_title">علم بذكاء أنها انتهت</string>
   <string name="pref_skip_keeps_episodes_sum">ابقي الحلقات التي يتم تخطيها</string>
   <string name="pref_skip_keeps_episodes_title">الاحتفاظ بالحلقات التي تم تخطيها</string>
-  <string name="pref_favorite_keeps_episodes_sum">تعليم الحلقة كمفضلة يبقيها على الجهاز</string>
-  <string name="pref_favorite_keeps_episodes_title">الاحتفاظ بالحلقات المفضلة</string>
+
+
   <string name="playback_pref">تشغيل</string>
   <string name="playback_pref_sum">تحكم سماعة الأذن, وقت التقدم, لائحة الاستماع</string>
   <string name="downloads_pref">تنزيلات</string>

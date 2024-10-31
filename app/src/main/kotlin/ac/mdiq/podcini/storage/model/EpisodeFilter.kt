@@ -80,6 +80,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.inProgress.name)) stateQuerys.add(" playState == ${PlayState.INPROGRESS.code} ")
         if (properties.contains(States.skipped.name)) stateQuerys.add(" playState == ${PlayState.SKIPPED.code} ")
         if (properties.contains(States.played.name)) stateQuerys.add(" playState == ${PlayState.PLAYED.code} ")
+        if (properties.contains(States.again.name)) stateQuerys.add(" playState == ${PlayState.AGAIN.code} ")
+        if (properties.contains(States.forever.name)) stateQuerys.add(" playState == ${PlayState.FOREVER.code} ")
         if (properties.contains(States.ignored.name)) stateQuerys.add(" playState == ${PlayState.IGNORED.code} ")
         if (stateQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + stateQuerys[0])
@@ -147,6 +149,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         inProgress,
         skipped,
         played,
+        again,
+        forever,
         ignored,
         has_chapters,
         no_chapters,
@@ -197,6 +201,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             ItemProperties(R.string.in_progress, States.inProgress.name),
             ItemProperties(R.string.skipped, States.skipped.name),
             ItemProperties(R.string.played, States.played.name),
+            ItemProperties(R.string.again, States.again.name),
+            ItemProperties(R.string.forever, States.forever.name),
             ItemProperties(R.string.ignored, States.ignored.name),
         ),
         OPINION(R.string.has_comments, ItemProperties(R.string.yes, States.has_comments.name), ItemProperties(R.string.no, States.no_comments.name)),

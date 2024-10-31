@@ -114,13 +114,13 @@
                 android:key="prefFollowQueue"
                 android:summary="@string/pref_followQueue_sum"
                 android:title="@string/pref_followQueue_title"/>
-        <ac.mdiq.podcini.preferences.MaterialListPreference
-                android:defaultValue="30"
-                android:entries="@array/smart_mark_as_played_values"
-                android:entryValues="@array/smart_mark_as_played_values"
-                android:key="prefSmartMarkAsPlayedSecs"
-                android:summary="@string/pref_smart_mark_as_played_sum"
-                android:title="@string/pref_smart_mark_as_played_title"/>
+<!--        <ac.mdiq.podcini.preferences.MaterialListPreference-->
+<!--                android:defaultValue="30"-->
+<!--                android:entries="@array/smart_mark_as_played_values"-->
+<!--                android:entryValues="@array/smart_mark_as_played_values"-->
+<!--                android:key="prefSmartMarkAsPlayedSecs"-->
+<!--                android:summary="@string/pref_smart_mark_as_played_sum"-->
+<!--                android:title="@string/pref_smart_mark_as_played_title"/>-->
         <SwitchPreferenceCompat
                 android:defaultValue="true"
                 android:enabled="true"

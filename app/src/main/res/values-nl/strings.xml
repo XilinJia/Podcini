@@ -344,8 +344,8 @@
   <string name="pref_smart_mark_as_played_title">Slim markeren als afgespeeld</string>
   <string name="pref_skip_keeps_episodes_sum">Bewaar afleveringen wanneer ze worden overgeslagen</string>
   <string name="pref_skip_keeps_episodes_title">Overgeslagen afleveringen behouden</string>
-  <string name="pref_favorite_keeps_episodes_sum">Afleveringen bewaren als ze als favoriet gemarkeerd zijn</string>
-  <string name="pref_favorite_keeps_episodes_title">Favoriete afleveringen bewaren</string>
+
+
   <string name="playback_pref">Afspelen</string>
   <string name="playback_pref_sum">Onderbreken, afspelen, wachtrij</string>
   <string name="downloads_pref">Downloads</string>

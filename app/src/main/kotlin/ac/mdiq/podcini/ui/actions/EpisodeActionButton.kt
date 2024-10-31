@@ -250,7 +250,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
-            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, item) }
+            if (item.playState < PlayState.INPROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         playVideoIfNeeded(context, media)
@@ -425,7 +425,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
             if (media !is EpisodeMedia || !InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
             if (media is EpisodeMedia && media.episode != null) {
-                val item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, media.episode!!) }
+                val item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, media.episode!!, false) }
                 EventFlow.postEvent(FlowEvent.PlayEvent(item))
             }
             playVideoIfNeeded(context, media)
@@ -591,7 +591,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
-            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, false, item) }
+            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context,

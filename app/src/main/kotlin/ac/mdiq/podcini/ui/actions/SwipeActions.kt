@@ -1,23 +1,19 @@
 package ac.mdiq.podcini.ui.actions
 
-//import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
-import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.PlayState
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes
 import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes.NO_ACTION
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -56,10 +52,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.util.*
-import kotlin.math.ceil
 
 open class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
 
@@ -202,8 +196,15 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             return context.getString(R.string.delete_episode_label)
         }
         @UnstableApi
-        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+        override fun performAction(item_: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            var item = item_
             if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
+            val media = item.media
+            if (media != null) {
+                val almostEnded = hasAlmostEnded(media)
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false) }
+                if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
+            }
             deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
         }
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
@@ -314,9 +315,18 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             return context.getString(R.string.remove_from_queue_label)
         }
         @OptIn(UnstableApi::class)
-        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            val position: Int = curQueue.episodes.indexOf(item)
-            removeFromQueue(item)
+        override fun performAction(item_: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            val position: Int = curQueue.episodes.indexOf(item_)
+            var item = item_
+            val media = item.media
+            if (media != null) {
+                val almostEnded = hasAlmostEnded(media)
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false) }
+                if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
+            }
+            if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, false, false) }
+//            removeFromQueue(item)
+            runOnIOScope { removeFromQueueSync(curQueue, item) }
             if (willRemove(filter, item)) {
                 (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(fragment.resources.getQuantityString(R.plurals.removed_from_queue_batch_label, 1, 1), Snackbar.LENGTH_LONG)
                     .setAction(fragment.getString(R.string.undo)) {
@@ -426,15 +436,15 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             }
             (fragment.view as? ViewGroup)?.addView(composeView)
         }
-        private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
-            delay(ceil((duration * 1.05f).toDouble()).toLong())
-            val media: EpisodeMedia? = item.media
-            val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
-            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
-//                deleteMediaOfEpisode(fragment.requireContext(), item)
-                val item_ = deleteMediaSync(fragment.requireContext(), item)
-                if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item_)   }
-        }
+//        private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
+//            delay(ceil((duration * 1.05f).toDouble()).toLong())
+//            val media: EpisodeMedia? = item.media
+//            val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
+//            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
+////                deleteMediaOfEpisode(fragment.requireContext(), item)
+//                val item_ = deleteMediaSync(fragment.requireContext(), item)
+//                if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item_)   }
+//        }
     }
 
     class ShelveSwipeAction : SwipeAction {

@@ -14,7 +14,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
-import ac.mdiq.podcini.storage.database.Queues.moveInQueue
+import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -212,7 +212,10 @@ import kotlin.math.max
                             else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
                         EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                            isDraggable = dragDropEnabled, dragCB = { iFrom, iTo -> moveInQueue(iFrom, iTo, true) },
+                            isDraggable = dragDropEnabled, dragCB = { iFrom, iTo ->
+//                                moveInQueue(iFrom, iTo, true)
+                                runOnIOScope { moveInQueueSync(iFrom, iTo, true) }
+                            },
                             leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 }

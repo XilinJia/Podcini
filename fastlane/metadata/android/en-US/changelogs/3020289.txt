@@ -1,0 +1,10 @@
+ Version 6.13.1
+
+* replaced the setting of prefSmartMarkAsPlayedSecs by an adaptive internal val smartMarkAsPlayedPercent = 95
+	* if the episode is played to over 95% of its duration, it's considered played
+* reworked the chain actions of set play state, remove from queue, and delete media
+* fixed the issue of fully played episode being marked as Skipped
+* fixed speed indicator not updating issue in PlayerUI
+* added Again and Forever states to episode filter
+* in Settings, "Keep favorite episode" is changed to "Keep important episodes", and it applies to episodes set as Super, Again, or Forever
+* some reduction in access to Preferences files for improved efficiency

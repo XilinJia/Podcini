@@ -391,8 +391,8 @@
   <string name="pref_smart_mark_as_played_title">Inteligentné označovanie ako vypočuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovať epizódy pri ich preskočení</string>
   <string name="pref_skip_keeps_episodes_title">Nemazať preskočené epizódy</string>
-  <string name="pref_favorite_keeps_episodes_sum">Ponechať epizódy, ktoré sú označené ako obľúbené</string>
-  <string name="pref_favorite_keeps_episodes_title">Ponechať obľúbené epizódy</string>
+
+
   <string name="playback_pref">Prehrávanie</string>
   <string name="playback_pref_sum">Ovládanie tlačidlami slúchadiel, preskakovanie, poradie</string>
   <string name="downloads_pref">Sťahovanie</string>

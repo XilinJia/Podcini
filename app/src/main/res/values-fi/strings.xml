@@ -346,8 +346,8 @@
   <string name="pref_smart_mark_as_played_title">Älykäs toistetuksi merkitseminen</string>
   <string name="pref_skip_keeps_episodes_sum">Säilytä jaksot, kun ne ohitetaan</string>
   <string name="pref_skip_keeps_episodes_title">Säilytä ohitetut jaksot</string>
-  <string name="pref_favorite_keeps_episodes_sum">Säilytä suosikeiksi merkityt jaksot</string>
-  <string name="pref_favorite_keeps_episodes_title">Säilytä suosikkijaksot</string>
+
+
   <string name="playback_pref">Toisto</string>
   <string name="playback_pref_sum">Kuulokkeiden ohjaimet, ohitusaikavälit, jono</string>
   <string name="downloads_pref">Lataukset</string>

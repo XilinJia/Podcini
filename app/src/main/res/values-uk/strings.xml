@@ -391,8 +391,8 @@
   <string name="pref_smart_mark_as_played_title">Розумне позначення прослуханих епізодів</string>
   <string name="pref_skip_keeps_episodes_sum">Зберігати пропущені  епізоди при програванні  </string>
   <string name="pref_skip_keeps_episodes_title">Зберігати пропущені епізоди</string>
-  <string name="pref_favorite_keeps_episodes_sum">Зберігати епізоди що помічені як улюблені</string>
-  <string name="pref_favorite_keeps_episodes_title">Зберігати улюблені епізоди</string>
+
+
   <string name="playback_pref">Відтворення</string>
   <string name="playback_pref_sum">Керування навушниками, Пропуск інтервалів, Черга</string>
   <string name="downloads_pref">Завантаження</string>

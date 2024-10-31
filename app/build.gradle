@@ -31,8 +31,8 @@ android {
 //        testApplicationId "ac.mdiq.podcini.tests"
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020288
-        versionName "6.13.1"
+        versionCode 3020289
+        versionName "6.13.2"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -166,6 +166,13 @@ android {
     }
     androidResources {
         additionalParameters "--no-version-vectors"
+    }
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
     }
 }
 

@@ -7,12 +7,15 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
@@ -70,7 +73,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
-    @OptIn(UnstableApi::class) override fun cancel(context: Context, media: EpisodeMedia) {
+    override fun cancel(context: Context, media: EpisodeMedia) {
         Logd(TAG, "starting cancel")
         // This needs to be done here, not in the worker. Reason: The worker might or might not be running.
         val item_ = media.episodeOrFetch()
@@ -84,7 +87,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 workInfoList.forEach { workInfo ->
                     if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
                         val item_ = media.episodeOrFetch()
-                        if (item_ != null) Queues.removeFromQueue(item_)
+                        if (item_ != null) runOnIOScope { removeFromQueueSync(curQueue, item_) }
                     }
                 }
                 WorkManager.getInstance(context).cancelAllWorkByTag(tag)

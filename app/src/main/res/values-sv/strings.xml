@@ -367,8 +367,8 @@
   <string name="pref_smart_mark_as_played_title">Smart markera som spelad</string>
   <string name="pref_skip_keeps_episodes_sum">Ta inte bort episoder när de hoppas över</string>
   <string name="pref_skip_keeps_episodes_title">Behåll överhoppade episoder</string>
-  <string name="pref_favorite_keeps_episodes_sum">Behåll episoder när de är favoritmarkerade</string>
-  <string name="pref_favorite_keeps_episodes_title">Behåll favoritepisoder</string>
+
+
   <string name="playback_pref">Uppspelning</string>
   <string name="playback_pref_sum">Hörlurskontroller, Överhoppningsintervaller, Kö</string>
   <string name="downloads_pref">Nedladdningar</string>

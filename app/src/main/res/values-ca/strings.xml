@@ -351,8 +351,8 @@
   <string name="pref_smart_mark_as_played_title">Marcat intel·ligent d\'episodis reproduïts</string>
   <string name="pref_skip_keeps_episodes_sum">Mantenir episodis quan són omesos</string>
   <string name="pref_skip_keeps_episodes_title">Mantenir episodis omesos</string>
-  <string name="pref_favorite_keeps_episodes_sum">Mantenir els episodis quan s\'han marcat com a preferits</string>
-  <string name="pref_favorite_keeps_episodes_title">Mantenir episodis preferits</string>
+
+
   <string name="playback_pref">Reproducció</string>
   <string name="playback_pref_sum">Controls d\'auriculars, Intervals d\'avançada, Cua</string>
   <string name="downloads_pref">Baixades</string>

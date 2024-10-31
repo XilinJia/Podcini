@@ -36,8 +36,8 @@
             android:defaultValue="true"
             android:enabled="true"
             android:key="prefFavoriteKeepsEpisode"
-            android:summary="@string/pref_favorite_keeps_episodes_sum"
-            android:title="@string/pref_favorite_keeps_episodes_title"/>
+            android:summary="@string/pref_keeps_important_episodes_sum"
+            android:title="@string/pref_keeps_important_episodes_title"/>
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:enabled="true"

@@ -18,6 +18,7 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFor
 import ac.mdiq.podcini.net.utils.NetworkUtils.setAllowMobileFor
 import ac.mdiq.podcini.net.utils.UrlChecker.containsUrl
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
@@ -26,7 +27,7 @@ import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
@@ -289,8 +290,10 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 //            if (result.first != null) queueToBeRemoved.add(result.second)
             updatedItems.add(result.second)
         }
-        removeFromQueue(*updatedItems.toTypedArray())
+//        removeFromQueue(*updatedItems.toTypedArray())
+
         runOnIOScope {
+            removeFromQueueSync(curQueue, *updatedItems.toTypedArray())
             for (episode in updatedItems) {
                 upsert(episode) {}
             }

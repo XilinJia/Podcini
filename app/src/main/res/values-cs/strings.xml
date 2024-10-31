@@ -392,8 +392,8 @@
   <string name="pref_smart_mark_as_played_title">Chytré označování jako poslechnuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovat epizody při jejich přeskočení</string>
   <string name="pref_skip_keeps_episodes_title">Ponechat přeskočené epizody</string>
-  <string name="pref_favorite_keeps_episodes_sum">Ponechat epizody označené jako oblíbené.</string>
-  <string name="pref_favorite_keeps_episodes_title">Ponechat oblíbené epizody</string>
+
+
   <string name="playback_pref">Přehrávání</string>
   <string name="playback_pref_sum">Ovládání tlačítky sluchátek, přeskakování, fronta</string>
   <string name="downloads_pref">Stahování</string>

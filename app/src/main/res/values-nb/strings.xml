@@ -343,8 +343,8 @@
   <string name="pref_smart_mark_as_played_title">Smart markering som avspilt</string>
   <string name="pref_skip_keeps_episodes_sum">Behold episoder når de hoppes over</string>
   <string name="pref_skip_keeps_episodes_title">Behold episoder som er hoppet over</string>
-  <string name="pref_favorite_keeps_episodes_sum">Behold episoder når de er merket som favoritt</string>
-  <string name="pref_favorite_keeps_episodes_title">Behold favorittepisoder</string>
+
+
   <string name="playback_pref">Avspilling</string>
   <string name="playback_pref_sum">Hodetelefon-kontroller, spole-intervaller, kø</string>
   <string name="downloads_pref">Nedlastinger</string>

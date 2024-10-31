@@ -368,8 +368,8 @@
   <string name="pref_smart_mark_as_played_sum">Oznacz odcinek jako odtworzony, jeśli do końca pozostało mniej niż określona ilość czasu</string>
   <string name="pref_skip_keeps_episodes_sum">Zachowuje pominięte odcinki w kolejce</string>
   <string name="pref_skip_keeps_episodes_title">Zachowaj pominięte odcinki</string>
-  <string name="pref_favorite_keeps_episodes_sum">Zachowaj odcinki gdy są oznaczone jako ulubione</string>
-  <string name="pref_favorite_keeps_episodes_title">Zachowaj ulubione odcinki</string>
+
+
   <string name="playback_pref">Odtwarzanie</string>
   <string name="playback_pref_sum">Kontrola za pomocą słuchawek, Pomijanie, Kolejka</string>
   <string name="downloads_pref">Pobrane</string>

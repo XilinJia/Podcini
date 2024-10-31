@@ -371,8 +371,8 @@
   <string name="pref_smart_mark_as_played_title">Intelligentes \"als abgespielt markieren\"</string>
   <string name="pref_skip_keeps_episodes_sum">Episoden behalten, wenn sie übersprungen werden</string>
   <string name="pref_skip_keeps_episodes_title">Übersprungene Episoden behalten</string>
-  <string name="pref_favorite_keeps_episodes_sum">Episoden nicht löschen, wenn sie als Favorit markiert wurden</string>
-  <string name="pref_favorite_keeps_episodes_title">Favorisierte Episoden nicht löschen</string>
+
+
   <string name="playback_pref">Wiedergabe</string>
   <string name="playback_pref_sum">Kopfhörersteuerung, Sprungintervall, Warteschlange</string>
   <string name="downloads_pref">Downloads</string>

@@ -6,7 +6,6 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
-import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -14,14 +13,10 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.indexOfItemWithId
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
-import androidx.annotation.OptIn
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
 import java.util.*
@@ -91,10 +86,9 @@ object Queues {
     /**
      * Appends Episode objects to the end of the queue. The 'read'-attribute of all episodes will be set to true.
      * If a Episode is already in the queue, the Episode will not change its position in the queue.
-     * @param markAsUnplayed      true if the episodes should be marked as unplayed when enqueueing
      * @param episodes               the Episode objects that should be added to the queue.
      */
-    @UnstableApi @JvmStatic @Synchronized
+    @JvmStatic @Synchronized
     fun addToQueue(vararg episodes: Episode) : Job {
         Logd(TAG, "addToQueue( ... ) called")
         return runOnIOScope {
@@ -130,7 +124,6 @@ object Queues {
                     it.update()
                 }
                 for (event in events) EventFlow.postEvent(event)
-
                 setPlayState(PlayState.INQUEUE.code, false, *setInQueue.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
@@ -199,16 +192,15 @@ object Queues {
         }
     }
 
-    /**
-     * Removes a Episode object from the queue.
-     * @param episodes                FeedItems that should be removed.
-     */
-    @OptIn(UnstableApi::class) @JvmStatic
-    fun removeFromQueue(vararg episodes: Episode) : Job {
-        return runOnIOScope { removeFromQueueSync(curQueue, *episodes) }
-    }
+//    /**
+//     * Removes a Episode object from the queue.
+//     * @param episodes                FeedItems that should be removed.
+//     */
+//    @JvmStatic
+//    fun removeFromQueue(vararg episodes: Episode) : Job {
+//        return runOnIOScope { removeFromQueueSync(curQueue, *episodes) }
+//    }
 
-    @OptIn(UnstableApi::class)
     fun removeFromAllQueuesSync(vararg episodes: Episode) {
         Logd(TAG, "removeFromAllQueuesSync called ")
         val queues = realm.query(PlayQueue::class).find()
@@ -239,7 +231,7 @@ object Queues {
             if (indexOfItemWithId(eList, episode.id) >= 0) {
                 Logd(TAG, "removing from queue: ${episode.id} ${episode.title}")
                 indicesToRemove.add(i)
-                if (episode.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, episode)
+//                if (setState && episode.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, episode)
                 if (queue.id == curQueue.id) events.add(FlowEvent.QueueEvent.removed(episode))
             }
         }
@@ -316,9 +308,9 @@ object Queues {
      * false if the caller wants to avoid unexpected updates of the GUI.
      * @throws IndexOutOfBoundsException if (to < 0 || to >= queue.size()) || (from < 0 || from >= queue.size())
      */
-    fun moveInQueue(from: Int, to: Int, broadcastUpdate: Boolean) : Job {
-        return runOnIOScope { moveInQueueSync(from, to, broadcastUpdate) }
-    }
+//    fun moveInQueue(from: Int, to: Int, broadcastUpdate: Boolean) : Job {
+//        return runOnIOScope { moveInQueueSync(from, to, broadcastUpdate) }
+//    }
 
     /**
      * Changes the position of a Episode in the queue.

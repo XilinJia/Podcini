@@ -339,8 +339,8 @@
   <string name="pref_smart_mark_as_played_sum">Erreproduzitutako saioak markatu nahiz bukatzeko segundo batzuk falta</string>
   <string name="pref_skip_keeps_episodes_sum">Saioak gorde jaustean</string>
   <string name="pref_skip_keeps_episodes_title">Mantendu saltatutako saioak</string>
-  <string name="pref_favorite_keeps_episodes_sum">Mantendu gogoko gisa markatutako saioak</string>
-  <string name="pref_favorite_keeps_episodes_title">Mantendu gogoko saioak</string>
+
+
   <string name="playback_pref">Erreprodukzioa</string>
   <string name="playback_pref_sum">Aurikularren kontrolak, saltatu tarteak, ilara</string>
   <string name="downloads_pref">Deskargak</string>

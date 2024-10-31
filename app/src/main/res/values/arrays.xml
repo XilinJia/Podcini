@@ -10,7 +10,6 @@
         <item>@string/feed_every_24_hours</item>
         <item>@string/feed_every_72_hours</item>
     </string-array>
-
     <string-array name="feed_refresh_interval_values">
         <item>0</item>
         <item>1</item>
@@ -22,14 +21,14 @@
         <item>72</item>
     </string-array>
 
-    <string-array name="smart_mark_as_played_values">
-        <item>0</item>
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>120</item>
-        <item>300</item>
-    </string-array>
+<!--    <string-array name="smart_mark_as_played_values">-->
+<!--        <item>0</item>-->
+<!--        <item>15</item>-->
+<!--        <item>30</item>-->
+<!--        <item>60</item>-->
+<!--        <item>120</item>-->
+<!--        <item>300</item>-->
+<!--    </string-array>-->
 
     <integer-array name="seek_delta_values">
         <item>5</item>
@@ -99,7 +98,6 @@
         <item>@string/button_action_skip_episode</item>
         <item>@string/button_action_restart_episode</item>
     </string-array>
-
     <string-array name="button_action_values">
         <item>@string/keycode_media_fast_forward</item>
         <item>@string/keycode_media_rewind</item>
@@ -172,7 +170,6 @@
         <item>StatisticsFragment</item>
         <item>remember</item>
     </string-array>
-
     <string-array name="default_page_titles">
         <item>@string/subscriptions_label</item>
         <item>@string/queue_label</item>

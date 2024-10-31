@@ -84,7 +84,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
     * else if "prefer streaming" is set, it's the next unplayed episode in the feed episodes list based on the current sort order
     * else it's the next downloaded unplayed episode
 * Otherwise, episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
-
+* Episodes played to 95% of the full duration is considered completely played
 
 ### Podcast list and Episode list
 

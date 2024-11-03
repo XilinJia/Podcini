@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ class SearchResultsFragment : Fragment() {
         if (searchProvider == null) Logd(TAG,"Podcast searcher not found")
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
         binding.mainView.setContent {

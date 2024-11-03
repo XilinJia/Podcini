@@ -42,7 +42,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
@@ -59,17 +59,17 @@ class SleepTimerDialog : DialogFragment() {
     private lateinit var etxtTime: EditText
     private lateinit var chAutoEnable: CheckBox
 
-    @UnstableApi override fun onStart() {
+     override fun onStart() {
         super.onStart()
         procFlowEvents()
     }
 
-    @UnstableApi override fun onStop() {
+     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
     }
 
-    @UnstableApi override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = TimeDialogBinding.inflate(layoutInflater)
         val content = binding.root
         val builder = MaterialAlertDialogBuilder(requireContext())

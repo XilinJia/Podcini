@@ -161,11 +161,6 @@ object Feeds {
     }
 
     fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
-//        if (BuildConfig.DEBUG) {
-//            val stackTrace = Thread.currentThread().stackTrace
-//            val caller = if (stackTrace.size > 3) stackTrace[3] else null
-//            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called")
-//        }
         val f = realm.query(Feed::class, "id == $feedId").first().find()
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)
@@ -346,13 +341,6 @@ object Feeds {
             upsert(feed) { it.lastUpdateFailed = lastUpdateFailed }
             EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ERROR, feed.id))
         }
-    }
-
-    fun setRating(feed: Feed, rating: Int)  {
-        Logd(TAG, "setRating called $rating")
-//        return runOnIOScope {
-            val result = upsertBlk(feed) { it.rating = rating }
-//        }
     }
 
     fun updateFeedDownloadURL(original: String, updated: String) : Job {
@@ -678,14 +666,14 @@ object Feeds {
      */
     object EpisodeDuplicateGuesser {
         // only used in test
-        fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
-            if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
-            val media1 = item1.media
-            val media2 = item2.media
-            if (media1 == null || media2 == null) return false
-            if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
-            return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
-        }
+//        fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
+//            if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
+//            val media1 = item1.media
+//            val media2 = item2.media
+//            if (media1 == null || media2 == null) return false
+//            if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
+//            return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
+//        }
         private fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
             if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
             return string1 == string2

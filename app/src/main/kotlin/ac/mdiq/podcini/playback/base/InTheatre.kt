@@ -11,10 +11,10 @@ import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_OTHER
 import ac.mdiq.podcini.util.Logd
 import android.util.Log
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import io.realm.kotlin.query.Sort
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object InTheatre {
     val TAG: String = InTheatre::class.simpleName ?: "Anonymous"
@@ -139,7 +139,7 @@ object InTheatre {
         }
     }
 
-    @OptIn(UnstableApi::class) @JvmStatic
+     @JvmStatic
     fun isCurrentlyPlaying(media: EpisodeMedia?): Boolean {
         return isCurMedia(media) && PlaybackService.isRunning && MediaPlayerBase.status == PlayerStatus.PLAYING
     }

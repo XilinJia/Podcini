@@ -39,7 +39,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.collection.ArrayMap
 import androidx.compose.foundation.*
@@ -59,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -79,7 +77,7 @@ import kotlin.concurrent.Volatile
  * If the feed cannot be downloaded or parsed, an error dialog will be displayed
  * and the activity will finish as soon as the error dialog is closed.
  */
-@OptIn(UnstableApi::class)
+
 class OnlineFeedFragment : Fragment() {
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -122,7 +120,7 @@ class OnlineFeedFragment : Fragment() {
 
     private var dialog: Dialog? = null
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
         _binding = ComposeFragmentBinding.inflate(layoutInflater)
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
@@ -176,7 +174,7 @@ class OnlineFeedFragment : Fragment() {
         super.onDestroy()
     }
 
-    @OptIn(UnstableApi::class) override fun onSaveInstanceState(outState: Bundle) {
+     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
         super.onSaveInstanceState(outState)
         outState.putString("username", username)
@@ -267,7 +265,7 @@ class OnlineFeedFragment : Fragment() {
         eventStickySink?.cancel()
         eventStickySink = null
     }
-    @OptIn(UnstableApi::class) private fun procFlowEvents() {
+     private fun procFlowEvents() {
         if (eventSink == null) eventSink = lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
@@ -307,7 +305,7 @@ class OnlineFeedFragment : Fragment() {
      * Called when feed parsed successfully.
      * This method is executed on the GUI thread.
      */
-    @UnstableApi private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
+     private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
         showProgress = false
 //        binding.feedDisplayContainer.visibility = View.VISIBLE
         showFeedDisplay = true
@@ -480,7 +478,7 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    @UnstableApi private fun showEpisodes(episodes: MutableList<Episode>) {
+     private fun showEpisodes(episodes: MutableList<Episode>) {
         Logd(TAG, "showEpisodes ${episodes.size}")
         if (episodes.isEmpty()) return
         episodes.sortByDescending { it.pubDate }
@@ -494,7 +492,7 @@ class OnlineFeedFragment : Fragment() {
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
-    @UnstableApi private fun handleUpdatedFeedStatus() {
+     private fun handleUpdatedFeedStatus() {
         val dli = DownloadServiceInterface.get()
         if (dli == null || selectedDownloadUrl == null) return
 
@@ -708,11 +706,11 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    @UnstableApi
+    
     class RemoteEpisodesFragment : BaseEpisodesFragment() {
         private val episodeList: MutableList<Episode> = mutableListOf()
 
-        @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val root = super.onCreateView(inflater, container, savedInstanceState)
             Logd(TAG, "fragment onCreateView")
             toolbar.inflateMenu(R.menu.episodes)
@@ -746,7 +744,7 @@ class OnlineFeedFragment : Fragment() {
             binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)
             infoBarText.value = "${episodes.size} episodes"
         }
-        @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
+         override fun onMenuItemClick(item: MenuItem): Boolean {
             if (super.onOptionsItemSelected(item)) return true
             when (item.itemId) {
                 else -> return false

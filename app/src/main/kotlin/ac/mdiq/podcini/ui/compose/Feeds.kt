@@ -6,6 +6,7 @@ import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Rating
@@ -54,7 +55,10 @@ fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                        for (item in selected) Feeds.setRating(item, rating.code)
+                        for (item in selected) {
+//                            Feeds.setRating(item, rating.code)
+                            upsertBlk(item) { it.rating = rating.code }
+                        }
                         onDismissRequest()
                     }) {
                         Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")

@@ -16,9 +16,7 @@ import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
-import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ExecutionException
@@ -71,7 +69,7 @@ object AutoCleanups {
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
-        @OptIn(UnstableApi::class)
+        
         public override fun performCleanup(context: Context, numToRemove: Int): Int {
             var candidates = candidates
             // in the absence of better data, we'll sort by item publication date
@@ -125,7 +123,7 @@ object AutoCleanups {
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
+         public override fun performCleanup(context: Context, numToRemove: Int): Int {
             var candidates = candidates
             // in the absence of better data, we'll sort by item publication date
             candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
@@ -194,7 +192,7 @@ object AutoCleanups {
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
+         public override fun performCleanup(context: Context, numToRemove: Int): Int {
             val candidates = candidates.toMutableList()
             candidates.sortWith { lhs: Episode, rhs: Episode ->
                 var l = lhs.media!!.playbackCompletionDate

@@ -70,7 +70,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -82,7 +82,7 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-@UnstableApi
+
 class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -382,7 +382,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         return true
     }
 
-    @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
+     private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
 //        reconnectLocalFolder(uri)
         lifecycleScope.launch {
@@ -403,7 +403,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-//    @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
+//     private fun reconnectLocalFolder(uri: Uri) {
 //        lifecycleScope.launch {
 //            try {
 //                withContext(Dispatchers.IO) {
@@ -450,7 +450,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @UnstableApi
+    
     abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
         val TAG = this::class.simpleName ?: "Anonymous"
         private val activityRef = WeakReference(activity)
@@ -466,7 +466,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 .setNegativeButton(R.string.cancel_label, null)
                 .show()
         }
-        @UnstableApi private fun onConfirmed(original: String, updated: String) {
+         private fun onConfirmed(original: String, updated: String) {
             try {
                 runBlocking { updateFeedDownloadURL(original, updated).join() }
                 feed.downloadUrl = updated
@@ -474,7 +474,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             } catch (e: ExecutionException) { throw RuntimeException(e)
             } catch (e: InterruptedException) { throw RuntimeException(e) }
         }
-        @UnstableApi private fun showConfirmAlertDialog(url: String) {
+         private fun showConfirmAlertDialog(url: String) {
             val activity = activityRef.get()
             val alertDialog = MaterialAlertDialogBuilder(activity!!)
                 .setTitle(R.string.edit_url_menu)

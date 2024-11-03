@@ -3,7 +3,7 @@ package ac.mdiq.podcini.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.media3.common.util.UnstableApi
+
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
@@ -17,7 +17,7 @@ import android.util.Log
 // Since the intent doesn't have the EXTRA_STATUS like the android.com article says it does
 // (though it used to)
 class PowerConnectionReceiver : BroadcastReceiver() {
-    @UnstableApi override fun onReceive(context: Context, intent: Intent) {
+     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
         Log.d(TAG, "onReceive charging intent: $action")
         ClientConfigurator.initialize(context)

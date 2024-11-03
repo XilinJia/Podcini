@@ -18,7 +18,7 @@ import android.os.Build
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
  * Communicates with the playback service. GUI classes should use this class to
  * control playback instead of communicating with the PlaybackService directly.
  */
-@UnstableApi
+
 abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
 
     private var mediaInfoLoaded = false

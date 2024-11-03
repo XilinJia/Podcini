@@ -12,6 +12,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
@@ -324,7 +325,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         curMedia = playable
         if (curMedia is EpisodeMedia) {
             val media_ = curMedia as EpisodeMedia
-            val item = media_.episodeOrFetch()
+            var item = media_.episodeOrFetch()
+            if (item != null && item.playState < PlayState.INPROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item!!, false) }
             val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
             curIndexInQueue = EpisodeUtil.indexOfItemWithId(eList, media_.id)
         } else curIndexInQueue = -1
@@ -710,7 +712,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     private fun setupPlayerListener() {
-        exoplayerListener = object : Player.Listener {
+        exoplayerListener = object : Listener {
             override fun onPlaybackStateChanged(playbackState: @State Int) {
                 Logd(TAG, "onPlaybackStateChanged $playbackState")
                 when (playbackState) {
@@ -762,7 +764,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
         var exoPlayer: ExoPlayer? = null
 
-        private var exoplayerListener: Player.Listener? = null
+        private var exoplayerListener: Listener? = null
         private var audioSeekCompleteListener: java.lang.Runnable? = null
         private var audioCompletionListener: java.lang.Runnable? = null
         private var audioErrorListener: Consumer<String>? = null

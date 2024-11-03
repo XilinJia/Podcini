@@ -94,7 +94,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
-import androidx.media3.common.util.UnstableApi
+
 import androidx.media3.session.*
 import androidx.work.impl.utils.futures.SettableFuture
 import com.google.common.collect.ImmutableList
@@ -113,7 +113,7 @@ import kotlin.math.sqrt
 /**
  * Controls the MediaPlayer that plays a EpisodeMedia-file
  */
-@UnstableApi
+
 class PlaybackService : MediaLibraryService() {
     private var mediaSession: MediaLibrarySession? = null
 
@@ -376,7 +376,7 @@ class PlaybackService : MediaLibraryService() {
                         val isItemdeletable = (!shouldKeepSuperEpisode || (item?.isSUPER != true && item?.playState != PlayState.AGAIN.code && item?.playState != PlayState.FOREVER.code))
                         if (playable is EpisodeMedia && shouldAutoDelete && isItemdeletable) {
                             if (playable.localFileAvailable()) item = deleteMediaSync(this@PlaybackService, item!!)
-                            if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item!!)
+                            if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync( item!!)
                         } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item!!)
                     }
                 }
@@ -1247,7 +1247,7 @@ class PlaybackService : MediaLibraryService() {
         ),
     }
 
-    @UnstableApi
+    
     class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificationProvider(context) {
         override fun addNotificationActions(mediaSession: MediaSession, mediaButtons: ImmutableList<CommandButton>,
                                             builder: NotificationCompat.Builder, actionFactory: MediaNotification.ActionFactory): IntArray {

@@ -36,13 +36,11 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.annotation.OptIn
 import androidx.annotation.StringRes
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -912,7 +910,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     /** Reads OPML documents.  */
     object EpisodeProgressReader {
         private const val TAG = "EpisodeProgressReader"
-        @OptIn(UnstableApi::class)
+        
         fun readDocument(reader: Reader) {
             val jsonString = reader.readText()
             val jsonArray = JSONArray(jsonString)

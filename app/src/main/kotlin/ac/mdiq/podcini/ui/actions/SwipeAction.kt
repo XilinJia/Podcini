@@ -28,6 +28,7 @@ interface SwipeAction {
         NO_ACTION,
         COMBO,
         RATING,
+        COMMENT,
         SET_PLAY_STATE,
         ADD_TO_QUEUE,
         PUT_TO_QUEUE,

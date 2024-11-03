@@ -54,7 +54,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
-import androidx.media3.common.util.UnstableApi
+
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.*
@@ -344,7 +344,7 @@ class FeedSettingsFragment : Fragment() {
                                             object : AutoDownloadFilterPrefDialog(requireContext(),
                                                 feed?.preferences!!.autoDownloadFilter!!,
                                                 1) {
-                                                @UnstableApi
+                                                
                                                 override fun onConfirmed(filter: FeedAutoDownloadFilter) {
                                                     feed = upsertBlk(feed!!) {
                                                         it.preferences?.autoDownloadFilter = filter
@@ -364,7 +364,7 @@ class FeedSettingsFragment : Fragment() {
                                             object : AutoDownloadFilterPrefDialog(requireContext(),
                                                 feed?.preferences!!.autoDownloadFilter!!,
                                                 -1) {
-                                                @UnstableApi
+                                                
                                                 override fun onConfirmed(filter: FeedAutoDownloadFilter) {
                                                     feed = upsertBlk(feed!!) {
                                                         it.preferences?.autoDownloadFilter = filter

@@ -44,10 +44,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.collection.ArrayMap
 import androidx.core.app.NotificationCompat
-import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
 import kotlinx.coroutines.*
@@ -56,13 +54,13 @@ import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
-@OptIn(UnstableApi::class)
+
 open class SyncService(context: Context, params: WorkerParameters) : Worker(context, params) {
     val TAG = this::class.simpleName ?: "Anonymous"
 
     protected val synchronizationQueueStorage = SynchronizationQueueStorage(context)
 
-    @UnstableApi override fun doWork(): Result {
+     override fun doWork(): Result {
         Logd(TAG, "doWork() called")
         val activeSyncProvider = getActiveSyncProvider() ?: return Result.failure()
         Logd(TAG, "doWork() got syn provider")
@@ -104,7 +102,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         }
     }
 
-    @UnstableApi @Throws(SyncServiceException::class)
+     @Throws(SyncServiceException::class)
     private fun syncSubscriptions(syncServiceImpl: ISyncService) {
         Logd(TAG, "syncSubscriptions called")
         val lastSync = SynchronizationSettings.lastSubscriptionSynchronizationTimestamp
@@ -160,7 +158,6 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         SynchronizationSettings.setLastSubscriptionSynchronizationAttemptTimestamp(newTimeStamp)
     }
 
-    @UnstableApi
     private fun removeFeedWithDownloadUrl(context: Context, downloadUrl: String) {
         Logd(TAG, "removeFeedWithDownloadUrl called")
         var feedID: Long? = null
@@ -244,7 +241,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         return newTimeStamp
     }
 
-    @UnstableApi @Throws(SyncServiceException::class)
+     @Throws(SyncServiceException::class)
     private fun syncEpisodeActions(syncServiceImpl: ISyncService) {
         Logd(TAG, "syncEpisodeActions called")
         var (lastSync, newTimeStamp) = getEpisodeActions(syncServiceImpl)
@@ -277,7 +274,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         return if (idRemove != null) Pair(idRemove, feedItem) else null
     }
 
-    @UnstableApi @Synchronized
+     @Synchronized
     fun processEpisodeActions(remoteActions: List<EpisodeAction>) {
         Logd(TAG, "Processing " + remoteActions.size + " actions")
         if (remoteActions.isEmpty()) return

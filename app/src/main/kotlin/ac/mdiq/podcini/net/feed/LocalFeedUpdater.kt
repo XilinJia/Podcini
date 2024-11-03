@@ -19,7 +19,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.annotation.VisibleForTesting
 import androidx.documentfile.provider.DocumentFile
-import androidx.media3.common.util.UnstableApi
+
 import org.apache.commons.io.input.CountingInputStream
 import java.io.BufferedInputStream
 import java.io.IOException
@@ -33,7 +33,7 @@ object LocalFeedUpdater {
     @JvmField
     val PREFERRED_FEED_IMAGE_FILENAMES: Array<String> = arrayOf("folder.jpg", "Folder.jpg", "folder.png", "Folder.png")
 
-    @UnstableApi @JvmStatic
+     @JvmStatic
     fun updateFeed(feed: Feed, context: Context, updaterProgressListener: UpdaterProgressListener?) {
         if (feed.downloadUrl.isNullOrEmpty()) return
         try {
@@ -51,7 +51,7 @@ object LocalFeedUpdater {
         }
     }
 
-    @UnstableApi @JvmStatic
+     @JvmStatic
     @VisibleForTesting
     @Throws(IOException::class)
     fun tryUpdateFeed(feed: Feed, context: Context, folderUri: Uri?, updaterProgressListener: UpdaterProgressListener?) {
@@ -188,7 +188,7 @@ object LocalFeedUpdater {
         }
     }
 
-    @UnstableApi private fun reportError(feed: Feed, reasonDetailed: String?) {
+     private fun reportError(feed: Feed, reasonDetailed: String?) {
         val status = DownloadResult(feed.id, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, reasonDetailed?:"")
         LogsAndStats.addDownloadStatus(status)
         Feeds.persistFeedLastUpdateFailed(feed, true)
@@ -197,7 +197,7 @@ object LocalFeedUpdater {
     /**
      * Reports a successful download status.
      */
-    @UnstableApi private fun reportSuccess(feed: Feed) {
+     private fun reportSuccess(feed: Feed) {
         val status = DownloadResult(feed.id, feed.title?:"", DownloadError.SUCCESS, true, "")
         LogsAndStats.addDownloadStatus(status)
         Feeds.persistFeedLastUpdateFailed(feed, false)

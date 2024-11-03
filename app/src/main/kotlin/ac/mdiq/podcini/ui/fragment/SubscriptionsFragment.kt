@@ -17,6 +17,7 @@ import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
@@ -49,7 +50,6 @@ import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -88,7 +88,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -145,7 +144,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         retainInstance = true
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSubscriptionsBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
@@ -306,7 +305,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
+    override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
             R.id.subscriptions_filter -> {
@@ -334,7 +333,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private var loadItemsRunning = false
-    @OptIn(UnstableApi::class)
     private fun loadSubscriptions() {
 //        emptyView.hide()
         if (!loadItemsRunning) {
@@ -653,7 +651,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         for (rating in Rating.entries.reversed()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                                for (item in selected) Feeds.setRating(item, rating.code)
+                                for (item in selected) {
+//                                    Feeds.setRating(item, rating.code)
+                                    upsertBlk(item) { it.rating = rating.code }
+                                }
                                 onDismissRequest()
                             }) {
                                 Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")
@@ -711,7 +712,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         selectMode = false
                         Logd(TAG, "ic_download: ${selected.size}")
                         val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
-                        preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
+                        preferenceSwitchDialog.setOnPreferenceChangedListener( object: PreferenceSwitchDialog.OnPreferenceChangedListener {
                             override fun preferenceChanged(enabled: Boolean) {
                                 saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
                             }

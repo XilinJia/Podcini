@@ -278,7 +278,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                             media = item_.media
                                             if (media != null && hasAlmostEnded && shouldAutoDelete) {
                                                 item_ = deleteMediaSync(context, item_)
-                                                if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item_)
+                                                if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(item_)
                                             } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item_)
                                             if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                                                 val media_: EpisodeMedia? = item_.media
@@ -781,7 +781,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 LaunchedEffect(key1 = status, key2 = vm.downloadState) {
                     if (index >= vms.size) return@LaunchedEffect
                     if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
-                    Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vms[index].episode.title}")
+                    Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
                     Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
                     vm.actionButton = vm.actionButton.forItem(vm.episode)
                     if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton

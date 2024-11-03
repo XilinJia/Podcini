@@ -39,11 +39,9 @@ import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -139,11 +137,11 @@ object FeedUpdateManager {
         builder.show()
     }
 
-    @OptIn(UnstableApi::class)
+    
     class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
         private val notificationManager = NotificationManagerCompat.from(context)
 
-        @UnstableApi
+        
         override fun doWork(): Result {
             ClientConfigurator.initialize(applicationContext)
             val feedsToUpdate: MutableList<Feed>
@@ -200,7 +198,7 @@ object FeedUpdateManager {
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_updating_feeds, createNotification(null)))
         }
-        @UnstableApi
+        
         private fun refreshFeeds(feedsToUpdate: MutableList<Feed>, force: Boolean) {
             if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this.applicationContext,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -264,7 +262,7 @@ object FeedUpdateManager {
                 } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error1 ${e.message}") }
             } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error ${e.message}") }
         }
-        @UnstableApi
+        
         @Throws(Exception::class)
         fun refreshFeed(feed: Feed, force: Boolean) {
             val nextPage = (inputData.getBoolean(EXTRA_NEXT_PAGE, false) && feed.nextPageLink != null)

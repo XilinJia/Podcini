@@ -17,7 +17,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.util.Log
-import androidx.media3.common.util.UnstableApi
+
 import kotlinx.coroutines.Job
 import java.util.*
 
@@ -68,11 +68,7 @@ object Queues {
         set(location) {
             appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
         }
-
-//    fun queueFromName(name: String): PlayQueue? {
-//        return realm.query(PlayQueue::class).query("name == $0", name).first().find()
-//    }
-
+    
     fun getInQueueEpisodeIds(): Set<Long> {
         Logd(TAG, "getQueueIDList() called")
         val queues = realm.query(PlayQueue::class).find()
@@ -192,15 +188,6 @@ object Queues {
         }
     }
 
-//    /**
-//     * Removes a Episode object from the queue.
-//     * @param episodes                FeedItems that should be removed.
-//     */
-//    @JvmStatic
-//    fun removeFromQueue(vararg episodes: Episode) : Job {
-//        return runOnIOScope { removeFromQueueSync(curQueue, *episodes) }
-//    }
-
     fun removeFromAllQueuesSync(vararg episodes: Episode) {
         Logd(TAG, "removeFromAllQueuesSync called ")
         val queues = realm.query(PlayQueue::class).find()
@@ -215,7 +202,6 @@ object Queues {
     /**
      * @param queue_    if null, use curQueue
      */
-    @UnstableApi
     internal fun removeFromQueueSync(queue_: PlayQueue?, vararg episodes: Episode) {
         Logd(TAG, "removeFromQueueSync called ")
         if (episodes.isEmpty()) return
@@ -299,18 +285,6 @@ object Queues {
             }
         }
     }
-
-    /**
-     * Changes the position of a Episode in the queue.
-     * @param from            Source index. Must be in range 0..queue.size()-1.
-     * @param to              Destination index. Must be in range 0..queue.size()-1.
-     * @param broadcastUpdate true if this operation should trigger a QueueUpdateBroadcast. This option should be set to
-     * false if the caller wants to avoid unexpected updates of the GUI.
-     * @throws IndexOutOfBoundsException if (to < 0 || to >= queue.size()) || (from < 0 || from >= queue.size())
-     */
-//    fun moveInQueue(from: Int, to: Int, broadcastUpdate: Boolean) : Job {
-//        return runOnIOScope { moveInQueueSync(from, to, broadcastUpdate) }
-//    }
 
     /**
      * Changes the position of a Episode in the queue.

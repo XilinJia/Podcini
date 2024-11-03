@@ -18,9 +18,9 @@ import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -39,12 +39,10 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -578,12 +576,12 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    @OptIn(UnstableApi::class) class WifiAuthenticationFragment : DialogFragment() {
+     class WifiAuthenticationFragment : DialogFragment() {
         private var binding: WifiSyncDialogBinding? = null
         private var portNum = 0
         private var isGuest: Boolean? = null
 
-        @OptIn(UnstableApi::class) override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             val dialog = MaterialAlertDialogBuilder(requireContext())
             dialog.setTitle(R.string.connect_to_peer)
             dialog.setNegativeButton(R.string.cancel_label, null)
@@ -626,7 +624,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             cancelFlowEvents()
             super.onDestroy()
         }
-        @OptIn(UnstableApi::class) override fun onResume() {
+         override fun onResume() {
             super.onResume()
             val d = dialog as? AlertDialog
             if (d != null) {

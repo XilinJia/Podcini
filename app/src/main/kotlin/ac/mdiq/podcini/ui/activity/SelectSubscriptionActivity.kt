@@ -15,13 +15,11 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import coil.imageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
@@ -72,7 +70,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
         return result
     }
 
-    @UnstableApi private fun addShortcut(feed: Feed, bitmap: Bitmap?) {
+     private fun addShortcut(feed: Feed, bitmap: Bitmap?) {
         val intent = Intent(this, MainActivity::class.java)
         intent.setAction(Intent.ACTION_MAIN)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -100,10 +98,10 @@ class SelectSubscriptionActivity : AppCompatActivity() {
             .setHeader("User-Agent", "Mozilla/5.0")
             .placeholder(R.color.light_gray)
             .listener(object : ImageRequest.Listener {
-                @OptIn(UnstableApi::class) override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                 override fun onError(request: ImageRequest, throwable: ErrorResult) {
                     addShortcut(feed, null)
                 }
-                @OptIn(UnstableApi::class) override fun onSuccess(request: ImageRequest, result: SuccessResult) {
+                 override fun onSuccess(request: ImageRequest, result: SuccessResult) {
                     addShortcut(feed, (result.drawable as BitmapDrawable).bitmap)
                 }
             })

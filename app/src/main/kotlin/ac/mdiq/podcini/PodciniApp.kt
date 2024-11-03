@@ -22,7 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.StrictMode
 import android.util.Log
-import androidx.media3.common.util.UnstableApi
+
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +39,7 @@ class PodciniApp : Application() {
             return downloader
         }
 
-    @UnstableApi
+    
     override fun onCreate() {
         super.onCreate()
         ClientConfig.USER_AGENT = "Podcini/" + BuildConfig.VERSION_NAME

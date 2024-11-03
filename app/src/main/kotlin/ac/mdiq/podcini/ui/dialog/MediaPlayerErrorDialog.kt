@@ -1,6 +1,8 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity
 import android.content.DialogInterface
 import android.text.Spannable
@@ -8,12 +10,8 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.FlowEvent
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 
-@OptIn(UnstableApi::class)
+
 object MediaPlayerErrorDialog {
     fun show(activity: Activity, event: FlowEvent.PlayerErrorEvent) {
         val errorDialog = MaterialAlertDialogBuilder(activity)

@@ -4,8 +4,6 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 
 object PreferenceUpgrader {
@@ -28,7 +26,7 @@ object PreferenceUpgrader {
         }
     }
 
-    @OptIn(UnstableApi::class) private fun upgrade(oldVersion: Int, context: Context) {
+     private fun upgrade(oldVersion: Int, context: Context) {
         //New installation
         if (oldVersion == -1) return
     }

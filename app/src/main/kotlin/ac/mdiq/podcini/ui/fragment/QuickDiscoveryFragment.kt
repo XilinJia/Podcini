@@ -25,7 +25,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import coil.load
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -68,7 +66,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     private lateinit var errorView: LinearLayout
     private lateinit var errorRetry: Button
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = QuickFeedDiscoveryBinding.inflate(inflater)
 
@@ -195,7 +193,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         }
     }
 
-    @OptIn(UnstableApi::class) override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val podcast: PodcastSearchResult? = adapter.getItem(position)
         if (podcast?.feedUrl.isNullOrEmpty()) return
 
@@ -294,7 +292,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             needsConfirm = prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
         }
 
-        @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             // Inflate the layout for this fragment
             _binding = ComposeFragmentBinding.inflate(inflater)
             Logd(TAG, "fragment onCreateView")

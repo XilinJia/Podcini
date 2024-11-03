@@ -34,9 +34,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
-import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
 import com.google.common.util.concurrent.Futures
@@ -52,7 +50,6 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-
 
 class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     override fun downloadNow(context: Context, item: Episode, ignoreConstraints: Boolean) {
@@ -107,7 +104,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         private val isLastRunAttempt: Boolean
             get() = runAttemptCount >= 2
 
-        @UnstableApi
+        
         override fun doWork(): Result {
             Logd(TAG, "starting doWork")
             ClientConfigurator.initialize(applicationContext)
@@ -163,7 +160,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
         }
-        @OptIn(UnstableApi::class)
+        
         private fun performDownload(media: EpisodeMedia, request: DownloadRequest): Result {
             Logd(TAG, "starting performDownload")
             if (request.destination == null) {
@@ -295,7 +292,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         }
 
         class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult, private val request: DownloadRequest) : Runnable {
-            @UnstableApi override fun run() {
+             override fun run() {
                 var item = realm.query(Episode::class).query("id == ${request.feedfileId}").first().find()
                 if (item == null) {
                     Log.e(TAG, "Could not find downloaded episode object in database")
@@ -356,7 +353,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 return constraints.build()
             }
 
-        @OptIn(UnstableApi::class)
+        
         private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
             Logd(TAG, "starting getRequest")
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)

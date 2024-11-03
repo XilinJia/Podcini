@@ -1,18 +1,15 @@
 package ac.mdiq.podcini.ui.activity.starter
 
-
 import ac.mdiq.podcini.R
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 
 /**
  * Launches the video player activity of the app with specific arguments.
  * Does not require a dependency on the actual implementation of the activity.
  */
-@OptIn(UnstableApi::class) class VideoPlayerActivityStarter(private val context: Context) {
+ class VideoPlayerActivityStarter(private val context: Context) {
     val intent: Intent = Intent(INTENT)
     val pendingIntent: PendingIntent
         get() = PendingIntent.getActivity(context, R.id.pending_intent_video_player, intent,

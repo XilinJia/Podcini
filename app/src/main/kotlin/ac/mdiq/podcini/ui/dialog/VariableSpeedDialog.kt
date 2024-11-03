@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.dialog
 
 //import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
+
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
@@ -26,9 +27,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -43,7 +42,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
-@OptIn(UnstableApi::class)
+
 open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private var _binding: SpeedSelectDialogBinding? = null
     private val binding get() = _binding!!
@@ -60,7 +59,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         selectedSpeeds = ArrayList(playbackSpeedArray)
     }
 
-    @UnstableApi override fun onStart() {
+     override fun onStart() {
         super.onStart()
         Logd(TAG, "onStart: playbackService ready: ${playbackService?.isServiceReady()}")
 
@@ -75,7 +74,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedFB))
     }
 
-    @UnstableApi override fun onStop() {
+     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
     }
@@ -102,7 +101,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         addCurrentSpeedChip.text = String.format(Locale.getDefault(), "%1$.2f", event.newSpeed)
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = SpeedSelectDialogBinding.inflate(inflater)
 
         settingCode = (arguments?.getBooleanArray("settingCode") ?: BooleanArray(3) {true})
@@ -144,7 +143,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         return binding.root
     }
 
-    @OptIn(UnstableApi::class) override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (playbackService?.isServiceReady() == false) {
             binding.currentAudio.visibility = View.INVISIBLE
@@ -210,7 +209,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
             return ViewHolder(chip)
         }
 
-        @UnstableApi override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val speed = selectedSpeeds[position]
 
             holder.chip.text = String.format(Locale.getDefault(), "%1$.2f", speed)

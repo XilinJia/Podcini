@@ -12,17 +12,15 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Rating
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat.getString
-import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import org.apache.commons.lang3.StringUtils
 import org.json.JSONArray
@@ -34,7 +32,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
-@UnstableApi class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncService(context, params), ISyncService {
+class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncService(context, params), ISyncService {
 
 //    val TAG = this::class.simpleName ?: "Anonymous"
 
@@ -109,7 +107,7 @@ import kotlin.math.min
 
     private var socket: Socket? = null
 
-    @OptIn(UnstableApi::class) override fun login() {
+     override fun login() {
         Logd(TAG, "serverIp: $hostIp serverPort: $hostPort $isGuest")
         EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "2"))
         if (!isPortInUse(hostPort)) {
@@ -164,7 +162,7 @@ import kotlin.math.min
         EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "5"))
     }
 
-    @OptIn(UnstableApi::class) private fun isPortInUse(port: Int): Boolean {
+     private fun isPortInUse(port: Int): Boolean {
         val command = "netstat -tlnp"
         val process = Runtime.getRuntime().exec(command)
         val output = process.inputStream.bufferedReader().use { it.readText() }

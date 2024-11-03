@@ -56,7 +56,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import coil.compose.AsyncImage
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.*
@@ -69,7 +69,7 @@ import java.util.concurrent.Semaphore
 /**
  * Displays a list of FeedItems.
  */
-@UnstableApi class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -110,7 +110,7 @@ import java.util.concurrent.Semaphore
         if (args != null) feedID = args.getLong(ARGUMENT_FEED_ID)
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
 
         _binding = ComposeFragmentBinding.inflate(inflater)
@@ -178,7 +178,10 @@ import java.util.concurrent.Semaphore
                         Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
                         runOnIOScope {
                             val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
-                            if (feed_ != null) upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+                            if (feed_ != null) {
+                                upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+                                loadFeed()
+                            }
                         }
                     }
                 }
@@ -367,7 +370,7 @@ import java.util.concurrent.Semaphore
         super.onDestroyView()
     }
 
-//    @UnstableApi
+//    
 //    private fun refreshPosCallback(pos: Int, episode: Episode) {
 //        Logd(TAG, "FeedEpisode refreshPosCallback: $pos ${episode.title}")
 ////        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
@@ -396,7 +399,7 @@ import java.util.concurrent.Semaphore
 ////            horizontalSpacing, binding.header.headerContainer.paddingBottom)
 //    }
 
-    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         if (feed == null) {
             (activity as MainActivity).showSnackbarAbovePlayer(R.string.please_wait_for_data, Toast.LENGTH_LONG)
             return true
@@ -547,7 +550,7 @@ import java.util.concurrent.Semaphore
         rightActionState.value = swipeActions.actions.right[0]
     }
 
-    @UnstableApi private fun refreshHeaderView() {
+     private fun refreshHeaderView() {
         setupHeaderView()
         if (feed == null) {
             Log.e(TAG, "Unable to refresh header view")
@@ -577,7 +580,7 @@ import java.util.concurrent.Semaphore
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
     }
 
-    @UnstableApi private fun setupHeaderView() {
+     private fun setupHeaderView() {
         if (feed == null || headerCreated) return
 
 //        binding.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
@@ -602,7 +605,7 @@ import java.util.concurrent.Semaphore
 //        }
 //    }
 
-//    @UnstableApi private fun showFeedInfo() {
+//     private fun showFeedInfo() {
 //        if (feed != null) {
 //            val fragment = FeedInfoFragment.newInstance(feed!!)
 //            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
@@ -627,18 +630,7 @@ import java.util.concurrent.Semaphore
         }
         return false
     }
-
-//    private fun redoFilter(list: List<Episode>? = null) {
-//        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
-//            val episodes_ = list ?: episodes.toList()
-//            episodes.clear()
-//            episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
-//            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-//            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
-//        }
-//    }
-
-    @UnstableApi
+    
     private fun loadFeed() {
         if (!loadItemsRunning) {
             loadItemsRunning = true
@@ -650,6 +642,7 @@ import java.util.concurrent.Semaphore
                             Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                             val etmp = mutableListOf<Episode>()
                             if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
+                                Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                                 val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
 //                                val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
                                 etmp.addAll(episodes_)
@@ -719,7 +712,7 @@ import java.util.concurrent.Semaphore
     }
 
 //    class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
-//        @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {
+//         override fun onFilterChanged(newFilterValues: Set<String>) {
 //            if (feed != null) {
 //                Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
 //                runOnIOScope {
@@ -747,7 +740,7 @@ import java.util.concurrent.Semaphore
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
-        @UnstableApi override fun onSelectionChanged() {
+         override fun onSelectionChanged() {
             super.onSelectionChanged()
             if (feed != null) {
                 Logd(TAG, "persist Episode SortOrder")

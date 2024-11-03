@@ -64,7 +64,6 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableStateOf
@@ -75,7 +74,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import androidx.window.layout.WindowMetricsCalculator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -89,7 +87,7 @@ import kotlin.math.min
 /**
  * Activity for playing video files.
  */
-@UnstableApi
+
 class VideoplayerActivity : CastEnabledActivity() {
 
     private var _binding: VideoplayerActivityBinding? = null
@@ -162,7 +160,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         if (::videoEpisodeFragment.isInitialized) videoEpisodeFragment.setForVideoMode()
     }
 
-    @UnstableApi
+    
     override fun onResume() {
         super.onResume()
         setForVideoMode()
@@ -190,7 +188,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         if (!PictureInPictureUtil.isInPictureInPictureMode(this)) compatEnterPictureInPicture()
     }
 
-    @UnstableApi
+    
     override fun onStart() {
         super.onStart()
         procFlowEvents()
@@ -244,7 +242,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         return true
     }
 
-    @UnstableApi
+    
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
 
@@ -426,7 +424,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         private val binding get() = _binding!!
         private var statusHandler: ServiceStatusHandler? = null
 
-        @UnstableApi override fun onStart() {
+         override fun onStart() {
             super.onStart()
             statusHandler = object : ServiceStatusHandler(requireActivity()) {
                 override fun loadMediaInfo() {
@@ -435,7 +433,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             }
             statusHandler?.init()
         }
-        @UnstableApi override fun onStop() {
+         override fun onStop() {
             super.onStop()
             statusHandler?.release()
             statusHandler = null
@@ -453,7 +451,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             _binding = null
             super.onDestroyView()
         }
-        @UnstableApi private fun setupAudioTracks() {
+         private fun setupAudioTracks() {
             val butAudioTracks = binding.audioTracks
             if (audioTracks.size < 2 || selectedAudioTrack < 0) {
                 butAudioTracks.visibility = View.GONE
@@ -476,7 +474,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
     }
 
-    @UnstableApi
+    
     class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         private var _binding: VideoEpisodeFragmentBinding? = null
         private val binding get() = _binding!!
@@ -527,7 +525,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
                 holder.setFixedSize(width, height)
             }
-            @UnstableApi
+            
             override fun surfaceCreated(holder: SurfaceHolder) {
                 Logd(TAG, "Videoview holder created")
                 videoSurfaceCreated = true
@@ -549,7 +547,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             }
         }
 
-        @OptIn(UnstableApi::class)
+        
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
             Logd(TAG, "fragment onCreateView")
@@ -561,7 +559,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             return root
         }
 
-        @OptIn(UnstableApi::class)
+        
         private fun newStatusHandler(): ServiceStatusHandler {
             return object : ServiceStatusHandler(requireActivity()) {
                 override fun updatePlayButton(showPlay: Boolean) {
@@ -586,14 +584,14 @@ class VideoplayerActivity : CastEnabledActivity() {
             }
         }
 
-        @UnstableApi
+        
         override fun onStart() {
             super.onStart()
             onPositionObserverUpdate()
             procFlowEvents()
         }
 
-        @UnstableApi
+        
         override fun onStop() {
             super.onStop()
             cancelFlowEvents()
@@ -689,7 +687,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
 
         private var loadItemsRunning = false
-        @OptIn(UnstableApi::class)
+        
         private fun loadMediaInfo() {
             Logd(TAG, "loadMediaInfo called")
             if (curMedia == null) return
@@ -749,7 +747,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             }
         }
 
-        @UnstableApi
+        
         private fun setupView() {
             showTimeLeft = shouldShowRemainingTime()
             Logd(TAG, "setupView showTimeLeft: $showTimeLeft")
@@ -843,19 +841,19 @@ class VideoplayerActivity : CastEnabledActivity() {
             })
         }
 
-        @UnstableApi
+        
         fun onRewind() {
             playbackService?.mPlayer?.seekDelta(-rewindSecs * 1000)
             setupVideoControlsToggler()
         }
 
-        @UnstableApi
+        
         fun onPlayPause() {
             playPause()
             setupVideoControlsToggler()
         }
 
-        @UnstableApi
+        
         fun onFastForward() {
             playbackService?.mPlayer?.seekDelta(fastForwardSecs * 1000)
             setupVideoControlsToggler()

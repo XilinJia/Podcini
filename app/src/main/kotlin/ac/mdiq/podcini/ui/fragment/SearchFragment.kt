@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -65,7 +65,7 @@ import java.text.NumberFormat
 /**
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
-@UnstableApi
+
 class SearchFragment : Fragment() {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
@@ -87,7 +87,7 @@ class SearchFragment : Fragment() {
         automaticSearchDebouncer = Handler(Looper.getMainLooper())
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SearchFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
         setupToolbar(binding.toolbar)
@@ -148,12 +148,12 @@ class SearchFragment : Fragment() {
         searchView.setQuery(requireArguments().getString(ARG_QUERY), true)
         searchView.requestFocus()
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            @UnstableApi override fun onQueryTextSubmit(s: String): Boolean {
+             override fun onQueryTextSubmit(s: String): Boolean {
                 searchView.clearFocus()
                 search()
                 return true
             }
-            @UnstableApi override fun onQueryTextChange(s: String): Boolean {
+             override fun onQueryTextChange(s: String): Boolean {
                 automaticSearchDebouncer.removeCallbacksAndMessages(null)
                 if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL))
                     search()
@@ -233,7 +233,7 @@ class SearchFragment : Fragment() {
     }
 
     @SuppressLint("StringFormatMatches")
-    @UnstableApi private fun search() {
+     private fun search() {
 //        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
 
@@ -344,7 +344,7 @@ class SearchFragment : Fragment() {
         }
     }
 
-    @UnstableApi private fun performSearch(): Pair<List<Episode>, List<Feed>> {
+     private fun performSearch(): Pair<List<Episode>, List<Feed>> {
         val query = searchView.query.toString()
         if (query.isEmpty()) return Pair<List<Episode>, List<Feed>>(emptyList(), emptyList())
 
@@ -433,7 +433,7 @@ class SearchFragment : Fragment() {
         imm.showSoftInput(view, 0)
     }
 
-    @UnstableApi private fun searchOnline() {
+     private fun searchOnline() {
         searchView.clearFocus()
         val inVal = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inVal.hideSoftInputFromWindow(searchView.windowToken, 0)

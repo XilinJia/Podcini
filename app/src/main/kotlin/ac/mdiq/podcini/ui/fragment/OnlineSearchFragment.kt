@@ -28,7 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +39,7 @@ import kotlinx.coroutines.withContext
 /**
  * Provides actions for adding new podcast subscriptions.
  */
-@UnstableApi
+
 class OnlineSearchFragment : Fragment() {
 
     private var _binding: AddfeedBinding? = null
@@ -163,7 +163,7 @@ class OnlineSearchFragment : Fragment() {
         startActivity(intent)
     }
 
-    @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
+     private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
@@ -182,7 +182,7 @@ class OnlineSearchFragment : Fragment() {
         }
     }
 
-    @UnstableApi private fun addLocalFolder(uri: Uri): Feed? {
+     private fun addLocalFolder(uri: Uri): Feed? {
         requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
         requireNotNull(documentFile) { "Unable to retrieve document tree" }

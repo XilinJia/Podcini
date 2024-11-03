@@ -19,19 +19,17 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 
-@UnstableApi
+
 class AllEpisodesFragment : BaseEpisodesFragment() {
     private var allEpisodes: List<Episode> = listOf()
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
@@ -85,7 +83,7 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         return PREF_NAME
     }
 
-    @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
 
         when (item.itemId) {

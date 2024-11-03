@@ -31,10 +31,8 @@ import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.core.app.NotificationManagerCompat
 import androidx.documentfile.provider.DocumentFile
-import androidx.media3.common.util.UnstableApi
 import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.Job
 import java.io.File
@@ -102,7 +100,7 @@ object Episodes {
         return runOnIOScope {
             if (episode.media == null) return@runOnIOScope
             val episode_ = deleteMediaSync(context, episode)
-            if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, episode_)
+            if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(episode_)
         }
     }
 
@@ -181,7 +179,7 @@ object Episodes {
      * Remove the listed episodes and their EpisodeMedia entries.
      * Deleting media also removes the download log entries.
      */
-    @UnstableApi
+    
     fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
         return runOnIOScope {
             val removedFromQueue: MutableList<Episode> = mutableListOf()
@@ -226,7 +224,7 @@ object Episodes {
      * @param episodes   the FeedItems.
      * @param resetMediaPosition true if this method should also reset the position of the Episode's EpisodeMedia object.
      */
-    @OptIn(UnstableApi::class)
+    
     fun setPlayState(played: Int, resetMediaPosition: Boolean, vararg episodes: Episode) : Job {
         Logd(TAG, "setPlayState called")
         return runOnIOScope {

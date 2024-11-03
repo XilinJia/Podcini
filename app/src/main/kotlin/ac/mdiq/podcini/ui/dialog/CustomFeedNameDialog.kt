@@ -2,19 +2,16 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
 import android.app.Activity
 import android.content.DialogInterface
 import android.view.LayoutInflater
-import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
-import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.lang.ref.WeakReference
 
-@OptIn(UnstableApi::class)
+
 class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
     private val activityRef: WeakReference<Activity> = WeakReference(activity)
 

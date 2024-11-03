@@ -1,3 +1,13 @@
+# 6.13.3
+
+* on playing the next episode in queue, if its state is lower than InProgress, the state is set as such
+* added "add commment" in swipe actions
+* in FeedEpisodes, fixed incorrect ordering of episodes after filtering
+* when removing episode media, if remove-from-queue is set, the episode is removed from all queues rather than only the active queue
+* removed the @UnstableAPI annotations previously required for Media3
+* updated Contributing.md
+* various dependencies update
+
 # 6.13.2
 
 * replaced the setting of prefSmartMarkAsPlayedSecs by an adaptive internal val smartMarkAsPlayedPercent = 95

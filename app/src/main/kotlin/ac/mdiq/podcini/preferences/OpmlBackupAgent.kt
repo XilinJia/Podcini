@@ -16,8 +16,6 @@ import android.content.Context
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import org.apache.commons.io.IOUtils
 import org.xmlpull.v1.XmlPullParserException
@@ -95,7 +93,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 IOUtils.closeQuietly(writer)
             }
         }
-        @OptIn(UnstableApi::class)
+        
         override fun restoreEntity(data: BackupDataInputStream) {
             Logd(TAG, "Backup restore")
             if (OPML_ENTITY_KEY != data.key) {

@@ -26,7 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-@UnstableApi
+
 abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     val TAG = this::class.simpleName ?: "Anonymous"
 
@@ -57,7 +57,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     private val vms = mutableStateListOf<EpisodeVM>()
     var showFilterDialog by mutableStateOf(false)
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = ComposeFragmentBinding.inflate(inflater)
@@ -130,7 +130,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 //    }
 
     @Deprecated("Deprecated in Java")
-    @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
+     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
         val itemId = item.itemId
         when (itemId) {

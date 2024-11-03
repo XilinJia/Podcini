@@ -9,13 +9,13 @@ import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
 import androidx.core.content.ContextCompat
-import androidx.media3.common.util.UnstableApi
+
 
 /**
  * Receives media button events.
  */
 class MediaButtonReceiver : BroadcastReceiver() {
-    @UnstableApi
+    
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive Received intent: $intent")
         Log.d(TAG, "onReceive Action: ${intent.action}")

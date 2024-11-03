@@ -8,15 +8,15 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
-import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
@@ -30,11 +30,9 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.annotation.OptIn
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -64,7 +62,7 @@ class StatisticsFragment : Fragment() {
     private var _binding: PagerFragmentBinding? = null
     private val binding get() = _binding!!
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
         _binding = PagerFragmentBinding.inflate(inflater)
@@ -98,7 +96,7 @@ class StatisticsFragment : Fragment() {
     }
 
     @Deprecated("Deprecated in Java")
-    @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
+     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.statistics_reset) {
             confirmResetStatistics()
             return true
@@ -133,7 +131,7 @@ class StatisticsFragment : Fragment() {
         })
     }
 
-    @UnstableApi private fun confirmResetStatistics() {
+     private fun confirmResetStatistics() {
         val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
             R.string.statistics_reset_data, R.string.statistics_reset_data_msg) {
             override fun onConfirmButtonPressed(dialog: DialogInterface) {
@@ -144,7 +142,7 @@ class StatisticsFragment : Fragment() {
         conDialog.createNewDialog().show()
     }
 
-    @UnstableApi private fun doResetStatistics() {
+     private fun doResetStatistics() {
         prefs!!.edit()
             .putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
             .putLong(PREF_FILTER_FROM, 0)

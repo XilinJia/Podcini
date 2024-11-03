@@ -15,9 +15,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
-import androidx.annotation.OptIn
 import androidx.fragment.app.DialogFragment
-import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -95,7 +93,7 @@ class TagSettingsDialog : DialogFragment() {
         super.onDestroyView()
     }
 
-    @OptIn(UnstableApi::class) private fun updatePreferencesTags(commonTags: Set<String>) {
+     private fun updatePreferencesTags(commonTags: Set<String>) {
         for (i in 0..feedList.size-1) {
             val f = feedList[i]
             Logd(TAG, "${f.title} $displayedTags")

@@ -69,7 +69,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.RecyclerView
@@ -89,7 +89,7 @@ import kotlin.math.min
 /**
  * The activity that is shown when the user launches the app.
  */
-@UnstableApi
+
 class MainActivity : CastEnabledActivity() {
     private var drawerLayout: DrawerLayout? = null
 
@@ -178,7 +178,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     private var prevState: Int = 0
-    private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
+    private val bottomSheetCallback: BottomSheetCallback =  object : BottomSheetCallback() {
         override fun onStateChanged(view: View, state: Int) {
             Logd(TAG, "bottomSheet onStateChanged $state ${view.id}")
             when (state) {
@@ -214,7 +214,7 @@ class MainActivity : CastEnabledActivity() {
             return displayMetrics.widthPixels
         }
 
-    @UnstableApi public override fun onCreate(savedInstanceState: Bundle?) {
+     public override fun onCreate(savedInstanceState: Bundle?) {
         lastTheme = getNoTitleTheme(this)
         setTheme(lastTheme)
 

@@ -46,7 +46,6 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -74,7 +73,6 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
@@ -95,7 +93,6 @@ import java.util.*
 /**
  * Displays information about an Episode (FeedItem) and actions.
  */
-@UnstableApi
 class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -125,7 +122,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var actionButton1 by mutableStateOf<EpisodeActionButton?>(null)
     private var actionButton2 by mutableStateOf<EpisodeActionButton?>(null)
 
-    @UnstableApi
+    
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
@@ -307,7 +304,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         cancelFlowEvents()
     }
 
-    @OptIn(UnstableApi::class)
+    
     private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
         val isLocaleRtl = (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL)
         val balloon: Balloon = Balloon.Builder(requireContext())
@@ -344,7 +341,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
     }
 
-    @UnstableApi
+    
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.share_notes -> {
@@ -383,7 +380,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @UnstableApi
+    
     override fun onResume() {
         super.onResume()
         if (itemLoaded) {
@@ -392,7 +389,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @OptIn(UnstableApi::class) override fun onDestroyView() {
+     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         episode = null
 //        webvDescription.clearHistory()
@@ -403,7 +400,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onDestroyView()
     }
 
-    @UnstableApi
+    
     private fun onFragmentLoaded() {
 //        if (!itemLoaded)
 //            webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
@@ -417,7 +414,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
 //    }
 
-    @UnstableApi
+    
     private fun updateAppearance() {
         if (episode == null) {
             Logd(TAG, "updateAppearance item is null")
@@ -453,7 +450,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         updateButtons()
     }
 
-    @UnstableApi
+    
     private fun updateButtons() {
 //        binding.circularProgressBar.visibility = View.GONE
         val dls = DownloadServiceInterface.get()
@@ -503,7 +500,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        return webvDescription.onContextItemSelected(item)
 //    }
 
-    @OptIn(UnstableApi::class) private fun openPodcast() {
+     private fun openPodcast() {
         if (episode?.feedId == null) return
 
         val fragment: Fragment = FeedEpisodesFragment.newInstance(episode!!.feedId!!)
@@ -585,7 +582,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private var loadItemsRunning = false
-    @UnstableApi
+    
     private fun load() {
 //        if (!itemLoaded) binding.progbarLoading.visibility = View.VISIBLE
         Logd(TAG, "load() called")
@@ -654,7 +651,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         private var tts: TextToSpeech? = null
         private var ttsReady = false
 
-        @UnstableApi
+        
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
             _binding = EpisodeHomeFragmentBinding.inflate(inflater, container, false)
@@ -681,13 +678,13 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             return binding.root
         }
 
-        @OptIn(UnstableApi::class) private fun switchMode() {
+         private fun switchMode() {
             readMode = !readMode
             showContent()
             updateAppearance()
         }
 
-        @OptIn(UnstableApi::class) private fun showReaderContent() {
+         private fun showReaderContent() {
             runOnIOScope {
                 if (!episode?.link.isNullOrEmpty()) {
                     if (cleanedNotes == null) {
@@ -789,7 +786,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 onPrepareMenu(menu)
             }
 
-            @OptIn(UnstableApi::class) override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
                     R.id.switch_home -> {
                         switchMode()
@@ -843,7 +840,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
         }
 
-        @UnstableApi
+        
         override fun onResume() {
             super.onResume()
             updateAppearance()
@@ -857,7 +854,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             webview.destroy()
         }
 
-        @OptIn(UnstableApi::class) override fun onDestroyView() {
+         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             cleatWebview(binding.webView)
             cleatWebview(binding.readerView)
@@ -868,7 +865,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             super.onDestroyView()
         }
 
-        @UnstableApi
+        
         private fun updateAppearance() {
             if (episode == null) {
                 Logd(TAG, "updateAppearance currentItem is null")

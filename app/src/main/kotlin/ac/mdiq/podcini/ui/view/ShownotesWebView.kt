@@ -25,7 +25,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.snackbar.Snackbar
 import kotlin.math.max
 
@@ -75,7 +75,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         })
     }
 
-    @UnstableApi override fun onLongClick(v: View): Boolean {
+     override fun onLongClick(v: View): Boolean {
         val r: HitTestResult = getHitTestResult()
         when (r.type) {
             HitTestResult.SRC_ANCHOR_TYPE -> {

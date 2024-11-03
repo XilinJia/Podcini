@@ -12,9 +12,9 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.view.KeyEvent
 import androidx.annotation.RequiresApi
-import androidx.media3.common.util.UnstableApi
 
-@UnstableApi
+
+
 @RequiresApi(api = Build.VERSION_CODES.N)
 class QuickSettingsTileService : TileService() {
     override fun onTileAdded() {

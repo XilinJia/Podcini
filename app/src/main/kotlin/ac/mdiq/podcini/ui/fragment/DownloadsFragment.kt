@@ -41,7 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,7 +55,7 @@ import java.util.*
 /**
  * Displays all completed downloads and provides a button to delete them.
  */
-@UnstableApi class DownloadsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+ class DownloadsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -74,7 +74,7 @@ import java.util.*
 
     private var displayUpArrow = false
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = ComposeFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
@@ -163,7 +163,7 @@ import java.util.*
         super.onDestroyView()
     }
 
-    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.filter_items -> {
                 showFilterDialog = true

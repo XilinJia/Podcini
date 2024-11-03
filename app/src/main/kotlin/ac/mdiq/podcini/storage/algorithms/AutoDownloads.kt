@@ -19,7 +19,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import androidx.media3.common.util.UnstableApi
+
 import io.realm.kotlin.UpdatePolicy
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -48,7 +48,7 @@ object AutoDownloads {
      * @param context  Used for accessing the DB.
      * @return A Future that can be used for waiting for the methods completion.
      */
-    @UnstableApi
+    
     fun autodownloadEpisodeMedia(context: Context, feeds: List<Feed>? = null): Future<*> {
         Logd(TAG, "autodownloadEpisodeMedia")
         return autodownloadExec.submit(downloadAlgorithm.autoDownloadEpisodeMedia(context, feeds))
@@ -69,7 +69,7 @@ object AutoDownloads {
          * @return A Runnable that will be submitted to an ExecutorService.
          */
 //        likely not needed
-        @UnstableApi
+        
         open fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>? = null): Runnable? {
             return Runnable {}
         }
@@ -89,7 +89,7 @@ object AutoDownloads {
 
     class FeedBasedAutoDLAlgorithm : AutoDownloadAlgorithm() {
 
-        @UnstableApi
+        
         override fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>?): Runnable {
             return Runnable {
                 // true if we should auto download based on network status

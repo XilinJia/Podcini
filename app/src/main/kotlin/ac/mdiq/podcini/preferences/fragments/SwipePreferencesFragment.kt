@@ -1,18 +1,16 @@
 package ac.mdiq.podcini.preferences.fragments
 
-import android.os.Bundle
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.showSettingDialog
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-//import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.*
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
+import android.os.Bundle
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+
 
 class SwipePreferencesFragment : PreferenceFragmentCompat() {
-    @OptIn(UnstableApi::class) override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_swipe)
 
         findPreference<Preference>(Prefs.prefSwipeQueue.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {

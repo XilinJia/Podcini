@@ -12,13 +12,13 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.media3.common.util.UnstableApi
+
 
 /**
  * Receives intents from Podcini Single Purpose apps
  */
 class SPAReceiver : BroadcastReceiver() {
-    @UnstableApi override fun onReceive(context: Context, intent: Intent) {
+     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION_SP_APPS_QUERY_FEEDS_REPSONSE) return
         Log.d(TAG, "onReceive called with action: ${intent.action}")
 

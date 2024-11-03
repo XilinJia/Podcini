@@ -10,7 +10,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.speedforwardSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
+import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity
@@ -21,9 +22,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.view.LayoutInflater
-import androidx.annotation.OptIn
 import androidx.collection.ArrayMap
-import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -44,7 +43,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.playback_pref)
     }
 
-    @OptIn(UnstableApi::class)
+    
     private fun setupPlaybackScreen() {
         findPreference<Preference>(Prefs.prefPlaybackSpeedLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
@@ -133,7 +132,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 //        pref!!.entries = entries
 //    }
 
-    @UnstableApi
+    
     class EditFallbackSpeedDialog(activity: Activity) {
         val TAG = this::class.simpleName ?: "Anonymous"
         private val activityRef = WeakReference(activity)
@@ -159,7 +158,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    @UnstableApi
+    
     class EditForwardSpeedDialog(activity: Activity) {
         val TAG = this::class.simpleName ?: "Anonymous"
         private val activityRef = WeakReference(activity)

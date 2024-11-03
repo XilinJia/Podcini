@@ -53,22 +53,3 @@ Testing and Verifying
 --------------------------
 
 As a developer contributing to Podcini, we ask that you test the feature yourself manually and better yet, add unit and functional tests to any feature of bug you fix.
-
-### Running Unit Tests
-
-- `./gradlew :core:testPlayDebugUnitTest`
-
-### Running Integration Tests
-
-#### Using Android Studio
-
-- Create a configuration via 'Run->Edit Configurations...'
-
-<img width="768" alt="podcini-run-tests"
-src="https://user-images.githubusercontent.com/149837/105122859-e1317180-5a8b-11eb-8d45-d54a3b051a9b.png">
-
-#### Using the command line
-
-- Start an AVD or plug in your phone
-
-- `sh .github/workflows/runTests.sh`

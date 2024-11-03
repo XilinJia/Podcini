@@ -80,7 +80,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import androidx.media3.session.MediaController
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
@@ -95,7 +95,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.max
 
-@UnstableApi
+
 class AudioPlayerFragment : Fragment() {
     private var isCollapsed by mutableStateOf(true)
 
@@ -556,8 +556,7 @@ class AudioPlayerFragment : Fragment() {
         txtvPlaybackSpeed = speedStr
     }
 
-    @UnstableApi
-    fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
+    private fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
         Logd(TAG, "onPositionUpdate")
         if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia is EpisodeMedia) {
             if (isCurrentlyPlaying(curMedia as? EpisodeMedia)) playButRes = R.drawable.ic_pause
@@ -588,8 +587,8 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-    @UnstableApi
-    fun updateUi(media: Playable) {
+    
+    private fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
@@ -726,7 +725,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "displayCoverImage: imgLoc: $imgLoc")
     }
 
-    @UnstableApi private fun seekToPrevChapter() {
+     private fun seekToPrevChapter() {
         val curr: Chapter? = currentChapter
         if (curr == null || displayedChapterIndex == -1) return
         when {
@@ -739,13 +738,13 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-    @UnstableApi private fun seekToNextChapter() {
+     private fun seekToNextChapter() {
         if (currentMedia == null || currentMedia!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= currentMedia!!.getChapters().size) return
         refreshChapterData(displayedChapterIndex + 1)
         seekTo(currentMedia!!.getChapters()[displayedChapterIndex].start.toInt())
     }
 
-    @UnstableApi private fun savePreference() {
+     private fun savePreference() {
         Logd(TAG, "Saving preferences")
         val editor = prefs?.edit() ?: return
         if (curMedia != null) {
@@ -898,7 +897,7 @@ class AudioPlayerFragment : Fragment() {
         cancelFlowEvents()
     }
 
-    @UnstableApi override fun onPause() {
+     override fun onPause() {
         super.onPause()
         savePreference()
     }

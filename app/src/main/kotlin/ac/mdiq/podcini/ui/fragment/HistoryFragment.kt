@@ -20,16 +20,14 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.min
 
-@UnstableApi class HistoryFragment : BaseEpisodesFragment() {
+class HistoryFragment : BaseEpisodesFragment() {
 
     private var sortOrder : EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
     private var startDate : Long = 0L
@@ -40,7 +38,7 @@ import kotlin.math.min
         return TAG
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
         toolbar.inflateMenu(R.menu.playback_history)
@@ -83,7 +81,7 @@ import kotlin.math.min
         super.onDestroyView()
     }
 
-    @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
         when (item.itemId) {
             R.id.episodes_sort -> HistorySortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")

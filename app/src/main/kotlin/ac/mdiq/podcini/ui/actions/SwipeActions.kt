@@ -27,7 +27,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.TypedValue
 import android.view.ViewGroup
-import androidx.annotation.OptIn
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -43,13 +42,13 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.media3.common.util.UnstableApi
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
@@ -124,7 +123,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.add_to_queue_label)
         }
-        @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             addToQueue(item)
         }
@@ -143,7 +141,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.combo_action)
         }
-        @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val composeView = ComposeView(fragment.requireContext()).apply {
                 setContent {
@@ -195,7 +192,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.delete_episode_label)
         }
-        @UnstableApi
         override fun performAction(item_: Episode, fragment: Fragment, filter: EpisodeFilter) {
             var item = item_
             if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
@@ -225,7 +221,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.set_rating_label)
         }
-        @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             var showChooseRatingDialog by mutableStateOf(true)
             val composeView = ComposeView(fragment.requireContext()).apply {
@@ -234,6 +229,46 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                         if (showChooseRatingDialog) ChooseRatingDialog(listOf(item)) {
                             showChooseRatingDialog = false
                             (fragment.view as? ViewGroup)?.removeView(this@apply)
+                        }
+                    }
+                }
+            }
+            (fragment.view as? ViewGroup)?.addView(composeView)
+        }
+    }
+
+    class AddCommentSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return ActionTypes.COMMENT.name
+        }
+        override fun getActionIcon(): Int {
+            return R.drawable.baseline_comment_24
+        }
+        override fun getActionColor(): Int {
+            return R.attr.icon_yellow
+        }
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.add_opinion_label)
+        }
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            var showEditComment by mutableStateOf(true)
+            val composeView = ComposeView(fragment.requireContext()).apply {
+                setContent {
+                    CustomTheme(fragment.requireContext()) {
+                        if (showEditComment) {
+                            ChooseRatingDialog(listOf(item)) {
+                                showEditComment = false
+                                (fragment.view as? ViewGroup)?.removeView(this@apply)
+                            }
+                            var commentTextState by remember { mutableStateOf(TextFieldValue(item.comment)) }
+                            LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it },
+                                onDismissRequest = {
+                                    showEditComment = false
+                                    (fragment.view as? ViewGroup)?.removeView(this@apply)
+                                },
+                                onSave = {
+                                    runOnIOScope { upsert(item) { it.comment = commentTextState.text } }
+                                })
                         }
                     }
                 }
@@ -273,7 +308,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.remove_history_label)
         }
-        @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
             val lastPlayedDate = item.media?.lastPlayedTime
@@ -314,7 +348,6 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         override fun getTitle(context: Context): String {
             return context.getString(R.string.remove_from_queue_label)
         }
-        @OptIn(UnstableApi::class)
         override fun performAction(item_: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val position: Int = curQueue.episodes.indexOf(item_)
             var item = item_
@@ -344,8 +377,8 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
          * @param index               Destination index. Must be in range 0..queue.size()
          * @throws IndexOutOfBoundsException if index < 0 || index >= queue.size()
          */
-        @UnstableApi
-        fun addToQueueAt(episode: Episode, index: Int) : Job {
+
+        private fun addToQueueAt(episode: Episode, index: Int) : Job {
             return runOnIOScope {
                 if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
                 if (episode.isNew) setPlayState(PlayState.UNPLAYED.code, false, episode)
@@ -519,7 +552,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         val swipeActions: List<SwipeAction> = listOf(
             NoActionSwipeAction(), ComboSwipeAction(),
             AddToQueueSwipeAction(), PutToQueueSwipeAction(),
-            StartDownloadSwipeAction(), SetRatingSwipeAction(),
+            StartDownloadSwipeAction(), SetRatingSwipeAction(), AddCommentSwipeAction(),
             SetPlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
             DeleteSwipeAction(), RemoveFromHistorySwipeAction(),
             ShelveSwipeAction(), EraseSwipeAction())
@@ -533,7 +566,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             return getPrefs(tag, "")
         }
 
-        @OptIn(UnstableApi::class) @JvmStatic
+         @JvmStatic
         fun getPrefsWithDefaults(tag: String): Actions {
             val defaultActions = when (tag) {
                 QueuesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"

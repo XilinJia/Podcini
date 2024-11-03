@@ -67,7 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
+
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.google.android.material.appbar.MaterialToolbar
@@ -83,7 +83,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.max
 
-@UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -125,7 +125,7 @@ import kotlin.math.max
         retainInstance = true
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = ComposeFragmentBinding.inflate(inflater)
 
@@ -448,7 +448,7 @@ import kotlin.math.max
         }
     }
 
-    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
             R.id.show_bin -> {
@@ -478,7 +478,7 @@ import kotlin.math.max
             R.id.clear_queue -> {
                 // make sure the user really wants to clear the queue
                 val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_queue_label, R.string.clear_queue_confirmation_msg) {
-                    @UnstableApi override fun onConfirmButtonPressed(dialog: DialogInterface) {
+                     override fun onConfirmButtonPressed(dialog: DialogInterface) {
                         dialog.dismiss()
                         clearQueue()
                     }
@@ -609,7 +609,7 @@ import kotlin.math.max
         }
     }
 
-    @UnstableApi private fun toggleQueueLock() {
+     private fun toggleQueueLock() {
         val isLocked: Boolean = isQueueLocked
         if (isLocked) setQueueLock(false)
         else {
@@ -635,7 +635,7 @@ import kotlin.math.max
         }
     }
 
-    @UnstableApi private fun setQueueLock(locked: Boolean) {
+     private fun setQueueLock(locked: Boolean) {
         isQueueLocked = locked
         appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
@@ -711,7 +711,7 @@ import kotlin.math.max
             if (ascending != EpisodeSortOrder.EPISODE_FILENAME_A_Z && ascending != EpisodeSortOrder.SIZE_SMALL_LARGE)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
-        @UnstableApi override fun onSelectionChanged() {
+         override fun onSelectionChanged() {
             super.onSelectionChanged()
             binding.keepSortedCheckbox.setEnabled(sortOrder != EpisodeSortOrder.RANDOM)
             if (sortOrder == EpisodeSortOrder.RANDOM) binding.keepSortedCheckbox.setChecked(false)

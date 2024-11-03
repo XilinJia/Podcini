@@ -34,7 +34,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
-import androidx.annotation.OptIn
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -53,7 +52,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.text.HtmlCompat
-import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -144,7 +142,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         }
     }
 
-    @UnstableApi
+    
     companion object {
 //        fun forItem(episode: Episode): EpisodeActionButton {
 //            val media = episode.media ?: return TTSActionButton(episode)
@@ -208,7 +206,7 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.ic_cancel
     }
 
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         val media = item.media
         if (media != null) DownloadServiceInterface.get()?.cancel(context, media)
@@ -231,7 +229,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.ic_play_24dp
     }
 
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         Logd("PlayActionButton", "onClick called")
         val media = item.media
@@ -290,7 +288,7 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun getDrawable(): Int {
         return R.drawable.ic_delete
     }
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         LocalDeleteModal.deleteEpisodesWarnLocal(context, listOf(item))
         actionState.value = getLabel()
@@ -304,7 +302,7 @@ class NullActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun getDrawable(): Int {
         return R.drawable.ic_questionmark
     }
-    @UnstableApi
+    
     override fun onClick(context: Context) {}
 }
 
@@ -315,7 +313,7 @@ class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun getDrawable(): Int {
         return R.drawable.ic_pause
     }
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         Logd("PauseActionButton", "onClick called")
         val media = item.media ?: return
@@ -390,7 +388,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.ic_stream
     }
 
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         if (item.media == null) return
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
@@ -405,7 +403,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {
-        @UnstableApi
+        
         fun show() {
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.stream_label)
@@ -447,7 +445,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.text_to_speech
     }
 
-    @OptIn(UnstableApi::class) override fun onClick(context: Context) {
+     override fun onClick(context: Context) {
         Logd("TTSActionButton", "onClick called")
         if (item.link.isNullOrEmpty()) {
             Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show()
@@ -577,7 +575,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun getDrawable(): Int {
         return R.drawable.ic_play_24dp
     }
-    @UnstableApi
+    
     override fun onClick(context: Context) {
         Logd("PlayLocalActionButton", "onClick called")
         val media = item.media

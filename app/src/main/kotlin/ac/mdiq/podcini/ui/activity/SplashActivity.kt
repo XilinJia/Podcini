@@ -7,7 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.media3.common.util.UnstableApi
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
  */
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : Activity() {
-    @UnstableApi override fun onCreate(savedInstanceState: Bundle?) {
+     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val content = findViewById<View>(android.R.id.content)
         content.viewTreeObserver.addOnPreDrawListener { false } // Keep splash screen active

@@ -1,4 +1,4 @@
- Version 6.13.1
+ Version 6.13.2
 
 * replaced the setting of prefSmartMarkAsPlayedSecs by an adaptive internal val smartMarkAsPlayedPercent = 95
 	* if the episode is played to over 95% of its duration, it's considered played

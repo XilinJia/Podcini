@@ -14,10 +14,10 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import android.content.Context
-import androidx.media3.common.util.UnstableApi
+
 import java.io.File
 
-@UnstableApi
+
 object ClientConfigurator {
     private var initialized = false
 

@@ -273,6 +273,7 @@
     <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
+    <string name="add_opinion_label">Add opinion</string>
     <string name="cancelled_on_label">Cancelled on</string>
 
     <string name="set_play_state_label">Set played state</string>

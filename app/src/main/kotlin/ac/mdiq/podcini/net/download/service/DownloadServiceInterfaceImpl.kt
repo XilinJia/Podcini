@@ -53,21 +53,21 @@ import java.util.concurrent.TimeUnit
 
 class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     override fun downloadNow(context: Context, item: Episode, ignoreConstraints: Boolean) {
+        if (item.media?.downloadUrl.isNullOrEmpty()) return
         Logd(TAG, "starting downloadNow")
         val workRequest: OneTimeWorkRequest.Builder = getRequest(item)
         workRequest.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         if (ignoreConstraints) workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
         else workRequest.setConstraints(constraints)
-        if (item.media?.downloadUrl != null)
-            WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
+        WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
     override fun download(context: Context, item: Episode) {
+        if (item.media?.downloadUrl.isNullOrEmpty()) return
         Logd(TAG, "starting download")
         val workRequest: OneTimeWorkRequest.Builder = getRequest(item)
         workRequest.setConstraints(constraints)
-        if (item.media?.downloadUrl != null)
-            WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
+        WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
     override fun cancel(context: Context, media: EpisodeMedia) {
@@ -84,7 +84,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 workInfoList.forEach { workInfo ->
                     if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
                         val item_ = media.episodeOrFetch()
-                        if (item_ != null) runOnIOScope { removeFromQueueSync(curQueue, item_) }
+                        if (item_ != null) removeFromQueueSync(curQueue, item_)
                     }
                 }
                 WorkManager.getInstance(context).cancelAllWorkByTag(tag)
@@ -104,7 +104,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         private val isLastRunAttempt: Boolean
             get() = runAttemptCount >= 2
 
-        
         override fun doWork(): Result {
             Logd(TAG, "starting doWork")
             ClientConfigurator.initialize(applicationContext)
@@ -160,7 +159,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
         }
-        
         private fun performDownload(media: EpisodeMedia, request: DownloadRequest): Result {
             Logd(TAG, "starting performDownload")
             if (request.destination == null) {

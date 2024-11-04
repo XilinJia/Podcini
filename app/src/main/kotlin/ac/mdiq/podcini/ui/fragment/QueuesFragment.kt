@@ -20,10 +20,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
-import ac.mdiq.podcini.storage.model.PlayQueue
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
@@ -45,31 +42,35 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.CheckBox
-import android.widget.Spinner
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -80,10 +81,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.text.NumberFormat
 import java.util.*
 import kotlin.math.max
 
- class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -101,21 +103,20 @@ import kotlin.math.max
     private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
-    var isQueueLocked = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true)
+    private var isQueueLocked = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true)
 
-    private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
-    private lateinit var spinnerTexts: MutableList<String>
-    private lateinit var queueSpinner: Spinner
-    private lateinit var spinnerAdaptor: ArrayAdapter<String>
+    private val spinnerTexts = mutableStateListOf<String>()
     private lateinit var queues: List<PlayQueue>
+    private lateinit var spinnerView:  ComposeView
 
     private var displayUpArrow = false
     private val queueItems = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
+    private var feedsAssociated = listOf<Feed>()
 
     private var showBin by mutableStateOf(false)
-
+    private var showFeeds by mutableStateOf(false)
     private var dragDropEnabled by mutableStateOf(!(isQueueKeepSorted || isQueueLocked))
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
@@ -125,60 +126,39 @@ import kotlin.math.max
         retainInstance = true
     }
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = ComposeFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
-//        toolbar.setOnLongClickListener {
-//            recyclerView.scrollToPosition(5)
-//            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-//            false
-//        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
+//        toolbar.title = "Queues"
         queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
-        spinnerTexts = queues.map { "${it.name} : ${it.episodeIds.size}" }.toMutableList()
-        spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
-        queueSpinner = spinnerLayout.findViewById(R.id.queue_spinner)
-        val params = Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        params.gravity = Gravity.CENTER_VERTICAL
-        toolbar.addView(spinnerLayout)
-        spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
-        spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        queueSpinner.adapter = spinnerAdaptor
-        queueSpinner.setSelection(queueNames.indexOf(curQueue.name))
-        queueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val prevQueueSize = curQueue.size()
-                curQueue = upsertBlk(queues[position]) { it.update() }
-                toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
-                loadCurQueue(true)
-                playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-        queueSpinner.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                Logd(TAG, "Spinner is opening")
-                val queues = realm.query(PlayQueue::class).find()
-                spinnerTexts.clear()
-                spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
-                spinnerAdaptor.notifyDataSetChanged()
-            }
-            false
-        }
+        spinnerTexts.clear()
+        spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
+
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
         refreshMenuItems()
 
-//        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-//        registerForContextMenu(recyclerView)
-//        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+        spinnerView = ComposeView(requireContext()).apply {
+            setContent {
+                Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index:Int ->
+                    Logd(TAG, "Queue selected: $queues[index].name")
+                    val prevQueueSize = curQueue.size()
+                    curQueue = upsertBlk(queues[index]) { it.update() }
+                    toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
+                    loadCurQueue(true)
+                    playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
+                }
+            }
+        }
+        toolbar.addView(spinnerView)
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
@@ -201,22 +181,22 @@ import kotlin.math.max
                         EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 } else {
-                    Column {
-                        InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
-                        val leftCB = { episode: Episode ->
-                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                    if (showFeeds) FeedsGrid()
+                    else {
+                        Column {
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            val leftCB = { episode: Episode ->
+                                if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                else leftActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                            }
+                            val rightCB = { episode: Episode ->
+                                if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                            }
+                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                                isDraggable = dragDropEnabled, dragCB = { iFrom, iTo -> runOnIOScope { moveInQueueSync(iFrom, iTo, true) } },
+                                leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                         }
-                        val rightCB = { episode: Episode ->
-                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
-                        }
-                        EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                            isDraggable = dragDropEnabled, dragCB = { iFrom, iTo ->
-//                                moveInQueue(iFrom, iTo, true)
-                                runOnIOScope { moveInQueueSync(iFrom, iTo, true) }
-                            },
-                            leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 }
             }
@@ -224,7 +204,6 @@ import kotlin.math.max
 
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-
         return binding.root
     }
 
@@ -251,13 +230,54 @@ import kotlin.math.max
         MediaBrowser.releaseFuture(browserFuture)
     }
 
-    override fun onPause() {
-        Logd(TAG, "onPause() called")
-        super.onPause()
-//        recyclerView.saveScrollPosition(TAG)
-    }
+     @OptIn(ExperimentalFoundationApi::class)
+     @Composable
+     fun FeedsGrid() {
+         val context = LocalContext.current
+         val lazyGridState = rememberLazyGridState()
+         LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(80.dp),
+             verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
+             contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)) {
+             items(feedsAssociated.size, key = {index -> feedsAssociated[index].id}) { index ->
+                 val feed by remember { mutableStateOf(feedsAssociated[index]) }
+                 ConstraintLayout {
+                     val (coverImage, episodeCount, rating, error) = createRefs()
+                     val imgLoc = remember(feed) { feed.imageUrl }
+                     AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                         .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                         contentDescription = "coverImage",
+                         modifier = Modifier.height(100.dp).aspectRatio(1f)
+                             .constrainAs(coverImage) {
+                                 top.linkTo(parent.top)
+                                 bottom.linkTo(parent.bottom)
+                                 start.linkTo(parent.start)
+                             }.combinedClickable(onClick = {
+                                 Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
+                                 (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                             }, onLongClick = {
+                                 Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
+//                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
+//                                inflater.inflate(R.menu.feed_context, contextMenu)
+//                                contextMenu.setHeaderTitle(feed.title)
+                             })
+                     )
+                     Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
+                         modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
+                             end.linkTo(parent.end)
+                             top.linkTo(coverImage.top)
+                         })
+                     if (feed.rating != Rating.UNRATED.code)
+                         Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                             modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+                                 start.linkTo(parent.start)
+                                 centerVerticallyTo(coverImage)
+                             })
+                 }
+             }
+         }
+     }
 
-    private var eventSink: Job?     = null
+     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
     private var eventKeySink: Job?     = null
     private fun cancelFlowEvents() {
@@ -304,11 +324,6 @@ import kotlin.math.max
         }
     }
 
-//    private fun refreshPosCallback(pos: Int, episode: Episode) {
-////        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
-//        if (isAdded && activity != null) refreshInfoBar()
-//    }
-
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         Logd(TAG, "onQueueEvent() called with ${event.action.name}")
         if (showBin) return
@@ -353,9 +368,7 @@ import kotlin.math.max
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
         queueChanged++
-//        adapter?.updateDragDropEnabled()
         refreshMenuItems()
-//        recyclerView.saveScrollPosition(TAG)
         refreshInfoBar()
     }
 
@@ -371,10 +384,8 @@ import kotlin.math.max
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), url)
-            if (pos >= 0) {
-//                queueItems[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
-                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
-            }
+            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+
         }
     }
 
@@ -388,9 +399,7 @@ import kotlin.math.max
     private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
         // Sent when playback position is reset
         Logd(TAG, "onUnreadItemsChanged() called with event = [$event]")
-        if (event.episode == null) {
-            if (!showBin) loadCurQueue(false)
-        }
+        if (event.episode == null && !showBin) loadCurQueue(false)
         refreshMenuItems()
     }
 
@@ -435,12 +444,14 @@ import kotlin.math.max
         if (showBin) {
             toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(false)
             toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.associated_feed)?.setVisible(false)
             toolbar.menu?.findItem(R.id.add_queue)?.setVisible(false)
             toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(false)
             toolbar.menu?.findItem(R.id.action_search)?.setVisible(false)
         } else {
             toolbar.menu?.findItem(R.id.action_search)?.setVisible(true)
             toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(true)
+            toolbar.menu?.findItem(R.id.associated_feed)?.setVisible(true)
             toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
             toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!isQueueKeepSorted)
             toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
@@ -454,23 +465,18 @@ import kotlin.math.max
             R.id.show_bin -> {
                 showBin = !showBin
                 if (showBin) {
-                    toolbar.removeView(spinnerLayout)
+                    toolbar.removeView(spinnerView)
                     toolbar.title = curQueue.name + " Bin"
                 } else {
                     toolbar.title = ""
-                    toolbar.addView(spinnerLayout)
+                    toolbar.addView(spinnerView)
                 }
                 refreshMenuItems()
                 refreshSwipeTelltale()
-                if (showBin) {
-                    item.setIcon(R.drawable.playlist_play)
-//                    speedDialView.addActionItem(addToQueueActionItem)
-                } else {
-                    item.setIcon(R.drawable.ic_history)
-//                    speedDialView.removeActionItem(addToQueueActionItem)
-                }
+                item.setIcon(if (showBin) R.drawable.playlist_play else R.drawable.ic_history)
                 loadCurQueue(false)
             }
+            R.id.associated_feed -> showFeeds = !showFeeds
             R.id.queue_lock -> toggleQueueLock()
             R.id.queue_sort -> QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
             R.id.rename_queue -> renameQueue()
@@ -533,36 +539,20 @@ import kotlin.math.max
     fun RenameQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier
-                    .wrapContentSize(align = Alignment.Center)
-                    .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf(curQueue.name) }
-                        TextField(value = newName,
-                            onValueChange = { newName = it },
-                            label = { Text("Rename (Unique name only)") }
-                        )
+                        TextField(value = newName, onValueChange = { newName = it }, label = { Text("Rename (Unique name only)") })
                         Button(onClick = {
                             if (newName.isNotEmpty() && curQueue.name != newName && queueNames.indexOf(newName) < 0) {
                                 val oldName = curQueue.name
-                                runOnIOScope {
-                                    curQueue = upsertBlk(curQueue) {
-                                        it.name = newName
-                                    }
-                                }
+                                curQueue = upsertBlk(curQueue) { it.name = newName }
                                 val index_ = queueNames.indexOf(oldName)
                                 queueNames[index_] = newName
                                 spinnerTexts[index_] = newName + " : " + curQueue.episodeIds.size
-                                spinnerAdaptor.notifyDataSetChanged()
                                 onDismiss()
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
@@ -573,19 +563,10 @@ import kotlin.math.max
     fun AddQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier
-                    .wrapContentSize(align = Alignment.Center)
-                    .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf("") }
-                        TextField(value = newName,
-                            onValueChange = { newName = it },
-                            label = { Text("Add queue (Unique name only)") }
-                        )
+                        TextField(value = newName, onValueChange = { newName = it }, label = { Text("Add queue (Unique name only)") })
                         Button(onClick = {
                             if (newName.isNotEmpty() && queueNames.indexOf(newName) < 0) {
                                 val newQueue = PlayQueue()
@@ -594,15 +575,11 @@ import kotlin.math.max
                                 upsertBlk(newQueue) {}
                                 queues = realm.query(PlayQueue::class).find()
                                 queueNames = queues.map { it.name }.toTypedArray()
+                                spinnerTexts.clear()
                                 spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
-                                spinnerAdaptor.notifyDataSetChanged()
-                                queueSpinner.adapter = spinnerAdaptor
-                                queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
                                 onDismiss()
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
@@ -610,8 +587,8 @@ import kotlin.math.max
     }
 
      private fun toggleQueueLock() {
-        val isLocked: Boolean = isQueueLocked
-        if (isLocked) setQueueLock(false)
+//        val isLocked: Boolean = isQueueLocked
+        if (isQueueLocked) setQueueLock(false)
         else {
             val shouldShowLockWarning: Boolean = prefs!!.getBoolean(PREF_SHOW_LOCK_WARNING, true)
             if (!shouldShowLockWarning) setQueueLock(true)
@@ -619,12 +596,10 @@ import kotlin.math.max
                 val builder = MaterialAlertDialogBuilder(requireContext())
                 builder.setTitle(R.string.lock_queue)
                 builder.setMessage(R.string.queue_lock_warning)
-
                 val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
                 val binding_ = CheckboxDoNotShowAgainBinding.bind(view)
                 val checkDoNotShowAgain: CheckBox = binding_.checkboxDoNotShowAgain
                 builder.setView(view)
-
                 builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
                     prefs!!.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
                     setQueueLock(true)
@@ -640,8 +615,6 @@ import kotlin.math.max
         appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         refreshMenuItems()
-//        adapter?.updateDragDropEnabled()
-
         if (queueItems.size == 0) {
             if (locked) (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
             else (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_unlocked, Snackbar.LENGTH_SHORT)
@@ -660,7 +633,6 @@ import kotlin.math.max
             for (item in queueItems) {
                 var playbackSpeed = 1f
                 if (UserPreferences.timeRespectsSpeed()) playbackSpeed = getCurrentPlaybackSpeed(item.media)
-
                 if (item.media != null) {
                     val itemTimeLeft: Long = (item.media!!.getDuration() - item.media!!.getPosition()).toLong()
                     timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
@@ -679,6 +651,7 @@ import kotlin.math.max
             Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
 //            if (queueItems.isNotEmpty()) emptyViewHandler.hide()
+            feedsAssociated = realm.query(Feed::class).query("preferences.queueId == ${curQueue.id}").find()
             queueItems.clear()
             vms.clear()
             if (showBin) queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
@@ -689,10 +662,7 @@ import kotlin.math.max
             }
             for (e in queueItems) vms.add(EpisodeVM(e))
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
-
-//            if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
             refreshInfoBar()
-//            playbackService?.notifyCurQueueItemsChanged()
             loadItemsRunning = false
         }
     }

@@ -160,19 +160,19 @@ class MainActivity : CastEnabledActivity() {
 //            Toast.makeText(context, "Please allow unrestricted background activity for this app", Toast.LENGTH_LONG).show()
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.unrestricted_background_permission_text)
-                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                    var intent = Intent()
+                .setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, _: Int ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val intent = Intent()
                         intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
 //                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).also {
 //                            val uri = Uri.parse("package:$packageName")
 //                            it.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 //                            it.data = uri
 //                        }
-                    }
-                    context.startActivity(intent)
+                        context.startActivity(intent)
+                    } else dialog?.dismiss()
                 }
-                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->  }
+                .setNegativeButton(R.string.cancel_label) { dialog, which -> dialog.dismiss() }
                 .show()
         }
     }

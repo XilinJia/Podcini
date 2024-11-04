@@ -43,12 +43,6 @@
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
-        name="Floating Action Button Speed Dial"
-        author="Roberto Leinardi"
-        website="https://github.com/leinardi/FloatingActionButtonSpeedDial"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
         name="fyydlin"
         author="Martin Fietz"
         website="https://github.com/mfietz/fyydlin"
@@ -109,12 +103,6 @@
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
-        name="RecyclerViewSwipeDecorator"
-        author="Paolo Montalto"
-        website="https://github.com/xabaras/RecyclerViewSwipeDecorator"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
         name="RxJava"
         author="ReactiveX"
         website="https://github.com/ReactiveX/RxJava"
@@ -126,12 +114,6 @@
         website="https://github.com/ByteHamster/SearchPreference"
         license="MIT"
         licenseText="LICENSE_SEARCHPREFERENCE.txt" />
-    <library
-        name="StackBlur"
-        author="Enrique López Mañas"
-        website="https://github.com/kikoso/android-stackblur"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
     <library
         name="Triangle Label View"
         author="Shota Saito"

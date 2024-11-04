@@ -1415,9 +1415,7 @@ class PlaybackService : MediaLibraryService() {
                     try {
                         ChapterUtils.loadChapters(media, context, false)
                         withContext(Dispatchers.Main) { callback.onChapterLoaded(media) }
-                    } catch (e: Throwable) {
-                        Logd(TAG, "Error loading chapters: ${Log.getStackTraceString(e)}")
-                    }
+                    } catch (e: Throwable) { Logd(TAG, "Error loading chapters: ${Log.getStackTraceString(e)}") }
                 }
             }
         }

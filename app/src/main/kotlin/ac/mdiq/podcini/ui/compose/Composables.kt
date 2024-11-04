@@ -9,31 +9,75 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
 
+@Composable
+private fun CustomTextField(
+        modifier: Modifier = Modifier,
+        leadingIcon: (@Composable () -> Unit)? = null,
+        trailingIcon: (@Composable () -> Unit)? = null,
+        placeholderText: String = "Placeholder",
+        fontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize
+) {
+    var text by rememberSaveable { mutableStateOf("") }
+    BasicTextField(
+        modifier = modifier.background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small).fillMaxWidth(),
+        value = text,
+        onValueChange = { text = it },
+        singleLine = true,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        textStyle = LocalTextStyle.current.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = fontSize
+        ),
+        decorationBox = { innerTextField ->
+            Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+                if (leadingIcon != null) leadingIcon()
+                Box(Modifier.weight(1f)) {
+                    if (text.isEmpty())
+                        Text(text = placeholderText, style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), fontSize = fontSize))
+                    innerTextField()
+                }
+                if (trailingIcon != null) trailingIcon()
+            }
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Spinner(items: List<String>, selectedItem: String, onItemSelected: (String) -> Unit) {
+fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-
+    var currentSelectedItem by remember { mutableStateOf(selectedItem) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        TextField(readOnly = true, value = selectedItem, onValueChange = {}, label = { Text("Select an item") },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }, colors = ExposedDropdownMenuDefaults.textFieldColors())
+        BasicTextField(readOnly = true, value = currentSelectedItem, onValueChange = {},
+            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
+            modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
+            decorationBox = { innerTextField ->
+                Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+                    innerTextField()
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                }
+            })
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            items.forEach { item ->
-                DropdownMenuItem(text = { Text(item) },
+            for (i in items.indices) {
+                DropdownMenuItem(text = { Text(items[i]) },
                     onClick = {
-                        onItemSelected(item)
+                        currentSelectedItem = items[i]
+                        onItemSelected(i)
                         expanded = false
                     }
                 )

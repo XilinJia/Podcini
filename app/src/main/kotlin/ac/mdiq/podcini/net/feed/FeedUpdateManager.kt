@@ -82,12 +82,10 @@ object FeedUpdateManager {
         if (isAutoUpdateDisabled) WorkManager.getInstance(context).cancelUniqueWork(WORK_ID_FEED_UPDATE)
         else {
             val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(FeedUpdateWorker::class.java, updateInterval, TimeUnit.HOURS)
-                .setConstraints(Builder()
-                    .setRequiredNetworkType(if (isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED)
-                    .build())
+                .setConstraints(Builder().setRequiredNetworkType(if (isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED).build())
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_ID_FEED_UPDATE,
-                if (replace) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP, workRequest)
+                if (replace) ExistingPeriodicWorkPolicy.UPDATE else ExistingPeriodicWorkPolicy.KEEP, workRequest)
         }
     }
 
@@ -137,11 +135,9 @@ object FeedUpdateManager {
         builder.show()
     }
 
-    
     class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
         private val notificationManager = NotificationManagerCompat.from(context)
 
-        
         override fun doWork(): Result {
             ClientConfigurator.initialize(applicationContext)
             val feedsToUpdate: MutableList<Feed>
@@ -183,7 +179,7 @@ object FeedUpdateManager {
             var bigText: String? = ""
             if (titles != null) {
                 contentText = context.resources.getQuantityString(R.plurals.downloads_left, titles.size, titles.size)
-                bigText = titles.map { "• $it" }.joinToString("\n")
+                bigText = titles.joinToString("\n") { "• $it" }
             }
             return NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID.downloading.name)
                 .setContentTitle(context.getString(R.string.download_notification_title_feeds))

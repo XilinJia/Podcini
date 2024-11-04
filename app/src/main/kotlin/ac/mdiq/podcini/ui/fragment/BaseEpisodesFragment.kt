@@ -34,8 +34,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
-
 abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     val TAG = this::class.simpleName ?: "Anonymous"
 

@@ -36,11 +36,7 @@ object LockingAsyncExecutor {
             coroutineScope.launch {
                 withContext(Dispatchers.IO) {
                     lock.lock()
-                    try {
-                        runnable.run()
-                    } finally {
-                        lock.unlock()
-                    }
+                    try { runnable.run() } finally { lock.unlock() }
                 }
             }
         }

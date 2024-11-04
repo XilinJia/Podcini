@@ -351,7 +351,6 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
                 .setNegativeButton(R.string.cancel_label, null)
             if (NetworkUtils.isNetworkRestricted && NetworkUtils.isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
             else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
-
             builder.show()
         }
         actionState.value = getLabel()

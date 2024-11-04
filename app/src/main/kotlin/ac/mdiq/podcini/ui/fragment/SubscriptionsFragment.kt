@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
-import ac.mdiq.podcini.databinding.FragmentSubscriptionsBinding
 import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -10,7 +10,6 @@ import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.fragments.ImportExportPreferencesFragment.*
-import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
@@ -45,8 +44,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,11 +57,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -103,15 +98,13 @@ import java.util.*
 
 class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private var _binding: FragmentSubscriptionsBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var toolbar: MaterialToolbar
 
     private val tags: MutableList<String> = mutableListOf()
     private val queueIds: MutableList<Long> = mutableListOf()
-    private lateinit var queuesAdapter: ArrayAdapter<String>
-    private lateinit var tagsAdapter: ArrayAdapter<String>
     private var tagFilterIndex = 1
     private var queueFilterIndex = 0
 
@@ -126,10 +119,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var feedCount by mutableStateOf("")
     private var feedSorted by mutableIntStateOf(0)
 
-//    private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered = mutableStateListOf<Feed>()
-    var showFilterDialog by mutableStateOf(false)
-    var noSubscription by mutableStateOf(false)
+    private var showFilterDialog by mutableStateOf(false)
+    private var noSubscription by mutableStateOf(false)
 
     private var useGrid by mutableStateOf<Boolean?>(null)
     private val useGridLayout by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false))
@@ -145,7 +137,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSubscriptionsBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -155,56 +147,40 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.subscriptions)
+        toolbar.title = getString(R.string.subscriptions_label)
 
         if (arguments != null) {
             displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
             toolbar.title = displayedFolder
         }
-
-        binding.infobar.setContent {
-            CustomTheme(requireContext()) {
-                InforBar()
-            }
-        }
-        binding.lazyColumn.setContent {
-            CustomTheme(requireContext()) {
-                if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
-                if (noSubscription) Text(stringResource(R.string.no_subscriptions_label))
-                LazyList()
-            }
-        }
-//        setupEmptyView()
         resetTags()
 
         val queues = realm.query(PlayQueue::class).find()
         queueIds.addAll(queues.map { it.id })
         val spinnerTexts: MutableList<String> = mutableListOf("Any queue", "No queue")
         spinnerTexts.addAll(queues.map { it.name })
-        queuesAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
-        queuesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.queuesSpinner.setAdapter(queuesAdapter)
-        binding.queuesSpinner.setSelection(queuesAdapter.getPosition("Any queue"))
-        binding.queuesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                queueFilterIndex = position
-                loadSubscriptions()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
 
-        tagsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
-        tagsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.categorySpinner.setAdapter(tagsAdapter)
-        binding.categorySpinner.setSelection(tagsAdapter.getPosition("All"))
-        binding.categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                tagFilterIndex = position
-//                filterOnTag()
-                loadSubscriptions()
+        binding.mainView.setContent {
+            CustomTheme(requireContext()) {
+                if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
+                Column {
+                    InforBar()
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
+                        Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index: Int ->
+                            queueFilterIndex = index
+                            loadSubscriptions()
+                        }
+                        Spacer(Modifier.weight(1f))
+                        Spinner(items = tags, selectedItem = tags[0]) { index: Int ->
+                            tagFilterIndex = index
+                            loadSubscriptions()
+                        }
+                    }
+                    if (noSubscription) Text(stringResource(R.string.no_subscriptions_label))
+                    else LazyList()
+                }
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-
         feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
         loadSubscriptions()
         return binding.root
@@ -224,7 +200,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-//        feedList = mutableListOf()
         feedListFiltered.clear()
         _binding = null
         super.onDestroyView()
@@ -260,8 +235,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun resetTags() {
         tags.clear()
+        tags.add("All tags")
         tags.add("Untagged")
-        tags.add("All")
         tags.addAll(getTags())
     }
 
@@ -308,10 +283,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
-            R.id.subscriptions_filter -> {
-                showFilterDialog = true
-//                FeedFilterDialog.newInstance(FeedFilter(feedsFilter)).show(childFragmentManager, null)
-            }
+            R.id.subscriptions_filter -> showFilterDialog = true
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
             R.id.new_synth -> {
@@ -334,7 +306,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var loadItemsRunning = false
     private fun loadSubscriptions() {
-//        emptyView.hide()
         if (!loadItemsRunning) {
             loadItemsRunning = true
             lifecycleScope.launch {
@@ -345,9 +316,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         feedList = filterAndSort()
                     }
                     withContext(Dispatchers.Main) {
-                        // We have fewer items. This can result in items being selected that are no longer visible.
-//                        if (feedListFiltered.size > feedList.size) adapter.endSelectMode()
-//                        filterOnTag()
                         noSubscription = feedList.isEmpty()
                         feedListFiltered.clear()
                         feedListFiltered.addAll(feedList)
@@ -355,7 +323,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         infoTextFiltered = " "
                         if (feedsFilter.isNotEmpty()) infoTextFiltered = getString(R.string.filtered_label)
                         txtvInformation = (infoTextFiltered + infoTextUpdate)
-//                        emptyView.updateVisibility()
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
                 } finally { loadItemsRunning = false }
@@ -427,7 +394,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
-//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
                     f.sortInfo = "Updated: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
@@ -438,20 +404,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
                     counterMap[f.id] = d
-//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
                     f.sortInfo = "Downloaded: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
-                val queryString =
-//                    "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code}) SORT(pubDate DESC)"
-                    "feedId == $0 AND (playState < ${PlayState.SKIPPED.code}) SORT(pubDate DESC)"
+                val queryString = "feedId == $0 AND (playState < ${PlayState.SKIPPED.code}) SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
-//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
                     f.sortInfo = "Unplayed: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
@@ -467,9 +429,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
-                val queryString =
-//                    "feedId == $0 AND (playState == ${PlayState.NEW.code} OR playState == ${PlayState.UNPLAYED.code}) AND media.downloaded == true"
-                    "feedId == $0 AND (playState < ${PlayState.SKIPPED.code}) AND media.downloaded == true"
+                val queryString = "feedId == $0 AND (playState < ${PlayState.SKIPPED.code}) AND media.downloaded == true"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -490,7 +450,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 comparator(counterMap, dir)
             }
         }
-//        synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
         feedSorted++
         return feedList_.sortedWith(comparator)
     }
@@ -502,19 +461,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "info", tint = textColor)
             Spacer(Modifier.weight(1f))
             Text(txtvInformation, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.clickable {
-                if (feedsFilter.isNotEmpty()) {
-                    showFilterDialog = true
-//                    val filter = FeedFilter(feedsFilter)
-//                    val dialog = FeedFilterDialog.newInstance(filter)
-//                    dialog.show(childFragmentManager, null)
-                }
+                if (feedsFilter.isNotEmpty()) showFilterDialog = true
             } )
             Spacer(Modifier.weight(1f))
             Text(feedCount, color = textColor)
         }
     }
 
-    @kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
     @Composable
     fun LazyList() {
         var selectedSize by remember { mutableStateOf(0) }
@@ -526,12 +480,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showRemoveFeedDialog) RemoveFeedDialog(selected, onDismissRequest = {showRemoveFeedDialog = false}, null)
 
         fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
-            for (feed in selected) {
-                if (feed.preferences == null) continue
-                runOnIOScope {
-                    upsert(feed) {
-                        preferencesConsumer.accept(it.preferences!!)
-                    }
+            runOnIOScope {
+                for (feed in selected) {
+                    if (feed.preferences == null) continue
+                    upsert(feed) { preferencesConsumer.accept(it.preferences!!) }
                 }
             }
             val numItems = selected.size
@@ -546,20 +498,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Column {
                             FeedAutoDeleteOptions.forEach { text ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                                    .selectable(selected = (text == selectedOption),
-                                        onClick = {
-                                            if (text != selectedOption) {
-                                                val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
-                                                saveFeedPreferences { it: FeedPreferences ->
-                                                    it.autoDeleteAction = autoDeleteAction
-                                                }
-                                                onDismissRequest()
-                                            }
-                                        }
-                                    ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(selected = (text == selectedOption), onClick = {
+                                    if (text != selectedOption) {
+                                        val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
+                                        saveFeedPreferences { it: FeedPreferences -> it.autoDeleteAction = autoDeleteAction }
+                                        onDismissRequest()
+                                    }
+                                })) {
                                     RadioButton(selected = (text == selectedOption), onClick = { })
                                     Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                                 }
@@ -604,13 +549,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                         if (selectedOption == "Custom") {
                             val queues = realm.query(PlayQueue::class).find()
-                            Spinner(items = queues.map { it.name }, selectedItem = "Default") { name ->
-                                Logd(TAG, "Queue selected: $name")
-                                val q = queues.firstOrNull { it.name == name }
-                                if (q != null) {
-                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = q.id }
-                                    onDismissRequest()
-                                }
+                            Spinner(items = queues.map { it.name }, selectedItem = "Default") { index ->
+                                Logd(TAG, "Queue selected: ${queues[index]}")
+                                saveFeedPreferences { it: FeedPreferences -> it.queueId = queues[index].id }
+                                onDismissRequest()
                             }
                         }
                     }
@@ -629,14 +571,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge)
                             Spacer(modifier = Modifier.weight(1f))
                             var checked by remember { mutableStateOf(false) }
-                            Switch(checked = checked,
-                                onCheckedChange = {
-                                    checked = it
-                                    saveFeedPreferences { pref: FeedPreferences ->
-                                        pref.keepUpdated = checked
-                                    }
-                                }
-                            )
+                            Switch(checked = checked, onCheckedChange = {
+                                checked = it
+                                saveFeedPreferences { pref: FeedPreferences -> pref.keepUpdated = checked }
+                            })
                         }
                         Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium)
                     }
@@ -651,10 +589,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         for (rating in Rating.entries.reversed()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                                for (item in selected) {
-//                                    Feeds.setRating(item, rating.code)
-                                    upsertBlk(item) { it.rating = rating.code }
-                                }
+                                for (item in selected) upsertBlk(item) { it.rating = rating.code }
                                 onDismissRequest()
                             }) {
                                 Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")
@@ -668,13 +603,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         var showChooseRatingDialog by remember { mutableStateOf(false) }
         if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
-
         var showAutoDeleteHandlerDialog by remember { mutableStateOf(false) }
         if (showAutoDeleteHandlerDialog) AutoDeleteHandlerDialog {showAutoDeleteHandlerDialog = false}
-
         var showAssociateDialog by remember { mutableStateOf(false) }
         if (showAssociateDialog) SetAssociateQueueDialog {showAssociateDialog = false}
-
         var showKeepUpdateDialog by remember { mutableStateOf(false) }
         if (showKeepUpdateDialog) SetKeepUpdateDialog {showKeepUpdateDialog = false}
 
@@ -683,156 +615,128 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val TAG = "EpisodeSpeedDial ${selected.size}"
             var isExpanded by remember { mutableStateOf(false) }
             val options = listOf<@Composable () -> Unit>(
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        showRemoveFeedDialog = true
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_delete: ${selected.size}")
-//                    RemoveFeedDialog.show(activity, selected)
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    showRemoveFeedDialog = true
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_delete: ${selected.size}")
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "")
-                    Text(stringResource(id = R.string.remove_feed_label))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        showKeepUpdateDialog = true
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_refresh: ${selected.size}")
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                    Text(stringResource(id = R.string.remove_feed_label)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    showKeepUpdateDialog = true
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_refresh: ${selected.size}")
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
-                    Text(stringResource(id = R.string.keep_updated))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_download: ${selected.size}")
-                        val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
-                        preferenceSwitchDialog.setOnPreferenceChangedListener( object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-                            override fun preferenceChanged(enabled: Boolean) {
-                                saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
-                            }
-                        })
-                        preferenceSwitchDialog.openDialog()
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                    Text(stringResource(id = R.string.keep_updated)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_download: ${selected.size}")
+                    val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
+                    preferenceSwitchDialog.setOnPreferenceChangedListener( object: PreferenceSwitchDialog.OnPreferenceChangedListener {
+                        override fun preferenceChanged(enabled: Boolean) {
+                            saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
+                        }
+                    })
+                    preferenceSwitchDialog.openDialog()
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
-                    Text(stringResource(id = R.string.auto_download_label))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        showAutoDeleteHandlerDialog = true
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_delete_auto: ${selected.size}")
-//                        autoDeleteEpisodesPrefHandler()
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                    Text(stringResource(id = R.string.auto_download_label)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    showAutoDeleteHandlerDialog = true
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_delete_auto: ${selected.size}")
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete_auto), "")
-                    Text(stringResource(id = R.string.auto_delete_label))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_playback_speed: ${selected.size}")
-                        val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
-                        vBinding.seekBar.setProgressChangedListener { speed: Float? ->
-                            vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
-                        }
-                        vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                            vBinding.seekBar.isEnabled = !isChecked
-                            vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
-                            vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
-                        }
-                        vBinding.seekBar.updateSpeed(1.0f)
-                        MaterialAlertDialogBuilder(activity)
-                            .setTitle(R.string.playback_speed)
-                            .setView(vBinding.root)
-                            .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-                                val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
-                                else vBinding.seekBar.currentSpeed
-                                saveFeedPreferences { it: FeedPreferences ->
-                                    it.playSpeed = newSpeed
-                                }
+                    Text(stringResource(id = R.string.auto_delete_label)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_playback_speed: ${selected.size}")
+                    val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
+                    vBinding.seekBar.setProgressChangedListener { speed: Float? ->
+                        vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
+                    }
+                    vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                        vBinding.seekBar.isEnabled = !isChecked
+                        vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
+                        vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
+                    }
+                    vBinding.seekBar.updateSpeed(1.0f)
+                    MaterialAlertDialogBuilder(activity)
+                        .setTitle(R.string.playback_speed)
+                        .setView(vBinding.root)
+                        .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
+                            val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+                            else vBinding.seekBar.currentSpeed
+                            saveFeedPreferences { it: FeedPreferences ->
+                                it.playSpeed = newSpeed
                             }
-                            .setNegativeButton(R.string.cancel_label, null)
-                            .show()
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                        }
+                        .setNegativeButton(R.string.cancel_label, null)
+                        .show()
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "")
-                    Text(stringResource(id = R.string.playback_speed))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_tag: ${selected.size}")
-                        TagSettingsDialog.newInstance(selected).show(activity.supportFragmentManager, Companion.TAG)
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                    Text(stringResource(id = R.string.playback_speed)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_tag: ${selected.size}")
+                    TagSettingsDialog.newInstance(selected).show(activity.supportFragmentManager, Companion.TAG)
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_tag), "")
-                    Text(stringResource(id = R.string.edit_tags))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        showAssociateDialog = true
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "ic_playlist_play: ${selected.size}")
+                    Text(stringResource(id = R.string.edit_tags)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    showAssociateDialog = true
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "ic_playlist_play: ${selected.size}")
 //                        associatedQueuePrefHandler()
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
-                    Text(stringResource(id = R.string.pref_feed_associated_queue))
-                } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        selectMode = false
-                        Logd(TAG, "ic_star: ${selected.size}")
-                        showChooseRatingDialog = true
-                        isExpanded = false
-                    }, verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(id = R.string.pref_feed_associated_queue)) } },
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    selectMode = false
+                    Logd(TAG, "ic_star: ${selected.size}")
+                    showChooseRatingDialog = true
+                    isExpanded = false
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_star), "Set rating")
                     Text(stringResource(id = R.string.set_rating_label)) } },
-                { Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "baseline_import_export_24: ${selected.size}")
-                        val exportType = Export.OPML_SELECTED
-                        val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
-                        val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType(exportType.contentType)
-                            .putExtra(Intent.EXTRA_TITLE, title)
-                        try {
-                            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-                                if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
-                                val uri = result.data!!.data
-                                exportOPML(uri, selected)
-                            }.launch(intentPickAction)
-                            return@clickable
-                        } catch (e: ActivityNotFoundException) { Log.e(Companion.TAG, "No activity found. Should never happen...") }
-                        // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
-                        exportOPML(null, selected)
-                    }, verticalAlignment = Alignment.CenterVertically
-                ) {
+                { Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "baseline_import_export_24: ${selected.size}")
+                    val exportType = Export.OPML_SELECTED
+                    val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
+                    val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .addCategory(Intent.CATEGORY_OPENABLE)
+                        .setType(exportType.contentType)
+                        .putExtra(Intent.EXTRA_TITLE, title)
+                    try {
+                        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+                            val uri = result.data!!.data
+                            exportOPML(uri, selected)
+                        }.launch(intentPickAction)
+                        return@clickable
+                    } catch (e: ActivityNotFoundException) { Log.e(Companion.TAG, "No activity found. Should never happen...") }
+                    // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
+                    exportOPML(null, selected)
+                }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_import_export_24), "")
-                    Text(stringResource(id = R.string.opml_export_label))
-                } },
+                    Text(stringResource(id = R.string.opml_export_label)) } },
             )
             val scrollState = rememberScrollState()
             Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
                 if (isExpanded) options.forEachIndexed { _, button ->
                     FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), containerColor = Color.LightGray, onClick = {}) { button() }
                 }
-                FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.secondary,
+                FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.secondary,
                     onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
             }
         }
@@ -849,8 +753,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val lazyGridState = rememberLazyGridState()
                 LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
-                )  {
+                    contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)) {
                     items(feedListFiltered.size, key = {index -> feedListFiltered[index].id}) { index ->
                         val feed by remember { mutableStateOf(feedListFiltered[index]) }
                         var isSelected by remember { mutableStateOf(false) }
@@ -891,12 +794,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                                     .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                                     contentDescription = "coverImage",
-                                    modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                                        .constrainAs(coverImage) {
-                                            top.linkTo(parent.top)
-                                            bottom.linkTo(parent.bottom)
-                                            start.linkTo(parent.start)
-                                        })
+                                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).constrainAs(coverImage) {
+                                        top.linkTo(parent.top)
+                                        bottom.linkTo(parent.bottom)
+                                        start.linkTo(parent.start)
+                                    })
                                 Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
                                     modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
                                         end.linkTo(parent.end)
@@ -923,7 +825,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val lazyListState = rememberLazyListState()
                 LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(feedListFiltered, key = {index, feed -> feed.id}) { index, feed ->
+                    itemsIndexed(feedListFiltered, key = { _, feed -> feed.id}) { index, feed ->
                         var isSelected by remember { mutableStateOf(false) }
                         LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
                             isSelected = selectMode && feed in selected
@@ -935,35 +837,20 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Logd(TAG, "toggleSelected: selected: ${selected.size}")
                         }
                         Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
-                            ConstraintLayout {
-                                val (coverImage, rating) = createRefs()
-                                val imgLoc = remember(feed) { feed.imageUrl }
-                                AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
-                                    .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                                    contentDescription = "imgvCover",
-                                    placeholder = painterResource(R.mipmap.ic_launcher),
-                                    error = painterResource(R.mipmap.ic_launcher),
-                                    modifier = Modifier.width(80.dp).height(80.dp)
-                                        .constrainAs(coverImage) {
-                                            top.linkTo(parent.top)
-                                            bottom.linkTo(parent.bottom)
-                                            start.linkTo(parent.start)
-                                        }.clickable(onClick = {
-                                            Logd(TAG, "icon clicked!")
-                                            if (!feed.isBuilding) {
-                                                if (selectMode) toggleSelected()
-                                                else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
-                                            }
-                                        })
-                                )
-//                                if (feed.rating != Rating.UNRATED.code)
-//                                    Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary,
-//                                        contentDescription = "rating",
-//                                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-//                                            start.linkTo(parent.start)
-//                                            centerVerticallyTo(coverImage)
-//                                        })
-                            }
+                            val imgLoc = remember(feed) { feed.imageUrl }
+                            AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                                .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                                contentDescription = "imgvCover",
+                                placeholder = painterResource(R.mipmap.ic_launcher),
+                                error = painterResource(R.mipmap.ic_launcher),
+                                modifier = Modifier.width(80.dp).height(80.dp).clickable(onClick = {
+                                    Logd(TAG, "icon clicked!")
+                                    if (!feed.isBuilding) {
+                                        if (selectMode) toggleSelected()
+                                        else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                                    }
+                                })
+                            )
                             val textColor = MaterialTheme.colorScheme.onSurface
                             Column(Modifier.weight(1f).padding(start = 10.dp).combinedClickable(onClick = {
                                 Logd(TAG, "clicked: ${feed.title}")
@@ -1014,51 +901,48 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
-                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
-                            .clickable(onClick = {
-                                selected.clear()
-                                for (i in 0..longPressIndex) {
-                                    selected.add(feedListFiltered[i])
-                                }
-                                selectedSize = selected.size
-                                Logd(TAG, "selectedIds: ${selected.size}")
-                            }))
+                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
+                            selected.clear()
+                            for (i in 0..longPressIndex) {
+                                selected.add(feedListFiltered[i])
+                            }
+                            selectedSize = selected.size
+                            Logd(TAG, "selectedIds: ${selected.size}")
+                        }))
                     Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
-                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
-                            .clickable(onClick = {
-                                selected.clear()
-                                for (i in longPressIndex..<feedListFiltered.size) {
-                                    selected.add(feedListFiltered[i])
-                                }
-                                selectedSize = selected.size
-                                Logd(TAG, "selectedIds: ${selected.size}")
-                            }))
+                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
+                            selected.clear()
+                            for (i in longPressIndex..<feedListFiltered.size) {
+                                selected.add(feedListFiltered[i])
+                            }
+                            selectedSize = selected.size
+                            Logd(TAG, "selectedIds: ${selected.size}")
+                        }))
                     var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
                     Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = Color.Black, contentDescription = null,
-                        modifier = Modifier.width(35.dp).height(35.dp)
-                            .clickable(onClick = {
-                                if (selectedSize != feedListFiltered.size) {
-                                    selected.clear()
-                                    selected.addAll(feedListFiltered)
-                                    selectAllRes = R.drawable.ic_select_none
-                                } else {
-                                    selected.clear()
-                                    longPressIndex = -1
-                                    selectAllRes = R.drawable.ic_select_all
-                                }
-                                selectedSize = selected.size
-                                Logd(TAG, "selectedIds: ${selected.size}")
-                            }))
+                        modifier = Modifier.width(35.dp).height(35.dp).clickable(onClick = {
+                            if (selectedSize != feedListFiltered.size) {
+                                selected.clear()
+                                selected.addAll(feedListFiltered)
+                                selectAllRes = R.drawable.ic_select_none
+                            } else {
+                                selected.clear()
+                                longPressIndex = -1
+                                selectAllRes = R.drawable.ic_select_all
+                            }
+                            selectedSize = selected.size
+                            Logd(TAG, "selectedIds: ${selected.size}")
+                        }))
                 }
                 EpisodeSpeedDial(activity as MainActivity, selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
             }
-            FloatingActionButton(shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 16.dp, end = 16.dp),
-                onClick = {
-                    if (activity is MainActivity) (activity as MainActivity).loadChildFragment(OnlineSearchFragment())
-                }) { Icon(Icons.Outlined.AddCircle, "Add", modifier = Modifier.size(60.dp)) }
+//            FloatingActionButton(shape = CircleShape,
+//                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+//                contentColor = MaterialTheme.colorScheme.secondary,
+//                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 16.dp, end = 16.dp),
+//                onClick = {
+//                    if (activity is MainActivity) (activity as MainActivity).loadChildFragment(OnlineSearchFragment())
+//                }) { Icon(Icons.Outlined.AddCircle, "Add", modifier = Modifier.size(60.dp)) }
         }
     }
 
@@ -1109,8 +993,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 }
                                 Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
                                 Spacer(Modifier.weight(0.3f))
-                                OutlinedButton(
-                                    modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
+                                OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp),
+                                    border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
                                     onClick = {
                                         if (selectedIndex != 0) {
                                             selectNone = false
@@ -1123,12 +1007,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         }
                                         onFilterChanged(filterValues)
                                     },
-                                ) {
-                                    Text(text = stringResource(item.values[0].displayName), color = textColor)
-                                }
+                                ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
                                 Spacer(Modifier.weight(0.1f))
-                                OutlinedButton(
-                                    modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
+                                OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp),
+                                    border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
                                     onClick = {
                                         if (selectedIndex != 1) {
                                             selectNone = false
@@ -1188,9 +1070,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         val lIndex = selectedList.indexOfFirst { it.value }
                                         if (lIndex < 0) return@clickable
                                         if (!higherSelected) {
-                                            for (i in lIndex..item.values.size - 1) selectedList[i].value = true
+                                            for (i in lIndex..<item.values.size) selectedList[i].value = true
                                         } else {
-                                            for (i in lIndex..item.values.size - 1) selectedList[i].value = false
+                                            for (i in lIndex..<item.values.size) selectedList[i].value = false
                                             selectedList[lIndex].value = true
                                         }
                                         higherSelected = !higherSelected
@@ -1205,9 +1087,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 if (expandRow) NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
                                     if (selectNone) selectedList[index].value = false
                                     LaunchedEffect(Unit) {
-                                        if (filter != null) {
-                                            if (item.values[index].filterId in filter.properties) selectedList[index].value = true
-                                        }
+                                        if (filter != null && item.values[index].filterId in filter.properties) selectedList[index].value = true
                                     }
                                     OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
                                         border = BorderStroke(2.dp, if (selectedList[index].value) Color.Green else textColor),
@@ -1230,15 +1110,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Button(onClick = {
                             selectNone = true
                             onFilterChanged(setOf(""))
-                        }) {
-                            Text(stringResource(R.string.reset))
-                        }
+                        }) { Text(stringResource(R.string.reset)) }
                         Spacer(Modifier.weight(0.4f))
-                        Button(onClick = {
-                            onDismissRequest()
-                        }) {
-                            Text(stringResource(R.string.close_label))
-                        }
+                        Button(onClick = { onDismissRequest() }) { Text(stringResource(R.string.close_label)) }
                         Spacer(Modifier.weight(0.3f))
                     }
                 }

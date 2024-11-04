@@ -198,7 +198,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             val media = item.media
             if (media != null) {
                 val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false) }
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, true, false) }
                 if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
             }
             deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
@@ -354,7 +354,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             val media = item.media
             if (media != null) {
                 val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false) }
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, true, false) }
                 if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
             }
             if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, false, false) }
@@ -568,13 +568,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
          @JvmStatic
         fun getPrefsWithDefaults(tag: String): Actions {
-            val defaultActions = when (tag) {
-                QueuesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                DownloadsFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                HistoryFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                AllEpisodesFragment.TAG -> "${NO_ACTION.name},${NO_ACTION.name}"
-                else -> "${NO_ACTION.name},${NO_ACTION.name}"
-            }
+             val defaultActions = "${NO_ACTION.name},${NO_ACTION.name}"
             return getPrefs(tag, defaultActions)
         }
 

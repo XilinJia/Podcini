@@ -6,14 +6,15 @@ import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.EpisodeVM
-import ac.mdiq.podcini.ui.compose.NonlazyGrid
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -49,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -77,6 +77,11 @@ class SearchFragment : Fragment() {
     private val resultFeeds = mutableStateListOf<Feed>()
     private val results = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
+    protected var infoBarText = mutableStateOf("")
+
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private lateinit var swipeActions: SwipeActions
 
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
@@ -87,20 +92,34 @@ class SearchFragment : Fragment() {
         automaticSearchDebouncer = Handler(Looper.getMainLooper())
     }
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SearchFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
         setupToolbar(binding.toolbar)
+        swipeActions = SwipeActions(this, TAG)
+        lifecycle.addObserver(swipeActions)
 
         binding.resultsListView.setContent {
             CustomTheme(requireContext()) {
                 Column {
                     CriteriaList()
                     FeedsRow()
-                    EpisodeLazyColumn(activity as MainActivity, vms = vms)
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                        leftSwipeCB = {
+                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                            else leftActionState.value.performAction(it, this@SearchFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                        rightSwipeCB = {
+                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                            else rightActionState.value.performAction(it, this@SearchFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                    )
                 }
             }
         }
+
+        refreshSwipeTelltale()
 
         chip = binding.feedTitleChip
         chip.setOnCloseIconClickListener {
@@ -134,6 +153,11 @@ class SearchFragment : Fragment() {
         resultFeeds.clear()
         vms.clear()
         super.onDestroyView()
+    }
+
+    private fun refreshSwipeTelltale() {
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
     }
 
     private fun setupToolbar(toolbar: MaterialToolbar) {
@@ -207,6 +231,7 @@ class SearchFragment : Fragment() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
+                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
             }
@@ -236,7 +261,6 @@ class SearchFragment : Fragment() {
      private fun search() {
 //        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
-
         lifecycleScope.launch {
             try {
                 val results_ = withContext(Dispatchers.IO) { performSearch() }
@@ -245,6 +269,7 @@ class SearchFragment : Fragment() {
                         val first_ = results_.first!!.toMutableList()
                         results.clear()
                         results.addAll(first_)
+                        infoBarText.value = "${results.size} episodes"
                         vms.clear()
                         for (e in first_) { vms.add(EpisodeVM(e)) }
                     }
@@ -272,12 +297,8 @@ class SearchFragment : Fragment() {
         var showGrid by remember { mutableStateOf(false) }
         Column {
             Row {
-                Button(onClick = {showGrid = !showGrid}) {
-                    Text(stringResource(R.string.show_criteria))
-                }
-                Button(onClick = { searchOnline() }) {
-                    Text(stringResource(R.string.search_online))
-                }
+                Button(onClick = {showGrid = !showGrid}) { Text(stringResource(R.string.show_criteria)) }
+                Button(onClick = { searchOnline() }) { Text(stringResource(R.string.search_online)) }
             }
             if (showGrid) NonlazyGrid(columns = 2, itemCount = SearchBy.entries.size) { index ->
                 val c = SearchBy.entries[index]
@@ -303,8 +324,7 @@ class SearchFragment : Fragment() {
         val context = LocalContext.current
         val lazyGridState = rememberLazyListState()
         LazyRow (state = lazyGridState, horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
-        )  {
+            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp))  {
             items(resultFeeds.size, key = {index -> resultFeeds[index].id}) { index ->
                 val feed by remember { mutableStateOf(resultFeeds[index]) }
                 ConstraintLayout {

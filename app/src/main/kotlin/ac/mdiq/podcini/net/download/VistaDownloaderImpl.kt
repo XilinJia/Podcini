@@ -39,11 +39,16 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
     private fun getCookies(url: String): String {
         val youtubeCookie = if (url.contains(YOUTUBE_DOMAIN)) getCookie(YOUTUBE_RESTRICTED_MODE_COOKIE_KEY) else null
         // Recaptcha cookie is always added TODO: not sure if this is necessary
-        return Stream.of(youtubeCookie, getCookie("recaptcha_cookies"))
-            .filter { obj: String? -> Objects.nonNull(obj) }
-            .flatMap { cookies: String? -> Arrays.stream(cookies!!.split("; *".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) }
+        return listOf(youtubeCookie, getCookie("recaptcha_cookies"))
+            .filterNotNull()
+            .flatMap { cookies: String? -> cookies!!.split("; *".toRegex()).dropLastWhile { it.isEmpty() } }
             .distinct()
-            .collect(Collectors.joining("; "))
+            .joinToString("; ")
+//        return Stream.of(youtubeCookie, getCookie("recaptcha_cookies"))
+//            .filter { obj: String? -> Objects.nonNull(obj) }
+//            .flatMap { cookies: String? -> Arrays.stream(cookies!!.split("; *".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) }
+//            .distinct()
+//            .collect(Collectors.joining("; "))
     }
 
     private fun getCookie(key: String): String? {

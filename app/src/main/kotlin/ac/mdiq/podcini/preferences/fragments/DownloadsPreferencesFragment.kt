@@ -344,9 +344,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                         client.newCall(request).execute().use { response ->
                             if (!response.isSuccessful) throw IOException(response.message)
                         }
-                    } catch (e: IOException) {
-                        throw e
-                    }
+                    } catch (e: IOException) { throw e }
                     withContext(Dispatchers.Main) {
                         txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
                         val message = String.format("%s %s", "{faw_check}", context.getString(R.string.proxy_test_successful))

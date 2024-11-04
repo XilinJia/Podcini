@@ -26,8 +26,6 @@ Apache License 2.0
 
 [com.mikepenz:iconics-core](https://github.com/mikepenz/Android-Iconics/blob/develop/LICENSE) Apache License 2.0
 
-[//]: # ([com.leinardi.android]&#40;https://github.com/leinardi/FloatingActionButtonSpeedDial/blob/release/LICENSE&#41; Apache License 2.0)
-
 [com.github.ByteHamster](https://github.com/ByteHamster/SearchPreference/blob/master/LICENSE) MIT License
 
 [com.github.skydoves](https://github.com/skydoves/Only/blob/master/LICENSE) Apache License 2.0
@@ -36,17 +34,7 @@ Apache License 2.0
 
 [com.annimon](https://github.com/aNNiMON/Lightweight-Stream-API/blob/master/LICENSE) Apache License 2.0
 
-[com.nanohttpd](https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md) BSD 3-Clause "New" or "Revised" License
-
-[org.awaitility](https://github.com/awaitility/awaitility/blob/master/LICENSE) Apache License 2.0
-
 [com.github.mfietz](https://github.com/mfietz/fyydlin/blob/master/LICENSE) Apache License 2.0
-
-[junit](https://junit.org/junit4/license.html) Eclipse Public License 1.0
-
-[org.mockito](https://github.com/mockito/mockito/blob/main/LICENSE) The MIT License
-
-[org.robolectric](https://github.com/robolectric/robolectric/blob/master/LICENSE) The MIT License
 
 [javax.inject](https://github.com/javax-inject/javax-inject) Apache License 2.0
 

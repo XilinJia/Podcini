@@ -634,11 +634,11 @@ class FeedSettingsFragment : Fragment() {
                         if (selected == "Custom") {
                             if (queues == null) queues = realm.query(PlayQueue::class).find()
                             Logd(TAG, "queues: ${queues?.size}")
-                            Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { name ->
-                                Logd(TAG, "Queue selected: $name")
-                                val q = queues?.firstOrNull { it.name == name }
+                            Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { index ->
+                                Logd(TAG, "Queue selected: $queues[index].name")
+                                val q = queues!![index]
                                 feed = upsertBlk(feed!!) { it.preferences?.queue = q }
-                                if (q != null) curPrefQueue = q.name
+                                curPrefQueue = q.name
                                 onDismissRequest()
                             }
                         }

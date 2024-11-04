@@ -1,3 +1,11 @@
+# 6.13.4
+
+* in Queues view, reworked the spinner in Compose and added associated feeds toggle
+* added info bar and swipe actions to Search fragment
+* spinners in Subscriptions view are in Compose
+* removed the "add" floating button in Subscriptions view
+* removed some unused dependencies and references to their licenses
+
 # 6.13.3
 
 * on playing the next episode in queue, if its state is lower than InProgress, the state is set as such

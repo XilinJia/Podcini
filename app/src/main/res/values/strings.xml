@@ -572,6 +572,7 @@
     <string name="pref_feed_playback_speed_sum">The speed to use when starting audio playback for episodes in this podcast</string>
     <string name="pref_feed_skip">Auto skip</string>
     <string name="pref_feed_skip_sum">Skip introductions and ending credits.</string>
+    <string name="associated">Associated</string>
     <string name="pref_feed_associated_queue">Associated queue</string>
     <string name="pref_feed_associated_queue_sum">The queue to which epiosdes in the feed will added by default</string>
     <string name="pref_feed_skip_ending">Skip last</string>

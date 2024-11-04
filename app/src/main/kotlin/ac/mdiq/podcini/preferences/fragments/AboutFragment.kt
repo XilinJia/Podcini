@@ -103,9 +103,7 @@ class AboutFragment : PreferenceFragmentCompat() {
                     listAdapter = ContributorsPagerFragment.SimpleIconListAdapter(requireContext(), licenses)
                 }
             }.invokeOnCompletion { throwable ->
-                if (throwable!= null) {
-                    Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
-                }
+                if (throwable!= null) Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
             }
         }
 
@@ -236,9 +234,7 @@ class AboutFragment : PreferenceFragmentCompat() {
                         listAdapter = SimpleIconListAdapter(requireContext(), translators)
                     }
                 }.invokeOnCompletion { throwable ->
-                    if (throwable!= null) {
-                        Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
-                    }
+                    if (throwable!= null) Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
                 }
             }
         }

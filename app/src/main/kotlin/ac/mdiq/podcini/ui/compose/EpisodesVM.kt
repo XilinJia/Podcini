@@ -986,9 +986,7 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                                 }
                                 withContext(Dispatchers.Main) { onDismissRequest() }
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     } else CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp, modifier = Modifier.padding(start = 20.dp, end = 20.dp).width(30.dp).height(30.dp))
                 }
             }

@@ -18,11 +18,22 @@ import ac.mdiq.vista.extractor.InfoItem
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.channel.ChannelInfo
 import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
-import ac.mdiq.vista.extractor.exceptions.ExtractionException
 import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import io.realm.kotlin.ext.realmListOf
 import kotlinx.coroutines.*
 import org.jsoup.Jsoup
@@ -34,123 +45,195 @@ import java.net.URL
 class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) {
     private val TAG = "DirectSubscribe"
 
+    private val service by lazy { Vista.getService("YouTube") }
+    private val ytTabsMap: MutableMap<Int, String> = mutableMapOf()
+    private lateinit var channelInfo: ChannelInfo
+
     var feedSource: String = ""
     var selectedDownloadUrl: String? = null
     private var downloader: Downloader? = null
 
-    fun startFeedBuilding(url: String, username: String?, password: String?, handleFeed: (Feed, Map<String, String>)->Unit) {
-        if (feedSource == "VistaGuide" || url.contains("youtube.com")) {
-            feedSource = "VistaGuide"
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
-                    selectedDownloadUrl = prepareUrl(url)
-                    val feed_ = Feed(selectedDownloadUrl, null)
-                    feed_.isBuilding = true
-                    feed_.id = Feed.newId()
-                    feed_.type = Feed.FeedType.YOUTUBE.name
-                    feed_.hasVideoMedia = true
-                    feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
-                    val eList: MutableList<Episode> = mutableListOf()
+    private var urlInit: String = ""
 
-                    val uURL = URL(url)
-                    if (uURL.path.startsWith("/playlist") || uURL.path.startsWith("/playlist")) {
-                        val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return@launch
-                        feed_.title = playlistInfo.name
-                        feed_.description = playlistInfo.description?.content ?: ""
-                        feed_.author = playlistInfo.uploaderName
-                        feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
-                        feed_.episodes = realmListOf()
-                        var infoItems = playlistInfo.relatedItems
-                        var nextPage = playlistInfo.nextPage
-                        Logd(TAG, "infoItems: ${infoItems.size}")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            while (infoItems.isNotEmpty()) {
-                                eList.clear()
-                                for (r in infoItems) {
-                                    Logd(TAG, "startFeedBuilding relatedItem: $r")
-                                    if (r.infoType != InfoItem.InfoType.STREAM) continue
-                                    val e = episodeFromStreamInfoItem(r)
-                                    e.feed = feed_
-                                    e.feedId = feed_.id
-                                    eList.add(e)
-                                }
-                                feed_.episodes.addAll(eList)
-                                if (nextPage == null || feed_.episodes.size > 1000) break
-                                try {
-                                    val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
-                                    nextPage = page.nextPage
-                                    infoItems = page.items
-                                    Logd(TAG, "more infoItems: ${infoItems.size}")
-                                } catch (e: Throwable) {
-                                    Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
-                                    withContext(Dispatchers.Main) { showError(e.message, "") }
-                                    break
-                                }
-                            }
-                            feed_.isBuilding = false
-                        }
-                        withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
-                    } else {
-                        val channelInfo = ChannelInfo.getInfo(service, url)
-                        Logd(TAG, "startFeedBuilding result: $channelInfo ${channelInfo.tabs.size}")
-                        if (channelInfo.tabs.isEmpty()) {
-                            withContext(Dispatchers.Main) { showError("Channel is empty", "") }
-                            return@launch
-                        }
-                        try {
-                            val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
-                            Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
-                            feed_.title = channelInfo.name
-                            feed_.description = channelInfo.description
-                            feed_.author = channelInfo.parentChannelName
-                            feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
-                            feed_.episodes = realmListOf()
+    fun isYoutube(url: String): Boolean {
+        urlInit = url
+        val isit = (feedSource == "VistaGuide" || url.contains("youtube.com"))
+        if (isit) feedSource = "VistaGuide"
+        return isit
+    }
 
-                            var infoItems = channelTabInfo.relatedItems
-                            var nextPage = channelTabInfo.nextPage
-                            Logd(TAG, "infoItems: ${infoItems.size}")
-                            CoroutineScope(Dispatchers.IO).launch {
-                                while (infoItems.isNotEmpty()) {
-                                    eList.clear()
-                                    for (r in infoItems) {
-                                        Logd(TAG, "startFeedBuilding relatedItem: $r")
-                                        if (r.infoType != InfoItem.InfoType.STREAM) continue
-                                        val e = episodeFromStreamInfoItem(r as StreamInfoItem)
-                                        e.feed = feed_
-                                        e.feedId = feed_.id
-                                        eList.add(e)
-                                    }
-                                    feed_.episodes.addAll(eList)
-                                    if (nextPage == null || feed_.episodes.size > 1000) break
-                                    try {
-                                        val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
-                                        nextPage = page.nextPage
-                                        infoItems = page.items
-                                        Logd(TAG, "more infoItems: ${infoItems.size}")
-                                    } catch (e: Throwable) {
-                                        Logd(TAG, "ChannelTabInfo.getMoreItems error: ${e.message}")
-                                        withContext(Dispatchers.Main) { showError(e.message, "") }
-                                        break
-                                    }
-                                }
-                                feed_.isBuilding = false
-                            }
-                            withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
-                        } catch (e: Throwable) {
-                            Logd(TAG, "startFeedBuilding error1 ${e.message}")
-                            withContext(Dispatchers.Main) { showError(e.message, "") }
-                        }
+    fun isYoutubeChannel(): Boolean {
+        val uURL = URL(urlInit)
+        return !uURL.path.startsWith("/playlist")
+    }
+
+    fun youtubeChannelValidTabs(): Int {
+        channelInfo = ChannelInfo.getInfo(service, urlInit)
+        var count = 0
+        for (i in channelInfo.tabs.indices) {
+            val t = channelInfo.tabs[i]
+            var url = t.url
+            Logd(TAG, "url: $url ${t.originalUrl} ${t.baseUrl}")
+            if (!url.startsWith("http")) url = urlInit + url
+            val uURL = URL(url)
+            val urlEnd = uURL.path.split("/").last()
+            if (urlEnd != "playlists" && urlEnd != "shorts") count++
+        }
+        return count
+    }
+
+    @Composable
+    fun ConfirmYTChannelTabsDialog(onDismissRequest: () -> Unit, handleFeed: (Feed, Map<String, String>)->Unit) {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        Column {
+            Text(text = stringResource(R.string.choose_tab), color = textColor, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp, bottom = 10.dp))
+            val selectedId = remember { mutableStateOf<Int?>(null) }
+            for (i in channelInfo.tabs.indices) {
+                val t = channelInfo.tabs[i]
+                var url = t.url
+                Logd(TAG, "url: $url ${t.originalUrl} ${t.baseUrl}")
+                if (!url.startsWith("http")) url = urlInit + url
+                val uURL = URL(url)
+                val urlEnd = uURL.path.split("/").last()
+                if (urlEnd != "playlists" && urlEnd != "shorts") Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 30.dp)) {
+                        var checked by remember { mutableStateOf(false) }
+                        Checkbox(checked = selectedId.value == i, onCheckedChange = {
+                            selectedId.value = if (selectedId.value == i) null else i
+                            checked = it
+                            if (checked) ytTabsMap[i] = urlEnd else ytTabsMap.remove(i)
+                        })
+                        Text(text = urlEnd, color = textColor, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
                     }
-                } catch (e: Throwable) {
-                    Logd(TAG, "startFeedBuilding error ${e.message}")
-                    withContext(Dispatchers.Main) { showError(e.message, "") }
                 }
             }
-            return
+            Button(modifier = Modifier.padding(start = 10.dp, top = 10.dp), onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    for (i in ytTabsMap.keys) {
+                        Logd(TAG, "Subscribing $i ${channelInfo.tabs[i].url}")
+                        buildYTChannel(i, ytTabsMap[i]!!) { feed_, map -> handleFeed(feed_, map) }
+                    }
+                }
+                onDismissRequest()
+            }) {
+                Text("Confirm")
+            }
         }
+    }
 
-//        handle normal podcast source
+    suspend fun buildYTPlaylist(handleFeed: (Feed, Map<String, String>)->Unit) {
+        try {
+            val url = urlInit
+            val playlistInfo = PlaylistInfo.getInfo(service, url) ?: return
+            selectedDownloadUrl = prepareUrl(url)
+            Logd(TAG, "selectedDownloadUrl: $selectedDownloadUrl url: $url")
+            val feed_ = Feed(selectedDownloadUrl, null)
+            feed_.isBuilding = true
+            feed_.id = Feed.newId()
+            feed_.type = Feed.FeedType.YOUTUBE.name
+            feed_.hasVideoMedia = true
+            feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+            val eList: MutableList<Episode> = mutableListOf()
+            feed_.title = playlistInfo.name
+            feed_.description = playlistInfo.description?.content ?: ""
+            feed_.author = playlistInfo.uploaderName
+            feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
+            feed_.episodes = realmListOf()
+            var infoItems = playlistInfo.relatedItems
+            var nextPage = playlistInfo.nextPage
+            Logd(TAG, "infoItems: ${infoItems.size}")
+            CoroutineScope(Dispatchers.IO).launch {
+                while (infoItems.isNotEmpty()) {
+                    eList.clear()
+                    for (r in infoItems) {
+                        Logd(TAG, "startFeedBuilding relatedItem: $r")
+                        if (r.infoType != InfoItem.InfoType.STREAM) continue
+                        val e = episodeFromStreamInfoItem(r)
+                        e.feed = feed_
+                        e.feedId = feed_.id
+                        eList.add(e)
+                    }
+                    feed_.episodes.addAll(eList)
+                    if (nextPage == null || feed_.episodes.size > 2000) break
+                    try {
+                        val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
+                        nextPage = page.nextPage
+                        infoItems = page.items
+                        Logd(TAG, "more infoItems: ${infoItems.size}")
+                    } catch (e: Throwable) {
+                        Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
+                        withContext(Dispatchers.Main) { showError(e.message, "") }
+                        break
+                    }
+                }
+                feed_.isBuilding = false
+            }
+            withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
+        } catch (e: Throwable) {
+            Logd(TAG, "startFeedBuilding error ${e.message}")
+            withContext(Dispatchers.Main) { showError(e.message, "") }
+        }
+    }
+
+    suspend fun buildYTChannel(index: Int, title: String, handleFeed: (Feed, Map<String, String>)->Unit) {
+        Logd(TAG, "startFeedBuilding result: $channelInfo ${channelInfo.tabs.size}")
+        var url = channelInfo.tabs[index].url
+        if (!url.startsWith("http")) url = urlInit
+        try {
+            selectedDownloadUrl = prepareUrl(url)
+            Logd(TAG, "selectedDownloadUrl: $selectedDownloadUrl url: $url")
+            val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs[index])
+            Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+            val feed_ = Feed(selectedDownloadUrl, null)
+            feed_.isBuilding = true
+            feed_.id = Feed.newId()
+            feed_.type = Feed.FeedType.YOUTUBE.name
+            feed_.hasVideoMedia = true
+            feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+            val eList: MutableList<Episode> = mutableListOf()
+            feed_.title = channelInfo.name + " " + title
+            feed_.description = channelInfo.description
+            feed_.author = channelInfo.parentChannelName
+            feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
+            feed_.episodes = realmListOf()
+
+            var infoItems = channelTabInfo.relatedItems
+            var nextPage = channelTabInfo.nextPage
+            Logd(TAG, "infoItems: ${infoItems.size}")
+            CoroutineScope(Dispatchers.IO).launch {
+                while (infoItems.isNotEmpty()) {
+                    eList.clear()
+                    for (r in infoItems) {
+                        Logd(TAG, "startFeedBuilding relatedItem: $r")
+                        if (r.infoType != InfoItem.InfoType.STREAM) continue
+                        val e = episodeFromStreamInfoItem(r as StreamInfoItem)
+                        e.feed = feed_
+                        e.feedId = feed_.id
+                        eList.add(e)
+                    }
+                    feed_.episodes.addAll(eList)
+                    if (nextPage == null || feed_.episodes.size > 2000) break
+                    try {
+                        val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
+                        nextPage = page.nextPage
+                        infoItems = page.items
+                        Logd(TAG, "more infoItems: ${infoItems.size}")
+                    } catch (e: Throwable) {
+                        Logd(TAG, "ChannelTabInfo.getMoreItems error: ${e.message}")
+                        withContext(Dispatchers.Main) { showError(e.message, "") }
+                        break
+                    }
+                }
+                feed_.isBuilding = false
+            }
+            withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
+        } catch (e: Throwable) {
+            Logd(TAG, "startFeedBuilding error1 ${e.message}")
+            withContext(Dispatchers.Main) { showError(e.message, "") }
+        }
+    }
+
+    fun buildPodcast(url: String, username: String?, password: String?, handleFeed: (Feed, Map<String, String>)->Unit) {
         when (val urlType = htmlOrXml(url)) {
             "HTML" -> {
                 val doc = Jsoup.connect(url).get()
@@ -159,7 +242,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                 for (element in linkElements) {
                     val rssUrl = element.attr("href")
                     Logd(TAG, "RSS URL: $rssUrl")
-                    startFeedBuilding(rssUrl, username, password) {feed, map -> handleFeed(feed, map) }
+                    buildPodcast(rssUrl, username, password) {feed, map -> handleFeed(feed, map) }
                 }
             }
             "XML" -> {}
@@ -280,5 +363,4 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
 //        }
         Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")
     }
-
 }

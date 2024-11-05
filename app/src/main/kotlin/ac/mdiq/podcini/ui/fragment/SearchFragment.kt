@@ -65,7 +65,6 @@ import java.text.NumberFormat
 /**
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
-
 class SearchFragment : Fragment() {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
@@ -120,7 +119,6 @@ class SearchFragment : Fragment() {
         }
 
         refreshSwipeTelltale()
-
         chip = binding.feedTitleChip
         chip.setOnCloseIconClickListener {
             requireArguments().putLong(ARG_FEED, 0)

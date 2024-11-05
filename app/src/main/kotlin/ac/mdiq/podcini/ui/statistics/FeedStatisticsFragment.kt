@@ -54,7 +54,8 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     private fun showStats(s: StatisticsItem?) {
-        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d", s!!.episodesStarted, s.numEpisodes)
+        if (s == null) return
+        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d", s.episodesStarted, s.numEpisodes)
         binding.timePlayedLabel.text = shortLocalizedDuration(requireContext(), s.timePlayed)
         binding.totalDurationLabel.text = shortLocalizedDuration(requireContext(), s.time)
         binding.onDeviceLabel.text = String.format(Locale.getDefault(), "%d", s.episodesDownloadCount)

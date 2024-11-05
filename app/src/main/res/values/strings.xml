@@ -276,6 +276,8 @@
     <string name="add_opinion_label">Add opinion</string>
     <string name="cancelled_on_label">Cancelled on</string>
 
+    <string name="choose_tab">Choose a tab in the channel</string>
+
     <string name="set_play_state_label">Set played state</string>
 
     <string name="mark_read_no_media_label">Mark as read</string>

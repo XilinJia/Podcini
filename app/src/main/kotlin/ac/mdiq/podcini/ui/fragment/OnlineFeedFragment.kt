@@ -77,7 +77,6 @@ import kotlin.concurrent.Volatile
  * If the feed cannot be downloaded or parsed, an error dialog will be displayed
  * and the activity will finish as soon as the error dialog is closed.
  */
-
 class OnlineFeedFragment : Fragment() {
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -86,7 +85,9 @@ class OnlineFeedFragment : Fragment() {
 
     var feedSource: String = ""
     private var feedUrl: String = ""
+    private var urlToLog: String = ""
     private lateinit var feedBuilder: FeedBuilder
+    private var showYTChannelDialog by mutableStateOf(false)
 
     private var isShared: Boolean = false
 
@@ -134,6 +135,7 @@ class OnlineFeedFragment : Fragment() {
 
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
+                if (showYTChannelDialog) feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = {showYTChannelDialog = false}) {feed, map ->  handleFeed(feed, map)}
                 MainView()
             }
         }
@@ -181,23 +183,32 @@ class OnlineFeedFragment : Fragment() {
         outState.putString("password", password)
     }
 
+    private fun handleFeed(feed_: Feed, map: Map<String, String>) {
+        selectedDownloadUrl = feedBuilder.selectedDownloadUrl
+        feed = feed_
+        if (isShared) {
+            val log = realm.query(ShareLog::class).query("url == $0", urlToLog).first().find()
+            if (log != null) upsertBlk(log) {
+                it.title = feed_.title
+                it.author = feed_.author
+            }
+        }
+        showFeedInformation(feed_, map)
+    }
+
     private fun lookupUrlAndBuild(url: String) {
         lifecycleScope.launch(Dispatchers.IO) {
+            urlToLog = url
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
             try {
                 feeds = getFeedList()
-                feedBuilder.startFeedBuilding(urlString, username, password) { feed_, map ->
-                    selectedDownloadUrl = feedBuilder.selectedDownloadUrl
-                    feed = feed_
-                    if (isShared) {
-                        val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
-                        if (log != null) upsertBlk(log) {
-                            it.title = feed_.title
-                            it.author = feed_.author
-                        }
-                    }
-                    showFeedInformation(feed_, map)
-                }
+                if (feedBuilder.isYoutube(urlString)) {
+                    if (feedBuilder.isYoutubeChannel()) {
+                        val nTabs = feedBuilder.youtubeChannelValidTabs()
+                        if (nTabs > 1) showYTChannelDialog = true
+                        else feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
+                    } else feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
+                } else feedBuilder.buildPodcast(urlString, username, password) { feed_, map -> handleFeed(feed_, map) }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -223,21 +234,17 @@ class OnlineFeedFragment : Fragment() {
                 }
             }
             if (url != null) {
+                urlToLog = url
                 Logd(TAG, "Successfully retrieve feed url")
                 isFeedFoundBySearch = true
                 feeds = getFeedList()
-                feedBuilder.startFeedBuilding(url, username, password) { feed_, map ->
-                    selectedDownloadUrl = feedBuilder.selectedDownloadUrl
-                    feed = feed_
-                    if (isShared) {
-                        val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
-                        if (log != null) upsertBlk(log) {
-                            it.title = feed_.title
-                            it.author = feed_.author
-                        }
-                    }
-                    showFeedInformation(feed_, map)
-                }
+                if (feedBuilder.isYoutube(url)) {
+                    if (feedBuilder.isYoutubeChannel()) {
+                        val nTabs = feedBuilder.youtubeChannelValidTabs()
+                        if (nTabs > 1) showYTChannelDialog = true
+                        else feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
+                    } else feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
+                } else feedBuilder.buildPodcast(url, username, password) { feed_, map -> handleFeed(feed_, map) }
             } else {
                 showNoPodcastFoundError()
                 Logd(TAG, "Failed to retrieve feed url")
@@ -352,20 +359,19 @@ class OnlineFeedFragment : Fragment() {
             val (progressBar, main) = createRefs()
             if (showProgress) CircularProgressIndicator(progress = { 0.6f },
                 strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
-            else Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
-                .constrainAs(main) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                }) {
+            else Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp).constrainAs(main) {
+                top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+            }) {
                 if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp).background(MaterialTheme.colorScheme.surface)) {
                     val (backgroundImage, coverImage, taColumn, buttons, closeButton) = createRefs()
-                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), contentDescription = "background",
-                        Modifier.fillMaxWidth().height(120.dp).constrainAs(backgroundImage) {
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                        })
+//                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), contentDescription = "background",
+//                        Modifier.fillMaxWidth().height(120.dp).constrainAs(backgroundImage) {
+//                            top.linkTo(parent.top)
+//                            bottom.linkTo(parent.bottom)
+//                            start.linkTo(parent.start)
+//                        })
                     AsyncImage(model = feed?.imageUrl?:"", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
                         modifier = Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
                             bottom.linkTo(parent.bottom)
@@ -387,9 +393,7 @@ class OnlineFeedFragment : Fragment() {
                             if (feedInFeedlist() || isSubscribed(feed!!)) {
                                 if (isShared) {
                                     val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
-                                    if (log != null) upsertBlk(log) {
-                                        it.status = ShareLog.Status.EXISTING.ordinal
-                                    }
+                                    if (log != null) upsertBlk(log) { it.status = ShareLog.Status.EXISTING.ordinal }
                                 }
                                 val feed = getFeedByTitleAndAuthor(feed?.eigenTitle?:"", feed?.author?:"")
                                 if (feed != null ) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
@@ -402,9 +406,7 @@ class OnlineFeedFragment : Fragment() {
                                     feedBuilder.subscribe(feed!!)
                                     if (isShared) {
                                         val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
-                                        if (log != null) upsertBlk(log) {
-                                            it.status = ShareLog.Status.SUCCESS.ordinal
-                                        }
+                                        if (log != null) upsertBlk(log) { it.status = ShareLog.Status.SUCCESS.ordinal }
                                     }
                                     withContext(Dispatchers.Main) {
                                         enableSubscribe = true
@@ -413,20 +415,16 @@ class OnlineFeedFragment : Fragment() {
                                     }
                                 }
                             }
-                        }) {
-                            Text(stringResource(subButTextRes))
-                        }
+                        }) { Text(stringResource(subButTextRes)) }
                         Spacer(modifier = Modifier.weight(0.1f))
-                        if (enableEpisodes && feed != null) Button(onClick = { showEpisodes(feed!!.episodes) }) {
-                            Text(stringResource(R.string.episodes_label))
-                        }
+                        if (enableEpisodes && feed != null) Button(onClick = { showEpisodes(feed!!.episodes) }) { Text(stringResource(R.string.episodes_label)) }
                         Spacer(modifier = Modifier.weight(0.2f))
                     }
-                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
-                        .constrainAs(closeButton) {
-                            top.linkTo(parent.top)
-                            end.linkTo(parent.end)
-                        })
+//                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
+//                        .constrainAs(closeButton) {
+//                            top.linkTo(parent.top)
+//                            end.linkTo(parent.end)
+//                        })
                 }
                 Column {
 //                    alternate_urls_spinner
@@ -706,7 +704,6 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    
     class RemoteEpisodesFragment : BaseEpisodesFragment() {
         private val episodeList: MutableList<Episode> = mutableListOf()
 

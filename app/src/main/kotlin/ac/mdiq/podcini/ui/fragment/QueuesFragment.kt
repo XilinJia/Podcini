@@ -148,13 +148,15 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         spinnerView = ComposeView(requireContext()).apply {
             setContent {
-                Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index:Int ->
-                    Logd(TAG, "Queue selected: $queues[index].name")
-                    val prevQueueSize = curQueue.size()
-                    curQueue = upsertBlk(queues[index]) { it.update() }
-                    toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
-                    loadCurQueue(true)
-                    playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
+                CustomTheme(requireContext()) {
+                    Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index: Int ->
+                        Logd(TAG, "Queue selected: $queues[index].name")
+                        val prevQueueSize = curQueue.size()
+                        curQueue = upsertBlk(queues[index]) { it.update() }
+                        toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
+                        loadCurQueue(true)
+                        playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
+                    }
                 }
             }
         }

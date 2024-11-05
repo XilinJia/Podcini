@@ -1,3 +1,15 @@
+# 6.13.5
+
+* hopefully fixed youtube playlists/podcasts no-updating issue
+* in OnlineFeed, when subscribing to a Youtube channel, a popup allows to choose a tab (if multiples are available)
+	* tab options include Videos (or customized name, the default tab) and Streams (live tab)
+	* only one tab can be chosen at a time
+	* the tab name will be appended to the feed title
+	* each tab results in a feed/podcast in Podcini
+* the shortcut way of subscribing (long-click on a search result) only subscribes to the default tab
+* episodes limits on subscribing to YT channels/playlists/podcasts are raised to 2000
+* fixed toolbar contrasts on Queues view
+
 # 6.13.4
 
 * in Queues view, reworked the spinner in Compose and added associated feeds toggle

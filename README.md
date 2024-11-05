@@ -12,11 +12,12 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
 #### Podcini.R 6.10 allows creating synthetic podcast and shelving any episdes to any synthetic podcasts
-#### Podcini.R version 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
+#### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
 #### Since version 6.11.5, Podcini.R is back to be built to target SDK 35 (Android 15), but requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
+#### If you intend to sync with through a server, be cautious as it's not well tested with Podcini. Welcome any ideas and contribution on this.
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
@@ -141,6 +142,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
+* When subscribing to a Youtube channel, tabs can be chosen to form separate podcasts
 * Playlists and podcasts on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
 * Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
 * All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background

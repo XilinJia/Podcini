@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.compose
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
-import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -55,10 +54,7 @@ fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                        for (item in selected) {
-//                            Feeds.setRating(item, rating.code)
-                            upsertBlk(item) { it.rating = rating.code }
-                        }
+                        for (item in selected) upsertBlk(item) { it.rating = rating.code }
                         onDismissRequest()
                     }) {
                         Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")
@@ -85,8 +81,7 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(message)
                 Text(stringResource(R.string.feed_delete_reason_msg))
-                BasicTextField(value = textState, onValueChange = { textState = it },
-                    textStyle = TextStyle(fontSize = 16.sp, color = textColor),
+                BasicTextField(value = textState, onValueChange = { textState = it }, textStyle = TextStyle(fontSize = 16.sp, color = textColor),
                     modifier = Modifier.fillMaxWidth().height(100.dp).padding(start = 10.dp, end = 10.dp, bottom = 10.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
                 )
                 Button(onClick = {
@@ -119,9 +114,7 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                         } catch (e: Throwable) { Log.e("RemoveFeedDialog", Log.getStackTraceString(e)) }
                     }
                     onDismissRequest()
-                }) {
-                    Text("Confirm")
-                }
+                }) { Text("Confirm") }
             }
         }
     }
@@ -130,41 +123,43 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: SubscriptionLog? = null) {
+//    var showYTChannelDialog by remember { mutableStateOf(false) }
+//    if (showYTChannelDialog) feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = {showYTChannelDialog = false}) {feed, map ->  handleFeed(feed, map)}
+
     val showSubscribeDialog = remember { mutableStateOf(false) }
     @Composable
     fun confirmSubscribe(feed: PodcastSearchResult, showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp),
-                    shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    val textColor = MaterialTheme.colorScheme.onSurface
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
-                        Text("Subscribe: \"${feed.title}\" ?")
+                        Text("Subscribe: \"${feed.title}\" ?", color = textColor, modifier = Modifier.padding(bottom = 10.dp))
                         Button(onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 if (feed.feedUrl != null) {
-                                    val feedBuilder = FeedBuilder(activity) { message, details ->
-                                        Logd("OnineFeedItem", "Subscribe error: $message \n $details")
-                                    }
+                                    val feedBuilder = FeedBuilder(activity) { message, details -> Logd("OnineFeedItem", "Subscribe error: $message \n $details") }
                                     feedBuilder.feedSource = feed.source
-                                    feedBuilder.startFeedBuilding(feed.feedUrl,
-                                        "",
-                                        "") { feed, _ -> feedBuilder.subscribe(feed) }
+                                    val url = feed.feedUrl
+                                    if (feedBuilder.isYoutube(url)) {
+                                        if (feedBuilder.isYoutubeChannel()) {
+                                            val nTabs = feedBuilder.youtubeChannelValidTabs()
+                                            feedBuilder.buildYTChannel(0, "") { feed, _ -> feedBuilder.subscribe(feed) }
+//                                            if (nTabs > 1) showYTChannelDialog = true
+//                                            else feedBuilder.buildYTChannel(0, "") { feed, map -> feedBuilder.subscribe(feed) }
+                                        } else feedBuilder.buildYTPlaylist { feed, _ -> feedBuilder.subscribe(feed) }
+                                    } else feedBuilder.buildPodcast(url, "", "") { feed, _ -> feedBuilder.subscribe(feed) }
                                 }
                             }
                             onDismissRequest()
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
         }
     }
-    if (showSubscribeDialog.value) {
-        confirmSubscribe(feed, showSubscribeDialog.value, onDismissRequest = {
-            showSubscribeDialog.value = false
-        })
-    }
+    if (showSubscribeDialog.value) confirmSubscribe(feed, showSubscribeDialog.value, onDismissRequest = { showSubscribeDialog.value = false })
+
     val context = LocalContext.current
     Column(Modifier.padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 4.dp).combinedClickable(
         onClick = {
@@ -180,11 +175,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
             }
         }, onLongClick = { showSubscribeDialog.value = true })) {
         val textColor = MaterialTheme.colorScheme.onSurface
-        Text(feed.title,
-            color = textColor,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(bottom = 4.dp))
+        Text(feed.title, color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = 4.dp))
         Row {
             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val (imgvCover, checkMark) = createRefs()
@@ -196,7 +187,6 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                     })
-
                 if (feed.feedId > 0 || log != null) {
                     Logd("OnlineFeedItem", "${feed.feedId} $log")
                     val alpha = 1.0f
@@ -215,26 +205,14 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                     feed.feedUrl != null && !feed.feedUrl.contains("itunes.apple.com") -> feed.feedUrl
                     else -> ""
                 }
-                if (authorText.isNotEmpty()) Text(authorText,
-                    color = textColor,
-                    style = MaterialTheme.typography.bodyMedium)
-                if (feed.subscriberCount > 0) Text(MiscFormatter.formatNumber(feed.subscriberCount) + " subscribers",
-                    color = textColor,
-                    style = MaterialTheme.typography.bodyMedium)
+                if (authorText.isNotEmpty()) Text(authorText, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                if (feed.subscriberCount > 0) Text(MiscFormatter.formatNumber(feed.subscriberCount) + " subscribers", color = textColor, style = MaterialTheme.typography.bodyMedium)
                 Row {
-                    if (feed.count != null && feed.count > 0) Text(feed.count.toString() + " episodes",
-                        color = textColor,
-                        style = MaterialTheme.typography.bodyMedium)
+                    if (feed.count != null && feed.count > 0) Text(feed.count.toString() + " episodes", color = textColor, style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.weight(1f))
-                    if (feed.update != null) Text(feed.update,
-                        color = textColor,
-                        style = MaterialTheme.typography.bodyMedium)
+                    if (feed.update != null) Text(feed.update, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
-                Text(feed.source + ": " + feed.feedUrl,
-                    color = textColor,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelSmall)
+                Text(feed.source + ": " + feed.feedUrl, color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
             }
         }
     }

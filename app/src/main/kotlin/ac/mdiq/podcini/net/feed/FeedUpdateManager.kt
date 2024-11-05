@@ -31,6 +31,7 @@ import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.channel.ChannelInfo
 import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
 import ac.mdiq.vista.extractor.exceptions.ExtractionException
+import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.Manifest
 import android.app.Notification
@@ -52,6 +53,7 @@ import io.realm.kotlin.types.RealmList
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.net.URL
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
@@ -233,29 +235,50 @@ object FeedUpdateManager {
             }
         }
         private fun refreshYoutubeFeed(feed: Feed) {
+            if (feed.downloadUrl.isNullOrEmpty()) return
+            val url = feed.downloadUrl
             try {
-                val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
-                val channelInfo = ChannelInfo.getInfo(service, feed.downloadUrl!!)
-                Logd(TAG, "refreshYoutubeFeed channelInfo: $channelInfo ${channelInfo.tabs.size}")
-                if (channelInfo.tabs.isEmpty()) return
-                try {
-                    val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
-                    Logd(TAG, "refreshYoutubeFeed result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                val service = try { Vista.getService("YouTube")
+                } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
+
+                val uURL = URL(url)
+                if (uURL.path.startsWith("/channel")) {
+                    val channelInfo = ChannelInfo.getInfo(service, url!!)
+                    Logd(TAG, "refreshYoutubeFeed channelInfo: $channelInfo ${channelInfo.tabs.size}")
+                    if (channelInfo.tabs.isEmpty()) return
+                    try {
+                        val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
+                        Logd(TAG, "refreshYoutubeFeed result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                        val eList: RealmList<Episode> = realmListOf()
+                        for (r in channelTabInfo.relatedItems) eList.add(episodeFromStreamInfoItem(r as StreamInfoItem))
+                        val feed_ = Feed(url, null)
+                        feed_.type = Feed.FeedType.YOUTUBE.name
+                        feed_.hasVideoMedia = true
+                        feed_.title = channelInfo.name
+                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.description = channelInfo.description
+                        feed_.author = channelInfo.parentChannelName
+                        feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
+                        feed_.episodes = eList
+                        Feeds.updateFeed(applicationContext, feed_, false)
+                    } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed channel error1 ${e.message}") }
+                } else if (uURL.path.startsWith("/playlist")) {
+                    val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return
                     val eList: RealmList<Episode> = realmListOf()
-                    for (r in channelTabInfo.relatedItems) {
-                        eList.add(episodeFromStreamInfoItem(r as StreamInfoItem))
-                    }
-                    val feed_ = Feed(feed.downloadUrl, null)
-                    feed_.type = Feed.FeedType.YOUTUBE.name
-                    feed_.hasVideoMedia = true
-                    feed_.title = channelInfo.name
-                    feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
-                    feed_.description = channelInfo.description
-                    feed_.author = channelInfo.parentChannelName
-                    feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
-                    feed_.episodes = eList
-                    Feeds.updateFeed(applicationContext, feed_, false)
-                } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error1 ${e.message}") }
+                    try {
+                        for (r in playlistInfo.relatedItems) eList.add(episodeFromStreamInfoItem(r))
+                        val feed_ = Feed(url, null)
+                        feed_.type = Feed.FeedType.YOUTUBE.name
+                        feed_.hasVideoMedia = true
+                        feed_.title = playlistInfo.name
+                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.description = playlistInfo.description?.content ?: ""
+                        feed_.author = playlistInfo.uploaderName
+                        feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
+                        feed_.episodes = eList
+                        Feeds.updateFeed(applicationContext, feed_, false)
+                    } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed playlist error1 ${e.message}") }
+                }
             } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error ${e.message}") }
         }
         

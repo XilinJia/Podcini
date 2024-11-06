@@ -131,7 +131,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     Logd(TAG, "Starting download")
                     try {
                         while (!cancelled && (connection.read(buffer).also { count = it }) != -1) {
-                            //                    Log.d(TAG,"buffer: $buffer")
                             out.write(buffer, 0, count)
                             downloadRequest.soFar += count
                             val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()

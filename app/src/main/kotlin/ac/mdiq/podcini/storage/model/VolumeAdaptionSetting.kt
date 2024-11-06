@@ -2,7 +2,7 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
 
-enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionFactor: Float, val resId: Int) {
+enum class VolumeAdaptionSetting(val value: Int, @JvmField val adaptionFactor: Float, val resId: Int) {
     OFF(0, 1.0f, R.string.feed_volume_reduction_off),
     LIGHT_REDUCTION(1, 0.5f, R.string.feed_volume_reduction_light),
     HEAVY_REDUCTION(2, 0.2f, R.string.feed_volume_reduction_heavy),

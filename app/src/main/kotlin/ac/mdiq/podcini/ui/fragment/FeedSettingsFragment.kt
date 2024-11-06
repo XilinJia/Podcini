@@ -38,23 +38,19 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
-
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.*
@@ -110,9 +106,7 @@ class FeedSettingsFragment : Fragment() {
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
-                                        feed = upsertBlk(feed!!) { f ->
-                                            f.preferences?.keepUpdated = checked
-                                        }
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.keepUpdated = checked }
                                     }
                                 )
                             }
@@ -142,19 +136,53 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.pref_stream_over_download_title), style = MaterialTheme.typography.titleLarge, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember {
-                                    mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false)
-                                }
+                                var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
-                                        feed = upsertBlk(feed!!) { f ->
-                                            f.preferences?.prefStreamOverDownload = checked
-                                        }
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.prefStreamOverDownload = checked }
                                     }
                                 )
                             }
                             Text(text = stringResource(R.string.pref_stream_over_download_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+                    }
+                    if (feed?.type == Feed.FeedType.YOUTUBE.name) {
+                        //                    audio quality
+                        Column {
+                            var showDialog by remember { mutableStateOf(false) }
+                            var selectedOption by remember { mutableStateOf(feed?.preferences?.audioQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag) }
+                            if (showDialog) SetAudioQuality(showDialog, selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24), "", tint = textColor)
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(text = stringResource(R.string.pref_feed_audio_quality), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                    modifier = Modifier.clickable(onClick = {
+                                        selectedOption = feed!!.preferences?.audioQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag
+                                        showDialog = true
+                                    })
+                                )
+                            }
+                            Text(text = stringResource(R.string.pref_feed_audio_quality_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+                        if (feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+                            //                    video quality
+                            Column {
+                                var showDialog by remember { mutableStateOf(false) }
+                                var selectedOption by remember { mutableStateOf(feed?.preferences?.videoQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag) }
+                                if (showDialog) SetVideoQuality(showDialog, selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                                Row(Modifier.fillMaxWidth()) {
+                                    Icon(ImageVector.vectorResource(id = R.drawable.ic_videocam), "", tint = textColor)
+                                    Spacer(modifier = Modifier.width(20.dp))
+                                    Text(text = stringResource(R.string.pref_feed_video_quality), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                        modifier = Modifier.clickable(onClick = {
+                                            selectedOption = feed!!.preferences?.videoQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag
+                                            showDialog = true
+                                        })
+                                    )
+                                }
+                                Text(text = stringResource(R.string.pref_feed_video_quality_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                            }
                         }
                     }
                     //                    associated queue
@@ -187,9 +215,7 @@ class FeedSettingsFragment : Fragment() {
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
-                                        feed = upsertBlk(feed!!) { f ->
-                                            f.preferences?.autoAddNewToQueue = checked
-                                        }
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.autoAddNewToQueue = checked }
                                     }
                                 )
                             }
@@ -230,10 +256,7 @@ class FeedSettingsFragment : Fragment() {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.playback_speed), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                modifier = Modifier.clickable(onClick = {
-                                    PlaybackSpeedDialog().show()
-                                })
-                            )
+                                modifier = Modifier.clickable(onClick = { PlaybackSpeedDialog().show() }))
                         }
                         Text(text = stringResource(R.string.pref_feed_playback_speed_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
                     }
@@ -286,12 +309,10 @@ class FeedSettingsFragment : Fragment() {
                                     onCheckedChange = {
                                         audoDownloadChecked = it
                                         feed = upsertBlk(feed!!) { f -> f.preferences?.autoDownload = audoDownloadChecked }
-                                    }
-                                )
+                                    })
                             }
-                            if (!isEnableAutodownload) {
+                            if (!isEnableAutodownload)
                                 Text(text = stringResource(R.string.auto_download_disabled_globally), style = MaterialTheme.typography.bodyMedium, color = textColor)
-                            }
                         }
                         if (audoDownloadChecked) {
                             //                    auto download policy
@@ -300,10 +321,7 @@ class FeedSettingsFragment : Fragment() {
                                     val showDialog = remember { mutableStateOf(false) }
                                     if (showDialog.value) AutoDownloadPolicyDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
                                     Text(text = stringResource(R.string.feed_auto_download_policy), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = {
-                                            showDialog.value = true
-                                        })
-                                    )
+                                        modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                                 }
                             }
                             //                    episode cache
@@ -312,8 +330,7 @@ class FeedSettingsFragment : Fragment() {
                                     val showDialog = remember { mutableStateOf(false) }
                                     if (showDialog.value) SetEpisodesCacheDialog(showDialog.value, onDismiss = { showDialog.value = false })
                                     Text(text = stringResource(R.string.pref_episode_cache_title), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = { showDialog.value = true })
-                                    )
+                                        modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                                 }
                                 Text(text = stringResource(R.string.pref_episode_cache_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
                             }
@@ -322,15 +339,11 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(text = stringResource(R.string.pref_auto_download_counting_played_title), style = MaterialTheme.typography.titleLarge, color = textColor)
                                     Spacer(modifier = Modifier.weight(1f))
-                                    var checked by remember {
-                                        mutableStateOf(feed?.preferences?.countingPlayed ?: true)
-                                    }
+                                    var checked by remember { mutableStateOf(feed?.preferences?.countingPlayed ?: true) }
                                     Switch(checked = checked, modifier = Modifier.height(24.dp),
                                         onCheckedChange = {
                                             checked = it
-                                            feed = upsertBlk(feed!!) { f ->
-                                                f.preferences?.countingPlayed = checked
-                                            }
+                                            feed = upsertBlk(feed!!) { f -> f.preferences?.countingPlayed = checked }
                                         }
                                     )
                                 }
@@ -341,14 +354,9 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(text = stringResource(R.string.episode_inclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
                                         modifier = Modifier.clickable(onClick = {
-                                            object : AutoDownloadFilterPrefDialog(requireContext(),
-                                                feed?.preferences!!.autoDownloadFilter!!,
-                                                1) {
-                                                
+                                            object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, 1) {
                                                 override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                                                    feed = upsertBlk(feed!!) {
-                                                        it.preferences?.autoDownloadFilter = filter
-                                                    }
+                                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
                                                 }
                                             }.show()
                                         })
@@ -361,14 +369,9 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(text = stringResource(R.string.episode_exclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
                                         modifier = Modifier.clickable(onClick = {
-                                            object : AutoDownloadFilterPrefDialog(requireContext(),
-                                                feed?.preferences!!.autoDownloadFilter!!,
-                                                -1) {
-                                                
+                                            object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, -1) {
                                                 override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                                                    feed = upsertBlk(feed!!) {
-                                                        it.preferences?.autoDownloadFilter = filter
-                                                    }
+                                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
                                                 }
                                             }.show()
                                         })
@@ -543,11 +546,7 @@ class FeedSettingsFragment : Fragment() {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Column {
                             AutoDownloadPolicy.entries.forEach { item ->
-                                Row(Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Checkbox(checked = (item == selectedOption),
                                         onCheckedChange = {
                                             Logd(TAG, "row clicked: $item $selectedOption")
@@ -577,18 +576,13 @@ class FeedSettingsFragment : Fragment() {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newCache by remember { mutableStateOf((feed?.preferences?.autoDLMaxEpisodes ?: 1).toString()) }
                         TextField(value = newCache, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) newCache = it },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//                            visualTransformation = PositiveIntegerTransform(),
-                            label = { Text("Max episodes allowed") }
-                        )
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Max episodes allowed") })
                         Button(onClick = {
                             if (newCache.isNotEmpty()) {
                                 feed = upsertBlk(feed!!) { it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }
                                 onDismiss()
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
@@ -649,6 +643,90 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
+    private fun SetAudioQuality(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
+        var selected by remember {mutableStateOf(selectedOption)}
+        if (showDialog) {
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FeedPreferences.AVQuality.entries.forEach { option ->
+                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = option.tag == selected,
+                                    onCheckedChange = { isChecked ->
+                                        selected = option.tag
+                                        if (isChecked) Logd(TAG, "$option is checked")
+                                        when (selected) {
+                                            FeedPreferences.AVQuality.LOW.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.LOW.code }
+                                                onDismissRequest()
+                                            }
+                                            FeedPreferences.AVQuality.MEDIUM.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.MEDIUM.code }
+                                                onDismissRequest()
+                                            }
+                                            FeedPreferences.AVQuality.HIGH.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.HIGH.code }
+                                                onDismissRequest()
+                                            }
+                                            else -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.GLOBAL.code }
+                                                onDismissRequest()
+                                            }
+                                        }
+                                    }
+                                )
+                                Text(option.tag)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SetVideoQuality(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
+        var selected by remember {mutableStateOf(selectedOption)}
+        if (showDialog) {
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FeedPreferences.AVQuality.entries.forEach { option ->
+                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = option.tag == selected,
+                                    onCheckedChange = { isChecked ->
+                                        selected = option.tag
+                                        if (isChecked) Logd(TAG, "$option is checked")
+                                        when (selected) {
+                                            FeedPreferences.AVQuality.LOW.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.LOW.code }
+                                                onDismissRequest()
+                                            }
+                                            FeedPreferences.AVQuality.MEDIUM.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.MEDIUM.code }
+                                                onDismissRequest()
+                                            }
+                                            FeedPreferences.AVQuality.HIGH.tag -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.HIGH.code }
+                                                onDismissRequest()
+                                            }
+                                            else -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.GLOBAL.code }
+                                                onDismissRequest()
+                                            }
+                                        }
+                                    }
+                                )
+                                Text(option.tag)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
     fun AuthenticationDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
@@ -669,9 +747,7 @@ class FeedSettingsFragment : Fragment() {
                                 Thread({ runOnce(requireContext(), feed) }, "RefreshAfterCredentialChange").start()
                                 onDismiss()
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
@@ -685,19 +761,11 @@ class FeedSettingsFragment : Fragment() {
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var intro by remember { mutableStateOf((feed?.preferences?.introSkip ?: 0).toString()) }
-                        TextField(value = intro,
-                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) intro = it },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//                            visualTransformation = PositiveIntegerTransform(),
-                            label = { Text("Skip first (seconds)") }
-                        )
+                        TextField(value = intro, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) intro = it },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip first (seconds)") })
                         var ending by remember { mutableStateOf((feed?.preferences?.endingSkip ?: 0).toString()) }
-                        TextField(value = ending,
-                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) ending = it  },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//                            visualTransformation = PositiveIntegerTransform(),
-                            label = { Text("Skip last (seconds)") }
-                        )
+                        TextField(value = ending, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) ending = it  },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip last (seconds)") })
                         Button(onClick = {
                             if (intro.isNotEmpty() || ending.isNotEmpty()) {
                                 feed = upsertBlk(feed!!) {
@@ -706,9 +774,7 @@ class FeedSettingsFragment : Fragment() {
                                 }
                                 onDismiss()
                             }
-                        }) {
-                            Text("Confirm")
-                        }
+                        }) { Text("Confirm") }
                     }
                 }
             }
@@ -728,9 +794,7 @@ class FeedSettingsFragment : Fragment() {
         val speed = feed?.preferences!!.playSpeed
         binding.useGlobalCheckbox.isChecked = speed == FeedPreferences.SPEED_USE_GLOBAL
         binding.seekBar.updateSpeed(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)
-        return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.playback_speed)
-            .setView(binding.root)
+        return MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.playback_speed).setView(binding.root)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                 val newSpeed = if (binding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
                 else binding.seekBar.currentSpeed
@@ -832,9 +896,7 @@ class FeedSettingsFragment : Fragment() {
         protected abstract fun onConfirmed(filter: FeedAutoDownloadFilter)
         private fun toFilterString(words: List<String>?): String {
             val result = StringBuilder()
-            for (word in words!!) {
-                result.append("\"").append(word).append("\" ")
-            }
+            for (word in words!!) result.append("\"").append(word).append("\" ")
             return result.toString()
         }
     }

@@ -142,7 +142,11 @@ class Feed : RealmObject {
 
     @Ignore
     val mostRecentItem: Episode?
-        get() = realm.query(Episode::class).query("feedId == $id SORT(pubDate DESC)").first().find()
+        get() = realm.query(Episode::class).query("feedId == $id SORT (pubDate DESC)").first().find()
+
+    @Ignore
+    val oldestItem: Episode?
+        get() = realm.query(Episode::class).query("feedId == $id SORT (pubDate ASC)").first().find()
 
     @Ignore
     var title: String?

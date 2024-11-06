@@ -42,6 +42,9 @@ import kotlin.math.min
 object Episodes {
     private val TAG: String = Episodes::class.simpleName ?: "Anonymous"
 
+    val prefRemoveFromQueueMarkedPlayed by lazy { appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true) }
+    val prefDeleteRemovesFromQueue by lazy { appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false) }
+
     /**
      * @param offset The first episode that should be loaded.
      * @param limit The maximum number of episodes that should be loaded.
@@ -62,13 +65,6 @@ object Episodes {
         var queryString = filter?.queryString()?:"id > 0"
         if (feedId >= 0) queryString += " AND feedId == $feedId "
         return realm.query(Episode::class).query(queryString).count().find().toInt()
-    }
-
-//    used in tests only
-    fun getEpisode(itemId: Long): Episode? {
-        Logd(TAG, "getFeedItem called with id $itemId")
-        val it = realm.query(Episode::class).query("id == $0", itemId).first().find()
-        return if (it != null) realm.copyFromRealm(it) else null
     }
 
     /**
@@ -103,12 +99,6 @@ object Episodes {
             if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(episode_)
         }
     }
-
-    val prefDeleteRemovesFromQueue: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
-//    fun shouldDeleteRemoveFromQueue(): Boolean {
-//        return appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
-//    }
 
     fun deleteMediaSync(context: Context, episode: Episode): Episode {
         Logd(TAG, "deleteMediaSync called")
@@ -179,7 +169,6 @@ object Episodes {
      * Remove the listed episodes and their EpisodeMedia entries.
      * Deleting media also removes the download log entries.
      */
-    
     fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
         return runOnIOScope {
             val removedFromQueue: MutableList<Episode> = mutableListOf()
@@ -224,7 +213,6 @@ object Episodes {
      * @param episodes   the FeedItems.
      * @param resetMediaPosition true if this method should also reset the position of the Episode's EpisodeMedia object.
      */
-    
     fun setPlayState(played: Int, resetMediaPosition: Boolean, vararg episodes: Episode) : Job {
         Logd(TAG, "setPlayState called")
         return runOnIOScope {
@@ -252,13 +240,6 @@ object Episodes {
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }
-
-    val prefRemoveFromQueueMarkedPlayed: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
-
-//    fun shouldMarkedPlayedRemoveFromQueues(): Boolean {
-//        return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
-//    }
 
     fun episodeFromStreamInfoItem(item: StreamInfoItem): Episode {
         val e = Episode()

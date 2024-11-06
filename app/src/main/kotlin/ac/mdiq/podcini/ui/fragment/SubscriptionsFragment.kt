@@ -297,7 +297,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
                 CustomFeedNameDialog(activity as Activity, feed).show()
             }
-            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
+            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext(), fullUpdate = true)
             R.id.toggle_grid_list -> useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
             else -> return false
         }
@@ -961,7 +961,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @Composable
     fun FilterDialog(filter: FeedFilter? = null, onDismissRequest: () -> Unit) {
-        val filterValues: MutableSet<String> = mutableSetOf()
+        val filterValues = remember { filter?.properties ?: mutableSetOf() }
 
         fun onFilterChanged(newFilterValues: Set<String>) {
             feedsFilter = StringUtils.join(newFilterValues, ",")
@@ -975,7 +975,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 window.setGravity(Gravity.BOTTOM)
                 window.setDimAmount(0f)
             }
-            Surface(modifier = Modifier.fillMaxWidth().height(350.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp)) {
+            Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 val scrollState = rememberScrollState()
                 Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {

@@ -179,8 +179,8 @@ import java.util.concurrent.Semaphore
                         runOnIOScope {
                             val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
                             if (feed_ != null) {
-                                upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
-                                loadFeed()
+                                feed = upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+//                                loadFeed()
                             }
                         }
                     }

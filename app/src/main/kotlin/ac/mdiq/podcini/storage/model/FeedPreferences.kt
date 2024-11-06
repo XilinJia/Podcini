@@ -48,7 +48,7 @@ class FeedPreferences : EmbeddedRealmObject {
             field = value
             autoDelete = field.code
         }
-    var autoDelete: Int = 0
+    var autoDelete: Int = AutoDeleteAction.GLOBAL.code
 
     @Ignore
     var volumeAdaptionSetting: VolumeAdaptionSetting = VolumeAdaptionSetting.OFF
@@ -57,7 +57,25 @@ class FeedPreferences : EmbeddedRealmObject {
             field = value
             volumeAdaption = field.toInteger()
         }
-    var volumeAdaption: Int = 0
+    var volumeAdaption: Int = VolumeAdaptionSetting.OFF.value
+
+    @Ignore
+    var audioQualitySetting: AVQuality = AVQuality.GLOBAL
+        get() = AVQuality.fromCode(audioQuality)
+        set(value) {
+            field = value
+            audioQuality = field.code
+        }
+    var audioQuality: Int = AVQuality.GLOBAL.code
+
+    @Ignore
+    var videoQualitySetting: AVQuality = AVQuality.GLOBAL
+        get() = AVQuality.fromCode(videoQuality)
+        set(value) {
+            field = value
+            videoQuality = field.code
+        }
+    var videoQuality: Int = AVQuality.GLOBAL.code
 
     var prefStreamOverDownload: Boolean = false
 
@@ -132,7 +150,7 @@ class FeedPreferences : EmbeddedRealmObject {
             field = value
             autoDLPolicyCode = value.code
         }
-    var autoDLPolicyCode: Int = 0
+    var autoDLPolicyCode: Int = AutoDownloadPolicy.ONLY_NEW.code
 
     constructor() {}
 
@@ -193,6 +211,22 @@ class FeedPreferences : EmbeddedRealmObject {
             }
             fun fromTag(tag: String): AutoDeleteAction {
                 return enumValues<AutoDeleteAction>().firstOrNull { it.tag == tag } ?: NEVER
+            }
+        }
+    }
+
+    enum class AVQuality(val code: Int, val tag: String) {
+        GLOBAL(0, "Global"),
+        LOW(1, "Low"),
+        MEDIUM(5, "Medium"),
+        HIGH(10, "High");
+
+        companion object {
+            fun fromCode(code: Int): AVQuality {
+                return enumValues<AVQuality>().firstOrNull { it.code == code } ?: GLOBAL
+            }
+            fun fromTag(tag: String): AVQuality {
+                return enumValues<AVQuality>().firstOrNull { it.tag == tag } ?: GLOBAL
             }
         }
     }

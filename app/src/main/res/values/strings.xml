@@ -575,6 +575,10 @@
     <string name="pref_feed_skip">Auto skip</string>
     <string name="pref_feed_skip_sum">Skip introductions and ending credits.</string>
     <string name="associated">Associated</string>
+    <string name="pref_feed_audio_quality">Audio quality</string>
+    <string name="pref_feed_audio_quality_sum">Global generally equals high quality except when prefLowQualityMedia is set for metered network. Quality setting here takes precedence over the setting of prefLowQualityMedia for metered network.</string>
+    <string name="pref_feed_video_quality">Video quality</string>
+    <string name="pref_feed_video_quality_sum">Global equals low quality, Quality setting here takes precedence over the setting of prefLowQualityMedia for metered network.</string>
     <string name="pref_feed_associated_queue">Associated queue</string>
     <string name="pref_feed_associated_queue_sum">The queue to which epiosdes in the feed will added by default</string>
     <string name="pref_feed_skip_ending">Skip last</string>

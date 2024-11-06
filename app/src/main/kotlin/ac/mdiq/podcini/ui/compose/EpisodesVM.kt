@@ -997,14 +997,15 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
 @Composable
 fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: MutableSet<EpisodeFilter.EpisodesFilterGroup> = mutableSetOf(),
                          onDismissRequest: () -> Unit, onFilterChanged: (Set<String>) -> Unit) {
-    val filterValues: MutableSet<String> = mutableSetOf()
+    val filterValues = remember {  filter?.properties ?: mutableSetOf() }
     Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
         val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
         dialogWindowProvider?.window?.let { window ->
             window.setGravity(Gravity.BOTTOM)
             window.setDimAmount(0f)
         }
-        Surface(modifier = Modifier.fillMaxWidth().height(350.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp)) {
+        Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             val scrollState = rememberScrollState()
             Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {

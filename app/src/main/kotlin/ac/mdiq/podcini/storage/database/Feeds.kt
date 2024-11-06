@@ -201,7 +201,7 @@ object Feeds {
      * @return The updated Feed from the database if it already existed, or the new Feed from the parameters otherwise.
      */
     @Synchronized
-    fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
+    fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean= false): Feed? {
         Logd(TAG, "updateFeed called")
         var resultFeed: Feed?
 //        val unlistedItems: MutableList<Episode> = ArrayList()
@@ -237,8 +237,6 @@ object Feeds {
         val priorMostRecent = savedFeed.mostRecentItem
         val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
         var idLong = Feed.newId()
-        Logd(TAG, "updateFeed building newFeedAssistant")
-        val newFeedAssistant = FeedAssistant(newFeed, savedFeed.id)
         Logd(TAG, "updateFeed building savedFeedAssistant")
         val savedFeedAssistant = FeedAssistant(savedFeed)
 
@@ -293,7 +291,6 @@ object Feeds {
                 if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                     Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                     episode.playState = PlayState.NEW.code
-//                    episode.setNew()
                     if (savedFeed.preferences?.autoAddNewToQueue == true) {
                         val q = savedFeed.preferences?.queue
                         if (q != null) runOnIOScope {  addToQueueSync(episode, q) }
@@ -306,6 +303,8 @@ object Feeds {
         val unlistedItems: MutableList<Episode> = ArrayList()
         // identify episodes to be removed
         if (removeUnlistedItems) {
+            Logd(TAG, "updateFeed building newFeedAssistant")
+            val newFeedAssistant = FeedAssistant(newFeed, savedFeed.id)
             val it = savedFeed.episodes.toMutableList().iterator()
             while (it.hasNext()) {
                 val feedItem = it.next()
@@ -314,22 +313,83 @@ object Feeds {
                     it.remove()
                 }
             }
+            newFeedAssistant.clear()
         }
-        newFeedAssistant.clear()
 
         // update attributes
         savedFeed.lastUpdate = newFeed.lastUpdate
         savedFeed.type = newFeed.type
         savedFeed.lastUpdateFailed = false
-        resultFeed = savedFeed
-
         savedFeed.totleDuration = 0
-        for (e in savedFeed.episodes) {
-            savedFeed.totleDuration += e.media?.duration ?: 0
-        }
+        for (e in savedFeed.episodes) savedFeed.totleDuration += e.media?.duration ?: 0
+
+        resultFeed = savedFeed
         try {
             upsertBlk(savedFeed) {}
             if (removeUnlistedItems && unlistedItems.isNotEmpty()) runBlocking { deleteEpisodes(context, unlistedItems).join() }
+        } catch (e: InterruptedException) { e.printStackTrace()
+        } catch (e: ExecutionException) { e.printStackTrace() }
+        return resultFeed
+    }
+
+    @Synchronized
+    fun updateFeedSimple(newFeed: Feed): Feed? {
+        Logd(TAG, "updateFeedSimple called")
+        val savedFeed = searchFeedByIdentifyingValueOrID(newFeed, true) ?: return newFeed
+
+        Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
+        newFeed.episodes.sortWith(EpisodePubdateComparator())
+        if (newFeed.pageNr == savedFeed.pageNr) {
+            if (savedFeed.compareWithOther(newFeed)) {
+                Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
+                savedFeed.updateFromOther(newFeed)
+            }
+        } else {
+            Logd(TAG, "New feed has a higher page number: ${newFeed.nextPageLink}")
+            savedFeed.nextPageLink = newFeed.nextPageLink
+        }
+        val priorMostRecent = savedFeed.mostRecentItem
+        val priorMostRecentDate: Date = priorMostRecent?.getPubDate() ?: Date(0)
+        var idLong = Feed.newId()
+        Logd(TAG, "updateFeedSimple building savedFeedAssistant")
+
+        // Look for new or updated Items
+        for (idx in newFeed.episodes.indices) {
+            val episode = newFeed.episodes[idx]
+            if ((episode.getPubDate()?: Date(0)) <= priorMostRecentDate) continue
+
+            Logd(TAG, "Found new episode: ${episode.title}")
+            episode.feed = savedFeed
+            episode.id = idLong++
+            episode.feedId = savedFeed.id
+            if (episode.media != null) {
+                episode.media!!.id = episode.id
+                if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
+            }
+            if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
+            else savedFeed.episodes.add(idx, episode)
+
+            val pubDate = episode.getPubDate()
+            if (pubDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
+                Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
+                episode.playState = PlayState.NEW.code
+                if (savedFeed.preferences?.autoAddNewToQueue == true) {
+                    val q = savedFeed.preferences?.queue
+                    if (q != null) runOnIOScope {  addToQueueSync(episode, q) }
+                }
+            }
+        }
+
+        // update attributes
+        savedFeed.lastUpdate = newFeed.lastUpdate
+        savedFeed.type = newFeed.type
+        savedFeed.lastUpdateFailed = false
+        savedFeed.totleDuration = 0
+        for (e in savedFeed.episodes) savedFeed.totleDuration += e.media?.duration ?: 0
+
+        val resultFeed = savedFeed
+        try {
+            upsertBlk(savedFeed) {}
         } catch (e: InterruptedException) { e.printStackTrace()
         } catch (e: ExecutionException) { e.printStackTrace() }
         return resultFeed

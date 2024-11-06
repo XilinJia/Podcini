@@ -49,7 +49,6 @@ rxandroid = "3.0.2"
 rxjava = "2.2.21"
 rxjavaVersion = "3.1.8"
 searchpreference = "v2.5.0"
-#stream = "1.2.2"
 uiToolingPreview = "1.7.5"
 uiTooling = "1.7.5"
 viewpager2 = "1.1.0"
@@ -115,7 +114,6 @@ rxandroid = { module = "io.reactivex.rxjava3:rxandroid", version.ref = "rxandroi
 rxjava3-rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjavaVersion" }
 rxjava = { module = "io.reactivex.rxjava2:rxjava", version.ref = "rxjava" }
 searchpreference = { module = "com.github.ByteHamster:SearchPreference", version.ref = "searchpreference" }
-#stream = { module = "com.annimon:stream", version.ref = "stream" }
 vistaguide = { module = "com.github.XilinJia.vistaguide:VistaGuide", version.ref = "vistaguide" }
 desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugar_jdk_libs_nio" }
 wearable = { module = "com.google.android.wearable:wearable", version.ref = "wearable" }

@@ -1,16 +1,22 @@
 package ac.mdiq.podcini.playback.base
 
 //import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
+import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient
+import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.preferences.UserPreferences.Prefs
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.util.showStackTrace
+import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfig
+import ac.mdiq.vista.extractor.MediaFormat
+import ac.mdiq.vista.extractor.stream.AudioStream
+import ac.mdiq.vista.extractor.stream.DeliveryMethod
+import ac.mdiq.vista.extractor.stream.VideoStream
 import android.content.Context
 import android.media.AudioManager
 import android.net.Uri
@@ -24,6 +30,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MergingMediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.mp3.Mp3Extractor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.Volatile
@@ -43,6 +58,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     @Volatile
     private var oldStatus: PlayerStatus? = null
     internal var prevMedia: Playable? = null
+
+    protected var mediaSource: MediaSource? = null
+    protected var mediaItem: MediaItem? = null
 
     internal var mediaType: MediaType = MediaType.UNKNOWN
     internal val startWhenPrepared = AtomicBoolean(false)
@@ -95,6 +113,128 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     }
 
     open fun createMediaPlayer() {}
+
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    protected fun setDataSource(metadata: MediaMetadata, mediaUrl: String, user: String?, password: String?) {
+        Logd(TAG, "setDataSource: $mediaUrl")
+        mediaItem = MediaItem.Builder().setUri(Uri.parse(mediaUrl)).setMediaMetadata(metadata).build()
+        mediaSource = null
+        setSourceCredentials(user, password)
+    }
+
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    protected fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
+        Logd(TAG, "setDataSource1 called")
+        val url = media.getStreamUrl() ?: return
+        val preferences = media.episodeOrFetch()?.feed?.preferences
+        val user = preferences?.username
+        val password = preferences?.password
+        if (media.episode?.feed?.type == Feed.FeedType.YOUTUBE.name) {
+            Logd(TAG, "setDataSource1 setting for YouTube source")
+            try {
+                val streamInfo = media.episode!!.streamInfo ?: return
+                val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
+                Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
+                val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                    when (media.episode?.feed?.preferences?.audioQualitySetting) {
+                        FeedPreferences.AVQuality.LOW -> 0
+                        FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
+                        FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
+                        else -> audioStreamsList.size - 1
+                    }
+                }
+                val audioStream = audioStreamsList[audioIndex]
+                Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
+                val aSource = DefaultMediaSourceFactory(context).createMediaSource(
+                    MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
+                if (media.forceVideo || media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+                    Logd(TAG, "setDataSource1 result: $streamInfo")
+                    Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
+                    val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
+                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                        when (media.episode?.feed?.preferences?.videoQualitySetting) {
+                            FeedPreferences.AVQuality.LOW -> 0
+                            FeedPreferences.AVQuality.MEDIUM -> videoStreamsList.size / 2
+                            FeedPreferences.AVQuality.HIGH -> videoStreamsList.size - 1
+                            else -> 0
+                        }
+                    }
+                    val videoStream = videoStreamsList[videoIndex]
+                    Logd(TAG, "setDataSource1 use video quality: ${videoStream.resolution}")
+                    val vSource = DefaultMediaSourceFactory(context).createMediaSource(
+                        MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(videoStream.content)).build())
+                    val mediaSources: MutableList<MediaSource> = ArrayList()
+                    mediaSources.add(vSource)
+                    mediaSources.add(aSource)
+                    mediaSource = MergingMediaSource(true, *mediaSources.toTypedArray<MediaSource>())
+//                mediaSource = null
+                } else mediaSource = aSource
+                mediaItem = mediaSource?.mediaItem
+                setSourceCredentials(user, password)
+            } catch (throwable: Throwable) { Log.e(TAG, "setDataSource1 error: ${throwable.message}") }
+        } else {
+            Logd(TAG, "setDataSource1 setting for Podcast source")
+            setDataSource(metadata, url,user, password)
+        }
+    }
+
+    private fun setSourceCredentials(user: String?, password: String?) {
+        if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
+            if (httpDataSourceFactory == null)
+                httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
+                    .setUserAgent(ClientConfig.USER_AGENT)
+
+            val requestProperties = HashMap<String, String>()
+            requestProperties["Authorization"] = HttpCredentialEncoder.encode(user, password, "ISO-8859-1")
+            httpDataSourceFactory!!.setDefaultRequestProperties(requestProperties)
+
+            val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(context, httpDataSourceFactory!!)
+            val extractorsFactory = DefaultExtractorsFactory()
+            extractorsFactory.setConstantBitrateSeekingEnabled(true)
+            extractorsFactory.setMp3ExtractorFlags(Mp3Extractor.FLAG_DISABLE_ID3_METADATA)
+            val f = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
+
+            mediaSource = f.createMediaSource(mediaItem!!)
+        }
+    }
+
+    /**
+     * Join the two lists of video streams (video_only and normal videos),
+     * and sort them according with default format chosen by the user.
+     * @param videoStreams           normal videos list
+     * @param videoOnlyStreams       video only stream list
+     * @param ascendingOrder         true -> smallest to greatest | false -> greatest to smallest
+     * @param preferVideoOnlyStreams if video-only streams should preferred when both video-only streams and normal video streams are available
+     * @return the sorted list
+     */
+    private fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
+                                          preferVideoOnlyStreams: Boolean): List<VideoStream> {
+        val videoStreamsOrdered = if (preferVideoOnlyStreams) listOf(videoStreams, videoOnlyStreams) else listOf(videoOnlyStreams, videoStreams)
+        val allInitialStreams = videoStreamsOrdered.filterNotNull().flatten().toList()
+        val comparator = compareBy<VideoStream> { it.resolution.toResolutionValue() }
+        return if (ascendingOrder) allInitialStreams.sortedWith(comparator) else { allInitialStreams.sortedWith(comparator.reversed()) }
+    }
+
+    private fun String.toResolutionValue(): Int {
+        val match = Regex("(\\d+)p|(\\d+)k").find(this)
+        return when {
+            match?.groupValues?.get(1) != null -> match.groupValues[1].toInt()
+            match?.groupValues?.get(2) != null -> match.groupValues[2].toInt() * 1024
+            else -> 0
+        }
+    }
+
+    private fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
+        if (audioStreams == null) return listOf()
+        val collectedStreams = mutableSetOf<AudioStream>()
+        for (stream in audioStreams) {
+            Logd(TAG, "getFilteredAudioStreams stream: ${stream.audioTrackId} ${stream.bitrate} ${stream.deliveryMethod} ${stream.format}")
+            if (stream.deliveryMethod == DeliveryMethod.TORRENT || (stream.deliveryMethod == DeliveryMethod.HLS && stream.format == MediaFormat.OPUS))
+                continue
+            collectedStreams.add(stream)
+        }
+        return collectedStreams.toList().sortedWith(compareBy { it.bitrate })
+    }
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
@@ -292,7 +432,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         private val TAG: String = MediaPlayerBase::class.simpleName ?: "Anonymous"
 
         @get:Synchronized
-//        @Volatile
         @JvmStatic
         var status by mutableStateOf(PlayerStatus.STOPPED)
 
@@ -309,6 +448,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         val MEDIUM_REWIND: Long = TimeUnit.SECONDS.toMillis(10)
         @JvmField
         val LONG_REWIND: Long = TimeUnit.SECONDS.toMillis(20)
+
+        @JvmStatic
+        var httpDataSourceFactory:  OkHttpDataSource.Factory? = null
 
         val prefPlaybackSpeed: Float
             get() {

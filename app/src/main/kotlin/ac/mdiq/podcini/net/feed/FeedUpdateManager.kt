@@ -12,6 +12,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
+import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
@@ -27,6 +28,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.vista.extractor.InfoItem
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.channel.ChannelInfo
 import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
@@ -50,6 +52,8 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -67,6 +71,7 @@ object FeedUpdateManager {
     private const val WORK_ID_FEED_UPDATE_MANUAL = "feedUpdateManual"
     const val EXTRA_FEED_ID: String = "feed_id"
     const val EXTRA_NEXT_PAGE: String = "next_page"
+    const val EXTRA_FULL_UPDATE: String = "full_update"
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
     private val updateInterval: Long
@@ -93,7 +98,7 @@ object FeedUpdateManager {
 
     @JvmStatic
     @JvmOverloads
-    fun runOnce(context: Context, feed: Feed? = null, nextPage: Boolean = false) {
+    fun runOnce(context: Context, feed: Feed? = null, nextPage: Boolean = false, fullUpdate: Boolean = false) {
         val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(FeedUpdateWorker::class.java)
             .setInitialDelay(0L, TimeUnit.MILLISECONDS)
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -102,6 +107,7 @@ object FeedUpdateManager {
 
         val builder = Data.Builder()
         builder.putBoolean(EXTRA_EVEN_ON_MOBILE, true)
+        if (fullUpdate) builder.putBoolean(EXTRA_FULL_UPDATE, true)
         if (feed != null) {
             builder.putLong(EXTRA_FEED_ID, feed.id)
             builder.putBoolean(EXTRA_NEXT_PAGE, nextPage)
@@ -112,12 +118,12 @@ object FeedUpdateManager {
 
     @JvmStatic
     @JvmOverloads
-    fun runOnceOrAsk(context: Context, feed: Feed? = null) {
+    fun runOnceOrAsk(context: Context, feed: Feed? = null, fullUpdate: Boolean = false) {
         Logd(TAG, "Run auto update immediately in background.")
         when {
-            feed != null && feed.isLocalFeed -> runOnce(context, feed)
+            feed != null && feed.isLocalFeed -> runOnce(context, feed, fullUpdate = fullUpdate)
             !networkAvailable() -> EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.download_error_no_connection)))
-            isFeedRefreshAllowed -> runOnce(context, feed)
+            isFeedRefreshAllowed -> runOnce(context, feed, fullUpdate = fullUpdate)
             else -> confirmMobileRefresh(context, feed)
         }
     }
@@ -169,7 +175,8 @@ object FeedUpdateManager {
                     return Result.retry()
                 }
             }
-            refreshFeeds(feedsToUpdate, force)
+            val fullUpdate = inputData.getBoolean(EXTRA_FULL_UPDATE, false)
+            refreshFeeds(feedsToUpdate, force, fullUpdate)
             notificationManager.cancel(R.id.notification_updating_feeds)
             autodownloadEpisodeMedia(applicationContext, feedsToUpdate.toList())
             feedsToUpdate.clear()
@@ -197,7 +204,7 @@ object FeedUpdateManager {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_updating_feeds, createNotification(null)))
         }
         
-        private fun refreshFeeds(feedsToUpdate: MutableList<Feed>, force: Boolean) {
+        private fun refreshFeeds(feedsToUpdate: MutableList<Feed>, force: Boolean, fullUpdate: Boolean) {
             if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this.applicationContext,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -222,8 +229,8 @@ object FeedUpdateManager {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
                     when {
                         feed.isLocalFeed -> LocalFeedUpdater.updateFeed(feed, applicationContext, null)
-                        feed.type == Feed.FeedType.YOUTUBE.name -> refreshYoutubeFeed(feed)
-                        else -> refreshFeed(feed, force)
+                        feed.type == Feed.FeedType.YOUTUBE.name -> refreshYoutubeFeed(feed, fullUpdate)
+                        else -> refreshFeed(feed, force, fullUpdate)
                     }
                 } catch (e: Exception) {
                     Logd(TAG, "update failed ${e.message}")
@@ -234,23 +241,44 @@ object FeedUpdateManager {
                 titles.removeAt(0)
             }
         }
-        private fun refreshYoutubeFeed(feed: Feed) {
+        private fun refreshYoutubeFeed(feed: Feed, fullUpdate: Boolean) {
             if (feed.downloadUrl.isNullOrEmpty()) return
-            val url = feed.downloadUrl
+            val url = feed.downloadUrl!!
+            val newestItem = feed.mostRecentItem
+            val oldestItem = feed.oldestItem
             try {
-                val service = try { Vista.getService("YouTube")
-                } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
-
+                val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
                 val uURL = URL(url)
                 if (uURL.path.startsWith("/channel")) {
-                    val channelInfo = ChannelInfo.getInfo(service, url!!)
+                    val channelInfo = ChannelInfo.getInfo(service, url)
                     Logd(TAG, "refreshYoutubeFeed channelInfo: $channelInfo ${channelInfo.tabs.size}")
                     if (channelInfo.tabs.isEmpty()) return
                     try {
                         val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
                         Logd(TAG, "refreshYoutubeFeed result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                        var infoItems = channelTabInfo.relatedItems
+                        var nextPage = channelTabInfo.nextPage
                         val eList: RealmList<Episode> = realmListOf()
-                        for (r in channelTabInfo.relatedItems) eList.add(episodeFromStreamInfoItem(r as StreamInfoItem))
+                        while (infoItems.isNotEmpty()) {
+                            for (r_ in infoItems) {
+                                val r = r_ as StreamInfoItem
+                                if (r.infoType != InfoItem.InfoType.STREAM) continue
+                                Logd(TAG, "item: ${r.uploadDate?.date()?.time} ${r.name}")
+                                if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
+                                    eList.add(episodeFromStreamInfoItem(r))
+                                else nextPage = null
+                            }
+                            if (nextPage == null) break
+                            try {
+                                val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
+                                nextPage = page.nextPage
+                                infoItems = page.items
+                                Logd(TAG, "refreshYoutubeFeed more infoItems: ${infoItems.size}")
+                            } catch (e: Throwable) {
+                                Logd(TAG, "refreshYoutubeFeed ChannelTabInfo.getMoreItems error: ${e.message}")
+                                break
+                            }
+                        }
                         val feed_ = Feed(url, null)
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
@@ -260,13 +288,32 @@ object FeedUpdateManager {
                         feed_.author = channelInfo.parentChannelName
                         feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
                         feed_.episodes = eList
-                        Feeds.updateFeed(applicationContext, feed_, false)
+                        if (fullUpdate) Feeds.updateFeed(applicationContext, feed_) else Feeds.updateFeedSimple(feed_)
                     } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed channel error1 ${e.message}") }
                 } else if (uURL.path.startsWith("/playlist")) {
-                    val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return
+                    val playlistInfo = PlaylistInfo.getInfo(service, url) ?: return
                     val eList: RealmList<Episode> = realmListOf()
                     try {
-                        for (r in playlistInfo.relatedItems) eList.add(episodeFromStreamInfoItem(r))
+                        var infoItems = playlistInfo.relatedItems
+                        var nextPage = playlistInfo.nextPage
+                        while (infoItems.isNotEmpty()) {
+                            for (r in infoItems) {
+                                if (r.infoType != InfoItem.InfoType.STREAM) continue
+                                if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
+                                    eList.add(episodeFromStreamInfoItem(r))
+                                else nextPage = null
+                            }
+                            if (nextPage == null) break
+                            try {
+                                val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
+                                nextPage = page.nextPage
+                                infoItems = page.items
+                                Logd(TAG, "more infoItems: ${infoItems.size}")
+                            } catch (e: Throwable) {
+                                Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
+                                break
+                            }
+                        }
                         val feed_ = Feed(url, null)
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
@@ -276,14 +323,68 @@ object FeedUpdateManager {
                         feed_.author = playlistInfo.uploaderName
                         feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
                         feed_.episodes = eList
-                        Feeds.updateFeed(applicationContext, feed_, false)
+                        if (fullUpdate) Feeds.updateFeed(applicationContext, feed_) else Feeds.updateFeedSimple(feed_)
                     } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed playlist error1 ${e.message}") }
+                } else {
+                    val pathSegments = uURL.path.split("/")
+                    val channelUrl = "https://www.youtube.com/channel/${pathSegments[1]}"
+                    Logd(TAG, "channelUrl: $channelUrl")
+                    val channelInfo = ChannelInfo.getInfo(service, channelUrl)
+                    Logd(TAG, "refreshYoutubeFeed channelInfo: $channelInfo ${channelInfo.tabs.size}")
+                    if (channelInfo.tabs.isEmpty()) return
+                    var index = -1
+                    for (i in channelInfo.tabs.indices) {
+                        val url_ = prepareUrl(channelInfo.tabs[i].url)
+                        if (feed.downloadUrl == url_) {
+                            index = i
+                            break
+                        }
+                    }
+                    if (index < 0) return
+                    try {
+                        val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs[index])
+                        Logd(TAG, "refreshYoutubeFeed result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                        var infoItems = channelTabInfo.relatedItems
+                        var nextPage = channelTabInfo.nextPage
+                        val eList: RealmList<Episode> = realmListOf()
+                        while (infoItems.isNotEmpty()) {
+                            for (r_ in infoItems) {
+                                val r = r_ as StreamInfoItem
+                                if (r.infoType != InfoItem.InfoType.STREAM) continue
+                                Logd(TAG, "item: ${r.uploadDate?.date()?.time} ${r.name}")
+                                if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
+                                    eList.add(episodeFromStreamInfoItem(r))
+                                else nextPage = null
+                            }
+                            if (nextPage == null) break
+                            try {
+                                val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs[index], nextPage)
+                                nextPage = page.nextPage
+                                infoItems = page.items
+                                Logd(TAG, "refreshYoutubeFeed more infoItems: ${infoItems.size}")
+                            } catch (e: Throwable) {
+                                Logd(TAG, "refreshYoutubeFeed ChannelTabInfo.getMoreItems error: ${e.message}")
+                                break
+                            }
+                        }
+                        Logd(TAG, "refreshYoutubeFeed eList.size: ${eList.size}")
+                        val feed_ = Feed(url, null)
+                        feed_.type = Feed.FeedType.YOUTUBE.name
+                        feed_.hasVideoMedia = true
+                        feed_.title = channelInfo.name
+                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.description = channelInfo.description
+                        feed_.author = channelInfo.parentChannelName
+                        feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
+                        feed_.episodes = eList
+                        if (fullUpdate) Feeds.updateFeed(applicationContext, feed_) else Feeds.updateFeedSimple(feed_)
+                    } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed channel error2 ${e.message}") }
                 }
             } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error ${e.message}") }
         }
         
         @Throws(Exception::class)
-        fun refreshFeed(feed: Feed, force: Boolean) {
+        fun refreshFeed(feed: Feed, force: Boolean, fullUpdate: Boolean) {
             val nextPage = (inputData.getBoolean(EXTRA_NEXT_PAGE, false) && feed.nextPageLink != null)
             if (nextPage) feed.pageNr += 1
             val builder = create(feed)
@@ -300,7 +401,7 @@ object FeedUpdateManager {
                 return
             }
             val feedUpdateTask = FeedUpdateTask(applicationContext, request)
-            val success = feedUpdateTask.run()
+            val success = if (fullUpdate) feedUpdateTask.run() else feedUpdateTask.runSimple()
             if (!success) {
                 Logd(TAG, "update failed: unsuccessful")
                 Feeds.persistFeedLastUpdateFailed(feed, true)
@@ -423,6 +524,14 @@ object FeedUpdateManager {
                 Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
                 return true
             }
+
+            fun runSimple(): Boolean {
+                feedHandlerResult = task.call()
+                if (!task.isSuccessful) return false
+                Feeds.updateFeedSimple(feedHandlerResult!!.feed)
+                return true
+            }
+
         }
     }
 }

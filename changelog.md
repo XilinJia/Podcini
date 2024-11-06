@@ -1,3 +1,16 @@
+# 6.13.6
+
+* created a fast update routine to improve performance
+	* all updates (swipe or scheduled etc) run the fast update routine
+	* full update (for which I don't see the reason) can be run from the menu of Subscriptions view
+* the full update routine is also enhanced for performance
+* enhanced youtube update routines to include infinite new episodes updates
+* added update routine for youtube channel tabs
+* added audio and video quality settings in Feed Preferences (Youtube feeds only): Global, Low, Medium, High
+	* these settings take precedence over global situations
+	* when Global is set, video is a lowest quality, and audio is at highest quality (except when prefLowQualityMedia is set for metered networks)
+* fixed mis-behavior of multi-selection filters
+
 # 6.13.5
 
 * hopefully fixed youtube playlists/podcasts no-updating issue

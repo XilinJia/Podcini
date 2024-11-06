@@ -4,6 +4,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
@@ -11,7 +12,9 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.annotation.SuppressLint
+import android.app.UiModeManager
 import android.content.Context
+import android.content.res.Configuration
 import android.util.Log
 import com.google.android.gms.cast.*
 import com.google.android.gms.cast.framework.CastContext
@@ -19,6 +22,11 @@ import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.media.RemoteMediaClient
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.Volatile
 import kotlin.math.max
@@ -194,7 +202,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
      *
      * @see .playMediaObject
      */
-    override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
+    override fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
         if (!CastUtils.isCastable(playable, castContext.sessionManager.currentCastSession)) {
             Logd(TAG, "media provided is not compatible with cast device")
             EventFlow.postEvent(FlowEvent.PlayerErrorEvent("Media not compatible with cast device"))
@@ -202,7 +210,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             do { nextPlayable = callback.getNextInQueue(nextPlayable)
             } while (nextPlayable != null && !CastUtils.isCastable(nextPlayable, castContext.sessionManager.currentCastSession))
 
-            if (nextPlayable != null) playMediaObject(nextPlayable, stream, startWhenPrepared, prepareImmediately, forceReset)
+            if (nextPlayable != null) playMediaObject(nextPlayable, streaming, startWhenPrepared, prepareImmediately, forceReset)
             return
         }
 
@@ -235,6 +243,53 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         this.mediaType = curMedia!!.getMediaType()
         this.startWhenPrepared.set(startWhenPrepared)
         setPlayerStatus(PlayerStatus.INITIALIZING, curMedia)
+
+//        val metadata = buildMetadata(curMedia!!)
+//        try {
+//            callback.ensureMediaInfoLoaded(curMedia!!)
+//            callback.onMediaChanged(false)
+//            setPlaybackParams(getCurrentPlaybackSpeed(curMedia), isSkipSilence)
+//            CoroutineScope(Dispatchers.IO).launch {
+//                when {
+//                    streaming -> {
+//                        val streamurl = curMedia!!.getStreamUrl()
+//                        if (streamurl != null) {
+//                            val media = curMedia
+//                            if (media is EpisodeMedia) {
+//                                mediaItem = null
+//                                mediaSource = null
+//                                setDataSource(metadata, media)
+////                            val deferred = CoroutineScope(Dispatchers.IO).async { setDataSource(metadata, media) }
+////                            if (startWhenPrepared) runBlocking { deferred.await() }
+////                            val preferences = media.episodeOrFetch()?.feed?.preferences
+////                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
+//                            } else setDataSource(metadata, streamurl, null, null)
+//                        }
+//                    }
+//                    else -> {
+//                        val localMediaurl = curMedia!!.getLocalMediaUrl()
+////                    File(localMediaurl).canRead() time consuming, leave it to MediaItem to handle
+////                    if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(metadata, localMediaurl, null, null)
+//                        if (!localMediaurl.isNullOrEmpty()) setDataSource(metadata, localMediaurl, null, null)
+//                        else throw IOException("Unable to read local file $localMediaurl")
+//                    }
+//                }
+//                withContext(Dispatchers.Main) {
+//                    val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+//                    if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, curMedia)
+//                    if (prepareImmediately) prepare()
+//                }
+//            }
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//            setPlayerStatus(PlayerStatus.ERROR, null)
+//            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
+//        } catch (e: IllegalStateException) {
+//            e.printStackTrace()
+//            setPlayerStatus(PlayerStatus.ERROR, null)
+//            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
+//        } finally { }
+
         callback.ensureMediaInfoLoaded(curMedia!!)
         callback.onMediaChanged(true)
         setPlayerStatus(PlayerStatus.INITIALIZED, curMedia)
@@ -266,7 +321,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
 
     override fun reinit() {
         Logd(TAG, "reinit() called")
-        if (curMedia != null) playMediaObject(curMedia!!, stream = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false, true)
+        if (curMedia != null) playMediaObject(curMedia!!, streaming = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false, true)
         else Logd(TAG, "Call to reinit was ignored: media was null")
     }
 
@@ -342,7 +397,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                 callback.onPlaybackEnded(nextMedia.getMediaType(), !playNextEpisode)
                 // setting media to null signals to playMediaObject() that we're taking care of post-playback processing
                 curMedia = null
-                playMediaObject(nextMedia, stream = true, startWhenPrepared = playNextEpisode, prepareImmediately = playNextEpisode, forceReset = false)
+                playMediaObject(nextMedia, streaming = true, startWhenPrepared = playNextEpisode, prepareImmediately = playNextEpisode, forceReset = false)
             }
         }
         when {

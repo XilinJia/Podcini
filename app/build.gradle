@@ -26,8 +26,8 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020292
-        versionName "6.13.5"
+        versionCode 3020293
+        versionName "6.13.6"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -239,7 +239,6 @@ dependencies {
 
     implementation libs.searchpreference
     implementation libs.balloon
-//    implementation libs.stream
 
     implementation libs.fyydlin
 

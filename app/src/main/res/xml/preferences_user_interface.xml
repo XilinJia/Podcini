@@ -34,10 +34,10 @@
                 android:enabled="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/subscriptions_label">
-        <Preference
-            android:title="@string/pref_nav_drawer_feed_order_title"
-            android:key="prefDrawerFeedOrder"
-            android:summary="@string/pref_nav_drawer_feed_order_sum"/>
+<!--        <Preference-->
+<!--            android:title="@string/pref_nav_drawer_feed_order_title"-->
+<!--            android:key="prefDrawerFeedOrder"-->
+<!--            android:summary="@string/pref_nav_drawer_feed_order_sum"/>-->
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:enabled="true"

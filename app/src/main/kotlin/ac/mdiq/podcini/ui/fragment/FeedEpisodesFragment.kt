@@ -560,11 +560,6 @@ import java.util.concurrent.Semaphore
 //        if (feed!!.lastUpdateFailed) binding.header.txtvFailure.visibility = View.VISIBLE
 //        else binding.header.txtvFailure.visibility = View.GONE
 
-//        if (feed!!.preferences != null && !feed!!.preferences!!.keepUpdated) {
-//            binding.header.txtvUpdatesDisabled.text = ("{gmo-pause_circle_outline} ${this.getString(R.string.updates_disabled_label)}")
-//            binding.header.txtvUpdatesDisabled.visibility = View.VISIBLE
-//        } else binding.header.txtvUpdatesDisabled.visibility = View.GONE
-
         infoTextFiltered = ""
         if (!feed?.preferences?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter

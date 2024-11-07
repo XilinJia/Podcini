@@ -9,17 +9,17 @@
   <string name="home_label">Домашня</string>
   <string name="queue_label">Черга</string>
 
-  <string name="favorite_episodes_label">Улюблені</string>
+
   <string name="settings_label">Налаштування</string>
   <string name="downloads_label">Завантаження</string>
-  <string name="open_autodownload_settings">Відкрити налаштування</string>
-  <string name="downloads_log_label">Завантажити файли журналу</string>
+
+
   <string name="subscriptions_label">Підписки</string>
-  <string name="subscriptions_list_label">Список підписок</string>
+
   <string name="cancel_download_label">Скасувати завантаження</string>
   <string name="playback_history_label">Історія прослуховувань</string>
-  <string name="episode_cache_full_title">Кеш епізодів заповнений</string>
-  <string name="episode_cache_full_message">Досягнуто ліміт кешу епізодів. Ви можете збільшити розмір кешу в Налаштуваннях.</string>
+
+
   <string name="years_statistics_label">Роки</string>
   <string name="notification_pref_fragment">Сповіщення</string>
 
@@ -30,8 +30,8 @@
   <string name="swipeactions_summary">Оберіть, що відбуватиметься під час проведення пальцем по епізоду в списку</string>
   <string name="swipe_right">Проведення пальцем управо</string>
   <string name="swipe_left">Проведення пальцем уліво</string>
-  <string name="enable_swipeactions">Увімкнути дії проведенням пальцем для цього екрану</string>
-  <string name="change_setting">Змінити</string>
+
+
   <string name="individual_subscription">Індивідуальна підписка</string>
   <!--Statistics fragment-->
   <string name="statistics_include_marked">Враховувати тривалість епізодів, які просто позначені як відтворені</string>
@@ -47,23 +47,23 @@
   <string name="statistics_counting_total">Прослухано взагалі</string>
 
   <string name="notification_permission_denied">Ви відмовили у дозволі.</string>
-  <string name="notification_permission_deny_warning">Якщо ви вимкнете сповіщення і щось піде не так, то, можливо, ви не зможете з\'ясувати, чому це сталося.</string>
-  <string name="deny_label">Блокувати</string>
-  <string name="open_settings">Відкрити налаштування</string>
-  <string name="configure_home">Налаштувати домашній екран</string>
+
+
+
+
   <!--Download Statistics fragment-->
   <string name="total_size_downloaded_podcasts">Загальний розмір епізодів на цьому пристрої</string>
   <!--Main activity-->
   <string name="drawer_open">Показати меню</string>
   <string name="drawer_close">Сховати меню</string>
   <string name="drawer_preferences">Налаштування шторки</string>
-  <string name="feed_order_alphabetical">Сортувати за абеткою</string>
-  <string name="feed_order_last_update">Сортувати за датою публікації</string>
-  <string name="feed_order_most_played">Сортувати за кількістю прослуханих епізодів</string>
 
-  <string name="feed_order_unplayed_count">Кількість непрослуханих епізодів</string>
-  <string name="feed_counter_downloaded">Кількість завантажених епізодів</string>
-  <string name="feed_counter_downloaded_unplayed">Кількість завантажених але не прослуханих епізодів</string>
+
+
+
+
+
+
   <!--Bug report activity-->
   <string name="log_file_share_exception">Сумісних програм не знайдено</string>
   <string name="export_logs_menu_title">Експорт детальних журналів</string>
@@ -92,11 +92,11 @@
   <string name="error_msg_prefix">Трапилась помілка:</string>
   <string name="refresh_label">Оновити</string>
   <string name="chapters_label">Глави</string>
-  <string name="no_chapters_label">Немає розділів</string>
-  <string name="chapter_duration">Тривалість: %1$s</string>
+
+
   <string name="description_label">Опис</string>
-  <string name="shownotes_label">Примітки</string>
-  <string name="shownotes_contentdescription">проведіть пальцем угору, щоб прочитати примітки</string>
+
+
   <string name="episodes_suffix">\u0020епізодів</string>
   <string name="close_label">Закрити</string>
   <string name="retry_label">Повторити знову</string>
@@ -113,7 +113,7 @@
   <string name="feed_auto_download_always">Завжди</string>
   <string name="feed_auto_download_never">Ніколи</string>
 
-  <string name="feed_new_episodes_action_nothing">Нічого</string>
+
   <string name="episode_cleanup_never">Ніколи</string>
   <string name="episode_cleanup_except_favorite_removal">Коли не вибрано</string>
   <string name="episode_cleanup_queue_removal">Якщо не в черзі</string>
@@ -130,41 +130,17 @@
     <item quantity="many">%d днів після закінчення</item>
     <item quantity="other">%d днів після завершення</item>
   </plurals>
-  <plurals name="num_selected_label">
-    <item quantity="one">%1$d/%2$d вибрано</item>
-    <item quantity="few">%1$d/%2$d вибрано</item>
-    <item quantity="many">%1$d/%2$d вибрано</item>
-    <item quantity="other">%1$d/%2$d вибрано</item>
-  </plurals>
-  <plurals name="num_episodes">
-    <item quantity="one">%d епізод</item>
-    <item quantity="few">%d епізоди</item>
-    <item quantity="many">%d епізодів</item>
-    <item quantity="other">%d епізоди</item>
-  </plurals>
-  <string name="episode_notification">Сповіщення про епізоди</string>
-  <string name="episode_notification_summary">Показувати сповіщення, коли виходить нова серія.</string>
-  <plurals name="new_episode_notification_message">
-    <item quantity="one">%2$s має новий епізод</item>
-    <item quantity="few">%2$s має %1$d нових епізоди</item>
-    <item quantity="many">%2$s має %1$d нові епізодів</item>
-    <item quantity="other">%2$s має %1$d нових епізодів</item>
-  </plurals>
-  <plurals name="new_episode_notification_title">
-    <item quantity="one">Новий епізод</item>
-    <item quantity="few">Нові епізоди</item>
-    <item quantity="many">Нові епізоди</item>
-    <item quantity="other">Нові епізоди</item>
-  </plurals>
-  <string name="new_episode_notification_group_text">Ваші підписки мають нові епізоди.</string>
+
+
+
   <!--Actions on feeds-->
 
 
 
-  <string name="multi_select_mark_played_confirmation">Підтвердіть, якщо бажаєте, позначення усіх вибраних елементів як відтворені.</string>
-  <string name="multi_select_mark_unplayed_confirmation">Будь ласка, підтвердіть, що ви хочете позначити всі вибрані елементи як \"не відтворені\".</string>
-  <string name="show_info_label">Інформація</string>
-  <string name="show_feed_settings_label">Показати налаштування подкасту</string>
+
+
+
+
   <string name="feed_settings_label">Налаштування подкасту</string>
   <string name="rename_feed_label">Перейменувати подкаст</string>
   <string name="remove_feed_label">Видалити подкаст</string>
@@ -174,16 +150,16 @@
   <string name="feed_delete_confirmation_msg">Будь ласка, підтвердьте, що ви хочете видалити подкаст \"%1$s\", а також УСІ його епізоди (разом із завантаженими) і статистику.</string>
   <string name="feed_delete_confirmation_msg_batch">Будь ласка, підтвердьте, що ви хочете видалити вибрані подкасти, а також УСІ їхні епізоди (разом із завантаженими) і статистику.</string>
   <string name="feed_delete_confirmation_local_msg">Будь ласка, підтвердьте, що ви хочете видалити подкаст \"%1$s\" і його статистику. Файли в теці локального джерела не будуть видалені.</string>
-  <string name="feed_remover_msg">Видаляємо подкаст</string>
+
   <string name="load_complete_feed">Оновити весь подкаст</string>
   <string name="multi_select">Мультивибір</string>
-  <string name="select_all_above">Вибрати все вище</string>
-  <string name="select_all_below">Вибрати все нижче</string>
+
+
   <string name="filtered_label">Фільтровані</string>
-  <string name="refresh_failed_msg">{faw_exclamation_circle} Останнє оновлення було невдалим. Натисніть, щоб переглянути деталі.</string>
+
   <string name="open_podcast">Відкрити подкаст</string>
   <string name="please_wait_for_data">Зачекайте, поки завантажаться дані</string>
-  <string name="updates_disabled_label">Оновлення вимкнено</string>
+
   <plurals name="updated_feeds_batch_label">
     <item quantity="one">%d підписку оновлено.</item>
     <item quantity="few">%d підписки оновлено.</item>
@@ -192,46 +168,25 @@
   </plurals>
   <string name="edit_tags">Редагувати теги</string>
   <string name="add_tag">Додати тег</string>
-  <string name="rename_tag_label">Перейменувати тег</string>
+
   <string name="confirm_mobile_feed_refresh_dialog_message">Оновлення подкастів через мобільний зв\'язок вимкнено в налаштуваннях.\n\nВи все одно хочете оновити\?</string>
   <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Ваш VPN-додаток видає себе за мобільну мережу (зʼєднання з лічильником). Оновлення подкастів через мобільне з\'єднання вимкнено в налаштуваннях.\n\nВи все одно хочете оновити\? Якщо ви хочете, щоб цю проблему було виправлено, зверніться до розробників вашого VPN-додатку.</string>
   <!--actions on feeditems-->
   <string name="download_label">Завантажити</string>
-  <plurals name="downloading_batch_label">
-    <item quantity="one">Завантажується %d епізод.</item>
-    <item quantity="few">Завантажуються %d епізоди.</item>
-    <item quantity="many">Завантажуються %d епізодів.</item>
-    <item quantity="other">Завантажуються %d епізодів.</item>
-  </plurals>
   <string name="play_label">Грати</string>
   <string name="pause_label">Пауза</string>
   <string name="stream_label">Прослухати без завантаження</string>
   <string name="delete_label">Видалити</string>
-  <string name="delete_failed">Не вдається видалити файл. Перезавантаження пристрою може допомогти.</string>
+
   <string name="delete_local_failed">Не вдалося видалити файл. Спробуйте перепід\'єднати локальну теку з екрана інформації про подкаст.</string>
   <string name="delete_episode_label">Видалити епізод</string>
-  <plurals name="deleted_multi_episode_batch_label">
-    <item quantity="one">1 завантажений епізод видалено.</item>
-    <item quantity="few">%dзавантажених епізоди видалено.</item>
-    <item quantity="many">%dзавантажених епізодів видалено.</item>
-    <item quantity="other">%d завантажених епізодів видалено.</item>
-  </plurals>
 
 
 
 
-
-
-  <string name="mark_read_no_media_label">Позначити як прочитане</string>
   <string name="play_this_to_seek_position">Щоб перейти до позиції, потрібно відтворити епізод</string>
 
   <string name="add_to_queue_label">Додати до черги</string>
-  <plurals name="added_to_queue_batch_label">
-    <item quantity="one">%d епізод додано до черги.</item>
-    <item quantity="few">%d епізоди додано до черги.</item>
-    <item quantity="many">%d епізодів додано до черги.</item>
-    <item quantity="other">%d епізодів додано до черги.</item>
-  </plurals>
   <string name="remove_from_queue_label">Вилучити з черги</string>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d епізод видалено з черги.</item>
@@ -239,12 +194,12 @@
     <item quantity="many">%d епізодів видалено з черги.</item>
     <item quantity="other">%d епізодів видалено з черги.</item>
   </plurals>
-  <string name="add_to_favorite_label">Додати до обраного</string>
-  <string name="remove_from_favorite_label">Вилучити з обраних</string>
+
+
   <string name="visit_website_label">Відвідати сайт</string>
   <string name="skip_episode_label">Пропустити епізод</string>
-  <string name="reset_position">Скинути позицію відтворення</string>
-  <string name="no_items_selected">Не вибрано жодний елемент</string>
+
+
   <string name="delete_local_feed_warning_body">Видалення видаляє епізод з Podcini і видаляє медіафайл зі сховища вашого пристрою. Його не можна буде знову завантажити через Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">успішно</string>
@@ -290,7 +245,7 @@
   <string name="download_type_media">Файл з медіа</string>
   <string name="null_value_podcast_error">Не надано подкаст для перегляду.</string>
   <string name="no_feed_url_podcast_found_by_search">Запропонований подкаст не мав посилання на RSS-стрічку, але Podcini вдалося знайти схожий</string>
-  <string name="authentication_notification_title">Потрібна автентифікація</string>
+
   <string name="confirm_mobile_download_dialog_title">Підтвердження завантаження через мобільну мережу</string>
   <string name="confirm_mobile_download_dialog_message">Завантаження через мобільний зв\'язок вимкнено в налаштуваннях. Podcini може завантажити епізод пізніше автоматично, коли з\'явиться Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Ваш VPN-додаток прикидається мобільною мережею (з\'єднання з лічильником). Завантаження через мобільне з\'єднання вимкнено в налаштуваннях. Якщо ви хочете, щоб цю проблему було виправлено, зверніться до розробників вашого VPN-додатку.</string>
@@ -302,11 +257,11 @@
   <string name="confirm_mobile_streaming_button_once">Один раз</string>
   <!--Mediaplayer messages-->
   <string name="playback_error_generic"><![CDATA[Медіафайл не вдалося відтворити.\n\n- Спробуйте видалити та повторно завантажити епізод.\n- Перевірте мережеве з\'єднання та переконайтеся, що доступ не заблоковано VPN або запитом авторизації.\n- Спробуйте довго натиснути на \"Адресу медіафайлу\" та відправити її у ваш веб-браузер, щоб перевірити, чи можна її відтворити там. Якщо ні, зверніться до авторів подкасту.]]></string>
-  <string name="playback_error_server_died">Сервер помер</string>
-  <string name="playback_error_unsupported">Тип медіа не підтримується</string>
-  <string name="playback_error_timeout">Операція минула</string>
-  <string name="playback_error_source">Не вдається отримати доступ до медіафайлу</string>
-  <string name="playback_error_unknown">Невідома помилка</string>
+
+
+
+
+
   <string name="no_media_playing_label">Немає що грати</string>
   <string name="unknown_media_key">Podcini - Невідомий медіа ключ: %1$d</string>
   <string name="error_file_not_found">Файл не знайдено</string>
@@ -319,8 +274,8 @@
   <string name="checkbox_do_not_show_again">Більше не показувати</string>
   <string name="clear_queue_label">Очистити чергу</string>
   <string name="undo">Скасувати</string>
-  <string name="move_to_top_label">Догори</string>
-  <string name="move_to_bottom_label">Донизу</string>
+
+
   <string name="sort">Впорядкувати</string>
   <string name="keep_sorted">Зберегти сортування</string>
   <string name="date">За датою</string>
@@ -331,26 +286,26 @@
   <string name="smart_shuffle">Розумне перемішування</string>
   <string name="size">Розмір</string>
   <string name="clear_queue_confirmation_msg">Будь ласка, підтвердіть що ви бажаєте вилучити всі епізоди з черги.</string>
-  <string name="time_left_label">Залишилось:\u0020</string>
+
   <!--Variable Speed-->
-  <string name="speed_presets">Заготовки</string>
+
   <string name="preset_already_exists">%1$.2fx вже збережено як заготовку.</string>
   <!--Empty list labels-->
-  <string name="no_items_header_label">В черзі немає епізодів.</string>
-  <string name="no_items_label">Додайте епізод, завантаживши його, або довго натиснувши на нього і вибравши \"Додати до черги\".</string>
+
+
   <string name="no_shownotes_label">До цього епізода немає нотаток.</string>
-  <string name="no_comp_downloads_head_label">Немає завантажених епізодів</string>
-  <string name="no_comp_downloads_label">Можна завантажувати епізоди на екрані подробиць подкасту.</string>
-  <string name="no_log_downloads_head_label">Журнал завантажень пустий.</string>
-  <string name="no_log_downloads_label">Журнал завантажень з’явиться тут.</string>
-  <string name="no_history_head_label">Немає історії</string>
-  <string name="no_history_label">Коли ви прослухаєте епізод, ця інформація з’явиться тут.</string>
-  <string name="no_all_episodes_head_label">Немає епізодів</string>
-  <string name="no_all_episodes_label">Коли ви додасте подкаст, тут з’явиться перелік його епізодів.</string>
-  <string name="no_all_episodes_filtered_label">Спробуйте очистити фільтр, щоб побачити більше епізодів.</string>
 
 
-  <string name="no_subscriptions_head_label">Немає підписок</string>
+
+
+
+
+
+
+
+
+
+
   <string name="no_subscriptions_label">Щоб підписатись на подкаст, натисніть на значок плюса нижче</string>
   <!--Preferences-->
   <string name="project_pref">Проект</string>
@@ -387,8 +342,8 @@
   <string name="pref_auto_local_delete_title">Автовидалення з локальних тек</string>
   <string name="pref_auto_local_delete_sum">Функція автовидалення видалятиме також і локальні теки</string>
   <string name="pref_auto_local_delete_dialog_body">Зверніть увагу, що для локальних тек це призведе до видалення епізодів з Podcini і видалення їхніх медіафайлів зі сховища вашого пристрою. Їх не можна буде знову завантажити через Podcini. Увімкнути автоматичне видалення\?</string>
-  <string name="pref_smart_mark_as_played_sum">Позначити епізоди як відтворені, навіть якщо залишилось менш ніж зазначене число секунд до кінця відтворення</string>
-  <string name="pref_smart_mark_as_played_title">Розумне позначення прослуханих епізодів</string>
+
+
   <string name="pref_skip_keeps_episodes_sum">Зберігати пропущені  епізоди при програванні  </string>
   <string name="pref_skip_keeps_episodes_title">Зберігати пропущені епізоди</string>
 
@@ -430,8 +385,8 @@
   <string name="pref_nav_drawer_items_sum">Оберіть елементи, які відображатимуться в навігаційній панелі</string>
   <string name="pref_nav_drawer_feed_order_title">Встановити порядок підписок</string>
   <string name="pref_nav_drawer_feed_order_sum">Змінити порядок ваших підписок</string>
-  <string name="pref_nav_drawer_feed_counter_title">Налаштувати лічильник підписок</string>
-  <string name="pref_nav_drawer_feed_counter_sum">Змініть інформацію, що відображається лічильником підписки. Це впливає на сортування підписок, якщо в параметрі \"Порядок підписок\" вибрано \"Лічильник\".</string>
+
+
   <string name="pref_automatic_download_title">Автозавантаження</string>
   <string name="pref_automatic_download_sum">Налаштуйте автозавантаження епізодів</string>
   <string name="pref_autodl_wifi_filter_title">Увімкнути фільтр Wi-Fi</string>
@@ -475,7 +430,7 @@
   <string name="enqueue_location_front">На початок</string>
   <string name="enqueue_location_after_current">Після поточного епізоду</string>
   <string name="enqueue_location_random">Випадково</string>
-  <string name="pref_smart_mark_as_played_disabled">Вимкнено</string>
+
   <string name="documentation_support">Документація та підтримка</string>
   <string name="visit_user_forum">Форум користувачів</string>
   <string name="bug_report_title">Повідомити про помилку</string>
@@ -496,22 +451,22 @@
   <string name="remember_last_page">Остання відкрита сторінка</string>
   <string name="pref_delete_removes_from_queue_title">Вилучати з черги при видаленні завантажень</string>
   <string name="pref_delete_removes_from_queue_sum">При видаленні завантаженого епізода також вилучати його з черги</string>
-  <string name="pref_filter_feed_title">Фільтр підписок</string>
-  <string name="pref_filter_feed_sum">Фільтруйте підписки на панелі навігації та на сторінці підписок</string>
-  <string name="subscriptions_are_filtered">Підписки фільтровано.</string>
-  <string name="subscriptions_counter_greater_zero">Лічильник більше нуля</string>
-  <string name="auto_downloaded">Завантажено автоматично</string>
-  <string name="not_auto_downloaded">Не завантажено автоматично</string>
-  <string name="kept_updated">Оновлюється</string>
-  <string name="not_kept_updated">Не оновлюється</string>
-  <string name="new_episode_notification_enabled">Сповіщення ввімкнено</string>
-  <string name="new_episode_notification_disabled">Сповіщення вимкнено</string>
-  <string name="pref_feed_settings_dialog_msg">Цей параметр унікальний для кожного подкасту. Ви можете змінити його, відкривши сторінку подкасту.</string>
+
+
+
+
+
+
+
+
+
+
+
   <string name="pref_contribute">Посприяти</string>
-  <string name="pref_show_subscription_title">Показувати назву підписки</string>
-  <string name="pref_show_subscription_title_summary">Відображати назву підписки під зображенням обкладинки</string>
-  <string name="pref_new_episodes_action_title">Дія для нових епізодів</string>
-  <string name="pref_new_episodes_action_sum">Дія що буде виконана для нових епізодів</string>
+
+
+
+
   <!--About screen-->
   <string name="about_pref">Про програму</string>
   <string name="podcini_version">Версія Podcini</string>
@@ -525,7 +480,7 @@
   <string name="licenses_summary">Podcini використовує інше чудове програмне забезпечення</string>
   <!--Search-->
   <string name="search_status_no_results">Жодних результатів немає</string>
-  <string name="type_to_search">Введіть запит для пошуку</string>
+
   <string name="search_label">Пошук</string>
   <string name="no_results_for_query">Нічого не знайдено за запитом \"%1$s\"</string>
   <string name="search_online">Шукати онлайн</string>
@@ -565,7 +520,7 @@
   <string name="opml_import_ask_read_permission">Щоб прочитати файл OPML потрібен доступ до зовнішнього носія</string>
   <string name="successful_import_label">Імпорт - успішний</string>
   <string name="import_ok">Будь ласка, натисніть OK, щоб перезапустити Podcini</string>
-  <string name="import_no_downgrade">Ця база даних була експортована з новішою версією Podcini. Ваша поточна установка ще не знає, як обробляти цей файл.</string>
+
   <string name="favorites_export_label">Експорт улюбленого</string>
   <string name="favorites_export_summary">Експортувати збережені улюблені файли</string>
   <!--Sleep timer-->
@@ -580,12 +535,6 @@
   <string name="time_seconds">секунд</string>
   <string name="time_minutes">хвилин</string>
   <string name="time_hours">годин</string>
-  <plurals name="time_seconds_quantified">
-    <item quantity="one">1 секунда</item>
-    <item quantity="few">%d секунди</item>
-    <item quantity="many">%d секунд</item>
-    <item quantity="other">%d секунд</item>
-  </plurals>
   <plurals name="time_minutes_quantified">
     <item quantity="one">1 хвилина</item>
     <item quantity="few">%d хвилини</item>
@@ -653,28 +602,28 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Пауза в разі переривання</string>
   <!--Online feed view-->
   <string name="subscribe_label">Підписатися</string>
-  <string name="subscribing_label">Підписка…</string>
+
   <string name="preview_episode">Предперегляд</string>
-  <string name="stop_preview">Зупинити предперегляд</string>
+
   <!--Content descriptions for image buttons-->
   <string name="toolbar_back_button_content_description">Назад</string>
   <string name="rewind_label">Перемотка назад</string>
   <string name="fast_forward_label">Перемотка вперед</string>
   <string name="increase_speed">Збільшити швидкість</string>
   <string name="decrease_speed">Зменшити швидкість</string>
-  <string name="media_type_video_label">Відео</string>
+
   <string name="status_downloading_label">Епізод завантажується</string>
-  <string name="in_queue_label">В черзі</string>
-  <string name="is_favorite_label">Відмічений як улюблений</string>
-  <string name="is_played">Відтворений</string>
+
+
+
   <string name="load_next_page_label">Завантажити наступну сторінку</string>
   <string name="position">Позиція: %1$s</string>
-  <string name="remaining_time">Залишилось: %1$s</string>
-  <string name="apply_action">Застосувати дію</string>
-  <string name="play_chapter">Відтворити розділ</string>
-  <string name="prev_chapter">Попередній розділ</string>
+
+
+
+
   <string name="next_chapter">Наступний розділ</string>
-  <string name="shuffle_suggestions">Перетасувати пропозиції</string>
+
   <string name="add_preset">Додати типовий</string>
   <!--Feed settings/information screen-->
   <string name="authentication_label">Автентикація</string>
@@ -727,18 +676,18 @@
   <string name="local_feed_description">Цей віртуальний подкаст був створений шляхом додавання папки до Podcini.</string>
   <string name="unable_to_start_system_file_manager">Не запускається системний файловий менеджер</string>
   <string name="filter">Фільтр</string>
-  <string name="hide_is_favorite_label">В улюблених</string>
-  <string name="not_favorite">Не в улюблених</string>
+
+
   <string name="downloaded_label">Завантажені</string>
-  <string name="not_downloaded_label">Не завантажені</string>
-  <string name="queued_label">В черзі</string>
-  <string name="not_queued_label">Не в черзі</string>
+
+
+
   <string name="has_media">З медіа</string>
-  <string name="no_media">Без медіа</string>
-  <string name="hide_paused_episodes_label">Призупинені</string>
-  <string name="not_paused">Не призупинені</string>
-  <string name="hide_played_episodes_label">Відтворені</string>
-  <string name="not_played">Не відтворені</string>
+
+
+
+
+
   <!--Sort-->
 
 
@@ -781,10 +730,10 @@
   <string name="proxy_host_invalid_error">Поле \"Хост\" містить неправильну IP-адресу чи назву домену</string>
   <string name="proxy_port_invalid_error">Порт недійсний</string>
   <!--Subscriptions fragment-->
-  <string name="subscription_num_columns">Кількість стовпців</string>
+
   <!--Notification channels-->
   <string name="notification_group_errors">Помилки</string>
-  <string name="notification_group_news">Новини</string>
+
   <string name="notification_channel_user_action">Потрібна дія</string>
   <string name="notification_channel_user_action_description">Відображається, якщо потрібна ваша дія, наприклад, якщо потрібно ввести пароль.</string>
   <string name="notification_channel_downloading">Завантаження</string>
@@ -795,8 +744,8 @@
   <string name="notification_channel_download_error_description">Відображається, коли не вдається завантажити або оновити канал.</string>
   <string name="notification_channel_sync_error">Не вдалося синхронізувати</string>
   <string name="notification_channel_sync_error_description">Відображається, коли не вдається синхронізувати gpodder.</string>
-  <string name="notification_channel_new_episode">Новий епізод</string>
-  <string name="notification_channel_new_episode_description">Відображається, коли був знайдений новий епізод подкасту, де увімкнено сповіщення</string>
+
+
   <!--Widget settings-->
   <string name="widget_settings">Налаштування віджета</string>
   <string name="widget_create_button">Створити віджет</string>

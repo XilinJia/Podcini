@@ -149,7 +149,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         spinnerView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index: Int ->
+                    Spinner(items = spinnerTexts, selectedItem = curQueue.name + " : ${curQueue.episodeIds.size}") { index: Int ->
                         Logd(TAG, "Queue selected: $queues[index].name")
                         val prevQueueSize = curQueue.size()
                         curQueue = upsertBlk(queues[index]) { it.update() }

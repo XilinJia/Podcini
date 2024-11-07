@@ -109,29 +109,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         // Possibly put it to a common method in abstract base class
         return  findPreference<T>(key) ?: throw IllegalArgumentException("Preference with key '$key' is not found")
     }
-
-//    private fun buildSmartMarkAsPlayedPreference() {
-//        val res = requireActivity().resources
-//
-//        val pref = findPreference<ListPreference>(UserPreferences.Prefs.prefSmartMarkAsPlayedSecs.name)
-//        val values = res.getStringArray(R.array.smart_mark_as_played_values)
-//        val entries = arrayOfNulls<String>(values.size)
-//        for (x in values.indices) {
-//            if (x == 0) {
-//                entries[x] = res.getString(R.string.pref_smart_mark_as_played_disabled)
-//            } else {
-//                var v = values[x].toInt()
-//                if (v < 60) {
-//                    entries[x] = res.getQuantityString(R.plurals.time_seconds_quantified, v, v)
-//                } else {
-//                    v /= 60
-//                    entries[x] = res.getQuantityString(R.plurals.time_minutes_quantified, v, v)
-//                }
-//            }
-//        }
-//        pref!!.entries = entries
-//    }
-
     
     class EditFallbackSpeedDialog(activity: Activity) {
         val TAG = this::class.simpleName ?: "Anonymous"

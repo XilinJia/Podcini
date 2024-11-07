@@ -113,24 +113,10 @@ object NotificationUtils {
         return notificationChannel.build()
     }
 
-//    private fun createChannelEpisodeNotification(c: Context): NotificationChannelCompat {
-//        return NotificationChannelCompat.Builder(
-//            CHANNEL_ID_EPISODE_NOTIFICATIONS, NotificationManagerCompat.IMPORTANCE_DEFAULT)
-//            .setName(c.getString(R.string.notification_channel_new_episode))
-//            .setDescription(c.getString(R.string.notification_channel_new_episode_description))
-//            .setGroup(GROUP_ID_NEWS)
-//            .build()
-//    }
-
     private fun createGroupErrors(c: Context): NotificationChannelGroupCompat {
         return NotificationChannelGroupCompat.Builder(GROUP_ID.group_errors.name)
             .setName(c.getString(R.string.notification_group_errors))
             .build()
     }
 
-//    private fun createGroupNews(c: Context): NotificationChannelGroupCompat {
-//        return NotificationChannelGroupCompat.Builder(GROUP_ID_NEWS)
-//            .setName(c.getString(R.string.notification_group_news))
-//            .build()
-//    }
 }

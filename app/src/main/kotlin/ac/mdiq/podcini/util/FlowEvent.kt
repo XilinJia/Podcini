@@ -139,7 +139,7 @@ sealed class FlowEvent {
         }
     }
 
-    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
+//    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
 
 //    data class FeedsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 

@@ -15,8 +15,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
     val showNotQueued: Boolean = properties.contains(States.not_queued.name)
     val showDownloaded: Boolean = properties.contains(States.downloaded.name)
     val showNotDownloaded: Boolean = properties.contains(States.not_downloaded.name)
-//    val showIsFavorite: Boolean = properties.contains(States.is_favorite.name)
-//    val showNotFavorite: Boolean = properties.contains(States.not_favorite.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
 
@@ -181,9 +179,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
     }
 
     enum class EpisodesFilterGroup(val nameRes: Int, vararg values_: ItemProperties) {
-//        PLAYED(ItemProperties(R.string.hide_played_episodes_label, States.played.name), ItemProperties(R.string.not_played, States.unplayed.name)),
-//        PAUSED(ItemProperties(R.string.hide_paused_episodes_label, States.paused.name), ItemProperties(R.string.not_paused, States.not_paused.name)),
-//        FAVORITE(ItemProperties(R.string.hide_is_favorite_label, States.is_favorite.name), ItemProperties(R.string.not_favorite, States.not_favorite.name)),
         RATING(R.string.rating_label, ItemProperties(R.string.unrated, States.unrated.name),
             ItemProperties(R.string.trash, States.trash.name),
             ItemProperties(R.string.bad, States.bad.name),
@@ -206,7 +201,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             ItemProperties(R.string.ignored, States.ignored.name),
         ),
         OPINION(R.string.has_comments, ItemProperties(R.string.yes, States.has_comments.name), ItemProperties(R.string.no, States.no_comments.name)),
-//        QUEUED(ItemProperties(R.string.queued_label, States.queued.name), ItemProperties(R.string.not_queued_label, States.not_queued.name)),
         MEDIA(R.string.has_media, ItemProperties(R.string.yes, States.has_media.name), ItemProperties(R.string.no, States.no_media.name)),
         DOWNLOADED(R.string.downloaded_label, ItemProperties(R.string.yes, States.downloaded.name), ItemProperties(R.string.no, States.not_downloaded.name)),
         CHAPTERS(R.string.has_chapters, ItemProperties(R.string.yes, States.has_chapters.name), ItemProperties(R.string.no, States.no_chapters.name)),

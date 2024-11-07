@@ -587,11 +587,11 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-    
     private fun updateUi(media: Playable) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
+        onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
 //            (activity as MainActivity).bottomSheet.setLocked(true)

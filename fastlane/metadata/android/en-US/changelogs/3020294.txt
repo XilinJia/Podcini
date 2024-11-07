@@ -1,0 +1,8 @@
+ Version 6.13.7
+
+* likely fixed getting duplicate episodes on updates (youtube feeds)
+* in Queues view, set the spinner default to the active queue
+* an all new sorting dialog and mechanism for Subscriptions
+* removed subscriptions sort order in Settings
+* set PlayerUI position on start play
+* large number of unused string resources are cleaned out

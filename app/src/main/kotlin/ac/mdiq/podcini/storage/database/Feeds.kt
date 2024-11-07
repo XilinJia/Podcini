@@ -356,7 +356,7 @@ object Feeds {
         // Look for new or updated Items
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
-            if ((episode.getPubDate()?: Date(0)) <= priorMostRecentDate) continue
+            if (episode.getPubDate() <= priorMostRecentDate || episode.media?.getStreamUrl() == priorMostRecent?.media?.getStreamUrl()) continue
 
             Logd(TAG, "Found new episode: ${episode.title}")
             episode.feed = savedFeed
@@ -370,7 +370,7 @@ object Feeds {
             else savedFeed.episodes.add(idx, episode)
 
             val pubDate = episode.getPubDate()
-            if (pubDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
+            if (priorMostRecentDate < pubDate) {
                 Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                 episode.playState = PlayState.NEW.code
                 if (savedFeed.preferences?.autoAddNewToQueue == true) {

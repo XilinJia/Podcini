@@ -7,19 +7,19 @@
   <string name="home_label">Domov</string>
   <string name="queue_label">Čakalna vrsta</string>
 
-  <string name="favorite_episodes_label">Priljubljene</string>
+
   <string name="settings_label">Nastavitve</string>
   <string name="downloads_label">Prenosi</string>
   <string name="subscriptions_label">Naročnine</string>
-  <string name="episode_cache_full_title">Prepomnilnik epizod poln</string>
-  <string name="episode_cache_full_message">Predpomnilnik epizod je poln. Predpomnilnik lahko povečate v nastavitvah.</string>
+
+
   <string name="years_statistics_label">Leta</string>
   <string name="notification_pref_fragment">Obvestila</string>
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" ni bilo najdeno</string>
   <!--SwipeActions-->
   <string name="swipeactions_summary">Izberite, kaj se zgodi, ko povlečete epizodo na seznamu</string>
-  <string name="change_setting">Spremeni</string>
+
   <!--Statistics fragment-->
   <string name="statistics_include_marked">Vključite trajanje epizod, ki so označene kot predvajane</string>
   <string name="statistics_speed_not_counted">Pozor: hitrost predvajanja se ne upošteva</string>
@@ -35,11 +35,11 @@
   <!--Main activity-->
   <string name="drawer_open">Odpri meni</string>
   <string name="drawer_close">Zapri meni</string>
-  <string name="feed_order_alphabetical">Razvrsti po abecedi</string>
-  <string name="feed_order_last_update">Razvrsti po datumu objave</string>
-  <string name="feed_order_most_played">Razvrsti po številu predvajanih epizod</string>
-  <string name="feed_order_unplayed_count">Število nepredvajanih epizod</string>
-  <string name="feed_counter_downloaded">Število prenesenih epizod</string>
+
+
+
+
+
   <!--Bug report activity-->
   <string name="log_file_share_exception">Ni bilo najdenih združljivih aplikacij</string>
   <string name="export_logs_menu_title">Izvozi podrobne dnevnike</string>
@@ -60,10 +60,10 @@
   <string name="error_msg_prefix">Pojavila se je napaka:</string>
   <string name="refresh_label">Osveži</string>
   <string name="chapters_label">Poglavja</string>
-  <string name="chapter_duration">Potek %1$s</string>
+
   <string name="description_label">Opis</string>
-  <string name="shownotes_label">Predstavitve</string>
-  <string name="shownotes_contentdescription">Podrsaj navzgor za prikaz predstavitev</string>
+
+
   <string name="episodes_suffix">\u0020epizode</string>
   <string name="close_label">Zapri</string>
   <string name="retry_label">Ponovno poizkusi</string>
@@ -86,41 +86,23 @@
     <item quantity="few">Več dni po zaključku</item>
     <item quantity="other">%d dni po končanem</item>
   </plurals>
-  <plurals name="num_selected_label">
-    <item quantity="one">%1$d/%2$dizbran</item>
-    <item quantity="two">%1$d/%2$d izbrana</item>
-    <item quantity="few">%1$d/%2$d izbran</item>
-    <item quantity="other">%1$d/%2$d izbran</item>
-  </plurals>
-  <plurals name="num_episodes">
-    <item quantity="one">%d epizoda</item>
-    <item quantity="two">%d epizodi</item>
-    <item quantity="few">%d epizode</item>
-    <item quantity="other">%d epizode</item>
-  </plurals>
-  <string name="episode_notification_summary">Pokaži obvestilo, ko je objavljena nova epizoda.</string>
-  <plurals name="new_episode_notification_message">
-    <item quantity="one">%2$s ima novo epizodo</item>
-    <item quantity="two">%2$s imata novo epizodo</item>
-    <item quantity="few">%2$s imajo novo epizodo</item>
-    <item quantity="other">%2$s imajo %1$d novih epizod</item>
-  </plurals>
-  <string name="new_episode_notification_group_text">Vaš kanal ima novo epizodo.</string>
+
+
   <!--Actions on feeds-->
-  <string name="show_info_label">Prikaži informacije</string>
-  <string name="show_feed_settings_label">Prikaži nastavitve podkasta</string>
+
+
   <string name="feed_settings_label">Nastavitve podkastov</string>
   <string name="rename_feed_label">Preimenuj podkast</string>
   <string name="remove_feed_label">Odstrani podkast</string>
   <string name="share_label">Deli</string>
-  <string name="feed_remover_msg">Odstranjujem poddajo</string>
+
   <string name="load_complete_feed">Osveži poddajo v celoti</string>
   <string name="multi_select">Izberi več</string>
-  <string name="select_all_above">Izberi vse nad</string>
-  <string name="select_all_below">Izberi vse pod</string>
+
+
   <string name="filtered_label">Filtrirano</string>
   <string name="please_wait_for_data">Prosimo počakajte, dokler se podatki ne prenesejo.</string>
-  <string name="updates_disabled_label">Posodobitve so onemogočene.</string>
+
   <plurals name="updated_feeds_batch_label">
     <item quantity="one">%dnaročnina je posodobljena.</item>
     <item quantity="two">%dnaročnini sta posodobljeni.</item>
@@ -128,32 +110,20 @@
     <item quantity="other">%d naročnine so posodobljene.</item>
   </plurals>
   <string name="edit_tags">Uredi označbo</string>
-  <string name="rename_tag_label">Preimenuj označbo</string>
+
   <!--actions on feeditems-->
   <string name="download_label">Prenos</string>
-  <plurals name="downloading_batch_label">
-    <item quantity="one">Prenašam%depizodo.</item>
-    <item quantity="two">Prenašam%depizodi.</item>
-    <item quantity="few">Prenašam%depizode.</item>
-    <item quantity="other">Prenašam %d epizode.</item>
-  </plurals>
   <string name="play_label">Predvajaj</string>
   <string name="pause_label">Pavza</string>
   <string name="stream_label">Tok</string>
   <string name="delete_label">Briši</string>
-  <string name="delete_failed">Ni bilo mogoče brisati datoteke. Ponovni zagon naprave bi lahko pomagal.</string>
 
 
 
-  <string name="mark_read_no_media_label">Označi kot prebrano</string>
+
+
   <string name="play_this_to_seek_position">Če želite skočiti na to mesto, morate predvajati epizodo </string>
 
-  <plurals name="added_to_queue_batch_label">
-    <item quantity="one">%d epizoda je dodana v čakalno vrsto.</item>
-    <item quantity="two">%d epizodi sta dodani v čakalno vrsto.</item>
-    <item quantity="few">%d epizode so dodane v čakalno vrsto.</item>
-    <item quantity="other">%d  epizode so dodane v čakalno vrsto.</item>
-  </plurals>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d epizoda je odstranjena iz vrste.</item>
     <item quantity="two">%d epizodi sta odstranjeni iz vrste.</item>
@@ -161,7 +131,7 @@
     <item quantity="other">%d epizode so odstranjene iz čakalne vrste.</item>
   </plurals>
   <string name="skip_episode_label">Preskoči epizodo</string>
-  <string name="no_items_selected">Noben element ni izbran</string>
+
   <!--Download messages and labels-->
   <string name="download_successful">Uspešno</string>
   <string name="download_pending">Prenos v teku</string>
@@ -189,15 +159,15 @@
   <string name="download_type_media">Predstavnostna datoteka</string>
   <string name="null_value_podcast_error">Na voljo ni bil noben podcast, ki bi ga bilo mogoče prikazati.</string>
   <string name="no_feed_url_podcast_found_by_search">Predlagani podkast nima RSS povezave. Podcini je našel podkast, ki modra ustreza.</string>
-  <string name="authentication_notification_title">Potrebna je avtentikacija</string>
+
   <string name="confirm_mobile_streaming_notification_message">Pretakanje preko mobilne podatkovne povezave je onemogočeno v nastavitvah. Tapnite za pretakanje kljub temu.</string>
   <string name="confirm_mobile_streaming_button_always">Vendo</string>
   <string name="confirm_mobile_streaming_button_once">Enkrat</string>
   <!--Mediaplayer messages-->
-  <string name="playback_error_server_died">Kanal ne obstaja več.</string>
-  <string name="playback_error_unsupported">Nepodprta vrsta medija</string>
-  <string name="playback_error_timeout">Časovna omejitev delovanja je potekla </string>
-  <string name="playback_error_source">Dostop do predstavnostne datoteke ni mogoč</string>
+
+
+
+
   <string name="no_media_playing_label">Ni medijske vsebine za predvajati</string>
   <string name="unknown_media_key">Podcini - Neznan medijski ključ: %1$d</string>
   <string name="error_file_not_found">Datoteka ni najdena</string>
@@ -208,8 +178,8 @@
   <string name="queue_lock_warning">Če zaklenete čakalno vrsto, ne morete več premikati ali preurediti epizod.</string>
   <string name="checkbox_do_not_show_again">Ne prikaži več</string>
   <string name="undo">Razveljavi</string>
-  <string name="move_to_top_label">Premakni na vrh</string>
-  <string name="move_to_bottom_label">Premakni na konec</string>
+
+
   <string name="sort">Razvrsti</string>
   <string name="keep_sorted">Obdrži razvrščeno</string>
   <string name="date">Datum</string>
@@ -218,21 +188,21 @@
   <string name="feed_title">Naslov Podcasta</string>
   <string name="random">Naključno</string>
   <string name="clear_queue_confirmation_msg">Potrdite, da želite počistiti čakalno vrsto VSEH epizod v njej</string>
-  <string name="time_left_label">Preostali čas:\u0020</string>
+
   <!--Variable Speed-->
-  <string name="speed_presets">Prednastavitve</string>
+
   <string name="preset_already_exists">%1$.2fx je že shranjeno kot prednastavitev.</string>
   <!--Empty list labels-->
-  <string name="no_items_header_label">Brez epizod v čakalni vrsti</string>
-  <string name="no_items_label">Dodajte epizodo tako, da jo prenesete, ali dolgo pritisnite epizodo in izberite \"Dodaj v čakalno vrsto\".</string>
+
+
   <string name="no_shownotes_label">Ta epizoda nima opomb.</string>
-  <string name="no_comp_downloads_head_label">Ni prenesenih epizod.</string>
-  <string name="no_comp_downloads_label">Epizode lahko prenesete na zaslon s podrobnostmi podcasta.</string>
-  <string name="no_log_downloads_head_label">Brez dnevnika prenosov</string>
-  <string name="no_log_downloads_label">Dnevniki prenosov bodo prikazani tukaj, ko bodo na voljo.</string>
-  <string name="no_history_label">Potem ko bo epizoda predvajana do konca, bo prikazana tukaj.</string>
-  <string name="no_all_episodes_label">Ko dodate podcaste, bodo epizode prikazane tukaj. </string>
-  <string name="no_subscriptions_head_label">Ni naročnin</string>
+
+
+
+
+
+
+
   <string name="no_subscriptions_label">Če se želite naročiti na podcast, pritisnite spodnjo plus ikono.</string>
   <!--Preferences-->
   <string name="project_pref">Projekt</string>
@@ -259,7 +229,7 @@
   <string name="button_action_rewind">Previjanje nazaj</string>
   <string name="pref_followQueue_sum">Ko se predvajanje konča, skoči na naslednji element čakalne vrste</string>
   <string name="pref_auto_delete_sum">Izbrišite epizodo, ko se predvajanje konča</string>
-  <string name="pref_smart_mark_as_played_sum">Epizode označite kot predvajano, tudi če je ostalo manj kot določeno število sekund časa predvajanja</string>
+
   <string name="pref_skip_keeps_episodes_sum">Obdržite epizode, ki jih preskočite</string>
   <string name="playback_pref">Predvajanje</string>
   <string name="playback_pref_sum">Kontrole za slušalke, preskok intervalov, čakalna vrsta</string>
@@ -273,7 +243,7 @@
   <string name="pref_mobileUpdate_episode_download">Prenos epizode</string>
   <string name="pref_mobileUpdate_streaming">Pretakanje</string>
   <string name="pref_nav_drawer_feed_order_sum">Spremenite vrstni red svojih naročnin</string>
-  <string name="pref_nav_drawer_feed_counter_sum">Spremenite informacije, ki jih prikazuje števec naročnin. Vpliva tudi na razvrščanje naročnin, če je \"Naročilo naročnine\" nastavljeno na \"Števec\".</string>
+
   <string name="pref_autodl_wifi_filter_title">Omogočite Wi-Fi filter</string>
   <string name="pref_autodl_wifi_filter_sum">Dovoli samodejni prenos samo za izbrana omrežja Wi-Fi.</string>
   <string name="pref_automatic_download_on_battery_title">Prenesite, ko se ne polni</string>
@@ -302,7 +272,7 @@
   <string name="enqueue_location_back">Na koncu</string>
   <string name="enqueue_location_front">Na začetku</string>
   <string name="enqueue_location_after_current">Po trenutni epizodi</string>
-  <string name="pref_smart_mark_as_played_disabled">Onemogočeno</string>
+
   <string name="visit_user_forum">Uporabniški forum</string>
   <string name="bug_report_title">Sporoči bug</string>
   <string name="open_bug_tracker">Odprite sledilnik hroščev</string>
@@ -313,15 +283,15 @@
   <string name="pref_no_browser_found">Najden ni bil noben spletni brskalnik.</string>
   <string name="pref_enqueue_downloaded_summary">Dodajte prenesene epizode v čakalno vrsto</string>
   <string name="behavior">Obnašanje</string>
-  <string name="subscriptions_are_filtered">Naročnine so filtrirane.</string>
-  <string name="subscriptions_counter_greater_zero">Števec je večji od nič</string>
-  <string name="auto_downloaded">Samodejni prenos</string>
-  <string name="not_auto_downloaded">Ni samodejno preneseno</string>
-  <string name="kept_updated">Naročnine, ki se posodabljajo</string>
-  <string name="not_kept_updated">Naročnine, ki se ne posodabljajo</string>
-  <string name="new_episode_notification_enabled">Obvestila omogočena</string>
-  <string name="new_episode_notification_disabled">Obvestila onemogočena</string>
-  <string name="pref_feed_settings_dialog_msg">Ta nastavitev je unikatna za vsak podcast. Spremenite jo lahko tako, da odprete stran podcasta.</string>
+
+
+
+
+
+
+
+
+
   <string name="pref_contribute">Prispevajte</string>
   <!--About screen-->
   <string name="about_pref">O</string>
@@ -336,7 +306,7 @@
   <string name="licenses_summary">Podcini uporablja drugo odlično programsko opremo</string>
   <!--Search-->
   <string name="search_status_no_results">Ni rezultatov</string>
-  <string name="type_to_search">Vnesite poizvedbo za iskanje</string>
+
   <string name="search_label">Išči</string>
   <string name="no_results_for_query">Ni rezultatov za \"%1$s\"</string>
   <!--Synchronization-->
@@ -374,7 +344,7 @@
   <string name="opml_import_ask_read_permission">Za branje datoteke OPML je potreben dostop do zunanjega pomnilnika</string>
   <string name="successful_import_label">Uvoz uspešen</string>
   <string name="import_ok">Pritisnite OK, da znova zaženete Podcini</string>
-  <string name="import_no_downgrade">Ta zbirka podatkov je bila izvožena z novejšo različico Podcini. Vaša trenutna namestitev še ne ve, kako ravnati s to datoteko.</string>
+
   <string name="favorites_export_label">Priljubljeni izvozi</string>
   <string name="favorites_export_summary">Izvozi shranjene priljubljene v datoteko</string>
   <!--Sleep timer-->
@@ -388,12 +358,6 @@
   <string name="time_seconds">sekunde</string>
   <string name="time_minutes">minute</string>
   <string name="time_hours">ure</string>
-  <plurals name="time_seconds_quantified">
-    <item quantity="one">1 sekunda</item>
-    <item quantity="two">%d sekunde</item>
-    <item quantity="few">%d sekund</item>
-    <item quantity="other">%d sekund</item>
-  </plurals>
   <plurals name="time_minutes_quantified">
     <item quantity="one">1 minuta</item>
     <item quantity="two">%d minute</item>
@@ -440,22 +404,22 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Začasno ustavite predvajanje, namesto da zmanjšate glasnost, ko želi druga aplikacija predvajati zvoke</string>
   <!--Online feed view-->
   <string name="subscribe_label">Naročite se</string>
-  <string name="subscribing_label">Naročanje…</string>
+
   <string name="preview_episode">Predogled</string>
-  <string name="stop_preview">Ustavi predogled</string>
+
   <!--Content descriptions for image buttons-->
   <string name="toolbar_back_button_content_description">Nazaj</string>
   <string name="rewind_label">Previjanje nazaj</string>
   <string name="fast_forward_label">Hitro naprej</string>
   <string name="increase_speed">Povečaj hitrost</string>
   <string name="decrease_speed">Zmanjšaj hitrost</string>
-  <string name="media_type_video_label">Video</string>
+
   <string name="status_downloading_label">Epizoda se prenaša</string>
   <string name="load_next_page_label">Naloži naslednjo stran</string>
   <string name="position">Pozicija: %1$s</string>
-  <string name="apply_action">Uporabite dejanje</string>
-  <string name="play_chapter">Predvajaj poglavje</string>
-  <string name="prev_chapter">Prejšnje poglavje</string>
+
+
+
   <string name="next_chapter">Naslednje poglavje</string>
   <!--Feed settings/information screen-->
   <string name="authentication_label">Preverjanje pristnosti (Avtentikacija)</string>
@@ -491,18 +455,18 @@
   <string name="local_feed_description">Ta virtualni podcast je bil ustvarjen z dodajanjem mape v Podcini.</string>
   <string name="unable_to_start_system_file_manager">Sistemskega upravitelja datotek ni mogoče zagnati</string>
   <string name="filter">Filter</string>
-  <string name="hide_is_favorite_label">Je med priljubljenimi</string>
-  <string name="not_favorite">Ni priljubljeno</string>
+
+
   <string name="downloaded_label">Prenešeno</string>
-  <string name="not_downloaded_label">Ni prenešeno</string>
-  <string name="queued_label">V čakalni vrsti</string>
-  <string name="not_queued_label">Ni v čakalni vrsti</string>
+
+
+
   <string name="has_media">Ima predstavnostno vsebino</string>
-  <string name="no_media">Nima predstavnostne vsebine</string>
-  <string name="hide_paused_episodes_label">Pavza</string>
-  <string name="not_paused">Ni začasno ustavljeno</string>
-  <string name="hide_played_episodes_label">Predvajano</string>
-  <string name="not_played">Ni predvajano</string>
+
+
+
+
+
   <!--Sort-->
 
 
@@ -537,10 +501,10 @@
   <string name="proxy_host_invalid_error">Host ni veljaven naslov IP ali domena</string>
   <string name="proxy_port_invalid_error">Vrata niso veljavna</string>
   <!--Subscriptions fragment-->
-  <string name="subscription_num_columns">Število stolpcev</string>
+
   <!--Notification channels-->
   <string name="notification_group_errors">Napake</string>
-  <string name="notification_group_news">Novice</string>
+
   <string name="notification_channel_user_action">Potrebno je ukrepanje</string>
   <string name="notification_channel_user_action_description">Prikazano, če je vaše dejanje potrebno, na primer, če morate vnesti geslo.</string>
   <string name="notification_channel_downloading">Prenašanje</string>
@@ -551,7 +515,7 @@
   <string name="notification_channel_download_error_description">Prikazano, ko prenos ali posodobitev vira ne uspe.</string>
   <string name="notification_channel_sync_error">Sinhronizacija ni uspela</string>
   <string name="notification_channel_sync_error_description">Prikazano, ko sinhronizacija gpodderja ne uspe.</string>
-  <string name="notification_channel_new_episode_description">Prikazano, ko je najdena nova epizoda podcasta, kjer so omogočena obvestila</string>
+
   <!--Widget settings-->
   <string name="widget_settings">Nastavitve pripomočka</string>
   <string name="widget_create_button">Ustvari pripomoček</string>

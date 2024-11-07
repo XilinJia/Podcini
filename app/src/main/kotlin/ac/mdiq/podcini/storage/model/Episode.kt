@@ -187,8 +187,8 @@ class Episode : RealmObject {
     }
 
     @JvmName("getPubDateFunction")
-    fun getPubDate(): Date? {
-        return if (pubDate > 0) Date(pubDate) else null
+    fun getPubDate(): Date {
+        return Date(pubDate)
     }
 
     @JvmName("setPubDateFunction")

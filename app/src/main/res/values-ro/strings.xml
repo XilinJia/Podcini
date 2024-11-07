@@ -9,17 +9,17 @@
   <string name="home_label">Acasă</string>
   <string name="queue_label">Coadă</string>
 
-  <string name="favorite_episodes_label">Favorite</string>
+
   <string name="settings_label">Setări</string>
   <string name="downloads_label">Descărcări</string>
-  <string name="open_autodownload_settings">Deschide setări</string>
-  <string name="downloads_log_label">Istoric descărcări</string>
+
+
   <string name="subscriptions_label">Abonamente</string>
-  <string name="subscriptions_list_label">Listă Abonamente</string>
+
   <string name="cancel_download_label">Anulează descărcarea</string>
   <string name="playback_history_label">Istoricul de ascultare</string>
-  <string name="episode_cache_full_title">Memorie cache plină</string>
-  <string name="episode_cache_full_message">Memoria cache pentru episoade este plină. Puteți mări mărimea memoriei in Setări.</string>
+
+
   <string name="years_statistics_label">Ani</string>
   <string name="notification_pref_fragment">Notificări</string>
 
@@ -30,8 +30,8 @@
   <string name="swipeactions_summary">Alege ce se întâmplă când un episod este tras cu degetul</string>
   <string name="swipe_right">Trage cu degetul spre dreapta</string>
   <string name="swipe_left">Trage cu degetul spre stânga</string>
-  <string name="enable_swipeactions">Activați gesturile pentru acest ecran</string>
-  <string name="change_setting">Schimbă</string>
+
+
   <string name="individual_subscription">Abonamente individuale</string>
   <!--Statistics fragment-->
   <string name="statistics_include_marked">Include durata episoadelorce sunt marcate ca și redate</string>
@@ -47,23 +47,23 @@
   <string name="statistics_counting_total">Redat în total</string>
   <!--Home fragment-->
   <string name="notification_permission_denied">Ați refuzat permisiunea.</string>
-  <string name="notification_permission_deny_warning">Dacă dezactivezi notificările și ceva nu funcționează corect, există posibilitatea de a nu putea să afli ce a mers greșit.</string>
-  <string name="deny_label">Refuză</string>
-  <string name="open_settings">Deschide setările</string>
-  <string name="configure_home">Setează ecranul Acasă</string>
+
+
+
+
   <!--Download Statistics fragment-->
   <string name="total_size_downloaded_podcasts">Mărimea totală a episoadelor de pe acest dispozitiv</string>
   <!--Main activity-->
   <string name="drawer_open">Deschide meniul</string>
   <string name="drawer_close">Închide meniul</string>
   <string name="drawer_preferences">Preferințe Sertar</string>
-  <string name="feed_order_alphabetical">Sortează alfabetic</string>
-  <string name="feed_order_last_update">Sortează după data publicării</string>
-  <string name="feed_order_most_played">Sortează după numărul de episoade urmărite</string>
 
-  <string name="feed_order_unplayed_count">Numărul de episoade neredate</string>
-  <string name="feed_counter_downloaded">Numărul de episoade descărcate</string>
-  <string name="feed_counter_downloaded_unplayed">Numărul de episoade descărcate și neredate</string>
+
+
+
+
+
+
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nicio aplicație compatibilă nu a fost găsită</string>
   <string name="export_logs_menu_title">Exportă log-uri detaliate</string>
@@ -92,11 +92,11 @@
   <string name="error_msg_prefix">A avut loc o eroare:</string>
   <string name="refresh_label">Reîncarcă</string>
   <string name="chapters_label">Capitole</string>
-  <string name="no_chapters_label">Fără capitole</string>
-  <string name="chapter_duration">Durata: %1$s</string>
+
+
   <string name="description_label">Descriere</string>
-  <string name="shownotes_label">Descriere</string>
-  <string name="shownotes_contentdescription">trageți cu degetul în sus pentru a citi descrierea</string>
+
+
   <string name="episodes_suffix">\u0020episoade</string>
   <string name="close_label">închide</string>
   <string name="retry_label">Reîncearcă</string>
@@ -113,7 +113,7 @@
   <string name="feed_auto_download_always">Întotdeauna</string>
   <string name="feed_auto_download_never">Niciodată</string>
 
-  <string name="feed_new_episodes_action_nothing">Nimic</string>
+
   <string name="episode_cleanup_never">Niciodată</string>
   <string name="episode_cleanup_except_favorite_removal">Cănd nu este preferată</string>
   <string name="episode_cleanup_queue_removal">Când nu e în coadă</string>
@@ -128,37 +128,17 @@
     <item quantity="few">%d zile după terminare</item>
     <item quantity="other">%d zile după terminare</item>
   </plurals>
-  <plurals name="num_selected_label">
-    <item quantity="one">%1$d/%2$dselectat</item>
-    <item quantity="few">%1$d/%2$dselectate</item>
-    <item quantity="other">%1$d/%2$d selectate</item>
-  </plurals>
-  <plurals name="num_episodes">
-    <item quantity="one">%d episod</item>
-    <item quantity="few">%d episoade</item>
-    <item quantity="other">%d episoade</item>
-  </plurals>
-  <string name="episode_notification">Notificări episoade</string>
-  <string name="episode_notification_summary">Arată notificări când un nou episod este disponibil.</string>
-  <plurals name="new_episode_notification_message">
-    <item quantity="one">%2$s are un episod nou</item>
-    <item quantity="few">%2$s are episoade noi</item>
-    <item quantity="other">%2$s are %1$d episoade noi</item>
-  </plurals>
-  <plurals name="new_episode_notification_title">
-    <item quantity="one">Episod nou</item>
-    <item quantity="few">Episoade noi</item>
-    <item quantity="other">Episoade noi</item>
-  </plurals>
-  <string name="new_episode_notification_group_text">Abonamentele dumneavoastră au episoade noi</string>
+
+
+
   <!--Actions on feeds-->
 
 
 
-  <string name="multi_select_mark_played_confirmation">Vă rugăm să confirmați faptul că doriți să marcați toate elementele selectate ca redate.</string>
-  <string name="multi_select_mark_unplayed_confirmation">Vă rugăm să confirmați faptul că doriți să marcați toate elementele selectate ca neredate.</string>
-  <string name="show_info_label">Arată informații</string>
-  <string name="show_feed_settings_label">Arată setările pentru podcst</string>
+
+
+
+
   <string name="feed_settings_label">Setări podcast</string>
   <string name="rename_feed_label">Redenumire podcast</string>
   <string name="remove_feed_label">Sterge podcast</string>
@@ -168,16 +148,16 @@
   <string name="feed_delete_confirmation_msg">Vă rugăm confirmați că doriți să ștergeți podcastul \"%1$s\" și toate episoadele aferente (inclusiv cele descărcate) împreună cu statisticile acelor epispade.</string>
   <string name="feed_delete_confirmation_msg_batch">Vă rugăm să confirmați că doriți să eliminați toate podcasturile selectate și TOATE episoadele aferente (inclusiv episoadele descărcate).</string>
   <string name="feed_delete_confirmation_local_msg">Vă rugăm confirmați că doriți să ștergeți podcastul \"%1$s\". Fișierele din folderul local nu vor fi șterse.</string>
-  <string name="feed_remover_msg">Ștergere podcast</string>
+
   <string name="load_complete_feed">Reîncarcă tot podcastul</string>
   <string name="multi_select">Selectare multiplă</string>
-  <string name="select_all_above">Selectează toate deasupra</string>
-  <string name="select_all_below">Selectează toate dedesubt</string>
+
+
   <string name="filtered_label">Filtrate</string>
-  <string name="refresh_failed_msg">{faw_exclamation_circle} Ultimul refresh a esuat. Apasă pentru detalii.</string>
+
   <string name="open_podcast">Deschide podcast</string>
   <string name="please_wait_for_data">Vă rugăm așteptați până când datele sunt încărcate</string>
-  <string name="updates_disabled_label">Actualizările sunt oprite</string>
+
   <plurals name="updated_feeds_batch_label">
     <item quantity="one">%d abonament actualizat.</item>
     <item quantity="few">%d abonamente actualizate.</item>
@@ -185,55 +165,36 @@
   </plurals>
   <string name="edit_tags">Editează etichetele</string>
   <string name="add_tag">Adaugă etichetă</string>
-  <string name="rename_tag_label">Redenumește etichetele</string>
+
   <string name="confirm_mobile_feed_refresh_dialog_message">Funcți de reîncărcare a podcasturilor folosind o conexiune mobilă este dezactivată.\n\nDorești să reîncarci oricum \?</string>
   <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Aplicația ta VPN pretinde a fi o rețea de date mobilă. Reîmprospătarea podcasturilor folosind o conexiune de date mobile este dezactivată în setări.\n\nDorești totuși să reîmprospătezi \? Dacă dorești să rezolvi această problemă re rugăm să contactezi dezvoltatorii aplicației tale VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Descarcă</string>
-  <plurals name="downloading_batch_label">
-    <item quantity="one">Se descarcă un episod.</item>
-    <item quantity="few">Se descarcă %dde episoade.</item>
-    <item quantity="other">Se descarcă %dde episoade.</item>
-  </plurals>
   <string name="play_label">Play</string>
   <string name="pause_label">Pauză</string>
   <string name="stream_label">Stream</string>
   <string name="delete_label">Șterge</string>
-  <string name="delete_failed">Imposibil de șters. Restartarea dispozitivului ar putea ajuta.</string>
+
   <string name="delete_local_failed">Nu s-a putut șterge fisierul. Incearcă să reconectezi dosarul local din ecranul cu informații a podcastului.</string>
   <string name="delete_episode_label">Șterge episod</string>
-  <plurals name="deleted_multi_episode_batch_label">
-    <item quantity="one">1 episod descărcat a fost șters.</item>
-    <item quantity="few">%d episoade descărcare au fost șterse.</item>
-    <item quantity="other">%d de episoade descărcare au fost șterse.</item>
-  </plurals>
 
 
 
-
-
-
-  <string name="mark_read_no_media_label">Marcați ca citit</string>
   <string name="play_this_to_seek_position">Pentru a sări către o poziție, trebuie sa începeți redarea episodului</string>
 
   <string name="add_to_queue_label">Adaugă la coadă</string>
-  <plurals name="added_to_queue_batch_label">
-    <item quantity="one">Un episod adăugat la coadă.</item>
-    <item quantity="few">%d  episoade adăugate la coadă.</item>
-    <item quantity="other">%d de episoade adăugate la coadă.</item>
-  </plurals>
   <string name="remove_from_queue_label">Șterge din coadă</string>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">Un episod îndepărtat din coadă.</item>
     <item quantity="few">%d episoade îndepărtate din coadă.</item>
     <item quantity="other">%d de episoade îndepărtate din coadă.</item>
   </plurals>
-  <string name="add_to_favorite_label">Adăugă la favorite</string>
-  <string name="remove_from_favorite_label">Elimină din favorite</string>
+
+
   <string name="visit_website_label">Vizitează website-ul</string>
   <string name="skip_episode_label">Sari peste episod</string>
-  <string name="reset_position">Resetează poziția de redare</string>
-  <string name="no_items_selected">Niciun articol selectat</string>
+
+
   <string name="delete_local_feed_warning_body">Ștergerea episoadelor înseamnă înlăturarea acestora din Podcini și eliminarea fișierelor media din memoria dispozitivului dumneavoastră. Aceste episoade nu vor putea fi descărcate din nou folosind Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">de succes</string>
@@ -278,7 +239,7 @@
   <string name="download_type_media">Fișier media</string>
   <string name="null_value_podcast_error">Nu a fost furnizat niciun podcast ce ar putea fi arătat.</string>
   <string name="no_feed_url_podcast_found_by_search">Podcastul sugerat nu are un link RSS, Podcini a găsit un podcast care s-ar putea potrivi</string>
-  <string name="authentication_notification_title">Autentificare necesară</string>
+
   <string name="confirm_mobile_download_dialog_title">Confirmă descărcarea folosind datele mobile</string>
   <string name="confirm_mobile_download_dialog_message">Descărcarea folosind conexiunea de date mobile este oprită. Podcini poate descărca acest episod mai târziu automat în momentul în care este disponibilă o conexiune Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Aplicația ta VPN pretinde a fi o rețea de date mobilă(rețea contorizată). Reîmprospătarea podcasturilor folosind o conexiune de date mobile este dezactivată în setări. Dacă dorești să rezolvi această problemă re rugăm să contactezi dezvoltatorii aplicației tale VPN.</string>
@@ -290,11 +251,11 @@
   <string name="confirm_mobile_streaming_button_once">O dată</string>
   <!--Mediaplayer messages-->
   <string name="playback_error_generic"><![CDATA[Fișierul media nu a putut fi redat.\n\n- Încearcă să ștergi și să redescraci episodul.\n- Verifică conexiunea ta la internet, și asigurăte că nu există un VPN sau o pagină de autentificare ce blochează accesul.\n- Încearcă să ții apăsat și să partajezi \"adresa media\" către browserul web, pentru a vedea dacă fisierul poate fi redat acolo. În cazul în care nu se poate contactează creatorul podacstului.]]></string>
-  <string name="playback_error_server_died">Server mort</string>
-  <string name="playback_error_unsupported">Format media neacceptat</string>
-  <string name="playback_error_timeout">Operațiunea ține prea mult</string>
-  <string name="playback_error_source">Nu se pot accesa fișierele media</string>
-  <string name="playback_error_unknown">Eroare necuonscută</string>
+
+
+
+
+
   <string name="no_media_playing_label">Nu se ascultă nimic</string>
   <string name="unknown_media_key">Podcini - tastă media necunoscută: %1$d</string>
   <string name="error_file_not_found">Fișierul nu a fost găsit</string>
@@ -307,8 +268,8 @@
   <string name="checkbox_do_not_show_again">Nu arătați din nou</string>
   <string name="clear_queue_label">Golește coada</string>
   <string name="undo">Refă</string>
-  <string name="move_to_top_label">Mișcați deasupra</string>
-  <string name="move_to_bottom_label">Mișcați dedesubt</string>
+
+
   <string name="sort">Sortare</string>
   <string name="keep_sorted">Păstrați sortarea</string>
   <string name="date">Dată</string>
@@ -319,26 +280,26 @@
   <string name="smart_shuffle">Smart shuffle</string>
   <string name="size">Mărime</string>
   <string name="clear_queue_confirmation_msg">Vă rugăm să confirmați că doriți să stergeți toată coada pentru TOATE episoadele.</string>
-  <string name="time_left_label">Timp rămas:\u0020</string>
+
   <!--Variable Speed-->
-  <string name="speed_presets">Presetări</string>
+
   <string name="preset_already_exists">%1$.2fx este deja o presetare salvată.</string>
   <!--Empty list labels-->
-  <string name="no_items_header_label">Fără episoade în coadă</string>
-  <string name="no_items_label">Adăugați episoade prin descărcare sau apăsați lung pe un episod și selectați \"Adaugă în coadă\".</string>
+
+
   <string name="no_shownotes_label">Acest episod nu are descriere.</string>
-  <string name="no_comp_downloads_head_label">Nu există episoade descărcate</string>
-  <string name="no_comp_downloads_label">Puteți descărca episoade în ecranul de detalii a podcastului.</string>
-  <string name="no_log_downloads_head_label">Fără loguri de descărcare</string>
-  <string name="no_log_downloads_label">Logurile descărcate vor apărea aici cănd vor fi disponibile.</string>
-  <string name="no_history_head_label">Fără istoric</string>
-  <string name="no_history_label">După ce veți asculta un episod acesta va apărea aici.</string>
-  <string name="no_all_episodes_head_label">Fără episoade</string>
-  <string name="no_all_episodes_label">Când adăugati un podcast, episoadele vor apărea aici.</string>
-  <string name="no_all_episodes_filtered_label">Încearcă să elimini din criteriile de filtrare pentru a vizualiza mai multe episoade.</string>
 
 
-  <string name="no_subscriptions_head_label">Fără abonamente</string>
+
+
+
+
+
+
+
+
+
+
   <string name="no_subscriptions_label">Pentru a vă abona la un podcast, apăsați pe butonul \"plus\" de mai jos.</string>
   <!--Preferences-->
   <string name="project_pref">Proiect</string>
@@ -375,8 +336,8 @@
   <string name="pref_auto_local_delete_title">Ștergere automată din dosarul local</string>
   <string name="pref_auto_local_delete_sum">Include dosare locale în funcționalitatea de ștergere automată</string>
   <string name="pref_auto_local_delete_dialog_body">Reține faptul ca pentru dosare locale această funcție va elimina episoade din Podcini și va șterge fișiere media din memoria dispozitivului folosit. Aceste fișiere nu vor mai putea fi descărcate din nou folosind Podcini. Dorești activarea duncției de ștergere automată\?</string>
-  <string name="pref_smart_mark_as_played_sum">Marchează episoadele ca redate chiar dacă un anumit număr de secunde din episod au rămas</string>
-  <string name="pref_smart_mark_as_played_title">Marchează inteligent ca fiind redate</string>
+
+
   <string name="pref_skip_keeps_episodes_sum">Păstrează episoade când acestea sunt sărite</string>
   <string name="pref_skip_keeps_episodes_title">Păstrează episoadele sărite</string>
 
@@ -418,8 +379,8 @@
   <string name="pref_nav_drawer_items_sum">Schimbă ce funcționalităti apar în sertarul de navigare</string>
   <string name="pref_nav_drawer_feed_order_title">Setează ordinea abonamentelor</string>
   <string name="pref_nav_drawer_feed_order_sum">Schimbă ordinea abonamentelor</string>
-  <string name="pref_nav_drawer_feed_counter_title">Setează contorul de abonamente</string>
-  <string name="pref_nav_drawer_feed_counter_sum">Schimbă informațiile afișate de către contorul de abonamente. De asemenea afectează sortarea abonamentelor dacă \"Ordinea abonamentelor\" este setată pe \"Contor\"</string>
+
+
   <string name="pref_automatic_download_title">Descărcare automată</string>
   <string name="pref_automatic_download_sum">Configurează descărcarea automată a episoadelor</string>
   <string name="pref_autodl_wifi_filter_title">Pornește filtru Wi-Fi</string>
@@ -463,7 +424,7 @@
   <string name="enqueue_location_front">În față</string>
   <string name="enqueue_location_after_current">După episodul curent</string>
   <string name="enqueue_location_random">Aleatoriu</string>
-  <string name="pref_smart_mark_as_played_disabled">Dezactivat</string>
+
   <string name="documentation_support">Documentație &amp; suport</string>
   <string name="visit_user_forum">Forumul utilizatorilor</string>
   <string name="bug_report_title">Raportează o problemă</string>
@@ -484,22 +445,22 @@
   <string name="remember_last_page">Amintiți-vă ultima pagină</string>
   <string name="pref_delete_removes_from_queue_title">Ștergerea unui episod îl elimină și din coada de redare</string>
   <string name="pref_delete_removes_from_queue_sum">Elimină automat un episod din coada de redare când acesta este șters</string>
-  <string name="pref_filter_feed_title">Filtru de abonamente</string>
-  <string name="pref_filter_feed_sum">Filtrează abonamentele tale în sertarul de navigare și ecranul cu abonamente</string>
-  <string name="subscriptions_are_filtered">Abonamentele sunt filtrate</string>
-  <string name="subscriptions_counter_greater_zero">Contor diferit de zero</string>
-  <string name="auto_downloaded">Descărcare automată</string>
-  <string name="not_auto_downloaded">Nu se descarcă automat</string>
-  <string name="kept_updated">Actualizate</string>
-  <string name="not_kept_updated">Nu sunt actualizate</string>
-  <string name="new_episode_notification_enabled">Notificări pornite</string>
-  <string name="new_episode_notification_disabled">Notificări oprite</string>
-  <string name="pref_feed_settings_dialog_msg">Această setare este unică pentru fiecare podcast. Poți schimba această setare dacă deschizi pagina podcastului.</string>
+
+
+
+
+
+
+
+
+
+
+
   <string name="pref_contribute">Contribuie</string>
-  <string name="pref_show_subscription_title">Arată titlul abonamentului</string>
-  <string name="pref_show_subscription_title_summary">Afișează titlul abonamentului sub imaginea de album</string>
-  <string name="pref_new_episodes_action_title">Acțiunea pentru episoadele noi</string>
-  <string name="pref_new_episodes_action_sum">Acțiunea executată pentru episoade noi</string>
+
+
+
+
   <!--About screen-->
   <string name="about_pref">Despre</string>
   <string name="podcini_version">Versiune Podcini</string>
@@ -513,7 +474,7 @@
   <string name="licenses_summary">Podcini folosește alte softwareuri excelente</string>
   <!--Search-->
   <string name="search_status_no_results">Nu s-a găsit nici un rezultat</string>
-  <string name="type_to_search">Introdu o întrebare pentru a începe căutarea </string>
+
   <string name="search_label">Caută</string>
   <string name="no_results_for_query">Nu au fost găsite rezultate pentru \"%1$s\"</string>
   <string name="search_online">Caută online</string>
@@ -553,7 +514,7 @@
   <string name="opml_import_ask_read_permission">Accesarea memoriei externe este necesară pentru a citi fișierul OPML</string>
   <string name="successful_import_label">Importul a reușit</string>
   <string name="import_ok">Vă rugăm să apăsa|ți OK pentru a reporni Podcini</string>
-  <string name="import_no_downgrade">Această bază de date a fost exportată cu o versiune mai nouă de Podcini, Versiunea curentă a aplicației tale nu poate să folosească acest fișier.</string>
+
   <string name="favorites_export_label">Exportă favorite</string>
   <string name="favorites_export_summary">Exportă favoritele salvate într-un fișier</string>
   <!--Sleep timer-->
@@ -568,11 +529,6 @@
   <string name="time_seconds">secunde</string>
   <string name="time_minutes">minute</string>
   <string name="time_hours">ore</string>
-  <plurals name="time_seconds_quantified">
-    <item quantity="one">1 secundă</item>
-    <item quantity="few">%d secunde</item>
-    <item quantity="other">%d de secunde</item>
-  </plurals>
   <plurals name="time_minutes_quantified">
     <item quantity="one">1 minut</item>
     <item quantity="few">%d minute</item>
@@ -632,28 +588,28 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pauză pentru întreruperi</string>
   <!--Online feed view-->
   <string name="subscribe_label">Abonează-te</string>
-  <string name="subscribing_label">În curs de abonare…</string>
+
   <string name="preview_episode">Previzualizare</string>
-  <string name="stop_preview">Oprește previzualizarea</string>
+
   <!--Content descriptions for image buttons-->
   <string name="toolbar_back_button_content_description">Înapoi</string>
   <string name="rewind_label">Înapoi</string>
   <string name="fast_forward_label">Repede înainte</string>
   <string name="increase_speed">Mărește viteza</string>
   <string name="decrease_speed">Micșorează viteza</string>
-  <string name="media_type_video_label">Video</string>
+
   <string name="status_downloading_label">Episodul se descarcă</string>
-  <string name="in_queue_label">În coada de redare</string>
-  <string name="is_favorite_label">Marchează ca favorit</string>
-  <string name="is_played">Redat</string>
+
+
+
   <string name="load_next_page_label">Încarcă următoarea pagină</string>
   <string name="position">Poziția: %1$s</string>
-  <string name="remaining_time">Timp rămas: %1$s</string>
-  <string name="apply_action">Aplică setarea</string>
-  <string name="play_chapter">Redă capitolul</string>
-  <string name="prev_chapter">Capitolul precedent</string>
+
+
+
+
   <string name="next_chapter">Următorul capitol</string>
-  <string name="shuffle_suggestions">Sugestii aleatorii</string>
+
   <string name="add_preset">Adaugă valoare predefinită</string>
   <!--Feed settings/information screen-->
   <string name="authentication_label">Autentificare</string>
@@ -706,18 +662,18 @@
   <string name="local_feed_description">Acest podcast virtual a fost creat prin adăugarea unui director la Podcini.</string>
   <string name="unable_to_start_system_file_manager">Incapabil de a porni sistemul de management al fișierelor</string>
   <string name="filter">Filtrează</string>
-  <string name="hide_is_favorite_label">Este favorit</string>
-  <string name="not_favorite">Nu este favorit</string>
+
+
   <string name="downloaded_label">Descărcat</string>
-  <string name="not_downloaded_label">Nu este descărcat</string>
-  <string name="queued_label">În coada de redare</string>
-  <string name="not_queued_label">Nu este în coada de redare</string>
+
+
+
   <string name="has_media">Are parte media</string>
-  <string name="no_media">Fără parte media</string>
-  <string name="hide_paused_episodes_label">Pauză</string>
-  <string name="not_paused">Nu sa întrerupt</string>
-  <string name="hide_played_episodes_label">Redat</string>
-  <string name="not_played">Nu s-a redat</string>
+
+
+
+
+
   <!--Sort-->
 
 
@@ -760,10 +716,10 @@
   <string name="proxy_host_invalid_error">Numele serverului gazdă nu este o adresă IP sau domeniu valabile</string>
   <string name="proxy_port_invalid_error">Portul nu este valid</string>
   <!--Subscriptions fragment-->
-  <string name="subscription_num_columns">Numărul de coloane</string>
+
   <!--Notification channels-->
   <string name="notification_group_errors">Erori</string>
-  <string name="notification_group_news">Știri</string>
+
   <string name="notification_channel_user_action">Acțiuni necesare</string>
   <string name="notification_channel_user_action_description">Se indică daca este necesară o acțiune din partea ta, de exemplu dacă ai nevoie să introduci o parolă.</string>
   <string name="notification_channel_downloading">Se descarcă</string>
@@ -774,8 +730,8 @@
   <string name="notification_channel_download_error_description">Afișate când descărcarea sau reîmprospătarea fluxului de date a eșuat. </string>
   <string name="notification_channel_sync_error">Sincronizarea a eșuat</string>
   <string name="notification_channel_sync_error_description">Indicată când sincronizarea cu gpodder eșuează</string>
-  <string name="notification_channel_new_episode">Episod nou</string>
-  <string name="notification_channel_new_episode_description">Afișată când un episod nou a fost găsit, când notificările sunt pornite</string>
+
+
   <!--Widget settings-->
   <string name="widget_settings">Setări widget</string>
   <string name="widget_create_button">Creează widget</string>

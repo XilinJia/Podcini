@@ -7,11 +7,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.navMap
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
@@ -99,11 +97,11 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 //                true
 //            })
 
-        findPreference<Preference>(UserPreferences.Prefs.prefDrawerFeedOrder.name)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
-//            FeedSortDialog.showDialog(requireContext())
-            FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
-            true
-        })
+//        findPreference<Preference>(UserPreferences.Prefs.prefDrawerFeedOrder.name)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
+////            FeedSortDialog.showDialog(requireContext())
+//            FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
+//            true
+//        })
         findPreference<Preference>(PREF_SWIPE)?.setOnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_swipe)
             true

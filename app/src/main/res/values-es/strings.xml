@@ -9,17 +9,17 @@
   <string name="home_label">Inicio</string>
   <string name="queue_label">Cola</string>
 
-  <string name="favorite_episodes_label">Favoritos</string>
+
   <string name="settings_label">Ajustes</string>
   <string name="downloads_label">Descargas</string>
-  <string name="open_autodownload_settings">Abrir ajustes</string>
-  <string name="downloads_log_label">Registro de descargas</string>
+
+
   <string name="subscriptions_label">Suscripciones</string>
-  <string name="subscriptions_list_label">Lista de suscripciones</string>
+
   <string name="cancel_download_label">Cancelar descarga</string>
   <string name="playback_history_label">Historial de reproducciones</string>
-  <string name="episode_cache_full_title">Caché de episodios llena</string>
-  <string name="episode_cache_full_message">Se alcanzó el límite de la caché de episodios. Puede aumentar el tamaño en Configuración.</string>
+
+
   <string name="years_statistics_label">Años</string>
   <string name="notification_pref_fragment">Notificaciones</string>
 
@@ -30,8 +30,8 @@
   <string name="swipeactions_summary">Escoger que pasa al deslizar un episodio en una lista</string>
   <string name="swipe_right">Deslizar a la derecha</string>
   <string name="swipe_left">Deslizar a la izquierda</string>
-  <string name="enable_swipeactions">Activar gestos de deslizado en esta pantalla</string>
-  <string name="change_setting">Cambiar</string>
+
+
   <string name="individual_subscription">Suscripción individual</string>
   <!--Statistics fragment-->
   <string name="statistics_include_marked">Incluye la duración de los episodios que simplemente están marcados como reproducidos</string>
@@ -50,23 +50,23 @@
         actualización y reproducción normales. Puede no permitir notificaciones de subcategorías si lo desea.
     </string>
     <string name="notification_permission_denied">Denegaste el permiso.</string>
-  <string name="notification_permission_deny_warning">Si deshabilita las notificaciones y se produce un error, puede no encontrarlo posteriormente.</string>
-  <string name="deny_label">Denegar</string>
-  <string name="open_settings">Abrir ajustes</string>
-  <string name="configure_home">Configurar pantalla de inicio</string>
+
+
+
+
   <!--Download Statistics fragment-->
   <string name="total_size_downloaded_podcasts">Tamaño total de episodios en el dispositivo</string>
   <!--Main activity-->
   <string name="drawer_open">Abrir menú</string>
   <string name="drawer_close">Cerrar menú</string>
   <string name="drawer_preferences">Preferencias del cajón</string>
-  <string name="feed_order_alphabetical">Ordenar alfabéticamente</string>
-  <string name="feed_order_last_update">Ordenar por fecha de publicación</string>
-  <string name="feed_order_most_played">Ordenar por número de episodios reproducidos</string>
 
-  <string name="feed_order_unplayed_count">Número de episodios no reproducidos</string>
-  <string name="feed_counter_downloaded">Número de episodios descargados</string>
-  <string name="feed_counter_downloaded_unplayed">Número de episodios descargados y no reproducidos</string>
+
+
+
+
+
+
   <!--Bug report activity-->
   <string name="log_file_share_exception">No se encontró ninguna aplicación compatible</string>
   <string name="export_logs_menu_title">Exportar registros detallados</string>
@@ -95,11 +95,11 @@
   <string name="error_msg_prefix">Se produjo un error:</string>
   <string name="refresh_label">Actualizar</string>
   <string name="chapters_label">Capítulos</string>
-  <string name="no_chapters_label">Sin capítulos</string>
-  <string name="chapter_duration">Duración: %1$s</string>
+
+
   <string name="description_label">Descripción</string>
-  <string name="shownotes_label">Notas del programa</string>
-  <string name="shownotes_contentdescription">deslice hacia arriba para leer las notas del programa</string>
+
+
   <string name="episodes_suffix">\u0020episodios</string>
   <string name="close_label">Cerrar</string>
   <string name="retry_label">Reintentar</string>
@@ -116,7 +116,7 @@
   <string name="feed_auto_download_always">Siempre</string>
   <string name="feed_auto_download_never">Nunca</string>
 
-  <string name="feed_new_episodes_action_nothing">Nada</string>
+
   <string name="episode_cleanup_never">Nunca</string>
   <string name="episode_cleanup_except_favorite_removal">Cuando no esté en Favoritos</string>
   <string name="episode_cleanup_queue_removal">Cuando no esté en la cola</string>
@@ -131,37 +131,16 @@
     <item quantity="many">%d días después de acabar</item>
     <item quantity="other">%d días después de acabar</item>
   </plurals>
-  <plurals name="num_selected_label">
-    <item quantity="one">%1$d/%2$d seleccionado</item>
-    <item quantity="many">%1$d/%2$d seleccionados</item>
-    <item quantity="other">%1$d/%2$d seleccionados</item>
-  </plurals>
-  <plurals name="num_episodes">
-    <item quantity="one">%d episodio</item>
-    <item quantity="many">%d episodios</item>
-    <item quantity="other">%d episodios</item>
-  </plurals>
-  <string name="episode_notification">Notificaciones de episodio</string>
-  <string name="episode_notification_summary">Mostrar una notificación cuando se estrene un nuevo episodio.</string>
-  <plurals name="new_episode_notification_message">
-    <item quantity="one">%2$s tiene un nuevo episodio</item>
-    <item quantity="many">%2$s tiene %1$d episodios nuevos</item>
-    <item quantity="other">%2$s tiene %1$d episodios nuevos</item>
-  </plurals>
-  <plurals name="new_episode_notification_title">
-    <item quantity="one">Episodio nuevo</item>
-    <item quantity="many">Episodios nuevos</item>
-    <item quantity="other">Episodios nuevos</item>
-  </plurals>
-  <string name="new_episode_notification_group_text">Sus suscripciones tienen nuevos episodios.</string>
+
+
   <!--Actions on feeds-->
 
 
 
-  <string name="multi_select_mark_played_confirmation">Confirme que quiere marcar todos los elementos como reproducidos.</string>
-  <string name="multi_select_mark_unplayed_confirmation">Confirme que quiere marcar todos los elementos como no reproducidos.</string>
-  <string name="show_info_label">Mostrar información</string>
-  <string name="show_feed_settings_label">Mostrar configuración del pódcast</string>
+
+
+
+
   <string name="feed_settings_label">Configuración del pódcast</string>
   <string name="rename_feed_label">Cambiar nombre del pódcast</string>
   <string name="remove_feed_label">Eliminar el pódcast</string>
@@ -171,16 +150,16 @@
   <string name="feed_delete_confirmation_msg">Confirme que quiere eliminar el pódcast «%1$s» TODOS los episodios (incluidos los descargados), y sus estadísticas.</string>
   <string name="feed_delete_confirmation_msg_batch">Confirme que quiere eliminar los pódcasts seleccionados, TODOS los episodios (incluidos los descargados), y sus estadísticas.</string>
   <string name="feed_delete_confirmation_local_msg">Confirme que quiere eliminar el pódcast «%1$s» y sus estadísticas. Los archivos en la carpeta origen local no se eliminarán.</string>
-  <string name="feed_remover_msg">Eliminando el pódcast</string>
+
   <string name="load_complete_feed">Actualizar el pódcast completo</string>
   <string name="multi_select">Multiselección</string>
-  <string name="select_all_above">Seleccionar todo lo anterior</string>
-  <string name="select_all_below">Seleccionar todo lo siguiente</string>
+
+
   <string name="filtered_label">Filtrados</string>
-  <string name="refresh_failed_msg">{faw_exclamation_circle} Error en la última actualización. Toca para ver detalles.</string>
+
   <string name="open_podcast">Abrir pódcast</string>
   <string name="please_wait_for_data">Esperando a que los datos carguen</string>
-  <string name="updates_disabled_label">Actualizaciones deshabilitadas</string>
+
   <plurals name="updated_feeds_batch_label">
     <item quantity="one">%d suscripción actualizada.</item>
     <item quantity="many">%d suscripciones actualizadas.</item>
@@ -188,55 +167,35 @@
   </plurals>
   <string name="edit_tags">Editar etiquetas</string>
   <string name="add_tag">Añadir etiqueta</string>
-  <string name="rename_tag_label">Renombrar etiqueta</string>
+
   <string name="confirm_mobile_feed_refresh_dialog_message">Actualizar podcasts usando una conexión de datos móviles está desactivado en las opciones.\n\n¿De veras quieres actualizar los podcasts usando una conexión de datos móviles\?</string>
   <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Tu VPN simula ser una red móvil (conexión medida). La actualización de podcasts sobre conexiones de datos está deshabilitada en los ajustes.\n\n¿Quieres refrescarlos a pesar de todo\? Si quieres solucionar el problema, contacta con los creadores de tu aplicación VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Descargar</string>
-  <plurals name="downloading_batch_label">
-    <item quantity="one">Descargando %d episodio.</item>
-    <item quantity="many">Descargando %d episodios.</item>
-    <item quantity="other">Descargando %d episodios.</item>
-  </plurals>
   <string name="play_label">Reproducir</string>
   <string name="pause_label">Pausar</string>
   <string name="stream_label">Escuchar en directo</string>
   <string name="delete_label">Borrar</string>
-  <string name="delete_failed">No se puede borrar el fichero. Reiniciar el dispositivo podría ayudar.</string>
+
   <string name="delete_local_failed">No se pudo borrar el archivo. Intenta reconectar la carpeta local desde la pantalla de información del podcast.</string>
   <string name="delete_episode_label">Borrar episodio</string>
-  <plurals name="deleted_multi_episode_batch_label">
-    <item quantity="one">Eliminado 1 episodio descargado.</item>
-    <item quantity="many">Eliminados %d episodios descargados.</item>
-    <item quantity="other">Eliminados %d episodios descargados.</item>
-  </plurals>
 
 
-
-
-
-
-  <string name="mark_read_no_media_label">Marcar como leído</string>
   <string name="play_this_to_seek_position">Para saltar a posiciones, necesitas reproducir el episodio</string>
 
   <string name="add_to_queue_label">Añadir a la cola</string>
-  <plurals name="added_to_queue_batch_label">
-    <item quantity="one">%d episodio añadido a la cola.</item>
-    <item quantity="many">%d episodios añadidos a la cola.</item>
-    <item quantity="other">%d episodios añadidos a la cola.</item>
-  </plurals>
   <string name="remove_from_queue_label">Quitar de la cola</string>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d episodio eliminado de la cola.</item>
     <item quantity="many">%d episodios eliminados de la cola.</item>
     <item quantity="other">%d episodios eliminados de la cola.</item>
   </plurals>
-  <string name="add_to_favorite_label">Añadir a favoritos</string>
-  <string name="remove_from_favorite_label">Eliminar de favoritos</string>
+
+
   <string name="visit_website_label">Visitar el sitio web</string>
   <string name="skip_episode_label">Omitir episodio</string>
-  <string name="reset_position">Restablecer la posición de reproducción</string>
-  <string name="no_items_selected">No hay elementos seleccionados</string>
+
+
   <string name="delete_local_feed_warning_body">La acción borra el episodio de Podcini y borra los archivos de medios del almacenamiento. No se puede descargar de nuevo mediante Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">exitosa</string>
@@ -281,7 +240,7 @@
   <string name="download_type_media">Archivo multimedia</string>
   <string name="null_value_podcast_error">No se proporcionó ningún pódcast que pudiera mostrarse.</string>
   <string name="no_feed_url_podcast_found_by_search">El podcast sugerido no tenía un enlace RSS, Podcini encontró un pódcast que podría coincidir</string>
-  <string name="authentication_notification_title">Autenticación requerida</string>
+
   <string name="confirm_mobile_download_dialog_title">Confirmar descarga vía datos móviles</string>
   <string name="confirm_mobile_download_dialog_message">Se desactivaron las descargas por conexión de datos móvil en la configuración. Podcini podrá descargar el episodio automáticamente cuando haya conexión Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Tu VPN simula ser una red móvil (conexión medida). La descarga de podcasts sobre conexiones de datos está deshabilitada en los ajustes. Si quieres solucionar el problema, contacta con los creadores de tu aplicación VPN.</string>
@@ -293,11 +252,11 @@
   <string name="confirm_mobile_streaming_button_once">Una vez</string>
   <!--Mediaplayer messages-->
   <string name="playback_error_generic"><![CDATA[El archivo no se pudo reproducir.\n\n- Intenta borrar el episodio y descargarlo de nuevo.\n- Comprueba la conexión de red, y asegúrate de que no haya conexiones VPN o portales cautivos activos.\n- Intenta pulsar prolongadamente y compartir la \"dirección del medio\" hacia tu navegador web para ver si se puede reproducir desde ahí. En caso contrario, contacta con los creador del pódcast.]]></string>
-  <string name="playback_error_server_died">El servidor está inactivo</string>
-  <string name="playback_error_unsupported">Tipo de medio no soportado</string>
-  <string name="playback_error_timeout">Tiempo de espera agotado</string>
-  <string name="playback_error_source">No se puede acceder al archivo de medios</string>
-  <string name="playback_error_unknown">Error desconocido</string>
+
+
+
+
+
   <string name="no_media_playing_label">No hay medios en reproducción</string>
   <string name="unknown_media_key">Podcini - Tecla multimedia desconocida: %1$d</string>
   <string name="error_file_not_found">Archivo no encontrado</string>
@@ -310,8 +269,8 @@
   <string name="checkbox_do_not_show_again">No mostrar de nuevo</string>
   <string name="clear_queue_label">Vaciar la cola</string>
   <string name="undo">Deshacer</string>
-  <string name="move_to_top_label">Mover al principio</string>
-  <string name="move_to_bottom_label">Mover al final</string>
+
+
   <string name="sort">Ordenar</string>
   <string name="keep_sorted">Mantener ordenado</string>
   <string name="date">Fecha</string>
@@ -322,26 +281,26 @@
   <string name="smart_shuffle">Reproducción inteligente</string>
   <string name="size">Tamaño</string>
   <string name="clear_queue_confirmation_msg">Confirme que quiere borrar TODOS los episodios de la cola</string>
-  <string name="time_left_label">Tiempo restante:\u0020</string>
+
   <!--Variable Speed-->
-  <string name="speed_presets">Presets</string>
+
   <string name="preset_already_exists">%1$.2fx ya existe como preset.</string>
   <!--Empty list labels-->
-  <string name="no_items_header_label">Sin episodios en la cola</string>
-  <string name="no_items_label">Añada un episodio descargándolo o presione prolongadamente un episodio y seleccione \"Añadir a la cola\".</string>
+
+
   <string name="no_shownotes_label">Este episodio no tiene notas del programa.</string>
-  <string name="no_comp_downloads_head_label">No hay episodios descargados</string>
-  <string name="no_comp_downloads_label">Puede descargar episodios en la pantalla de detalles del pódcast.</string>
-  <string name="no_log_downloads_head_label">Sin registro de descargas</string>
-  <string name="no_log_downloads_label">Los registros de descargas aparecerán aquí cuando estén disponibles.</string>
-  <string name="no_history_head_label">Sin historial</string>
-  <string name="no_history_label">Después de escuchar un episodio, aparecerá aquí.</string>
-  <string name="no_all_episodes_head_label">Sin episodios</string>
-  <string name="no_all_episodes_label">Cuando añada un pódcast, los episodios aparecerán aquí.</string>
-  <string name="no_all_episodes_filtered_label">Prueba a quitar el filtro para ver más episodios</string>
 
 
-  <string name="no_subscriptions_head_label">No hay suscripciones</string>
+
+
+
+
+
+
+
+
+
+
   <string name="no_subscriptions_label">Para suscribirse a un podcast, pulsa el icono \"más\" de abajo.</string>
   <!--Preferences-->
   <string name="project_pref">Proyecto</string>
@@ -378,8 +337,8 @@
   <string name="pref_auto_local_delete_title">Autoborrar en local</string>
   <string name="pref_auto_local_delete_sum">Incluir carpetas locales en la funcionalidad de autoborrado</string>
   <string name="pref_auto_local_delete_dialog_body">Tenga en cuenta que en las carpetas locales los episodios serán borrados de AtennaPod y eliminará los archivos multimedia del almacenamiento de su dispositivo. Por tanto, no pueden ser descargados de nuevo a través de Podcini. ¿Quiere activar el autoborrado\?</string>
-  <string name="pref_smart_mark_as_played_sum">Marca los episodios como reproducidos incluso si todavía quedan unos segundos por escuchar</string>
-  <string name="pref_smart_mark_as_played_title">Marcado inteligente como reproducido</string>
+
+
   <string name="pref_skip_keeps_episodes_sum">Conservar los episodios cuando son saltados</string>
   <string name="pref_skip_keeps_episodes_title">Conservar episodios saltados</string>
 
@@ -421,8 +380,8 @@
   <string name="pref_nav_drawer_items_sum">Cambiar qué elementos aparecen en el cajón de navegación</string>
   <string name="pref_nav_drawer_feed_order_title">Ajustar orden de suscripción</string>
   <string name="pref_nav_drawer_feed_order_sum">Cambiar el orden de las suscripciones</string>
-  <string name="pref_nav_drawer_feed_counter_title">Ajustar contador de suscripción</string>
-  <string name="pref_nav_drawer_feed_counter_sum">Cambiar la información mostrada en el contador de las suscripciones. También afecta al orden de las suscripciones si el \'orden de la suscripción\' está en modo \'Contador\'.</string>
+
+
   <string name="pref_automatic_download_title">Descarga automática</string>
   <string name="pref_automatic_download_sum">Configurar la descarga automática de episodios</string>
   <string name="pref_autodl_wifi_filter_title">Activar el filtro wifi</string>
@@ -466,7 +425,7 @@
   <string name="enqueue_location_front">Principio</string>
   <string name="enqueue_location_after_current">Después del episodio actual</string>
   <string name="enqueue_location_random">Aleatorio</string>
-  <string name="pref_smart_mark_as_played_disabled">Deshabilitado</string>
+
   <string name="documentation_support">Documentación &amp; Asistencia</string>
   <string name="visit_user_forum">Foro de usuario</string>
   <string name="bug_report_title">Reportar bug</string>
@@ -487,22 +446,22 @@
   <string name="remember_last_page">Recordar última página</string>
   <string name="pref_delete_removes_from_queue_title">Eliminar quita de la cola</string>
   <string name="pref_delete_removes_from_queue_sum">Eliminar automáticamente un episodio de la cola cuando se borra</string>
-  <string name="pref_filter_feed_title">Filtro de suscripción</string>
-  <string name="pref_filter_feed_sum">Filtrar tus suscripciones en el cajón de de navegación y pantallas de suscripción</string>
-  <string name="subscriptions_are_filtered">Las suscripciones están filtradas.</string>
-  <string name="subscriptions_counter_greater_zero">Contador mayor que cero</string>
-  <string name="auto_downloaded">Descargado automáticamente</string>
-  <string name="not_auto_downloaded"> No auto-descargado</string>
-  <string name="kept_updated">Mantenido actualizado</string>
-  <string name="not_kept_updated">No mantenido actualizado</string>
-  <string name="new_episode_notification_enabled">Notificación habilitada</string>
-  <string name="new_episode_notification_disabled">Notificación deshabilitada</string>
-  <string name="pref_feed_settings_dialog_msg">Esta preferencia es única para cada pódcast. Puede ajustarla abriendo la página del pódcast.</string>
+
+
+
+
+
+
+
+
+
+
+
   <string name="pref_contribute">Contribuir</string>
-  <string name="pref_show_subscription_title">Mostrar el título de la suscripción</string>
-  <string name="pref_show_subscription_title_summary">Mostrar el título de la suscripción bajo la imagen de portada</string>
-  <string name="pref_new_episodes_action_title">Acción para nuevos episodios</string>
-  <string name="pref_new_episodes_action_sum">Acción a tomar para los episodios nuevos</string>
+
+
+
+
   <!--About screen-->
   <string name="about_pref">Acerca de</string>
   <string name="podcini_version">Versión de Podcini</string>
@@ -516,7 +475,7 @@
   <string name="licenses_summary">Podcini usa otros software estupendos</string>
   <!--Search-->
   <string name="search_status_no_results">No se han encontrado resultados</string>
-  <string name="type_to_search">Escribe un término de búsqueda</string>
+
   <string name="search_label">Buscar</string>
   <string name="no_results_for_query">No se han encontrado resultados de \"%1$s\"</string>
   <string name="search_online">Buscar en línea</string>
@@ -556,7 +515,7 @@
   <string name="opml_import_ask_read_permission">Necesita acceso al almacenamiento externo para leer archivos OPML</string>
   <string name="successful_import_label">Importación exitosa</string>
   <string name="import_ok">Pulse OK para reiniciar Podcini</string>
-  <string name="import_no_downgrade">Esta base de datos fue exportada con una versión más moderna de Podcini. La versión instalada no puede manejarla.</string>
+
   <string name="favorites_export_label">Exportar favoritos</string>
   <string name="favorites_export_summary">Se exportaron los favoritos al archivo</string>
   <!--Sleep timer-->
@@ -571,11 +530,6 @@
   <string name="time_seconds">segundos</string>
   <string name="time_minutes">minutos</string>
   <string name="time_hours">horas</string>
-  <plurals name="time_seconds_quantified">
-    <item quantity="one">1 segundo</item>
-    <item quantity="many">%d segundos</item>
-    <item quantity="other">%d segundos</item>
-  </plurals>
   <plurals name="time_minutes_quantified">
     <item quantity="one">1 minuto</item>
     <item quantity="many">%d minutos</item>
@@ -640,28 +594,28 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausar durante las interrupciones</string>
   <!--Online feed view-->
   <string name="subscribe_label">Suscribirse</string>
-  <string name="subscribing_label">Suscribiendo…</string>
+
   <string name="preview_episode">Vista Previa</string>
-  <string name="stop_preview">Detener la vista previa</string>
+
   <!--Content descriptions for image buttons-->
   <string name="toolbar_back_button_content_description">Atrás</string>
   <string name="rewind_label">Retroceso</string>
   <string name="fast_forward_label">Avance</string>
   <string name="increase_speed">Aumentar velocidad</string>
   <string name="decrease_speed">Reducir velocidad</string>
-  <string name="media_type_video_label">Vídeo</string>
+
   <string name="status_downloading_label">El episodio se está descargando</string>
-  <string name="in_queue_label">En la cola</string>
-  <string name="is_favorite_label">Marcado como favorito</string>
-  <string name="is_played">Reproducido</string>
+
+
+
   <string name="load_next_page_label">Cargar la página siguiente</string>
   <string name="position">Posición: %1$s</string>
-  <string name="remaining_time">Tiempo restante: %1$s</string>
-  <string name="apply_action">Aplicar acción</string>
-  <string name="play_chapter">Reproducir capítulo</string>
-  <string name="prev_chapter">Capítulo anterior</string>
+
+
+
+
   <string name="next_chapter">Capítulo siguiente</string>
-  <string name="shuffle_suggestions">Barajar sugerencias</string>
+
   <string name="add_preset">Añadir preset</string>
   <!--Feed settings/information screen-->
   <string name="authentication_label">Autenticación</string>
@@ -714,18 +668,18 @@
   <string name="local_feed_description">Este podcast virtual fue creado añadiendo una carpeta a Podcini.</string>
   <string name="unable_to_start_system_file_manager">No se puede iniciar el administrador de archivos del sistema</string>
   <string name="filter">Filtro</string>
-  <string name="hide_is_favorite_label">Es favorito</string>
-  <string name="not_favorite">No favorito</string>
+
+
   <string name="downloaded_label">Descargados</string>
-  <string name="not_downloaded_label">No descargados</string>
-  <string name="queued_label">En cola</string>
-  <string name="not_queued_label">No están en cola</string>
+
+
+
   <string name="has_media">Tiene multimedia</string>
-  <string name="no_media">Sin medios</string>
-  <string name="hide_paused_episodes_label">Pausados</string>
-  <string name="not_paused">No pausado</string>
-  <string name="hide_played_episodes_label">Reproducidos</string>
-  <string name="not_played">No reproducido</string>
+
+
+
+
+
   <!--Sort-->
 
 
@@ -768,10 +722,10 @@
   <string name="proxy_host_invalid_error">El host no es una dirección IP o dominio válido</string>
   <string name="proxy_port_invalid_error">Puerto no válido</string>
   <!--Subscriptions fragment-->
-  <string name="subscription_num_columns">Número de columnas</string>
+
   <!--Notification channels-->
   <string name="notification_group_errors">Errores</string>
-  <string name="notification_group_news">Nuevos</string>
+
   <string name="notification_channel_user_action">Acción necesaria</string>
   <string name="notification_channel_user_action_description">Se muestra si su acción es necesaria, por ejemplo, si necesita introducir una contraseña.</string>
   <string name="notification_channel_downloading">Descargando</string>
@@ -782,8 +736,8 @@
   <string name="notification_channel_download_error_description">Muestra cuando falla la descarga o la actualización del canal.</string>
   <string name="notification_channel_sync_error">Sincronización fallida</string>
   <string name="notification_channel_sync_error_description">Mostrar cuando falle la sincronización de gpodder.</string>
-  <string name="notification_channel_new_episode">Episodio nuevo</string>
-  <string name="notification_channel_new_episode_description">Se muestra al encontrar un nuevo episodio de un podcast, si las notificaciones están activadas</string>
+
+
   <!--Widget settings-->
   <string name="widget_settings">Configuraciones del Widget</string>
   <string name="widget_create_button">Crear widget</string>

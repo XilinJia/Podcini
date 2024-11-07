@@ -1,3 +1,12 @@
+# 6.13.7
+
+* likely fixed getting duplicate episodes on updates (youtube feeds)
+* in Queues view, set the spinner default to the active queue
+* an all new sorting dialog and mechanism for Subscriptions
+* removed subscriptions sort order in Settings
+* set PlayerUI position on start play
+* large number of unused string resources are cleaned out
+
 # 6.13.6
 
 * created a fast update routine to improve performance
@@ -8,7 +17,7 @@
 * added update routine for youtube channel tabs
 * added audio and video quality settings in Feed Preferences (Youtube feeds only): Global, Low, Medium, High
 	* these settings take precedence over global situations
-	* when Global is set, video is a lowest quality, and audio is at highest quality (except when prefLowQualityMedia is set for metered networks)
+	* when Global is set, video is at lowest quality, and audio is at highest quality (except when prefLowQualityMedia is set for metered networks)
 * fixed mis-behavior of multi-selection filters
 
 # 6.13.5

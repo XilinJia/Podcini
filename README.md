@@ -26,15 +26,16 @@ Compared to AntennaPod this project:
 
 1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
 2. Is purely `Kotlin` based and mono-modular, and multiple views are in Jetpack Compose,
-3. modern object-base Realm DB replaced SQLite, Coil replaced Glide, coroutines replaced RxJava and threads, and SharedFlow replaced EventBus.
-4. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-5. Supports multiple, virtual and circular play queues associable to any podcast
-6. Auto-download is governed by policy and limit settings of individual feed
-7. Features synthetic podcasts and allows episodes to be shelved to any synthetic podcast
+3. Modern object-base Realm DB replaced SQLite, Coil replaced Glide, coroutines replaced RxJava and threads, and SharedFlow replaced EventBus.
+4. Boasts new UI's including streamlined drawer, subscriptions view and player controller, and many more.
+5. Supports multiple, virtual and circular play queues associable with any podcast.
+6. Auto-download is governed by policy and limit settings of individual feed.
+7. Features synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
 8. Supports channels, playlists, single media from YouTube and YT Music, as well as normal podcasts and plain RSS,
-9. Allows adding personal notes and 5-level rating on every episode
-10. Offers Readability and Text-to-Speech for RSS contents,s
-11. Features `instant sync` across devices without a server.
+9. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
+10. Supports sophisticated filtering and sorting on episodes and podcasts.
+11. Offers Readability and Text-to-Speech for RSS contents,
+12. Features `instant sync` across devices without a server.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 

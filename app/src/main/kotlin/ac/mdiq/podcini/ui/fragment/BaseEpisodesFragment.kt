@@ -102,13 +102,10 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         swipeActions.setFilter(getFilter())
         refreshSwipeTelltale()
-        createListAdaptor()
         return binding.root
     }
 
     open fun onFilterChanged(filterValues: Set<String>) {}
-
-    open fun createListAdaptor() {}
 
     override fun onStart() {
         super.onStart()

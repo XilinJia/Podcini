@@ -245,7 +245,8 @@ object FeedUpdateManager {
             if (feed.downloadUrl.isNullOrEmpty()) return
             val url = feed.downloadUrl!!
             val newestItem = feed.mostRecentItem
-            val oldestItem = feed.oldestItem
+            Logd(TAG, "newestItem: ${newestItem?.getPubDate()} ${newestItem?.title}")
+//            val oldestItem = feed.oldestItem
             try {
                 val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
                 val uURL = URL(url)
@@ -266,7 +267,10 @@ object FeedUpdateManager {
                                 Logd(TAG, "item: ${r.uploadDate?.date()?.time} ${r.name}")
                                 if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
                                     eList.add(episodeFromStreamInfoItem(r))
-                                else nextPage = null
+                                else {
+                                    nextPage = null
+                                    break
+                                }
                             }
                             if (nextPage == null) break
                             try {
@@ -301,7 +305,10 @@ object FeedUpdateManager {
                                 if (r.infoType != InfoItem.InfoType.STREAM) continue
                                 if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
                                     eList.add(episodeFromStreamInfoItem(r))
-                                else nextPage = null
+                                else {
+                                    nextPage = null
+                                    break
+                                }
                             }
                             if (nextPage == null) break
                             try {
@@ -326,6 +333,7 @@ object FeedUpdateManager {
                         if (fullUpdate) Feeds.updateFeed(applicationContext, feed_) else Feeds.updateFeedSimple(feed_)
                     } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed playlist error1 ${e.message}") }
                 } else {
+                    // channel tabs other than videos
                     val pathSegments = uURL.path.split("/")
                     val channelUrl = "https://www.youtube.com/channel/${pathSegments[1]}"
                     Logd(TAG, "channelUrl: $channelUrl")
@@ -354,7 +362,10 @@ object FeedUpdateManager {
                                 Logd(TAG, "item: ${r.uploadDate?.date()?.time} ${r.name}")
                                 if ((r.uploadDate?.date()?.time ?: Date(0)) > (newestItem?.getPubDate() ?: Date(0)))
                                     eList.add(episodeFromStreamInfoItem(r))
-                                else nextPage = null
+                                else {
+                                    nextPage = null
+                                    break
+                                }
                             }
                             if (nextPage == null) break
                             try {

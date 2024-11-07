@@ -89,14 +89,7 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         when (item.itemId) {
             R.id.filter_items -> {
                 showFilterDialog = true
-//                AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
             }
-//            R.id.action_favorites -> {
-//                val filter = getFilter().properties.toMutableSet()
-//                if (filter.contains(EpisodeFilter.States.is_favorite.name)) filter.remove(EpisodeFilter.States.is_favorite.name)
-//                else filter.add(EpisodeFilter.States.is_favorite.name)
-//                onFilterChanged(FlowEvent.AllEpisodesFilterEvent(HashSet(filter)))
-//            }
             R.id.episodes_sort -> AllEpisodesSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             else -> return false
@@ -115,7 +108,6 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-//                    is FlowEvent.AllEpisodesFilterEvent -> onFilterChanged(event)
                     is FlowEvent.AllEpisodesSortEvent -> {
                         page = 1
                         loadItems()
@@ -126,26 +118,16 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-//    private fun onFilterChanged(event: FlowEvent.AllEpisodesFilterEvent) {
-//        prefFilterAllEpisodes = StringUtils.join(event.filterValues, ",")
-//        page = 1
-//        loadItems()
-//    }
-
     override fun updateToolbar() {
         swipeActions.setFilter(getFilter())
         var info = "${episodes.size} episodes"
         if (getFilter().properties.isNotEmpty()) {
             info += " - ${getString(R.string.filtered_label)}"
-//            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         }
-//        else emptyView.setMessage(R.string.no_all_episodes_label)
         infoBarText.value = info
-//        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
     override fun onFilterChanged(filterValues: Set<String>) {
-//        EventFlow.postEvent(FlowEvent.AllEpisodesFilterEvent(filterValues))
         prefFilterAllEpisodes = StringUtils.join(filterValues, ",")
         page = 1
         loadItems()
@@ -171,19 +153,6 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
             EventFlow.postEvent(FlowEvent.AllEpisodesSortEvent())
         }
     }
-
-//    class AllEpisodesFilterDialog : EpisodeFilterDialog() {
-//        override fun onFilterChanged(newFilterValues: Set<String>) {
-//            EventFlow.postEvent(FlowEvent.AllEpisodesFilterEvent(newFilterValues))
-//        }
-//        companion object {
-//            fun newInstance(filter: EpisodeFilter?): AllEpisodesFilterDialog {
-//                val dialog = AllEpisodesFilterDialog()
-//                dialog.filter = filter
-//                return dialog
-//            }
-//        }
-//    }
 
     companion object {
         val TAG = AllEpisodesFragment::class.simpleName ?: "Anonymous"

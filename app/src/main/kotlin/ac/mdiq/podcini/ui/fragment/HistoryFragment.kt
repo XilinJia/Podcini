@@ -44,26 +44,7 @@ class HistoryFragment : BaseEpisodesFragment() {
         toolbar.inflateMenu(R.menu.playback_history)
         toolbar.setTitle(R.string.playback_history_label)
         updateToolbar()
-//        emptyView.setIcon(R.drawable.ic_history)
-//        emptyView.setTitle(R.string.no_history_head_label)
-//        emptyView.setMessage(R.string.no_history_label)
         return root
-    }
-
-    override fun createListAdaptor() {
-//        adapter = object : EpisodesAdapter(activity as MainActivity) {
-//            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
-//                return object: EpisodeViewHolder(mainActivityRef.get()!!, parent) {
-//                    override fun setPubDate(item: Episode) {
-//                        val playDate = Date(item.media?.getLastPlayedTime()?:0L)
-//                        pubDate.text = MiscFormatter.formatAbbrev(activity, playDate)
-//                        pubDate.setContentDescription(MiscFormatter.formatForAccessibility(playDate))
-//                    }
-//                }
-//            }
-//        }
-//        adapter.setOnSelectModeListener(this)
-//        recyclerView.adapter = adapter
     }
 
     override fun onStart() {
@@ -123,11 +104,8 @@ class HistoryFragment : BaseEpisodesFragment() {
         var info = "${episodes.size} episodes"
         if (getFilter().properties.isNotEmpty()) {
             info += " - ${getString(R.string.filtered_label)}"
-//            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         }
-//        else emptyView.setMessage(R.string.no_all_episodes_label)
         infoBarText.value = info
-//        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
     private var eventSink: Job?     = null
@@ -204,12 +182,6 @@ class HistoryFragment : BaseEpisodesFragment() {
 
     companion object {
         val TAG = HistoryFragment::class.simpleName ?: "Anonymous"
-
-//        only used in tests
-        fun getNumberOfCompleted(): Long {
-            Logd(TAG, "getNumberOfCompleted called")
-            return realm.query(EpisodeMedia::class).query("playbackCompletionTime > 0").count().find()
-        }
 
         fun getNumberOfPlayed(): Long {
             Logd(TAG, "getNumberOfPlayed called")

@@ -188,7 +188,6 @@ class AboutFragment : PreferenceFragmentCompat() {
                     else -> DevelopersFragment()
                 }
             }
-
             override fun getItemCount(): Int {
                 return TOTAL_COUNT
             }

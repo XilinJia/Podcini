@@ -44,6 +44,7 @@ import android.util.Log
 import android.view.*
 import android.widget.CheckBox
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -541,7 +542,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun RenameQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf(curQueue.name) }
                         TextField(value = newName, onValueChange = { newName = it }, label = { Text("Rename (Unique name only)") })
@@ -565,7 +566,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun AddQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf("") }
                         TextField(value = newName, onValueChange = { newName = it }, label = { Text("Add queue (Unique name only)") })

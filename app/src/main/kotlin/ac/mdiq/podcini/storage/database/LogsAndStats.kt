@@ -36,10 +36,10 @@ object LogsAndStats {
      * Searches the DB for statistics.
      * @return The list of statistics objects
      */
-    fun getStatistics(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long): StatisticsResult {
+    fun getStatistics(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long, feedId: Long = 0L): StatisticsResult {
         Logd(TAG, "getStatistics called")
+        val medias = if (feedId == 0L) realm.query(EpisodeMedia::class).find() else realm.query(EpisodeMedia::class).query("episode.feedId == $feedId").find()
 
-        val medias = realm.query(EpisodeMedia::class).find()
         val groupdMedias = medias.groupBy { it.episodeOrFetch()?.feedId ?: 0L }
         val result = StatisticsResult()
         result.oldestDate = Long.MAX_VALUE
@@ -47,6 +47,8 @@ object LogsAndStats {
             val feed = getFeed(fid, false) ?: continue
             val numEpisodes = feed.episodes.size.toLong()
             var feedPlayedTime = 0L
+            var timeSpent = 0L
+            var durationWithSkip = 0L
             var feedTotalTime = 0L
             var episodesStarted = 0L
             var totalDownloadSize = 0L
@@ -54,16 +56,20 @@ object LogsAndStats {
             for (m in feedMedias) {
                 if (m.lastPlayedTime > 0 && m.lastPlayedTime < result.oldestDate) result.oldestDate = m.lastPlayedTime
                 feedTotalTime += m.duration
-                if (m.lastPlayedTime in timeFilterFrom..<timeFilterTo) {
+                if (m.lastPlayedTime in (timeFilterFrom + 1)..<timeFilterTo) {
                     if (includeMarkedAsPlayed) {
                         if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || (m.episodeOrFetch()?.playState?:-10) > PlayState.SKIPPED.code || m.position > 0) {
                             episodesStarted += 1
                             feedPlayedTime += m.duration
+                            timeSpent += m.timeSpent
                         }
                     } else {
                         feedPlayedTime += m.playedDuration
+                        timeSpent += m.timeSpent
+                        Logd(TAG, "m.playedDuration: ${m.playedDuration} m.timeSpent: ${m.timeSpent}")
                         if (m.playbackCompletionTime > 0 && m.playedDuration > 0) episodesStarted += 1
                     }
+                    durationWithSkip += m.duration
                 }
                 if (m.downloaded) {
                     episodesDownloadCount += 1
@@ -71,8 +77,10 @@ object LogsAndStats {
                 }
             }
             feedPlayedTime /= 1000
+            durationWithSkip /= 1000
+            timeSpent /= 1000
             feedTotalTime /= 1000
-            result.statsItems.add(StatisticsItem(feed, feedTotalTime, feedPlayedTime, numEpisodes, episodesStarted, totalDownloadSize, episodesDownloadCount))
+            result.statsItems.add(StatisticsItem(feed, feedTotalTime, feedPlayedTime, timeSpent, durationWithSkip, numEpisodes, episodesStarted, totalDownloadSize, episodesDownloadCount))
         }
         return result
     }

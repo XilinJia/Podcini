@@ -27,6 +27,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.TypedValue
 import android.view.ViewGroup
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -151,7 +152,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                             (fragment.view as? ViewGroup)?.removeView(this@apply)
                         }) {
                             val context = LocalContext.current
-                            Surface(shape = RoundedCornerShape(16.dp)) {
+                            Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                     for (action in swipeActions) {
                                         if (action.getId() == NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
@@ -614,7 +615,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             var showPickerDialog by remember { mutableStateOf(false) }
             if (showPickerDialog) {
                 Dialog(onDismissRequest = { showPickerDialog = false }) {
-                    Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.padding(16.dp)) {
                             items(keys.size) { index ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp).clickable {
@@ -663,7 +664,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                     else -> {}
                 }
                 if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text(stringResource(R.string.swipeactions_label) + " - " + forFragment)
                         Text(stringResource(R.string.swipe_left))

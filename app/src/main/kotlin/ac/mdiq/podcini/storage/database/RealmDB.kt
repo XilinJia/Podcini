@@ -40,7 +40,7 @@ object RealmDB {
                 SubscriptionLog::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(29)
+            .schemaVersion(30)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
@@ -105,7 +105,7 @@ object RealmDB {
 //                    }
                 }
                 if (oldRealm.schemaVersion() < 28) {
-                    Logd(TAG, "migrating DB from below 27")
+                    Logd(TAG, "migrating DB from below 28")
                     mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
                         newObject?.run {
                             if (oldObject.getValue<Long>(fieldName = "playState") == 1L) {
@@ -113,8 +113,25 @@ object RealmDB {
                             } else {
                                 val media = oldObject.getObject(propertyName = "media")
                                 var position = 0L
-                                if (media != null) position = media.getValue(propertyName = "position", Long::class) ?: 0
+                                if (media != null) position = media.getValue(propertyName = "position", Long::class)
                                 if (position > 0) set("playState", 5L)
+                            }
+                        }
+                    }
+                }
+                if (oldRealm.schemaVersion() < 30) {
+                    Logd(TAG, "migrating DB from below 30")
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            val media = oldObject.getObject(propertyName = "media")
+                            var playedDuration = 0L
+                            if (media != null) {
+                                playedDuration = media.getValue(propertyName = "playedDuration", Long::class)
+                                Logd(TAG, "position: $playedDuration")
+                                if (playedDuration > 0L) {
+                                    val newMedia = newObject.getObject(propertyName = "media")
+                                    newMedia?.set("timeSpent", playedDuration)
+                                }
                             }
                         }
                     }

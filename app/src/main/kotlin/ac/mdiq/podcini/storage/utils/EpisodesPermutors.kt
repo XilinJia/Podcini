@@ -10,7 +10,6 @@ import java.util.*
 object EpisodesPermutors {
     /**
      * Returns a Permutor that sorts a list appropriate to the given sort order.
-     *
      * @return Permutor that sorts a list appropriate to the given sort order.
      */
     @JvmStatic
@@ -100,20 +99,16 @@ object EpisodesPermutors {
     }
 
     /**
-     * Implements a reordering by pubdate that avoids consecutive episodes from the same feed in
-     * the queue.
-     *
+     * Implements a reordering by pubdate that avoids consecutive episodes from the same feed in the queue.
      * A listener might want to hear episodes from any given feed in pubdate order, but would
      * prefer a more balanced ordering that avoids having to listen to clusters of consecutive
      * episodes from the same feed. This is what "Smart Shuffle" tries to accomplish.
-     *
      * Assume the queue looks like this: `ABCDDEEEEEEEEEE`.
      * This method first starts with a queue of the final size, where each slot is empty (null).
      * It takes the podcast with most episodes (`E`) and places the episodes spread out in the queue: `EE_E_EE_E_EE_EE`.
      * The podcast with the second-most number of episodes (`D`) is then
      * placed spread-out in the *available* slots: `EE_EDEE_EDEE_EE`.
      * This continues, until we end up with: `EEBEDEECEDEEAEE`.
-     *
      * Note that episodes aren't strictly ordered in terms of pubdate, but episodes of each feed are.
      *
      * @param queue A (modifiable) list of FeedItem elements to be reordered.
@@ -172,8 +167,7 @@ object EpisodesPermutors {
 
     /**
      * Interface for passing around list permutor method. This is used for cases where a simple comparator
-     * won't work (e.g. Random, Smart Shuffle, etc).
-     *
+     * won't work (e.g. Random, Smart Shuffle, etc)
      * @param <E> the type of elements in the list
     </E> */
     interface Permutor<E> {

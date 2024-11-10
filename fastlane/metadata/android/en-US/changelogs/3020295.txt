@@ -1,0 +1,14 @@
+ Version 6.13.8
+
+* Subscriptions sorting added the negative sides of downloaded and commented
+* added border to Compose dialogs
+* in EpisodeMedia added timeSpent to measure the actual time spent playing the episode
+	* upon migration, it's set the same as playedDuration, but it will get its own value when any episode is played
+* redid and enhanced Statistics, it's in Compose
+	* pie chart is replaced with line chart
+	* in Subscriptions, in the header and every feed, added timeSpent
+	* in Subscriptions header, added usage of today
+	* on the popup of a feed statistics, also added "duration of all started"
+	* the "Years" tab is now "Months", showing played time for every month, and added timeSpent for every month
+* enhanced efficiency of getting statistics for single feed
+* in FeedInfo details, added "view statistics of this feed" together with "view statistics of all feeds"

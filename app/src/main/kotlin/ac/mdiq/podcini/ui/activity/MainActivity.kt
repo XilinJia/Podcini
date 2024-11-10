@@ -28,7 +28,7 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.ui.fragment.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.EventFlow

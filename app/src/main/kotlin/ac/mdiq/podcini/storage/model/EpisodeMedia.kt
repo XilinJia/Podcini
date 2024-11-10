@@ -45,7 +45,16 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     @set:JvmName("setLastPlayedTimeProperty")
     var lastPlayedTime: Long = 0 // Last time this media was played (in ms)
 
+    var startPosition: Int = -1
+
+    var playedDurationWhenStarted: Int = 0
+        private set
+
     var playedDuration: Int = 0 // How many ms of this file have been played
+
+    var startTime: Long = 0 // time in ms when start playing
+
+    var timeSpent: Int = 0 // How many ms of this file have been played in actual time
 
     // File size in Byte
     var size: Long = 0L
@@ -63,11 +72,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
             this.playbackCompletionTime = value?.time ?: 0
         }
     var playbackCompletionTime: Long = 0
-
-    var startPosition: Int = -1
-
-    var playedDurationWhenStarted: Int = 0
-        private set
 
     @Ignore
     var volumeAdaptionSetting: VolumeAdaptionSetting = VolumeAdaptionSetting.OFF
@@ -286,6 +290,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     override fun onPlaybackStart() {
         startPosition = max(position.toDouble(), 0.0).toInt()
         playedDurationWhenStarted = playedDuration
+        startTime = System.currentTimeMillis()
     }
 
     override fun onPlaybackPause(context: Context) {
@@ -294,6 +299,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
             playedDuration = playedDurationWhenStarted + position - startPosition
             playedDurationWhenStarted = playedDuration
         }
+        timeSpent = (System.currentTimeMillis() - startTime).toInt()
         startPosition = position
     }
 

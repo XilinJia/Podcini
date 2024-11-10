@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.ui.compose
 
-//import ac.mdiq.podcini.ui.actions.EpisodeActionButton.Companion.forItem
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
@@ -233,7 +232,7 @@ class EpisodeVM(var episode: Episode) {
 @Composable
 fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
@@ -255,7 +254,7 @@ fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val context = LocalContext.current
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (state in PlayState.entries) {
                     if (state.userSet) {
@@ -313,7 +312,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val queues = realm.query(PlayQueue::class).find()
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             val scrollState = rememberScrollState()
             Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 var removeChecked by remember { mutableStateOf(false) }
@@ -365,7 +364,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val synthetics = realm.query(Feed::class).query("id >= 100 && id <= 1000").find()
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             val scrollState = rememberScrollState()
             Column(modifier = Modifier
                 .verticalScroll(scrollState)
@@ -429,7 +428,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
     val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
             if (feed == null || feed.id > MAX_SYNTHETIC_ID) Text(stringResource(R.string.not_erase_message), modifier = Modifier.padding(10.dp))
             else Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(message + ": ${selected.size}")
@@ -955,7 +954,7 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
 
     if (showDialog) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                     var audioOnly by remember { mutableStateOf(false) }
                     Row(Modifier.fillMaxWidth()) {

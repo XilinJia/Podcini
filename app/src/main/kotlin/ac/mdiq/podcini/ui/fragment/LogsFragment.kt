@@ -31,6 +31,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -402,7 +403,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 else -> ""
             }
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         val textColor = MaterialTheme.colorScheme.onSurface
                         Text(stringResource(R.string.download_error_details), color = textColor, modifier = Modifier.padding(bottom = 3.dp))
@@ -430,7 +431,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun SubscriptionDetailDialog(log: SubscriptionLog, showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         val textColor = MaterialTheme.colorScheme.onSurface
                         Text(stringResource(R.string.download_error_details), color = textColor, modifier = Modifier.padding(bottom = 3.dp))
@@ -468,7 +469,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val messageFull = requireContext().getString(R.string.download_log_details_message, requireContext().getString(from(status.reason)), message, url)
 
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp), ) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(10.dp)) {
                         val textColor = MaterialTheme.colorScheme.onSurface
                         Text(stringResource(R.string.download_error_details), color = textColor, modifier = Modifier.padding(bottom = 3.dp))

@@ -1,5 +1,7 @@
 package ac.mdiq.podcini.ui.compose
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -135,7 +137,7 @@ fun AutoCompleteTextView(suggestions: List<String>, onItemSelected: (String) -> 
 @Composable
 fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldValue) -> Unit, onDismissRequest: () -> Unit, onSave: (String) -> Unit) {
     Dialog(onDismissRequest = { onDismissRequest() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium) {
+        Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, Color.Yellow)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = "Add comment", color = textColor, style = MaterialTheme.typography.titleLarge)

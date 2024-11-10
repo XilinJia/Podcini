@@ -101,8 +101,8 @@ object DurationConverter {
      * @return "HH:MM hours"
      */
     @JvmStatic
-    fun shortLocalizedDuration(context: Context, time: Long): String {
+    fun shortLocalizedDuration(context: Context, time: Long, showHoursText: Boolean = true): String {
         val hours = time.toFloat() / 3600f
-        return String.format(Locale.getDefault(), "%.2f ", hours) + context.getString(R.string.time_hours)
+        return String.format(Locale.getDefault(), "%.2f ", hours) + if (showHoursText) context.getString(R.string.time_hours) else ""
     }
 }

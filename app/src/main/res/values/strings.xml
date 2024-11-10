@@ -17,13 +17,13 @@
     <string name="settings_label">Settings</string>
     <string name="downloads_label">Downloads</string>
     <string name="logs_label">Logs</string>
-
-
+    
     <string name="subscriptions_label">Subscriptions</string>
 
     <string name="cancel_download_label">Cancel download</string>
     <string name="playback_history_label">History</string>
 
+    <string name="months_statistics_label">Months</string>
 
     <string name="years_statistics_label">Years</string>
     <string name="notification_pref_fragment">Notifications</string>
@@ -386,6 +386,8 @@
     <string name="last_played_date">Played date</string>
     <string name="completed_date">Completed date</string>
     <string name="duration">Duration</string>
+    <string name="spent">Spent</string>
+    <string name="hours">hours</string>
     <string name="episode_title">Episode title</string>
     <string name="feed_title">Podcast title</string>
     <string name="show_criteria">Show criteria</string>
@@ -833,12 +835,15 @@
     <string name="audo_add_new_queue">Auto add new to queue</string>
     <string name="audo_add_new_queue_summary">Automatically add new episodes in this podcast to the designated queue when (auto-)refreshing</string>
     <string name="auto_download_disabled_globally">Auto download is disabled in the main Podcini settings</string>
+    <string name="statistics_length_played">Duration of all started:</string>
     <string name="statistics_time_played">Time played:</string>
+    <string name="statistics_time_spent">Time spent:</string>
     <string name="statistics_total_duration">Total duration (estimate):</string>
     <string name="statistics_episodes_on_device">Episodes on the device:</string>
     <string name="statistics_space_used">Space used:</string>
     <string name="statistics_episodes_started_total">Episodes started/total:</string>
-    <string name="statistics_view_all">View for all podcasts »</string>
+    <string name="statistics_view_this">View this podcast»</string>
+    <string name="statistics_view_all">View for all podcasts»</string>
     <string name="feeds_related_to_author">Feeds likely related to the author »</string>
     <string name="wait_icon" translatable="false">{faw_spinner}</string>
     <string name="edit_url_menu">Edit feed URL</string>

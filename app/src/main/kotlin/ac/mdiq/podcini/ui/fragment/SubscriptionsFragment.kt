@@ -127,8 +127,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val playStateCodeSet = mutableSetOf<String>()
     private val ratingSort = MutableList(Rating.entries.size) { mutableStateOf(false)}
     private val ratingCodeSet = mutableSetOf<String>()
-    private var downlaodedSort by mutableStateOf(false)
-    private var commentedSort by mutableStateOf(false)
+    private var downlaodedSortIndex by mutableStateOf(-1)
+    private var commentedSortIndex by mutableStateOf(-1)
 
     private var feedListFiltered = mutableStateListOf<Feed>()
     private var showFilterDialog by mutableStateOf(false)
@@ -402,7 +402,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun AutoDeleteHandlerDialog(onDismissRequest: () -> Unit) {
             val (selectedOption, _) = remember { mutableStateOf("") }
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Column {
                             FeedAutoDeleteOptions.forEach { text ->
@@ -427,7 +427,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun SetAssociateQueueDialog(onDismissRequest: () -> Unit) {
             var selectedOption by remember {mutableStateOf("")}
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         queueSettingOptions.forEach { option ->
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -471,7 +471,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         @Composable
         fun SetKeepUpdateDialog(onDismissRequest: () -> Unit) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
@@ -493,7 +493,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         @Composable
         fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
             Dialog(onDismissRequest = onDismissRequest) {
-                Surface(shape = RoundedCornerShape(16.dp)) {
+                Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         for (rating in Rating.entries.reversed()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
@@ -893,8 +893,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         appPrefs.edit().putBoolean("dateAscending", dateAscending).apply()
         appPrefs.edit().putBoolean("countAscending", countAscending).apply()
         appPrefs.edit().putInt("dateSortIndex", dateSortIndex).apply()
-        appPrefs.edit().putBoolean("downlaodedSort", downlaodedSort).apply()
-        appPrefs.edit().putBoolean("commentedSort", commentedSort).apply()
+        appPrefs.edit().putInt("downlaodedSortIndex", downlaodedSortIndex).apply()
+        appPrefs.edit().putInt("commentedSortIndex", commentedSortIndex).apply()
         sortArrays2CodeSet()
         appPrefs.edit().putStringSet("playStateCodeSet", playStateCodeSet).apply()
         appPrefs.edit().putStringSet("ratingCodeSet", ratingCodeSet).apply()
@@ -906,8 +906,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         dateAscending = appPrefs.getBoolean("dateAscending", true)
         countAscending = appPrefs.getBoolean("countAscending", true)
         dateSortIndex = appPrefs.getInt("dateSortIndex", 0)
-        downlaodedSort = appPrefs.getBoolean("downlaodedSort", true)
-        commentedSort = appPrefs.getBoolean("commentedSort", true)
+        downlaodedSortIndex = appPrefs.getInt("downlaodedSortIndex", -1)
+        commentedSortIndex = appPrefs.getInt("commentedSortIndex", -1)
         playStateCodeSet.clear()
         playStateCodeSet.addAll(appPrefs.getStringSet("playStateCodeSet", setOf())!!)
         ratingCodeSet.clear()
@@ -996,8 +996,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         ratingQueries += " rating == ${Rating.entries[i].code} "
                     }
                 }
-                val downloadedQuery = if (downlaodedSort) " media.downloaded == true " else ""
-                val commentedQuery = if (commentedSort) " comment != '' " else ""
+                val downloadedQuery = if (downlaodedSortIndex == 0) " media.downloaded == true " else if (downlaodedSortIndex == 1) " media.downloaded == false " else ""
+                val commentedQuery = if (commentedSortIndex == 0) " comment != '' " else if (commentedSortIndex == 1) " comment == '' " else ""
 
                 var queryString = "feedId == $0"
                 if (playStateQueries.isNotEmpty()) queryString += " AND ($playStateQueries)"
@@ -1104,29 +1104,78 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     HorizontalDivider(color = Color.Yellow, thickness = 1.dp)
                     Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
                         if (sortIndex == 2) {
-                            OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (!downlaodedSort) textColor else Color.Green),
-                                onClick = {
-                                    downlaodedSort = !downlaodedSort
-                                    doSort()
-                                    saveSortingPrefs()
-                                }
-                            ) { Text(stringResource(R.string.downloaded_label)) }
-                            OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (!commentedSort) textColor else Color.Green),
-                                onClick = {
-                                    commentedSort = !commentedSort
-                                    doSort()
-                                    saveSortingPrefs()
-                                }
-                            ) { Text(stringResource(R.string.commented)) }
+                            Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                                val item = EpisodeFilter.EpisodesFilterGroup.DOWNLOADED
+                                var selectNone by remember { mutableStateOf(false) }
+                                if (selectNone) downlaodedSortIndex = -1
+                                Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+                                Spacer(Modifier.weight(0.3f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (downlaodedSortIndex != 0) textColor else Color.Green),
+                                    onClick = {
+                                        if (downlaodedSortIndex != 0) {
+                                            selectNone = false
+                                            downlaodedSortIndex = 0
+                                        } else downlaodedSortIndex = -1
+                                        doSort()
+                                        saveSortingPrefs()
+                                    },
+                                ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
+                                Spacer(Modifier.weight(0.1f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (downlaodedSortIndex != 1) textColor else Color.Green),
+                                    onClick = {
+                                        if (downlaodedSortIndex != 1) {
+                                            selectNone = false
+                                            downlaodedSortIndex = 1
+                                        } else downlaodedSortIndex = -1
+                                        doSort()
+                                        saveSortingPrefs()
+                                    },
+                                ) { Text(text = stringResource(item.values[1].displayName), color = textColor) }
+                                Spacer(Modifier.weight(0.5f))
+                            }
+                            Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                                val item = EpisodeFilter.EpisodesFilterGroup.OPINION
+                                var selectNone by remember { mutableStateOf(false) }
+                                if (selectNone) commentedSortIndex = -1
+                                Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+                                Spacer(Modifier.weight(0.3f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (commentedSortIndex != 0) textColor else Color.Green),
+                                    onClick = {
+                                        if (commentedSortIndex != 0) {
+                                            selectNone = false
+                                            commentedSortIndex = 0
+                                        } else commentedSortIndex = -1
+                                        doSort()
+                                        saveSortingPrefs()
+                                    },
+                                ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
+                                Spacer(Modifier.weight(0.1f))
+                                OutlinedButton(
+                                    modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (commentedSortIndex != 1) textColor else Color.Green),
+                                    onClick = {
+                                        if (commentedSortIndex != 1) {
+                                            selectNone = false
+                                            commentedSortIndex = 1
+                                        } else commentedSortIndex = -1
+                                        doSort()
+                                        saveSortingPrefs()
+                                    },
+                                ) { Text(text = stringResource(item.values[1].displayName), color = textColor) }
+                                Spacer(Modifier.weight(0.5f))
+                            }
                         }
                         if ((sortIndex == 1 && dateSortIndex == 0) || sortIndex == 2) {
                             val item = EpisodeFilter.EpisodesFilterGroup.PLAY_STATE
                             var selectNone by remember { mutableStateOf(false) }
                             var expandRow by remember { mutableStateOf(false) }
                             Row {
-                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
-                                    expandRow = !expandRow
-                                })
+                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor,
+                                    modifier = Modifier.clickable {
+                                        expandRow = !expandRow
+                                    })
                                 var lowerSelected by remember { mutableStateOf(false) }
                                 var higherSelected by remember { mutableStateOf(false) }
                                 Spacer(Modifier.weight(1f))
@@ -1149,9 +1198,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     modifier = Modifier.clickable {
                                         lowerSelected = false
                                         higherSelected = false
-                                        for (i in item.values.indices) {
-                                            playStateSort[i].value = false
-                                        }
+                                        for (i in item.values.indices) playStateSort[i].value = false
                                         doSort()
                                         saveSortingPrefs()
                                     })
@@ -1186,9 +1233,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         doSort()
                                         saveSortingPrefs()
                                     },
-                                ) {
-                                    Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
-                                }
+                                ) { Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor) }
                             }
                         }
                         if (sortIndex == 2) {
@@ -1196,9 +1241,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             var selectNone by remember { mutableStateOf(false) }
                             var expandRow by remember { mutableStateOf(false) }
                             Row {
-                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
-                                    expandRow = !expandRow
-                                })
+                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor,
+                                    modifier = Modifier.clickable {
+                                        expandRow = !expandRow
+                                    })
                                 var lowerSelected by remember { mutableStateOf(false) }
                                 var higherSelected by remember { mutableStateOf(false) }
                                 Spacer(Modifier.weight(1f))
@@ -1221,9 +1267,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     modifier = Modifier.clickable {
                                         lowerSelected = false
                                         higherSelected = false
-                                        for (i in item.values.indices) {
-                                            ratingSort[i].value = false
-                                        }
+                                        for (i in item.values.indices) ratingSort[i].value = false
                                         doSort()
                                         saveSortingPrefs()
                                     })
@@ -1246,9 +1290,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             }
                             if (expandRow) NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
                                 if (selectNone) ratingSort[index].value = false
-                                LaunchedEffect(Unit) {
-//                                if (filter != null && item.values[index].filterId in filter.properties) selectedList[index].value = true
-                                }
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
                                     border = BorderStroke(2.dp, if (ratingSort[index].value) Color.Green else textColor),

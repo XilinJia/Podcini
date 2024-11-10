@@ -21,10 +21,7 @@ import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
 import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
-import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
-import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_DETAILED
-import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_FEED_ID
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.ui.fragment.StatisticsFragment.Companion.FeedStatisticsDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
 import android.R.string
@@ -68,9 +65,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
-import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
-
 import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -194,16 +189,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }
-//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
-//                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
-//                    bottom.linkTo(parent.bottom)
-//                    start.linkTo(parent.start)
-//                })
-//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
-//                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
-//                    bottom.linkTo(parent.bottom)
-//                    end.linkTo(parent.end)
-//                })
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).constrainAs(imgvCover) {
                 top.linkTo(parent.top)
                 start.linkTo(parent.start)
@@ -237,6 +222,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     rating =  feed.rating
                 }
             })
+        var showFeedStats by remember { mutableStateOf(false) }
+        if (showFeedStats) FeedStatisticsDialog(feed.title?: "No title", feed.id) { showFeedStats = false }
 
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
             val textColor = MaterialTheme.colorScheme.onSurface
@@ -292,19 +279,13 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Button(modifier = Modifier.padding(top = 10.dp), onClick = {
                     val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
                     (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-                }) {
-                    Text(stringResource(R.string.feeds_related_to_author))
-                }
+                }) { Text(stringResource(R.string.feeds_related_to_author)) }
             }
             Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-            val arguments = Bundle()
-            arguments.putLong(EXTRA_FEED_ID, feed.id)
-            arguments.putBoolean(EXTRA_DETAILED, false)
-            AndroidFragment(clazz = FeedStatisticsFragment::class.java, arguments = arguments)
-            Button({
-                (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
-            }) {
-                Text(stringResource(R.string.statistics_view_all))
+            Row {
+                Button({ showFeedStats = true }) { Text(stringResource(R.string.statistics_view_this)) }
+                Spacer(Modifier.weight(1f))
+                Button({ (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE) }) { Text(stringResource(R.string.statistics_view_all)) }
             }
         }
     }

@@ -622,6 +622,8 @@
     <string name="developers">Developers</string>
     <string name="translators">Translators</string>
     <string name="special_thanks">Special thanks</string>
+    <string name="online_help">Online home page</string>
+    <string name="online_help_sum">Get more info online</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="licenses">Licenses</string>
     <string name="licenses_summary">Podcini uses other great software</string>

@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.compose
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -65,7 +64,7 @@ fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modi
     var expanded by remember { mutableStateOf(false) }
     var currentSelectedItem by remember { mutableStateOf(selectedItem) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        BasicTextField(readOnly = true, value = currentSelectedItem, onValueChange = {},
+        BasicTextField(readOnly = true, value = currentSelectedItem, onValueChange = { currentSelectedItem = it},
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
             modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
             decorationBox = { innerTextField ->
@@ -79,6 +78,35 @@ fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modi
                 DropdownMenuItem(text = { Text(items[i]) },
                     onClick = {
                         currentSelectedItem = items[i]
+                        onItemSelected(i)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var currentSelectedIndex by remember { mutableStateOf(selectedIndex) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        BasicTextField(readOnly = true, value = items.getOrNull(currentSelectedIndex) ?: "Select Item", onValueChange = { },
+            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
+            modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
+            decorationBox = { innerTextField ->
+                Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+                    innerTextField()
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                }
+            })
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (i in items.indices) {
+                DropdownMenuItem(text = { Text(items[i]) },
+                    onClick = {
+                        currentSelectedIndex = i
                         onItemSelected(i)
                         expanded = false
                     }

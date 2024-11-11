@@ -137,11 +137,11 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-//        toolbar.title = "Queues"
         queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
         spinnerTexts.clear()
-        spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
+        spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
+        var curIndex = queues.indexOf(curQueue)
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
@@ -150,7 +150,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         spinnerView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    Spinner(items = spinnerTexts, selectedItem = curQueue.name + " : ${curQueue.episodeIds.size}") { index: Int ->
+                    Spinner(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
                         Logd(TAG, "Queue selected: $queues[index].name")
                         val prevQueueSize = curQueue.size()
                         curQueue = upsertBlk(queues[index]) { it.update() }
@@ -370,7 +370,10 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
-        queueChanged++
+        queues = realm.query(PlayQueue::class).find()
+        queueNames = queues.map { it.name }.toTypedArray()
+        spinnerTexts.clear()
+        spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
         refreshMenuItems()
         refreshInfoBar()
     }
@@ -665,6 +668,9 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             for (e in queueItems) vms.add(EpisodeVM(e))
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
+            queues = realm.query(PlayQueue::class).find()
+            spinnerTexts.clear()
+            spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
             refreshInfoBar()
             loadItemsRunning = false
         }

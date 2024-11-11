@@ -1,28 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-        xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference
-            android:layout="@layout/about_teaser"/>
+        android:layout="@layout/about_teaser"/>
     <Preference
-            android:key="about_version"
-            android:title="@string/podcini_version"
-            android:icon="@drawable/ic_star"
-            android:summary="1.7.2 (asd8qs)"/>
+        android:key="about_version"
+        android:title="@string/podcini_version"
+        android:icon="@drawable/ic_star"
+        android:summary="1.7.2 (asd8qs)"/>
     <Preference
-            android:key="about_privacy_policy"
-            android:icon="@drawable/ic_questionmark"
-            android:summary="Podcini PrivacyPolicy.md"
-            android:title="@string/privacy_policy"/>
+        android:key="about_help"
+        android:icon="@drawable/ic_questionmark"
+        android:summary="@string/online_help_sum"
+        android:title="@string/online_help"/>
     <Preference
-            android:key="about_licenses"
-            android:icon="@drawable/ic_info"
-            android:summary="@string/licenses_summary"
-            android:title="@string/licenses"/>
+        android:key="about_privacy_policy"
+        android:icon="@drawable/ic_questionmark"
+        android:summary="Podcini PrivacyPolicy.md"
+        android:title="@string/privacy_policy"/>
     <Preference
-            android:key="about_contributors"
-            android:icon="@drawable/ic_settings"
-            android:summary="@string/contributors_summary"
-            android:title="@string/contributors"/>
+        android:key="about_licenses"
+        android:icon="@drawable/ic_info"
+        android:summary="@string/licenses_summary"
+        android:title="@string/licenses"/>
+<!--    <Preference-->
+<!--        android:key="about_contributors"-->
+<!--        android:icon="@drawable/ic_settings"-->
+<!--        android:summary="@string/contributors_summary"-->
+<!--        android:title="@string/contributors"/>-->
 
 </PreferenceScreen>

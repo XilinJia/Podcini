@@ -558,7 +558,7 @@ class AudioPlayerFragment : Fragment() {
     }
 
     private fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
-        Logd(TAG, "onPositionUpdate")
+//        Logd(TAG, "onPositionUpdate")
         if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia is EpisodeMedia) {
             if (isCurrentlyPlaying(curMedia as? EpisodeMedia)) playButRes = R.drawable.ic_pause
             playButInit = true

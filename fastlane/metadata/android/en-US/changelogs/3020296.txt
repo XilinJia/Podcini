@@ -1,0 +1,10 @@
+ Version 6.13.9
+
+* made Spinner in Queues view update accordingly
+* if playing from the virtual queue in FeedEpisodes, the next episode comes from the filtered list
+* when playing another media, post playback is performed on the current media so as to set the right state
+* fixed timeSpent not being correctly recorded
+* further enhanced efficiency of statistics calculations
+	* in Statistics, feeds with no media started or downloaded are not shown
+* furthered Statistics view into Compose
+* added online homepage item in Settings->About to open the Github page

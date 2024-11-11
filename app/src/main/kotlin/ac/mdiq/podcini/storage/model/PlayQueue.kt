@@ -25,6 +25,7 @@ class PlayQueue : RealmObject {
         get() {
             if (field.isEmpty() && episodeIds.isNotEmpty())
                 field.addAll(realm.query(Episode::class, "id IN $0", episodeIds).find().sortedBy { episodeIds.indexOf(it.id) })
+//            size = episodeIds.size
             return field
         }
 
@@ -37,6 +38,9 @@ class PlayQueue : RealmObject {
     fun update() {
         updated = Date().time
     }
+
+//    @Ignore
+//    var size by mutableIntStateOf( episodeIds.size )
 
     fun size() : Int {
         return episodeIds.size

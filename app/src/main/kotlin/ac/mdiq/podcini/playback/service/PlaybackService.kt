@@ -39,7 +39,6 @@ import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
@@ -56,7 +55,6 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
-import ac.mdiq.podcini.ui.compose.queueChanged
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
@@ -109,10 +107,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.Volatile
 import kotlin.math.max
 import kotlin.math.sqrt
-
-/**
- * Controls the MediaPlayer that plays a EpisodeMedia-file
- */
 
 class PlaybackService : MediaLibraryService() {
     private var mediaSession: MediaLibrarySession? = null
@@ -232,7 +226,7 @@ class PlaybackService : MediaLibraryService() {
 //                Log.d(TAG, "positionSaverTick currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, curPosition, curDuration))
                 skipEndingIfNecessary()
-                saveCurrentPosition(true, null, Playable.INVALID_TIME)
+                persistCurrentPosition(true, null, Playable.INVALID_TIME)
                 prevPosition = curPosition
             }
         }
@@ -293,7 +287,7 @@ class PlaybackService : MediaLibraryService() {
                     PlayerStatus.STOPPED -> {}
                     PlayerStatus.PLAYING -> {
                         writePlayerStatus(MediaPlayerBase.status)
-                        saveCurrentPosition(true, null, Playable.INVALID_TIME)
+                        persistCurrentPosition(true, null, Playable.INVALID_TIME)
                         recreateMediaSessionIfNeeded()
                         // set sleep timer if auto-enabled
                         var autoEnableByTime = true
@@ -397,7 +391,7 @@ class PlaybackService : MediaLibraryService() {
         override fun onPlaybackPause(playable: Playable?, position: Int) {
             Logd(TAG, "onPlaybackPause $position")
             taskManager.cancelPositionSaver()
-            saveCurrentPosition(position == Playable.INVALID_TIME || playable == null, playable, position)
+            persistCurrentPosition(position == Playable.INVALID_TIME || playable == null, playable, position)
             taskManager.cancelWidgetUpdater()
             if (playable != null) {
                 if (playable is EpisodeMedia) SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, false)
@@ -1044,7 +1038,7 @@ class PlaybackService : MediaLibraryService() {
                 if (e.id == curEpisode?.id) {
                     Logd(TAG, "onQueueEvent: queue event removed ${e.title}")
                     mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
-                    queueChanged++
+//                    queueChanged++
                     break
                 }
             }
@@ -1132,7 +1126,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     @Synchronized
-    private fun saveCurrentPosition(fromMediaPlayer: Boolean, playable: Playable?, position: Int) {
+    private fun persistCurrentPosition(fromMediaPlayer: Boolean, playable: Playable?, position: Int) {
         var playable = playable
         var position = position
         val duration_: Int
@@ -1154,6 +1148,9 @@ class PlaybackService : MediaLibraryService() {
                     item = upsertBlk(item) {
                         val media = it.media
                         if (media != null) {
+                            media.startPosition = playable.startPosition
+                            media.startTime = playable.startTime
+                            media.playedDurationWhenStarted = playable.playedDurationWhenStarted
                             media.setPosition(position)
                             media.setLastPlayedTime(System.currentTimeMillis())
                             if (it.isNew) it.playState = PlayState.UNPLAYED.code
@@ -1161,6 +1158,7 @@ class PlaybackService : MediaLibraryService() {
                                 media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
                                 media.timeSpent = (System.currentTimeMillis() - media.startTime).toInt()
                             }
+//                            Logd(TAG, "saveCurrentPosition ${media.startTime} ${media.timeSpent}")
                         }
                     }
 //                    This appears not too useful

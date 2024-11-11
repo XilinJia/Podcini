@@ -48,7 +48,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     var startPosition: Int = -1
 
     var playedDurationWhenStarted: Int = 0
-        private set
 
     var playedDuration: Int = 0 // How many ms of this file have been played
 
@@ -288,6 +287,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     override fun onPlaybackStart() {
+        Logd(TAG, "onPlaybackStart ${System.currentTimeMillis()}")
         startPosition = max(position.toDouble(), 0.0).toInt()
         playedDurationWhenStarted = playedDuration
         startTime = System.currentTimeMillis()
@@ -404,7 +404,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         result = 31 * result + startPosition
         result = 31 * result + playedDurationWhenStarted
         result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
-//        result = 31 * result + isInProgress.hashCode()
         return result
     }
 

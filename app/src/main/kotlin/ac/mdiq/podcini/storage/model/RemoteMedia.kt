@@ -93,10 +93,6 @@ class RemoteMedia : Playable {
         return Date(pubDate)
     }
 
-//    override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
-//        //it seems pointless to do it, since the session should be kept by the remote device.
-//    }
-
     override fun getChapters(): List<Chapter> {
         return chapters ?: listOf()
     }
@@ -139,14 +135,6 @@ class RemoteMedia : Playable {
         return streamUrl
     }
 
-//    override fun getLocalMediaUrl(): String? {
-//        return null
-//    }
-
-//    override fun localFileAvailable(): Boolean {
-//        return false
-//    }
-
     override fun setPosition(newPosition: Int) {
         position = newPosition
     }
@@ -159,17 +147,6 @@ class RemoteMedia : Playable {
         this.lastPlayedTime = lastPlayedTime
     }
 
-//    override fun onPlaybackStart() {
-//        // no-op
-//    }
-
-//    override fun onPlaybackPause(context: Context) {
-//        // no-op
-//    }
-
-//    override fun onPlaybackCompleted(context: Context) {
-//        // no-op
-//    }
     override fun getPlayableType(): Int {
         return PLAYABLE_TYPE_REMOTE_MEDIA
     }

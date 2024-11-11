@@ -460,7 +460,7 @@ import java.util.concurrent.Semaphore
             val pos: Int = ieMap[item.id] ?: -1
             if (pos >= 0) {
 //                episodes[pos].inQueueState.value = event.inQueue()
-                queueChanged++
+//                queueChanged++
             }
             break
         }

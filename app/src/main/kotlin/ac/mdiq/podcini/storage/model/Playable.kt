@@ -10,14 +10,6 @@ import java.util.*
  */
 interface Playable : Parcelable, Serializable {
     /**
-     * Save information about the playable in a preference so that it can be
-     * restored later via CurrentState.createInstanceFromPreferences.
-     * Implementations must NOT call commit() after they have written the values
-     * to the preferences file.
-     */
-//    fun writeToPreferences(prefEditor: SharedPreferences.Editor)
-
-    /**
      * Returns the title of the episode that this playable represents
      */
     fun getEpisodeTitle(): String
@@ -97,8 +89,6 @@ interface Playable : Parcelable, Serializable {
 
     /**
      * This method should be called every time playback starts on this object.
-     *
-     *
      * Position held by this Playable should be set accurately before a call to this method is made.
      */
     fun onPlaybackStart() {}
@@ -108,8 +98,6 @@ interface Playable : Parcelable, Serializable {
      * including just before a seeking operation is performed, after which a call to
      * [.onPlaybackStart] should be made. If playback completes, calling this method is not
      * necessary, as long as a call to [.onPlaybackCompleted] is made.
-     *
-     *
      * Position held by this Playable should be set accurately before a call to this method is made.
      */
     fun onPlaybackPause(context: Context) {}

@@ -292,7 +292,7 @@ class Feed : RealmObject {
         var qString = "feedId == $id AND playState < ${PlayState.SKIPPED.code}"
 //        TODO: perhaps need to set prefStreamOverDownload for youtube feeds
         if (type != FeedType.YOUTUBE.name && preferences?.prefStreamOverDownload != true) qString += " AND media.downloaded == true"
-        val eList_ = realm.query(Episode::class, qString).find().toMutableList()
+        val eList_ = realm.query(Episode::class, qString).query(episodeFilter.queryString()).find().toMutableList()
         if (sortOrder != null) getPermutor(sortOrder!!).reorder(eList_)
         return eList_
     }

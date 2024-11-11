@@ -133,7 +133,7 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, 
     }
 }
 
-var queueChanged by mutableIntStateOf(0)
+//var queueChanged by mutableIntStateOf(0)
 
 @Stable
 class EpisodeVM(var episode: Episode) {

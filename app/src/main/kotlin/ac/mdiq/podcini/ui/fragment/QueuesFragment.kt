@@ -596,7 +596,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        val isLocked: Boolean = isQueueLocked
         if (isQueueLocked) setQueueLock(false)
         else {
-            val shouldShowLockWarning: Boolean = prefs!!.getBoolean(PREF_SHOW_LOCK_WARNING, true)
+            val shouldShowLockWarning: Boolean = prefs?.getBoolean(PREF_SHOW_LOCK_WARNING, true) ?: true
             if (!shouldShowLockWarning) setQueueLock(true)
             else {
                 val builder = MaterialAlertDialogBuilder(requireContext())

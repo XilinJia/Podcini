@@ -119,9 +119,9 @@ class StatisticsFragment : Fragment() {
                 timePlayedToday += item.timePlayed
                 timeSpentToday += item.timeSpent
             }
-            includeMarkedAsPlayed = prefs!!.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-            timeFilterFrom = prefs!!.getLong(PREF_FILTER_FROM, 0)
-            timeFilterTo = prefs!!.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
+            includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?: false
+            timeFilterFrom = prefs?.getLong(PREF_FILTER_FROM, 0) ?: 0
+            timeFilterTo = prefs?.getLong(PREF_FILTER_TO, Long.MAX_VALUE) ?: Long.MAX_VALUE
             try {
                 statsResult = getStatistics(includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
                 statsResult.statsItems.sortWith { item1: StatisticsItem, item2: StatisticsItem -> item2.timePlayed.compareTo(item1.timePlayed) }
@@ -167,7 +167,7 @@ class StatisticsFragment : Fragment() {
             }
             HorizontalLineChart(chartData)
             StatsList(statsResult, chartData) { item ->
-                context.getString(R.string.duration) + ": " + shortLocalizedDuration(context, item!!.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + shortLocalizedDuration(context, item.timeSpent)
+                context.getString(R.string.duration) + ": " + shortLocalizedDuration(context, item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + shortLocalizedDuration(context, item.timeSpent)
             }
         }
     }
@@ -179,7 +179,7 @@ class StatisticsFragment : Fragment() {
 
         fun loadMonthlyStatistics() {
             try {
-                val includeMarkedAsPlayed = prefs!!.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+                val includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false) ?: false
                 val months: MutableList<MonthlyStatisticsItem> = ArrayList()
                 val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > 0").find()
                 val groupdMedias = medias.groupBy {
@@ -288,7 +288,7 @@ class StatisticsFragment : Fragment() {
             Text(Formatter.formatShortFileSize(context, downloadChartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
             HorizontalLineChart(downloadChartData)
             StatsList(downloadstatsData, downloadChartData) { item ->
-                ("${Formatter.formatShortFileSize(context, item!!.totalDownloadSize)} • "
+                ("${Formatter.formatShortFileSize(context, item.totalDownloadSize)} • "
                         + String.format(Locale.getDefault(), "%d%s", item.episodesDownloadCount, context.getString(R.string.episodes_suffix)))
             }
         }
@@ -315,7 +315,7 @@ class StatisticsFragment : Fragment() {
     }
 
     @Composable
-    fun StatsList(statisticsData: StatisticsResult, lineChartData: LineChartData, infoCB: (StatisticsItem?)->String) {
+    fun StatsList(statisticsData: StatisticsResult, lineChartData: LineChartData, infoCB: (StatisticsItem)->String) {
         val lazyListState = rememberLazyListState()
         val context = LocalContext.current
         var showFeedStats by remember { mutableStateOf(false) }
@@ -386,16 +386,16 @@ class StatisticsFragment : Fragment() {
                 val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
                     override fun initParams() {
                         prefs = Companion.prefs
-                        includeMarkedAsPlayed = prefs!!.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-                        timeFilterFrom = prefs!!.getLong(PREF_FILTER_FROM, 0)
-                        timeFilterTo = prefs!!.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
+                        includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false) ?: false
+                        timeFilterFrom = prefs?.getLong(PREF_FILTER_FROM, 0) ?: 0
+                        timeFilterTo = prefs?.getLong(PREF_FILTER_TO, Long.MAX_VALUE) ?: Long.MAX_VALUE
                     }
                     override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed: Boolean) {
-                        prefs!!.edit()
-                            .putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed)
-                            .putLong(PREF_FILTER_FROM, timeFilterFrom)
-                            .putLong(PREF_FILTER_TO, timeFilterTo)
-                            .apply()
+                        prefs?.edit()
+                            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed)
+                            ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
+                            ?.putLong(PREF_FILTER_TO, timeFilterTo)
+                            ?.apply()
                         EventFlow.postEvent(FlowEvent.StatisticsEvent())
                     }
                 }
@@ -418,11 +418,11 @@ class StatisticsFragment : Fragment() {
     }
 
      private fun doResetStatistics() {
-        prefs!!.edit()
-            .putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-            .putLong(PREF_FILTER_FROM, 0)
-            .putLong(PREF_FILTER_TO, Long.MAX_VALUE)
-            .apply()
+        prefs?.edit()
+            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+            ?.putLong(PREF_FILTER_FROM, 0)
+            ?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)
+            ?.apply()
 
         lifecycleScope.launch {
             try {

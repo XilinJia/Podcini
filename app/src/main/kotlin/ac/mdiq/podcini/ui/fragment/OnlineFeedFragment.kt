@@ -516,9 +516,9 @@ class OnlineFeedFragment : Fragment() {
                     } else if (isEnableAutodownload) {
                         val autoDownload = autoDownloadChecked
                         feed1.preferences!!.autoDownload = autoDownload
-                        val editor = prefs!!.edit()
-                        editor.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
-                        editor.apply()
+                        val editor = prefs?.edit()
+                        editor?.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
+                        editor?.apply()
                     }
                     if (username != null) {
                         feed1.preferences!!.username = username

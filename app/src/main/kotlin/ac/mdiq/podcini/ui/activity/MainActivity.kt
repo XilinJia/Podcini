@@ -226,14 +226,11 @@ class MainActivity : CastEnabledActivity() {
 //       init shared preferences
         ioScope.launch {
 //            RealmDB.apply { }
-//            EpisodesRecyclerView.getSharedPrefs(this@MainActivity)
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueuesFragment.getSharedPrefs(this@MainActivity)
-//            updateFeedMap()
             buildTags()
             monitorFeeds()
-//            InTheatre.apply { }
             AudioPlayerFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
             StatisticsFragment.getSharedPrefs(this@MainActivity)
@@ -259,12 +256,8 @@ class MainActivity : CastEnabledActivity() {
 //            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.notification_permission_text)
-                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
-                    checkAndRequestUnrestrictedBackgroundActivity(this@MainActivity)
-                }
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
+                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> checkAndRequestUnrestrictedBackgroundActivity(this@MainActivity) }
                 .show()
         } else checkAndRequestUnrestrictedBackgroundActivity(this)
 

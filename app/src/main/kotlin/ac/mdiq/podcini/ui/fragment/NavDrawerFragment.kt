@@ -91,7 +91,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
             insets
         }
-        prefs!!.registerOnSharedPreferenceChangeListener(this)
+        prefs?.registerOnSharedPreferenceChangeListener(this)
         return composeView
     }
 
@@ -169,7 +169,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        prefs!!.unregisterOnSharedPreferenceChangeListener(this)
+        prefs?.unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroyView()
     }
 
@@ -229,10 +229,10 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
         fun saveLastNavFragment(tag: String?) {
             Logd(TAG, "saveLastNavFragment(tag: $tag)")
-            val edit: SharedPreferences.Editor = prefs!!.edit()
-            if (tag != null) edit.putString(PREF_LAST_FRAGMENT_TAG, tag)
-            else edit.remove(PREF_LAST_FRAGMENT_TAG)
-            edit.apply()
+            val edit: SharedPreferences.Editor? = prefs?.edit()
+            if (tag != null) edit?.putString(PREF_LAST_FRAGMENT_TAG, tag)
+            else edit?.remove(PREF_LAST_FRAGMENT_TAG)
+            edit?.apply()
         }
 
         fun getLastNavFragment(): String {

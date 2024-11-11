@@ -91,7 +91,6 @@ object Feeds {
                             changes.insertions.isNotEmpty() -> {
                                 for (i in changes.insertions) {
                                     Logd(TAG, "monitorFeeds inserted feed: ${changes.list[i].title}")
-//                                    updateFeedMap(listOf(changes.list[i]))
                                     monitorFeed(changes.list[i])
                                 }
                                 EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
@@ -103,7 +102,6 @@ object Feeds {
 //                            }
                             changes.deletions.isNotEmpty() -> {
                                 Logd(TAG, "monitorFeeds feed deleted: ${changes.deletions.size}")
-//                                updateFeedMap(changes.list, true)
                                 buildTags()
                             }
                         }
@@ -123,7 +121,6 @@ object Feeds {
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject0 ${changes.obj.title} ${changes.changedFields.joinToString()}")
-//                        updateFeedMap(listOf(changes.obj))
                         if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
                     }
                     else -> {}
@@ -136,7 +133,6 @@ object Feeds {
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-//                        updateFeedMap(listOf(changes.obj))
                         if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
                     }
 //                    is DeletedObject -> {

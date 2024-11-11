@@ -101,9 +101,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
 * Swipe actions are brought to perform anything on the multi-select menu, and there is a Combo swipe action
 * Played or new episodes have clearer markings
-* Sort dialog no longer dims the main view
+* An all new sorting dialog and mechanism for Subscriptions based on title, date, and count
 * An all new way of filtering for both podcasts and episodes with expanded criteria
-* Subscriptions sorting is now bi-directional based on various explicit measures, and sorting info is shown on every feed (List Layout only)
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * in all episodes list views, click on an episode image brings up the FeedInfo view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
@@ -145,11 +144,14 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Youtube channels can be subscribed as normal podcasts
 * When subscribing to a Youtube channel, tabs can be chosen to form separate podcasts
 * Playlists and podcasts on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
+* Subscribed channels, playlists/podcasts can be updated as with normal podcasts
 * Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
-* All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background
-* These media are played with the lowest video quality and highest audio quality
+* All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen or in window modes or in audio only mode in the background
+* Audio and video quality settings in Feed Preferences (Youtube feeds only): Global, Low, Medium, High
+	* these settings take precedence over global situations
+	* when Global is set, video is at lowest quality, and audio is at highest quality (except when prefLowQualityMedia is set for metered networks)
 * If a subscription is set for "audio only", then only audio stream is fetched at play time for every media in the subscription
-* accepted host names include: youtube.com, www.youtube.com, m.youtube.com, music.youtube.com, and youtu.be
+* Accepted host names include: youtube.com, www.youtube.com, m.youtube.com, music.youtube.com, and youtu.be
 
 ### Instant (or Wifi) sync
 

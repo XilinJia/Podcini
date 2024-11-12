@@ -8,8 +8,7 @@ import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
-import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
-import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
+import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService
@@ -54,11 +53,22 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -109,34 +119,14 @@ class MainActivity : CastEnabledActivity() {
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
-//    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-//        if (isGranted) return@registerForActivityResult
-//        MaterialAlertDialogBuilder(this)
-//            .setMessage(R.string.notification_permission_text)
-//            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
-//            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
-//            .show()
-//    }
+    val prefs by lazy { getSharedPreferences(PREF_NAME, MODE_PRIVATE) }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
-//
-//        if (isGranted) return@registerForActivityResult
-
-//        MaterialAlertDialogBuilder(this)
-//            .setMessage(R.string.notification_permission_text)
-//            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-//            }
-//            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
-//            }
-//            .show()
-
         if (isGranted) {
             checkAndRequestUnrestrictedBackgroundActivity(this)
             return@registerForActivityResult
         }
-//        checkAndRequestUnrestrictedBackgroundActivity(this)
-
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.notification_permission_text)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
@@ -148,28 +138,42 @@ class MainActivity : CastEnabledActivity() {
             .show()
     }
 
+    @Composable
+    fun UnrestrictedBackgroundPermissionDialog(onDismiss: () -> Unit) {
+        var dontAskAgain by remember { mutableStateOf(false) }
+        AlertDialog(onDismissRequest = onDismiss, title = { Text("Permission Required") },
+            text = {
+                Column {
+                    Text(stringResource(R.string.unrestricted_background_permission_text))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = dontAskAgain, onCheckedChange = { dontAskAgain = it })
+                        Text(stringResource(R.string.dont_ask_again))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (dontAskAgain) prefs.edit().putBoolean("dont_ask_again_unrestricted_background", true).apply()
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    this@MainActivity.startActivity(intent)
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        )
+    }
+
     fun checkAndRequestUnrestrictedBackgroundActivity(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
-
-        if (!isIgnoringBatteryOptimizations) {
-//            Toast.makeText(context, "Please allow unrestricted background activity for this app", Toast.LENGTH_LONG).show()
-            MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.unrestricted_background_permission_text)
-                .setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, _: Int ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val intent = Intent()
-                        intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-//                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).also {
-//                            val uri = Uri.parse("package:$packageName")
-//                            it.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//                            it.data = uri
-//                        }
-                        context.startActivity(intent)
-                    } else dialog?.dismiss()
-                }
-                .setNegativeButton(R.string.cancel_label) { dialog, which -> dialog.dismiss() }
-                .show()
+        val dontAskAgain = prefs.getBoolean("dont_ask_again_unrestricted_background", false)
+        if (!isIgnoringBatteryOptimizations && !dontAskAgain) {
+            val composeView = ComposeView(this).apply {
+                setContent { UnrestrictedBackgroundPermissionDialog(onDismiss = { (parent as? ViewGroup)?.removeView(this) }) }
+            }
+            (window.decorView as? ViewGroup)?.addView(composeView)
         }
     }
 
@@ -228,14 +232,14 @@ class MainActivity : CastEnabledActivity() {
 //            RealmDB.apply { }
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
-            QueuesFragment.getSharedPrefs(this@MainActivity)
+//            QueuesFragment.getSharedPrefs(this@MainActivity)
             buildTags()
             monitorFeeds()
-            AudioPlayerFragment.getSharedPrefs(this@MainActivity)
+//            AudioPlayerFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
-            StatisticsFragment.getSharedPrefs(this@MainActivity)
-            OnlineFeedFragment.getSharedPrefs(this@MainActivity)
-            ItunesTopListLoader.getSharedPrefs(this@MainActivity)
+//            StatisticsFragment.getSharedPrefs(this@MainActivity)
+//            OnlineFeedFragment.getSharedPrefs(this@MainActivity)
+//            ItunesTopListLoader.getSharedPrefs(this@MainActivity)
         }
 
         if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
@@ -423,7 +427,6 @@ class MainActivity : CastEnabledActivity() {
     }
 
     private fun checkFirstLaunch() {
-        val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         if (prefs.getBoolean(Extras.prefMainActivityIsFirstLaunch.name, true)) {
             restartUpdateAlarm(this, true)
             val edit = prefs.edit()

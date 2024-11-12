@@ -96,8 +96,9 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.max
 
-
 class AudioPlayerFragment : Fragment() {
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF, Context.MODE_PRIVATE) }
+
     private var isCollapsed by mutableStateOf(true)
 
 //    private lateinit var controllerFuture: ListenableFuture<MediaController>
@@ -747,7 +748,7 @@ class AudioPlayerFragment : Fragment() {
 
      private fun savePreference() {
         Logd(TAG, "Saving preferences")
-        val editor = prefs?.edit() ?: return
+        val editor = prefs.edit() ?: return
         if (curMedia != null) {
 //            Logd(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
 //            editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)
@@ -1002,9 +1003,9 @@ class AudioPlayerFragment : Fragment() {
         private const val PREF_SCROLL_Y = "prefScrollY"
         private const val PREF_PLAYABLE_ID = "prefPlayableId"
 
-        var prefs: SharedPreferences? = null
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-        }
+//        var prefs: SharedPreferences? = null
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+//        }
     }
 }

@@ -1,3 +1,18 @@
+# 6.13.10
+
+* fixed Spinner in Subscriptions: All tags vs Untagged irregularity
+* fixed video mode setting not available in first created synthetic feed
+* created a new dialog to rename or create synthetic feed
+* in Subscriptions menu, "New synthetic Youtube" is merged into "New synthetic feed"
+* removed "Switch queue" option from all menus (not necessary)
+* fixed Spinner in Queues: default text not updating
+* fixed menu in Statistics
+* corrected duration and timeSpent numbers for today in Statistics
+* added a Statistics section in README.md
+* added "Never ask again" in dialog for unrestricted background permission
+* various prefs accesses are made lazy
+* build apk dropped to target Android 14 due to some reported issued with Android 15.
+
 # 6.13.9
 
 * made Spinner in Queues view update accordingly

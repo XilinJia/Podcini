@@ -22,7 +22,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -172,7 +171,7 @@ import java.util.*
 //            R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
-            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             R.id.reconcile -> reconcile()
             else -> return false
         }

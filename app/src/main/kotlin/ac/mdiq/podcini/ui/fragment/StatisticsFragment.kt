@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
@@ -13,8 +12,6 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
-import ac.mdiq.podcini.util.EventFlow
-import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
@@ -23,7 +20,11 @@ import android.os.Bundle
 import android.text.format.DateFormat
 import android.text.format.Formatter
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,7 +49,6 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -58,10 +58,15 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-class StatisticsFragment : Fragment() {
+class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
+
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
     private lateinit var toolbar: MaterialToolbar
+
+    private var includeMarkedAsPlayed by mutableStateOf(false)
+    private var statisticsState by mutableIntStateOf(0)
 
     private val selectedTabIndex = mutableIntStateOf(0)
     lateinit var statsResult: StatisticsResult
@@ -72,6 +77,7 @@ class StatisticsFragment : Fragment() {
         _binding = ComposeFragmentBinding.inflate(inflater)
         toolbar = binding.toolbar
         toolbar.title = getString(R.string.statistics_label)
+        toolbar.setOnMenuItemClickListener(this)
         toolbar.inflateMenu(R.menu.statistics)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         (activity as MainActivity).setupToolbarToggle(toolbar, false)
@@ -104,7 +110,6 @@ class StatisticsFragment : Fragment() {
         var timeSpentSum =  0L
         var timeFilterFrom = 0L
         var timeFilterTo = Long.MAX_VALUE
-        var includeMarkedAsPlayed = false
         var timePlayedToday = 0L
         var timeSpentToday = 0L
 
@@ -114,14 +119,14 @@ class StatisticsFragment : Fragment() {
             timeFilterTo = timeFilterTo_
         }
         fun loadStatistics() {
-            val statsToday = getStatistics(true, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), Long.MAX_VALUE)
+            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+            val statsToday = getStatistics(includeMarkedAsPlayed, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), Long.MAX_VALUE)
             for (item in statsToday.statsItems) {
                 timePlayedToday += item.timePlayed
                 timeSpentToday += item.timeSpent
             }
-            includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?: false
-            timeFilterFrom = prefs?.getLong(PREF_FILTER_FROM, 0) ?: 0
-            timeFilterTo = prefs?.getLong(PREF_FILTER_TO, Long.MAX_VALUE) ?: Long.MAX_VALUE
+            timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
+            timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
             try {
                 statsResult = getStatistics(includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
                 statsResult.statsItems.sortWith { item1: StatisticsItem, item2: StatisticsItem -> item2.timePlayed.compareTo(item1.timePlayed) }
@@ -138,8 +143,8 @@ class StatisticsFragment : Fragment() {
                     min(timeFilterTo.toDouble(), System.currentTimeMillis().toDouble()).toLong())
             } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
         }
-
-        loadStatistics()
+        refreshToolbarState()
+        if (statisticsState >= 0) loadStatistics()
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.statistics_today), color = MaterialTheme.colorScheme.onSurface)
@@ -179,7 +184,7 @@ class StatisticsFragment : Fragment() {
 
         fun loadMonthlyStatistics() {
             try {
-                val includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false) ?: false
+                includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
                 val months: MutableList<MonthlyStatisticsItem> = ArrayList()
                 val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > 0").find()
                 val groupdMedias = medias.groupBy {
@@ -243,7 +248,7 @@ class StatisticsFragment : Fragment() {
             val textColor = MaterialTheme.colorScheme.onSurface
             LazyColumn(state = lazyListState, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemsIndexed(monthlyStats) { index, item ->
+                itemsIndexed(monthlyStats) { index, _ ->
                     Row(Modifier.background(MaterialTheme.colorScheme.surface)) {
                         Column {
                             val monthString = String.format(Locale.getDefault(), "%d-%d", monthlyStats[index].year, monthlyStats[index].month)
@@ -257,7 +262,8 @@ class StatisticsFragment : Fragment() {
             }
         }
 
-        loadMonthlyStatistics()
+        refreshToolbarState()
+        if (statisticsState >= 0) loadMonthlyStatistics()
         Column {
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp)) { BarChart() }
             Spacer(Modifier.height(20.dp))
@@ -282,6 +288,7 @@ class StatisticsFragment : Fragment() {
             downloadChartData = LineChartData(dataValues)
         }
 
+        refreshToolbarState()
         loadDownloadStatistics()
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(R.string.total_size_downloaded_podcasts), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 20.dp, bottom = 10.dp))
@@ -353,30 +360,28 @@ class StatisticsFragment : Fragment() {
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
+        toolbar.setOnMenuItemClickListener(null)
         super.onDestroyView()
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
+    private fun refreshToolbarState() {
         when (selectedTabIndex.value) {
             0 -> {
-                menu.findItem(R.id.statistics_reset).setVisible(true)
-                menu.findItem(R.id.statistics_filter).setVisible(true)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(true)
+                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(true)
             }
             1 -> {
-                menu.findItem(R.id.statistics_reset).setVisible(true)
-                menu.findItem(R.id.statistics_filter).setVisible(false)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(true)
+                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(false)
             }
             else -> {
-                menu.findItem(R.id.statistics_reset).setVisible(false)
-                menu.findItem(R.id.statistics_filter).setVisible(false)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(false)
+                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(false)
             }
         }
     }
 
-    @Deprecated("Deprecated in Java")
-     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+     override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.statistics_reset -> {
                 confirmResetStatistics()
@@ -385,18 +390,20 @@ class StatisticsFragment : Fragment() {
             R.id.statistics_filter -> {
                 val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
                     override fun initParams() {
-                        prefs = Companion.prefs
-                        includeMarkedAsPlayed = prefs?.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false) ?: false
-                        timeFilterFrom = prefs?.getLong(PREF_FILTER_FROM, 0) ?: 0
-                        timeFilterTo = prefs?.getLong(PREF_FILTER_TO, Long.MAX_VALUE) ?: Long.MAX_VALUE
+//                        prefs = prefs
+                        includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+                        timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
+                        timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
                     }
-                    override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed: Boolean) {
-                        prefs?.edit()
-                            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed)
+                    override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
+                        prefs.edit()
+                            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
                             ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
                             ?.putLong(PREF_FILTER_TO, timeFilterTo)
                             ?.apply()
-                        EventFlow.postEvent(FlowEvent.StatisticsEvent())
+//                        EventFlow.postEvent(FlowEvent.StatisticsEvent())
+                        includeMarkedAsPlayed = includeMarkedAsPlayed_
+                        statisticsState++
                     }
                 }
                 dialog.show()
@@ -411,32 +418,23 @@ class StatisticsFragment : Fragment() {
             R.string.statistics_reset_data, R.string.statistics_reset_data_msg) {
             override fun onConfirmButtonPressed(dialog: DialogInterface) {
                 dialog.dismiss()
-                doResetStatistics()
+                prefs.edit()
+                    ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+                    ?.putLong(PREF_FILTER_FROM, 0)
+                    ?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)
+                    ?.apply()
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val mediaAll = realm.query(EpisodeMedia::class).find()
+                            for (m in mediaAll) update(m) { m.playedDuration = 0 }
+                        }
+                        statisticsState++
+                    } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
+                }
             }
         }
         conDialog.createNewDialog().show()
-    }
-
-     private fun doResetStatistics() {
-        prefs?.edit()
-            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-            ?.putLong(PREF_FILTER_FROM, 0)
-            ?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)
-            ?.apply()
-
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) { resetStatistics() }
-                EventFlow.postEvent(FlowEvent.StatisticsEvent())
-            } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
-        }
-    }
-
-    private fun resetStatistics(): Job {
-        return runOnIOScope {
-            val mediaAll = realm.query(EpisodeMedia::class).find()
-            for (m in mediaAll) update(m) { m.playedDuration = 0 }
-        }
     }
 
     class LineChartData(val values: MutableList<Float>) {
@@ -472,20 +470,16 @@ class StatisticsFragment : Fragment() {
         const val PREF_INCLUDE_MARKED_PLAYED: String = "countAll"
         const val PREF_FILTER_FROM: String = "filterFrom"
         const val PREF_FILTER_TO: String = "filterTo"
-        var prefs: SharedPreferences? = null
-
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        }
+//        var prefs: SharedPreferences? = null
+//
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+//        }
 
         fun getStatistics(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long, feedId: Long = 0L, forDL: Boolean = false): StatisticsResult {
             Logd(TAG, "getStatistics called")
-            val queryString = if (feedId != 0L) "episode.feedId == $feedId AND (lastPlayedTime > 0 OR downloaded == true)"
-            else {
-                if (forDL) "downloaded == true" else "lastPlayedTime > 0"
-            }
-//        val medias = if (feedId == 0L) realm.query(EpisodeMedia::class).query("lastPlayedTime > 0 OR downloaded == true").find()
-//        else realm.query(EpisodeMedia::class).query("episode.feedId == $feedId").query("lastPlayedTime > 0 OR downloaded == true").find()
+            val queryString = if (feedId != 0L) "episode.feedId == $feedId AND ((lastPlayedTime > $timeFilterFrom AND lastPlayedTime < $timeFilterTo) OR downloaded == true)"
+            else if (forDL) "downloaded == true" else "lastPlayedTime > $timeFilterFrom AND lastPlayedTime < $timeFilterTo"
             val medias = realm.query(EpisodeMedia::class).query(queryString).find()
 
             val groupdMedias = medias.groupBy { it.episodeOrFetch()?.feedId ?: 0L }
@@ -502,11 +496,11 @@ class StatisticsFragment : Fragment() {
                 var totalDownloadSize = 0L
                 var episodesDownloadCount = 0L
                 for (m in feedMedias) {
-                    if (m.lastPlayedTime > 0 && m.lastPlayedTime < result.oldestDate) result.oldestDate = m.lastPlayedTime
-                    feedTotalTime += m.duration
-                    if (m.lastPlayedTime in (timeFilterFrom + 1)..<timeFilterTo) {
+                    if (feedId != 0L || !forDL) {
+                        if (m.lastPlayedTime > 0 && m.lastPlayedTime < result.oldestDate) result.oldestDate = m.lastPlayedTime
+                        feedTotalTime += m.duration
                         if (includeMarkedAsPlayed) {
-                            if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || (m.episodeOrFetch()?.playState?:-10) > PlayState.SKIPPED.code || m.position > 0) {
+                            if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || (m.episodeOrFetch()?.playState ?: -10) >= PlayState.SKIPPED.code || m.position > 0) {
                                 episodesStarted += 1
                                 feedPlayedTime += m.duration
                                 timeSpent += m.timeSpent
@@ -514,14 +508,16 @@ class StatisticsFragment : Fragment() {
                         } else {
                             feedPlayedTime += m.playedDuration
                             timeSpent += m.timeSpent
-//                        Logd(TAG, "m.playedDuration: ${m.playedDuration} m.timeSpent: ${m.timeSpent}")
+                            Logd(TAG, "m.playedDuration: ${m.playedDuration} m.timeSpent: ${m.timeSpent}")
                             if (m.playbackCompletionTime > 0 && m.playedDuration > 0) episodesStarted += 1
                         }
                         durationWithSkip += m.duration
                     }
-                    if (m.downloaded) {
-                        episodesDownloadCount += 1
-                        totalDownloadSize += m.size
+                    if (feedId != 0L || forDL) {
+                        if (m.downloaded) {
+                            episodesDownloadCount += 1
+                            totalDownloadSize += m.size
+                        }
                     }
                 }
                 feedPlayedTime /= 1000

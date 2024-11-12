@@ -51,6 +51,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     var playedDuration: Int = 0 // How many ms of this file have been played
 
+    var timeSpentOnStart: Int = 0 // How many ms of this file have been played in actual time
     var startTime: Long = 0 // time in ms when start playing
 
     var timeSpent: Int = 0 // How many ms of this file have been played in actual time
@@ -290,16 +291,19 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         Logd(TAG, "onPlaybackStart ${System.currentTimeMillis()}")
         startPosition = max(position.toDouble(), 0.0).toInt()
         playedDurationWhenStarted = playedDuration
+        timeSpentOnStart = timeSpent
         startTime = System.currentTimeMillis()
     }
 
     override fun onPlaybackPause(context: Context) {
-        Logd("EpisodeMedia", "onPlaybackPause $position $duration")
+        Logd(TAG, "onPlaybackPause $position $duration")
         if (position > startPosition) {
+//            playedDuration = playedDurationWhenStarted + position - startPosition
+//            playedDurationWhenStarted = playedDuration
             playedDuration = playedDurationWhenStarted + position - startPosition
-            playedDurationWhenStarted = playedDuration
+//            playedDurationWhenStarted = playedDuration
         }
-        timeSpent = (System.currentTimeMillis() - startTime).toInt()
+        timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime).toInt()
         startPosition = position
     }
 

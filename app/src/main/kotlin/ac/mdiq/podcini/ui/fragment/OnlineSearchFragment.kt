@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AddfeedBinding
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.net.feed.discovery.*
+import ac.mdiq.podcini.net.feed.searcher.*
 import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.isOPMLRestared
 import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.performRestore
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed

@@ -1,9 +1,9 @@
-package ac.mdiq.podcini.net.feed.discovery
+package ac.mdiq.podcini.net.feed.searcher
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult.Companion.fromChannelInfoItem
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult.Companion.fromChannelInfoItem
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.util.config.ClientConfig

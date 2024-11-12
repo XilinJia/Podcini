@@ -199,7 +199,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             val media = item.media
             if (media != null) {
                 val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, true, false) }
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
                 if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
             }
             deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
@@ -355,10 +355,10 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
             val media = item.media
             if (media != null) {
                 val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, true, false) }
+                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
                 if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
             }
-            if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, false, false) }
+            if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, resetMediaPosition = false, removeFromQueue = false) }
 //            removeFromQueue(item)
             runOnIOScope { removeFromQueueSync(curQueue, item) }
             if (willRemove(filter, item)) {
@@ -544,7 +544,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         private const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
         private const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
 
-        var prefs: SharedPreferences? = null
+        private var prefs: SharedPreferences? = null
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
         }

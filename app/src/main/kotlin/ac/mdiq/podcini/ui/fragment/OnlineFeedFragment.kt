@@ -5,8 +5,8 @@ import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
-import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
+import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
@@ -78,6 +78,8 @@ import kotlin.concurrent.Volatile
  * and the activity will finish as soon as the error dialog is closed.
  */
 class OnlineFeedFragment : Fragment() {
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
+
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -516,7 +518,7 @@ class OnlineFeedFragment : Fragment() {
                     } else if (isEnableAutodownload) {
                         val autoDownload = autoDownloadChecked
                         feed1.preferences!!.autoDownload = autoDownload
-                        val editor = prefs?.edit()
+                        val editor = prefs.edit()
                         editor?.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
                         editor?.apply()
                     }
@@ -768,10 +770,10 @@ class OnlineFeedFragment : Fragment() {
         private const val PREF_LAST_AUTO_DOWNLOAD = "lastAutoDownload"
         private const val KEY_UP_ARROW = "up_arrow"
 
-        var prefs: SharedPreferences? = null
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        }
+//        var prefs: SharedPreferences? = null
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+//        }
 
         fun newInstance(feedUrl: String, isShared: Boolean = false): OnlineFeedFragment {
             val fragment = OnlineFeedFragment()

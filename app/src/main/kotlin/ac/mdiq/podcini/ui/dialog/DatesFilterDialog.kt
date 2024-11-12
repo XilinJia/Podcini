@@ -5,7 +5,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsFilterDialogBinding
 import android.content.Context
 import android.content.DialogInterface
-import android.content.SharedPreferences
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
@@ -19,14 +18,14 @@ import kotlin.math.max
 
 abstract class DatesFilterDialog(private val context: Context, oldestDate: Long) {
 
-    protected var prefs: SharedPreferences? = null
+//    protected var prefs: SharedPreferences? = null
     protected var includeMarkedAsPlayed: Boolean = false
     protected var timeFilterFrom: Long = 0L
     protected var timeFilterTo: Long = Date().time
     protected var showMarkPlayed = true
 
-    protected val filterDatesFrom: Pair<Array<String>, Array<Long>>
-    protected val filterDatesTo: Pair<Array<String>, Array<Long>>
+    private val filterDatesFrom: Pair<Array<String>, Array<Long>>
+    private val filterDatesTo: Pair<Array<String>, Array<Long>>
 
     init {
         initParams()
@@ -43,7 +42,7 @@ abstract class DatesFilterDialog(private val context: Context, oldestDate: Long)
         val builder = MaterialAlertDialogBuilder(context)
         builder.setView(binding.root)
         builder.setTitle(R.string.filter)
-        binding.includeMarkedCheckbox.setOnCheckedChangeListener { compoundButton: CompoundButton?, checked: Boolean ->
+        binding.includeMarkedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, checked: Boolean ->
             binding.timeToSpinner.isEnabled = !checked
             binding.timeFromSpinner.isEnabled = !checked
             binding.pastYearButton.isEnabled = !checked
@@ -76,16 +75,16 @@ abstract class DatesFilterDialog(private val context: Context, oldestDate: Long)
             }
         }
 
-        binding.allTimeButton.setOnClickListener { v: View? ->
+        binding.allTimeButton.setOnClickListener {
             binding.timeFromSpinner.setSelection(0)
             binding.timeToSpinner.setSelection(filterDatesTo.first.size - 1)
         }
-        binding.pastYearButton.setOnClickListener { v: View? ->
+        binding.pastYearButton.setOnClickListener {
             binding.timeFromSpinner.setSelection(max(0.0, (filterDatesFrom.first.size - 12).toDouble()).toInt())
             binding.timeToSpinner.setSelection(filterDatesTo.first.size - 2)
         }
 
-        builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, which: Int ->
+        builder.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
             includeMarkedAsPlayed = binding.includeMarkedCheckbox.isChecked
             if (includeMarkedAsPlayed) {
 //                TODO: what can be done with this?

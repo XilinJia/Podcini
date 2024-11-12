@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.net.feed.discovery
+package ac.mdiq.podcini.net.feed.searcher
 
 import ac.mdiq.podcini.util.Logd
 import android.util.Log

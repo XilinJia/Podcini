@@ -2,7 +2,9 @@ package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
+import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -213,6 +215,44 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                     if (feed.update != null) Text(feed.update, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(feed.source + ": " + feed.feedUrl, color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
+            }
+        }
+    }
+}
+
+@Composable
+fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Unit) {
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(stringResource(R.string.rename_feed_label), color = textColor, style = MaterialTheme.typography.bodyLarge)
+                var name by remember { mutableStateOf("") }
+                TextField(value = name, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) name = it }, label = { Text(stringResource(R.string.new_namee)) })
+                var hasVideo by remember { mutableStateOf(true) }
+                var isYoutube by remember { mutableStateOf(false) }
+                if (feed_ == null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = hasVideo, onCheckedChange = { hasVideo = it })
+                        Text(text = stringResource(R.string.has_video), style = MaterialTheme.typography.bodyMedium, color = textColor, modifier = Modifier.padding(start = 10.dp))
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = isYoutube, onCheckedChange = { isYoutube = it })
+                        Text(text = stringResource(R.string.youtube), style = MaterialTheme.typography.bodyMedium, color = textColor, modifier = Modifier.padding(start = 10.dp))
+                    }
+                }
+                Row {
+                    Button({ onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) }
+                    Button({
+                        val feed = if (feed_ == null) createSynthetic(0, name, hasVideo) else feed_
+                        if (feed_ == null) {
+                            feed.type = if (isYoutube) Feed.FeedType.YOUTUBE.name else Feed.FeedType.RSS.name
+                            if (hasVideo) feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
+                        }
+                        upsertBlk(feed) { if (feed_ != null) it.setCustomTitle1(name) }
+                        onDismissRequest()
+                    }) { Text(stringResource(R.string.confirm_label)) }
+                }
             }
         }
     }

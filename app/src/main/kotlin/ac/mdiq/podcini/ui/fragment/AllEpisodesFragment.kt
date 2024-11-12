@@ -10,7 +10,6 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -91,7 +90,7 @@ class AllEpisodesFragment : BaseEpisodesFragment() {
                 showFilterDialog = true
             }
             R.id.episodes_sort -> AllEpisodesSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
-            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             else -> return false
         }
         return true

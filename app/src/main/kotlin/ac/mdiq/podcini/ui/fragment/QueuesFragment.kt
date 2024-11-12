@@ -87,6 +87,7 @@ import java.util.*
 import kotlin.math.max
 
 class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -108,6 +109,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private lateinit var queueNames: Array<String>
     private val spinnerTexts = mutableStateListOf<String>()
+    private var curIndex by mutableIntStateOf(0)
     private lateinit var queues: List<PlayQueue>
     private lateinit var spinnerView:  ComposeView
 
@@ -141,7 +143,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         queueNames = queues.map { it.name }.toTypedArray()
         spinnerTexts.clear()
         spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
-        var curIndex = queues.indexOf(curQueue)
+        curIndex = queues.indexOf(curQueue)
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
@@ -372,6 +374,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
+        curIndex = queues.indexOf(curQueue)
         spinnerTexts.clear()
         spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
         refreshMenuItems()
@@ -581,6 +584,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 upsertBlk(newQueue) {}
                                 queues = realm.query(PlayQueue::class).find()
                                 queueNames = queues.map { it.name }.toTypedArray()
+                                curIndex = queues.indexOf(curQueue)
                                 spinnerTexts.clear()
                                 spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
                                 onDismiss()
@@ -596,7 +600,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        val isLocked: Boolean = isQueueLocked
         if (isQueueLocked) setQueueLock(false)
         else {
-            val shouldShowLockWarning: Boolean = prefs?.getBoolean(PREF_SHOW_LOCK_WARNING, true) ?: true
+            val shouldShowLockWarning: Boolean = prefs.getBoolean(PREF_SHOW_LOCK_WARNING, true)
             if (!shouldShowLockWarning) setQueueLock(true)
             else {
                 val builder = MaterialAlertDialogBuilder(requireContext())
@@ -607,7 +611,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val checkDoNotShowAgain: CheckBox = binding_.checkboxDoNotShowAgain
                 builder.setView(view)
                 builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
-                    prefs!!.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
+                    prefs.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
                     setQueueLock(true)
                 }
                 builder.setNegativeButton(R.string.cancel_label, null)
@@ -669,6 +673,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             for (e in queueItems) vms.add(EpisodeVM(e))
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
             queues = realm.query(PlayQueue::class).find()
+            curIndex = queues.indexOf(curQueue)
             spinnerTexts.clear()
             spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
             refreshInfoBar()
@@ -731,9 +736,9 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         private const val PREFS = "QueueFragment"
         private const val PREF_SHOW_LOCK_WARNING = "show_lock_warning"
 
-        private var prefs: SharedPreferences? = null
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        }
+//        private var prefs: SharedPreferences? = null
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+//        }
     }
 }

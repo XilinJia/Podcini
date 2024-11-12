@@ -22,9 +22,9 @@
         android:title="@string/sort"
         custom:showAsAction="always"/>
 
-    <item
-        android:id="@+id/switch_queue"
-        android:title="@string/switch_queue" />
+<!--    <item-->
+<!--        android:id="@+id/switch_queue"-->
+<!--        android:title="@string/switch_queue" />-->
 
     <item
         android:id="@+id/reconcile"

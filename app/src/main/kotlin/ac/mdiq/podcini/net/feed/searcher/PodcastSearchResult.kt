@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.net.feed.discovery
+package ac.mdiq.podcini.net.feed.searcher
 
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import ac.mdiq.vista.extractor.channel.ChannelInfoItem

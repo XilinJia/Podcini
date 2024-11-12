@@ -115,7 +115,7 @@ class FeedSettingsFragment : Fragment() {
                             Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
                     }
-                    if ((feed?.id?:0) > MAX_NATURAL_SYNTHETIC_ID && feed?.hasVideoMedia == true) {
+                    if ((feed?.id?:0) >= MAX_NATURAL_SYNTHETIC_ID && feed?.hasVideoMedia == true) {
                         //                    video mode
                         Column {
                             Row(Modifier.fillMaxWidth()) {
@@ -578,7 +578,7 @@ class FeedSettingsFragment : Fragment() {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newCache by remember { mutableStateOf((feed?.preferences?.autoDLMaxEpisodes ?: 1).toString()) }
                         TextField(value = newCache, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) newCache = it },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Max episodes allowed") })
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text(stringResource(R.string.max_episodes_cache)) })
                         Button(onClick = {
                             if (newCache.isNotEmpty()) {
                                 feed = upsertBlk(feed!!) { it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }

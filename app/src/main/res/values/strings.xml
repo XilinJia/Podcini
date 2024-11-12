@@ -63,6 +63,8 @@
     <string name="tts_not_available">TTS engine not available</string>
     <string name="episode_has_no_content">Episode has not content</string>
 
+    <string name="dont_ask_again">Don\'t ask again</string>
+
     <string name="unrestricted_background_permission_text">In order to successfully play a list of episodes in the background, Podcini needs Permission for Unrestricted Background Activity. Note on some brands, there are sustomized settings for this, please ensure to set them accordingly.</string>
 
     <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
@@ -185,6 +187,8 @@
 
     <!-- Actions on feeds -->
 
+    <string name="max_episodes_cache">Max episodes allowed</string>
+    <string name="new_namee">New name</string>
 
 
 
@@ -367,7 +371,7 @@
     <string name="queue_locked">Queue locked</string>
     <string name="queue_unlocked">Queue unlocked</string>
     <string name="queue_lock_warning">If you lock the queue, you can no longer swipe or reorder episodes.</string>
-    <string name="switch_queue">Switch active queue</string>
+<!--    <string name="switch_queue">Switch active queue</string>-->
     <string name="open_queue">Open queue</string>
     <string name="checkbox_do_not_show_again">Do not show again</string>
     <string name="clear_queue_label">Clear queue</string>

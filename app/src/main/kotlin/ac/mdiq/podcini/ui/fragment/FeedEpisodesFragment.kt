@@ -18,12 +18,9 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -56,7 +53,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-
 import coil.compose.AsyncImage
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.*
@@ -98,7 +94,8 @@ import java.util.concurrent.Semaphore
     private var filterButColor = mutableStateOf(Color.White)
 
     private var showRemoveFeedDialog by mutableStateOf(false)
-    var showFilterDialog by mutableStateOf(false)
+    private var showFilterDialog by mutableStateOf(false)
+    private var showNewSynthetic by mutableStateOf(false)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -185,6 +182,7 @@ import java.util.concurrent.Semaphore
                         }
                     }
                 }
+                if (showNewSynthetic) RenameOrCreateSyntheticFeed(feed) {showNewSynthetic = false}
                 Column {
                     FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {
@@ -430,7 +428,10 @@ import java.util.concurrent.Semaphore
 //                    (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
 //                }
 //            }
-            R.id.rename_feed -> CustomFeedNameDialog(activity as Activity, feed!!).show()
+            R.id.rename_feed -> {
+                showNewSynthetic = true
+//                CustomFeedNameDialog(activity as Activity, feed!!).show()
+            }
             R.id.remove_feed -> { showRemoveFeedDialog = true
 //                RemoveFeedDialog.show(requireContext(), feed!!) {
 //                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
@@ -439,7 +440,7 @@ import java.util.concurrent.Semaphore
 //                }
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
-            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             R.id.open_queue -> {
                 val qFrag = QueuesFragment()
                 (activity as MainActivity).loadChildFragment(qFrag)

@@ -2,9 +2,9 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
-import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearcher
+import ac.mdiq.podcini.net.feed.searcher.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.getFeedLogMap

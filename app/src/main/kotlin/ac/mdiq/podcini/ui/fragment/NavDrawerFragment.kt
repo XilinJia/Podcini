@@ -97,10 +97,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
     private fun checkHiddenItems() {
         val hiddenItems = hiddenDrawerItems.map { it.trim() }
-        for (nav in navMap.values) {
-            if (hiddenItems.contains(nav.tag)) nav.show = false
-            else nav.show = true
-        }
+        for (nav in navMap.values) nav.show = !hiddenItems.contains(nav.tag)
     }
 
     private fun getRecentPodcasts() {
@@ -203,7 +200,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
-        var prefs: SharedPreferences? = null
+        private var prefs: SharedPreferences? = null
         var feedCount: Int = 0
 
         fun getSharedPrefs(context: Context) {

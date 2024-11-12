@@ -161,7 +161,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 ### Automation
 
-* auto download algorithm is changed to individual feed based.
+* Auto download algorithm is changed to individual feed based.
   * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
   * Each feed also has its own download policy (only new episodes, newest episodes, oldest episodes or episodes marked as Soon. "newest episodes" meaning most recent episodes, new or old)
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
@@ -172,6 +172,15 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
     * on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
 * Sleep timer has a new option of "To the end of episode"
+
+### Statistics
+
+* Statistics compiles the media that's been played during a specified period
+* There are 2 numbers regarding played time: duration and time spent
+  * time spent is simply time spent playing a media, so play speed, rewind and forward can play a role
+  * Duration shows differently under 2 settings: "including marked as play" or not
+  * In the former, it's the full duration of a media that's been played (albeit by a bit)
+  * In the latter case, it's the max position reached in a media
 
 ### Security and reliability
 

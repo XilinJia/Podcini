@@ -1156,9 +1156,9 @@ class PlaybackService : MediaLibraryService() {
                             if (it.isNew) it.playState = PlayState.UNPLAYED.code
                             if (media.startPosition >= 0 && media.getPosition() > media.startPosition) {
                                 media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
-                                media.timeSpent = (System.currentTimeMillis() - media.startTime).toInt()
                             }
-//                            Logd(TAG, "saveCurrentPosition ${media.startTime} ${media.timeSpent}")
+                            media.timeSpent = media.timeSpentOnStart + (System.currentTimeMillis() - media.startTime).toInt()
+                            Logd(TAG, "saveCurrentPosition ${media.startTime} timeSpent: ${media.timeSpent} playedDuration: ${media.playedDuration}")
                         }
                     }
 //                    This appears not too useful

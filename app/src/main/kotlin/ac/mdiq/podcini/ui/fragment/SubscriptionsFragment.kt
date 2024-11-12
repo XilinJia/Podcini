@@ -5,12 +5,10 @@ import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
 import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.fragments.ImportExportPreferencesFragment.*
-import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -22,18 +20,13 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.NonlazyGrid
-import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
-import ac.mdiq.podcini.ui.compose.Spinner
-import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOptions
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -134,6 +127,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var showFilterDialog by mutableStateOf(false)
     private var showSortDialog by mutableStateOf(false)
     private var noSubscription by mutableStateOf(false)
+    private var showNewSynthetic by mutableStateOf(false)
 
     private var useGrid by mutableStateOf<Boolean?>(null)
     private val useGridLayout by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false))
@@ -178,6 +172,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             CustomTheme(requireContext()) {
                 if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
                 if (showSortDialog) SortDialog {showSortDialog = false}
+                if (showNewSynthetic) RenameOrCreateSyntheticFeed {showNewSynthetic = false}
                 Column {
                     InforBar()
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
@@ -227,9 +222,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun queryStringOfTags() : String {
         return when (tagFilterIndex) {
-            1 ->  ""    // All feeds
+            0 ->  ""    // All feeds
 //            TODO: #root appears not used in RealmDB, is it a SQLite specialty
-            0 ->  " (preferences.tags.@count == 0 OR (preferences.tags.@count != 0 AND ALL preferences.tags == '#root' )) "
+            1 ->  " (preferences.tags.@count == 0 OR (preferences.tags.@count != 0 AND ALL preferences.tags == '#root' )) "
             else -> {   // feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
                 " ANY preferences.tags == '$tag' "
@@ -300,21 +295,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         when (itemId) {
             R.id.subscriptions_filter -> showFilterDialog = true
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            R.id.subscriptions_sort -> {
-//                FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
-                showSortDialog = true
-            }
-            R.id.new_synth -> {
-                val feed = createSynthetic(0, "")
-                feed.type = Feed.FeedType.RSS.name
-                CustomFeedNameDialog(activity as Activity, feed).show()
-            }
-            R.id.new_synth_yt -> {
-                val feed = createSynthetic(0, "", true)
-                feed.type = Feed.FeedType.YOUTUBE.name
-                feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
-                CustomFeedNameDialog(activity as Activity, feed).show()
-            }
+            R.id.subscriptions_sort -> showSortDialog = true
+            R.id.new_synth -> showNewSynthetic = true
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext(), fullUpdate = true)
             R.id.toggle_grid_list -> useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
             else -> return false

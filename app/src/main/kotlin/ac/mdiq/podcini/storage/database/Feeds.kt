@@ -21,6 +21,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
@@ -522,7 +523,7 @@ object Feeds {
         val feed = Feed()
         var feedId_ = feedId
         if (feedId_ <= 0) {
-            var i = 100L
+            var i = MAX_NATURAL_SYNTHETIC_ID
             while (true) {
                 if (getFeed(i++) != null) continue
                 feedId_ = --i

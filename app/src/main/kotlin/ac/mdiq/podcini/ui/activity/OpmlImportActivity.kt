@@ -90,11 +90,11 @@ class OpmlImportActivity : AppCompatActivity() {
             }
             if (listAdapter != null) {
                 if (checkedCount == listAdapter!!.count) {
-                    selectAll.setVisible(false)
-                    deselectAll.setVisible(true)
+                    selectAll.isVisible = false
+                    deselectAll.isVisible = true
                 } else {
-                    deselectAll.setVisible(false)
-                    selectAll.setVisible(true)
+                    deselectAll.isVisible = false
+                    selectAll.isVisible = true
                 }
             }
         }
@@ -160,7 +160,7 @@ class OpmlImportActivity : AppCompatActivity() {
         inflater.inflate(R.menu.opml_selection_options, menu)
         selectAll = menu.findItem(R.id.select_all_item)
         deselectAll = menu.findItem(R.id.deselect_all_item)
-        deselectAll.setVisible(false)
+        deselectAll.isVisible = false
         return true
     }
 
@@ -168,15 +168,15 @@ class OpmlImportActivity : AppCompatActivity() {
         val itemId = item.itemId
         when (itemId) {
             R.id.select_all_item -> {
-                selectAll.setVisible(false)
+                selectAll.isVisible = false
                 selectAllItems(true)
-                deselectAll.setVisible(true)
+                deselectAll.isVisible = true
                 return true
             }
             R.id.deselect_all_item -> {
-                deselectAll.setVisible(false)
+                deselectAll.isVisible = false
                 selectAllItems(false)
-                selectAll.setVisible(true)
+                selectAll.isVisible = true
                 return true
             }
             android.R.id.home -> finish()

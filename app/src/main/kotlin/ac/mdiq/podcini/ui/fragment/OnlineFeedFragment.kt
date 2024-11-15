@@ -41,8 +41,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
 import androidx.collection.ArrayMap
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,7 +71,6 @@ import org.jsoup.nodes.Document
 import java.io.File
 import java.io.IOException
 import java.util.*
-import kotlin.concurrent.Volatile
 
 /**
  * Downloads a feed from a feed URL and parses it. Subclasses can display the
@@ -736,11 +738,11 @@ class OnlineFeedFragment : Fragment() {
             return PREF_NAME
         }
         override fun updateToolbar() {
-            binding.toolbar.menu.findItem(R.id.episodes_sort).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.episodes_sort).isVisible = false
 //        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
-            binding.toolbar.menu.findItem(R.id.action_search).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.action_search).isVisible = false
 //            binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
-            binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.filter_items).isVisible = false
             infoBarText.value = "${episodes.size} episodes"
         }
          override fun onMenuItemClick(item: MenuItem): Boolean {

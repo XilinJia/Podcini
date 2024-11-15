@@ -6,8 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -91,9 +89,8 @@ fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modi
 @Composable
 fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var currentSelectedIndex by remember { mutableStateOf(selectedIndex) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        BasicTextField(readOnly = true, value = items.getOrNull(currentSelectedIndex) ?: "Select Item", onValueChange = { },
+        BasicTextField(readOnly = true, value = items.getOrNull(selectedIndex) ?: "Select Item", onValueChange = { },
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
             modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
             decorationBox = { innerTextField ->
@@ -106,7 +103,6 @@ fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifi
             for (i in items.indices) {
                 DropdownMenuItem(text = { Text(items[i]) },
                     onClick = {
-                        currentSelectedIndex = i
                         onItemSelected(i)
                         expanded = false
                     }
@@ -128,36 +124,6 @@ fun CustomToast(message: String, durationMillis: Long = 2000L, onDismiss: () -> 
     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.BottomCenter) {
         Box(modifier = Modifier.background(Color.Black, RoundedCornerShape(8.dp)).padding(8.dp)) {
             Text(text = message, color = Color.White, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-fun AutoCompleteTextView(suggestions: List<String>, onItemSelected: (String) -> Unit, modifier: Modifier = Modifier) {
-    var text by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) {
-        TextField(value = text,
-            onValueChange = { text = it },
-            label = { Text("Search") },
-            trailingIcon = {
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = "Expand")
-                }
-            }
-        )
-
-        if (expanded) {
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                suggestions.forEach { suggestion ->
-                    DropdownMenuItem(text = {Text(suggestion)}, onClick = {
-                        onItemSelected(suggestion)
-                        text = suggestion
-                        expanded = false
-                    })
-                }
-            }
         }
     }
 }

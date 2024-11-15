@@ -285,7 +285,7 @@ object Feeds {
                 else savedFeed.episodes.add(idx, episode)
 
                 val pubDate = episode.getPubDate()
-                if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
+                if (priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                     Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                     episode.playState = PlayState.NEW.code
                     if (savedFeed.preferences?.autoAddNewToQueue == true) {
@@ -385,8 +385,7 @@ object Feeds {
         for (e in savedFeed.episodes) savedFeed.totleDuration += e.media?.duration ?: 0
 
         val resultFeed = savedFeed
-        try {
-            upsertBlk(savedFeed) {}
+        try { upsertBlk(savedFeed) {}
         } catch (e: InterruptedException) { e.printStackTrace()
         } catch (e: ExecutionException) { e.printStackTrace() }
         return resultFeed
@@ -536,7 +535,7 @@ object Feeds {
         feed.downloadUrl = null
         feed.hasVideoMedia = video
         feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
-        feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+        feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
         feed.preferences!!.keepUpdated = false
         feed.preferences!!.queueId = -2L
         return feed
@@ -736,10 +735,10 @@ object Feeds {
             return string1 == string2
         }
         internal fun datesLookSimilar(item1: Episode, item2: Episode): Boolean {
-            if (item1.getPubDate() == null || item2.getPubDate() == null) return false
+//            if (item1.getPubDate() == null || item2.getPubDate() == null) return false
             val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US) // MM/DD/YY
-            val dateOriginal = dateFormat.format(item2.getPubDate()!!)
-            val dateNew = dateFormat.format(item1.getPubDate()!!)
+            val dateOriginal = dateFormat.format(item2.getPubDate())
+            val dateNew = dateFormat.format(item1.getPubDate())
             return dateOriginal == dateNew // Same date; time is ignored.
         }
         internal fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {

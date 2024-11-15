@@ -87,7 +87,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
             .setIcon(icon)
             .build()
 
-        setResult(Activity.RESULT_OK, ShortcutManagerCompat.createShortcutResultIntent(this, shortcut))
+        setResult(RESULT_OK, ShortcutManagerCompat.createShortcutResultIntent(this, shortcut))
         finish()
     }
 
@@ -127,11 +127,8 @@ class SelectSubscriptionActivity : AppCompatActivity() {
                     val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this@SelectSubscriptionActivity, R.layout.simple_list_item_multiple_choice_on_start, titles)
                     binding.list.adapter = adapter
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
-
     }
 
     override fun onDestroy() {

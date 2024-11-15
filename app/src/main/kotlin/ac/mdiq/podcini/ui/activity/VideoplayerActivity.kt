@@ -35,7 +35,6 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -48,10 +47,10 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -84,12 +83,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * Activity for playing video files.
- */
-
 class VideoplayerActivity : CastEnabledActivity() {
-
     private var _binding: VideoplayerActivityBinding? = null
     private val binding get() = _binding!!
     private lateinit var videoEpisodeFragment: VideoEpisodeFragment
@@ -185,10 +179,10 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     public override fun onUserLeaveHint() {
-        if (!PictureInPictureUtil.isInPictureInPictureMode(this)) compatEnterPictureInPicture()
+        super.onUserLeaveHint()
+        if (!isInPictureInPictureMode()) compatEnterPictureInPicture()
     }
 
-    
     override fun onStart() {
         super.onStart()
         procFlowEvents()
@@ -249,15 +243,15 @@ class VideoplayerActivity : CastEnabledActivity() {
         val media = curMedia
         val isEpisodeMedia = (media is EpisodeMedia)
 
-        menu.findItem(R.id.show_home_reader_view).setVisible(false)
-        menu.findItem(R.id.open_feed_item).setVisible(isEpisodeMedia) // EpisodeMedia implies it belongs to a Feed
+        menu.findItem(R.id.show_home_reader_view).isVisible = false
+        menu.findItem(R.id.open_feed_item).isVisible = isEpisodeMedia // EpisodeMedia implies it belongs to a Feed
 
         val hasWebsiteLink = getWebsiteLinkWithFallback(media) != null
-        menu.findItem(R.id.visit_website_item).setVisible(hasWebsiteLink)
+        menu.findItem(R.id.visit_website_item).isVisible = hasWebsiteLink
 
-        val isItemAndHasLink = isEpisodeMedia && hasLinkToShare((media as EpisodeMedia).episodeOrFetch())
+        val isItemAndHasLink = isEpisodeMedia && hasLinkToShare(media.episodeOrFetch())
         val isItemHasDownloadLink = isEpisodeMedia && (media as EpisodeMedia?)?.downloadUrl != null
-        menu.findItem(R.id.share_item).setVisible(hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink)
+        menu.findItem(R.id.share_item).isVisible = hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink
 
 //        menu.findItem(R.id.add_to_favorites_item).setVisible(false)
 //        menu.findItem(R.id.remove_from_favorites_item).setVisible(false)
@@ -266,13 +260,13 @@ class VideoplayerActivity : CastEnabledActivity() {
 //            menu.findItem(R.id.remove_from_favorites_item).setVisible(videoEpisodeFragment.isFavorite)
 //        }
 
-        menu.findItem(R.id.set_sleeptimer_item).setVisible(!isSleepTimerActive())
-        menu.findItem(R.id.disable_sleeptimer_item).setVisible(isSleepTimerActive())
-        menu.findItem(R.id.player_switch_to_audio_only).setVisible(true)
+        menu.findItem(R.id.set_sleeptimer_item).isVisible = !isSleepTimerActive()
+        menu.findItem(R.id.disable_sleeptimer_item).isVisible = isSleepTimerActive()
+        menu.findItem(R.id.player_switch_to_audio_only).isVisible = true
 
-        menu.findItem(R.id.audio_controls).setVisible(audioTracks.size >= 2)
-        menu.findItem(R.id.playback_speed).setVisible(true)
-        menu.findItem(R.id.player_show_chapters).setVisible(true)
+        menu.findItem(R.id.audio_controls).isVisible = audioTracks.size >= 2
+        menu.findItem(R.id.playback_speed).isVisible = true
+        menu.findItem(R.id.player_show_chapters).isVisible = true
 
         if (videoMode == VideoMode.WINDOW_VIEW) {
 //            menu.findItem(R.id.add_to_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
@@ -360,7 +354,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     private fun compatEnterPictureInPicture() {
-        if (PictureInPictureUtil.supportsPictureInPicture(this) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
             if (videoMode == VideoMode.FULL_SCREEN_VIEW) supportActionBar?.hide()
             videoEpisodeFragment.hideVideoControls(false)
             enterPictureInPictureMode()
@@ -416,6 +410,16 @@ class VideoplayerActivity : CastEnabledActivity() {
             return true
         }
         return super.onKeyUp(keyCode, event)
+    }
+
+//    fun supportsPictureInPicture(): Boolean {
+////        val packageManager = activity.packageManager
+//        return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+//    }
+
+    override fun isInPictureInPictureMode(): Boolean {
+        return if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) super.isInPictureInPictureMode
+        else false
     }
 
     class PlaybackControlsDialog : DialogFragment() {
@@ -474,7 +478,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
     }
 
-    
     class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         private var _binding: VideoEpisodeFragmentBinding? = null
         private val binding get() = _binding!!
@@ -498,7 +501,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
             Logd(TAG, "onVideoviewTouched ${event.action}")
             if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
-            if (PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) return@OnTouchListener true
+            if (requireActivity().isInPictureInPictureMode()) return@OnTouchListener true
             videoControlsHider.removeCallbacks(hideVideoControls)
             Logd(TAG, "onVideoviewTouched $videoControlsVisible ${System.currentTimeMillis() - lastScreenTap}")
             if (System.currentTimeMillis() - lastScreenTap < 300) {
@@ -546,7 +549,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 videoControlsVisible = false
             }
         }
-
         
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
@@ -559,7 +561,6 @@ class VideoplayerActivity : CastEnabledActivity() {
             return root
         }
 
-        
         private fun newStatusHandler(): ServiceStatusHandler {
             return object : ServiceStatusHandler(requireActivity()) {
                 override fun updatePlayButton(showPlay: Boolean) {
@@ -583,7 +584,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 }
             }
         }
-
         
         override fun onStart() {
             super.onStart()
@@ -591,11 +591,10 @@ class VideoplayerActivity : CastEnabledActivity() {
             procFlowEvents()
         }
 
-        
         override fun onStop() {
             super.onStop()
             cancelFlowEvents()
-            if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) videoControlsHider.removeCallbacks(hideVideoControls)
+            if (!requireActivity().isInPictureInPictureMode()) videoControlsHider.removeCallbacks(hideVideoControls)
             // Controller released; we will not receive buffering updates
             binding.progressBar.visibility = View.GONE
         }

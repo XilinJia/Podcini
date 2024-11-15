@@ -96,9 +96,9 @@ class HistoryFragment : BaseEpisodesFragment() {
 
     override fun updateToolbar() {
         // Not calling super, as we do not have a refresh button that could be updated
-        toolbar.menu.findItem(R.id.episodes_sort).setVisible(episodes.isNotEmpty())
-        toolbar.menu.findItem(R.id.filter_items).setVisible(episodes.isNotEmpty())
-        toolbar.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
+        toolbar.menu.findItem(R.id.episodes_sort).isVisible = episodes.isNotEmpty()
+        toolbar.menu.findItem(R.id.filter_items).isVisible = episodes.isNotEmpty()
+        toolbar.menu.findItem(R.id.clear_history_item).isVisible = episodes.isNotEmpty()
 
         swipeActions.setFilter(getFilter())
         var info = "${episodes.size} episodes"

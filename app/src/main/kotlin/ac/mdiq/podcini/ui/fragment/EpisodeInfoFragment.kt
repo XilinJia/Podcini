@@ -34,7 +34,6 @@ import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.text.TextUtils
@@ -90,9 +89,6 @@ import okhttp3.Request.Builder
 import java.io.File
 import java.util.*
 
-/**
- * Displays information about an Episode (FeedItem) and actions.
- */
 class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -348,8 +344,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (episode == null) return false
                 val notes = episode!!.description
                 if (!notes.isNullOrEmpty()) {
-                    val shareText = if (Build.VERSION.SDK_INT >= 24) HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-                    else HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+//                    val shareText = if (Build.VERSION.SDK_INT >= 24) HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+//                    else HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
                     val intent = ShareCompat.IntentBuilder(context)
                         .setType("text/plain")
@@ -774,8 +771,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (textSpeech?.isVisible == true) {
                     if (ttsPlaying) textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
                 }
-                menu.findItem(R.id.share_notes)?.setVisible(readMode)
-                menu.findItem(R.id.switchJS)?.setVisible(!readMode)
+                menu.findItem(R.id.share_notes)?.isVisible = readMode
+                menu.findItem(R.id.switchJS)?.isVisible = !readMode
                 val btn = menu.findItem(R.id.switch_home)
                 if (readMode) btn?.setIcon(R.drawable.baseline_home_24)
                 else btn?.setIcon(R.drawable.outline_home_24)

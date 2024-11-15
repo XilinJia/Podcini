@@ -244,7 +244,7 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
                 Row {
                     Button({ onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) }
                     Button({
-                        val feed = if (feed_ == null) createSynthetic(0, name, hasVideo) else feed_
+                        val feed = feed_ ?: createSynthetic(0, name, hasVideo)
                         if (feed_ == null) {
                             feed.type = if (isYoutube) Feed.FeedType.YOUTUBE.name else Feed.FeedType.RSS.name
                             if (hasVideo) feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW

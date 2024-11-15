@@ -104,7 +104,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated ?: true) }
+                                var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated != false) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
@@ -138,7 +138,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.pref_stream_over_download_title), style = MaterialTheme.typography.titleLarge, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false) }
+                                var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload == true) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
@@ -213,7 +213,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.audo_add_new_queue), style = MaterialTheme.typography.titleLarge, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(feed?.preferences?.autoAddNewToQueue ?: true) }
+                                var checked by remember { mutableStateOf(feed?.preferences?.autoAddNewToQueue != false) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
@@ -302,7 +302,7 @@ class FeedSettingsFragment : Fragment() {
                     }
                     if (isEnableAutodownload && feed?.type != Feed.FeedType.YOUTUBE.name) {
                         //                    auto download
-                        var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload ?: false) }
+                        var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload == true) }
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 Text(text = stringResource(R.string.auto_download_label), style = MaterialTheme.typography.titleLarge, color = textColor)
@@ -341,7 +341,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(text = stringResource(R.string.pref_auto_download_counting_played_title), style = MaterialTheme.typography.titleLarge, color = textColor)
                                     Spacer(modifier = Modifier.weight(1f))
-                                    var checked by remember { mutableStateOf(feed?.preferences?.countingPlayed ?: true) }
+                                    var checked by remember { mutableStateOf(feed?.preferences?.countingPlayed != false) }
                                     Switch(checked = checked, modifier = Modifier.height(24.dp),
                                         onCheckedChange = {
                                             checked = it
@@ -800,9 +800,7 @@ class FeedSettingsFragment : Fragment() {
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                 val newSpeed = if (binding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
                 else binding.seekBar.currentSpeed
-                feed = upsertBlk(feed!!) {
-                    it.preferences?.playSpeed = newSpeed
-                }
+                feed = upsertBlk(feed!!) { it.preferences?.playSpeed = newSpeed }
             }
             .setNegativeButton(R.string.cancel_label, null)
             .create()

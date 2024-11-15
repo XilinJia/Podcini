@@ -344,7 +344,7 @@ object Queues {
                     val random = Random()
                     return random.nextInt(queueItems.size + 1)
                 }
-                else -> throw AssertionError("calcPosition() : unrecognized enqueueLocation option: $enqueueLocation")
+//                else -> throw AssertionError("calcPosition() : unrecognized enqueueLocation option: $enqueueLocation")
             }
         }
         private fun getPositionOfFirstNonDownloadingItem(startPosition: Int, queueItems: List<Episode>): Int {

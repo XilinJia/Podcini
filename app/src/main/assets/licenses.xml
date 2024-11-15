@@ -114,10 +114,10 @@
         website="https://github.com/ByteHamster/SearchPreference"
         license="MIT"
         licenseText="LICENSE_SEARCHPREFERENCE.txt" />
-    <library
-        name="Triangle Label View"
-        author="Shota Saito"
-        website="https://github.com/shts/TriangleLabelView"
-        license="Apache 2.0"
-        licenseText="LICENSE_TRIANGLE_LABEL_VIEW.txt" />
+<!--    <library-->
+<!--        name="Triangle Label View"-->
+<!--        author="Shota Saito"-->
+<!--        website="https://github.com/shts/TriangleLabelView"-->
+<!--        license="Apache 2.0"-->
+<!--        licenseText="LICENSE_TRIANGLE_LABEL_VIEW.txt" />-->
 </libraries>

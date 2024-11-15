@@ -318,11 +318,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun refreshToolbarState() {
-        toolbar.menu?.findItem(R.id.reconnect_local_folder)?.setVisible(feed.isLocalFeed)
-        toolbar.menu?.findItem(R.id.share_item)?.setVisible(!feed.isLocalFeed)
-        toolbar.menu?.findItem(R.id.visit_website_item)
-            ?.setVisible(feed.link != null && IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed.link))))
-        toolbar.menu?.findItem(R.id.edit_feed_url_item)?.setVisible(!feed.isLocalFeed)
+        toolbar.menu?.findItem(R.id.reconnect_local_folder)?.isVisible = feed.isLocalFeed
+        toolbar.menu?.findItem(R.id.share_item)?.isVisible = !feed.isLocalFeed
+        toolbar.menu?.findItem(R.id.visit_website_item)?.isVisible = feed.link != null && IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed.link)))
+        toolbar.menu?.findItem(R.id.edit_feed_url_item)?.isVisible = !feed.isLocalFeed
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {

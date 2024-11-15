@@ -11,8 +11,7 @@ import androidx.work.*
 class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
 
     override fun doWork(): Result {
-        try {
-            updateWidget()
+        try { updateWidget()
         } catch (e: Exception) {
             Logd(TAG, "Failed to update Podcini widget: $e")
             return Result.failure()

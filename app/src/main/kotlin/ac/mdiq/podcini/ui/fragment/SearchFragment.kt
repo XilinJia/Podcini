@@ -62,9 +62,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 
-/**
- * Performs a search operation on all feeds or one specific feed and displays the search result.
- */
 class SearchFragment : Fragment() {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
@@ -76,7 +73,7 @@ class SearchFragment : Fragment() {
     private val resultFeeds = mutableStateListOf<Feed>()
     private val results = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
-    protected var infoBarText = mutableStateOf("")
+    private var infoBarText = mutableStateOf("")
 
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())

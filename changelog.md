@@ -1,3 +1,12 @@
+# 6.13.11
+
+* created private shared preferences for Subscriptions view and moved related properties there from the apps prefs
+* persisted settings of tag spinner and queue spinner in Subscriptions view
+* fixed again the incorrect initial text on Spinner in Queues view
+* save played duration and time spent when playback of an episode is completed
+* some code cleaning and restructuring
+* gradle update
+
 # 6.13.10
 
 * fixed Spinner in Subscriptions: All tags vs Untagged irregularity

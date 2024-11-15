@@ -36,9 +36,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
 
-/**
- * Updates the state of the player widget.
- */
 object WidgetUpdater {
     private val TAG: String = WidgetUpdater::class.simpleName ?: "Anonymous"
 

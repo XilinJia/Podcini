@@ -4,10 +4,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
-import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.runtime.getValue
@@ -18,6 +17,7 @@ import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
 import java.io.File
+import java.io.IOException
 import java.util.*
 import kotlin.math.max
 
@@ -229,7 +229,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     fun hasEmbeddedPicture(): Boolean {
 //        TODO: checkEmbeddedPicture needs to update current copy
         if (hasEmbeddedPicture == null) checkEmbeddedPicture()
-        return hasEmbeddedPicture ?: false
+        return hasEmbeddedPicture == true
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -409,6 +409,15 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         result = 31 * result + playedDurationWhenStarted
         result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
         return result
+    }
+
+    /**
+     * On SDK<29, this class does not have a close method yet, so the app crashes when using try-with-resources.
+     */
+    class MediaMetadataRetrieverCompat : MediaMetadataRetriever(), AutoCloseable {
+        override fun close() {
+            try { release() } catch (e: IOException) { e.printStackTrace() }
+        }
     }
 
     companion object {

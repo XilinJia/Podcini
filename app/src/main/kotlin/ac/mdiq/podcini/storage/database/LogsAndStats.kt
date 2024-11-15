@@ -4,7 +4,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -28,6 +27,13 @@ object LogsAndStats {
                 upsert(status) {}
                 EventFlow.postEvent(FlowEvent.DownloadLogEvent())
             }
+        }
+    }
+
+    /** Compares the completion date of two DownloadResult objects.  */
+    class DownloadResultComparator : Comparator<DownloadResult> {
+        override fun compare(lhs: DownloadResult, rhs: DownloadResult): Int {
+            return rhs.getCompletionDate().compareTo(lhs.getCompletionDate())
         }
     }
 }

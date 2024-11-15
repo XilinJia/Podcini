@@ -344,9 +344,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
     }
 
     fun subscribe(feed: Feed) {
-        while (feed.isBuilding) {
-            runBlocking { delay(200) }
-        }
+        while (feed.isBuilding) runBlocking { delay(200) }
         feed.id = 0L
         for (item in feed.episodes) {
             item.id = 0L

@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.util.Consumer
+import kotlin.math.roundToInt
 
 class PlaybackSpeedSeekBar : FrameLayout {
     private var _binding: PlaybackSpeedSeekBarBinding? = null
@@ -15,6 +16,9 @@ class PlaybackSpeedSeekBar : FrameLayout {
 
     private lateinit var seekBar: SeekBar
     private var progressChangedListener: Consumer<Float>? = null
+
+    val currentSpeed: Float
+        get() = (seekBar.progress + 10) / 20.0f
 
     constructor(context: Context) : super(context) {
         setup()
@@ -39,23 +43,18 @@ class PlaybackSpeedSeekBar : FrameLayout {
                 val playbackSpeed = (progress + 10) / 20.0f
                 progressChangedListener?.accept(playbackSpeed)
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
-
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
     }
 
     fun updateSpeed(speedMultiplier: Float) {
-        seekBar.progress = Math.round((20 * speedMultiplier) - 10)
+        seekBar.progress = ((20 * speedMultiplier) - 10).roundToInt()
     }
 
     fun setProgressChangedListener(progressChangedListener: Consumer<Float>?) {
         this.progressChangedListener = progressChangedListener
     }
-
-    val currentSpeed: Float
-        get() = (seekBar.progress + 10) / 20.0f
 
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)

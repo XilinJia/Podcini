@@ -62,9 +62,6 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
-/**
- * Displays a list of FeedItems.
- */
  class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
@@ -384,10 +381,10 @@ import java.util.concurrent.Semaphore
     private fun updateToolbar() {
         if (feed == null) return
 
-        binding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(feed!!.link != null)
-        binding.toolbar.menu.findItem(R.id.refresh_complete_item).setVisible(feed!!.isPaged)
-        if (StringUtils.isBlank(feed!!.link)) binding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(false)
-        if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_feed).setVisible(false)
+        binding.toolbar.menu.findItem(R.id.visit_website_item).isVisible = feed!!.link != null
+        binding.toolbar.menu.findItem(R.id.refresh_complete_item).isVisible = feed!!.isPaged
+        if (StringUtils.isBlank(feed!!.link)) binding.toolbar.menu.findItem(R.id.visit_website_item).isVisible = false
+        if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_feed).isVisible = false
     }
 
 //    override fun onConfigurationChanged(newConfig: Configuration) {
@@ -451,20 +448,21 @@ import java.util.concurrent.Semaphore
         return true
     }
 
+     // TODO: not really needed
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         if (feed == null || episodes.isEmpty()) return
-        var i = 0
-        val size: Int = event.episodes.size
-        while (i < size) {
-            val item = event.episodes[i++]
-            if (item.feedId != feed!!.id) continue
-            val pos: Int = ieMap[item.id] ?: -1
-            if (pos >= 0) {
-//                episodes[pos].inQueueState.value = event.inQueue()
-//                queueChanged++
-            }
-            break
-        }
+//        var i = 0
+//        val size: Int = event.episodes.size
+//        while (i < size) {
+//            val item = event.episodes[i++]
+//            if (item.feedId != feed!!.id) continue
+//            val pos: Int = ieMap[item.id] ?: -1
+//            if (pos >= 0) {
+////                episodes[pos].inQueueState.value = event.inQueue()
+////                queueChanged++
+//            }
+//            break
+//        }
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {

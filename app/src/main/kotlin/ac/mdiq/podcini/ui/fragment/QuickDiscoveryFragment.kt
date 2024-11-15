@@ -207,7 +207,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         val podcast: PodcastSearchResult? = adapter.getItem(position)
         if (podcast?.feedUrl.isNullOrEmpty()) return
 
-        val fragment: Fragment = OnlineFeedFragment.newInstance(podcast!!.feedUrl!!)
+        val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
@@ -368,7 +368,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             if (result.isNotEmpty()) {
                 searchResults.addAll(result)
                 noResultText = ""
-            } else noResultText = getString(R.string.no_results_for_query, "")
+            } else noResultText = getString(R.string.no_results_for_query)
             showProgress = false
         }
 

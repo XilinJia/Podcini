@@ -32,6 +32,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -89,6 +90,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences("SubscriptionsFragmentPrefs", Context.MODE_PRIVATE) }
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -97,8 +99,38 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private val tags: MutableList<String> = mutableListOf()
     private val queueIds: MutableList<Long> = mutableListOf()
-    private var tagFilterIndex = 1
-    private var queueFilterIndex = 0
+
+    private var _feedsFilter: String? = null
+    private var feedsFilter: String
+        get() {
+            if (_feedsFilter == null) _feedsFilter = prefs.getString("feedsFilter", "") ?: ""
+            return _feedsFilter ?: ""
+        }
+        set(filter) {
+            _feedsFilter = filter
+            prefs.edit().putString("feedsFilter", filter).apply()
+        }
+
+    private var _tagFilterIndex: Int = -1
+    private var tagFilterIndex: Int
+        get() {
+            if (_tagFilterIndex < 0) _tagFilterIndex = prefs.getInt("tagFilterIndex", 0)
+            return _tagFilterIndex
+        }
+        set(index) {
+            _tagFilterIndex = index
+            prefs.edit().putInt("tagFilterIndex", index).apply()
+        }
+    private var _queueFilterIndex: Int = -1
+    private var queueFilterIndex: Int
+        get() {
+            if (_queueFilterIndex < 0) _queueFilterIndex = prefs.getInt("queueFilterIndex", 0)
+            return _queueFilterIndex
+        }
+        set(index) {
+            _queueFilterIndex = index
+            prefs.edit().putInt("queueFilterIndex", index).apply()
+        }
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
@@ -176,12 +208,12 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Column {
                     InforBar()
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
-                        Spinner(items = spinnerTexts, selectedItem = spinnerTexts[0]) { index: Int ->
+                        Spinner(items = spinnerTexts, selectedIndex = queueFilterIndex) { index: Int ->
                             queueFilterIndex = index
                             loadSubscriptions()
                         }
                         Spacer(Modifier.weight(1f))
-                        Spinner(items = tags, selectedItem = tags[0]) { index: Int ->
+                        Spinner(items = tags, selectedIndex = tagFilterIndex) { index: Int ->
                             tagFilterIndex = index
                             loadSubscriptions()
                         }
@@ -439,7 +471,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                         if (selectedOption == "Custom") {
                             val queues = realm.query(PlayQueue::class).find()
-                            Spinner(items = queues.map { it.name }, selectedItem = "Default") { index ->
+                            Spinner(items = queues.map { it.name }, selectedIndex = 0) { index ->
                                 Logd(TAG, "Queue selected: ${queues[index]}")
                                 saveFeedPreferences { it: FeedPreferences -> it.queueId = queues[index].id }
                                 onDismissRequest()
@@ -793,18 +825,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
                             selected.clear()
-                            for (i in 0..longPressIndex) {
-                                selected.add(feedListFiltered[i])
-                            }
+                            for (i in 0..longPressIndex) selected.add(feedListFiltered[i])
                             selectedSize = selected.size
                             Logd(TAG, "selectedIds: ${selected.size}")
                         }))
                     Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
                             selected.clear()
-                            for (i in longPressIndex..<feedListFiltered.size) {
-                                selected.add(feedListFiltered[i])
-                            }
+                            for (i in longPressIndex..<feedListFiltered.size) selected.add(feedListFiltered[i])
                             selectedSize = selected.size
                             Logd(TAG, "selectedIds: ${selected.size}")
                         }))
@@ -853,47 +881,37 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
     private fun sortArraysFromCodeSet() {
-        for (i in playStateSort.indices) {
-            playStateSort[i].value = false
-        }
-        for (c in playStateCodeSet) {
-            val e = PlayState.fromCode(c.toInt())
-            playStateSort[e.ordinal].value = true
-        }
-        for (i in ratingSort.indices) {
-            ratingSort[i].value = false
-        }
-        for (c in ratingCodeSet) {
-            val e = Rating.fromCode(c.toInt())
-            ratingSort[e.ordinal].value = true
-        }
+        for (i in playStateSort.indices) playStateSort[i].value = false
+        for (c in playStateCodeSet) playStateSort[PlayState.fromCode(c.toInt()).ordinal].value = true
+        for (i in ratingSort.indices) ratingSort[i].value = false
+        for (c in ratingCodeSet) ratingSort[Rating.fromCode(c.toInt()).ordinal].value = true
     }
 
     private fun saveSortingPrefs() {
-        appPrefs.edit().putInt("sortIndex", sortIndex).apply()
-        appPrefs.edit().putBoolean("titleAscending", titleAscending).apply()
-        appPrefs.edit().putBoolean("dateAscending", dateAscending).apply()
-        appPrefs.edit().putBoolean("countAscending", countAscending).apply()
-        appPrefs.edit().putInt("dateSortIndex", dateSortIndex).apply()
-        appPrefs.edit().putInt("downlaodedSortIndex", downlaodedSortIndex).apply()
-        appPrefs.edit().putInt("commentedSortIndex", commentedSortIndex).apply()
+        prefs.edit().putInt("sortIndex", sortIndex).apply()
+        prefs.edit().putBoolean("titleAscending", titleAscending).apply()
+        prefs.edit().putBoolean("dateAscending", dateAscending).apply()
+        prefs.edit().putBoolean("countAscending", countAscending).apply()
+        prefs.edit().putInt("dateSortIndex", dateSortIndex).apply()
+        prefs.edit().putInt("downlaodedSortIndex", downlaodedSortIndex).apply()
+        prefs.edit().putInt("commentedSortIndex", commentedSortIndex).apply()
         sortArrays2CodeSet()
-        appPrefs.edit().putStringSet("playStateCodeSet", playStateCodeSet).apply()
-        appPrefs.edit().putStringSet("ratingCodeSet", ratingCodeSet).apply()
+        prefs.edit().putStringSet("playStateCodeSet", playStateCodeSet).apply()
+        prefs.edit().putStringSet("ratingCodeSet", ratingCodeSet).apply()
     }
 
     private fun getSortingPrefs() {
-        sortIndex = appPrefs.getInt("sortIndex", 0)
-        titleAscending = appPrefs.getBoolean("titleAscending", true)
-        dateAscending = appPrefs.getBoolean("dateAscending", true)
-        countAscending = appPrefs.getBoolean("countAscending", true)
-        dateSortIndex = appPrefs.getInt("dateSortIndex", 0)
-        downlaodedSortIndex = appPrefs.getInt("downlaodedSortIndex", -1)
-        commentedSortIndex = appPrefs.getInt("commentedSortIndex", -1)
+        sortIndex = prefs.getInt("sortIndex", 0)
+        titleAscending = prefs.getBoolean("titleAscending", true)
+        dateAscending = prefs.getBoolean("dateAscending", true)
+        countAscending = prefs.getBoolean("countAscending", true)
+        dateSortIndex = prefs.getInt("dateSortIndex", 0)
+        downlaodedSortIndex = prefs.getInt("downlaodedSortIndex", -1)
+        commentedSortIndex = prefs.getInt("commentedSortIndex", -1)
         playStateCodeSet.clear()
-        playStateCodeSet.addAll(appPrefs.getStringSet("playStateCodeSet", setOf())!!)
+        playStateCodeSet.addAll(prefs.getStringSet("playStateCodeSet", setOf())!!)
         ratingCodeSet.clear()
-        ratingCodeSet.addAll(appPrefs.getStringSet("ratingCodeSet", setOf())!!)
+        ratingCodeSet.addAll(prefs.getStringSet("ratingCodeSet", setOf())!!)
         sortArraysFromCodeSet()
     }
 
@@ -1486,24 +1504,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         private const val ARGUMENT_FOLDER = "folder"
 
         private var prevFeedUpdatingEvent: FlowEvent.FeedUpdatingEvent? = null
-
-//        val feedOrderBy: Int
-//            get() {
-//                val value = appPrefs.getString(UserPreferences.Prefs.prefDrawerFeedOrder.name, "" + FeedSortOrder.UNPLAYED_NEW_OLD.index)
-//                return value!!.toInt()
-//            }
-//
-//        val feedOrderDir: Int
-//            get() {
-//                val value = appPrefs.getInt(UserPreferences.Prefs.prefDrawerFeedOrderDir.name, 0)
-//                return value
-//            }
-
-        var feedsFilter: String
-            get() = appPrefs.getString(UserPreferences.Prefs.prefFeedFilter.name, "")?:""
-            set(filter) {
-                appPrefs.edit().putString(UserPreferences.Prefs.prefFeedFilter.name, filter).apply()
-            }
 
         fun newInstance(folderTitle: String?): SubscriptionsFragment {
             val fragment = SubscriptionsFragment()

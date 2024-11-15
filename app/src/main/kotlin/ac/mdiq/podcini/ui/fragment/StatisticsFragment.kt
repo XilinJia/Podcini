@@ -367,16 +367,16 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun refreshToolbarState() {
         when (selectedTabIndex.value) {
             0 -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(true)
-                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(true)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = true
+                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = true
             }
             1 -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(true)
-                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(false)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = true
+                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = false
             }
             else -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.setVisible(false)
-                toolbar.menu?.findItem(R.id.statistics_filter)?.setVisible(false)
+                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = false
+                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = false
             }
         }
     }

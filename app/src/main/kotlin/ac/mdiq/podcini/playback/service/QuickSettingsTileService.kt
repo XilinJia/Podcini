@@ -1,21 +1,16 @@
 package ac.mdiq.podcini.playback.service
 
+import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PLAYING
-import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.util.Logd
 import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.view.KeyEvent
-import androidx.annotation.RequiresApi
 
-
-
-@RequiresApi(api = Build.VERSION_CODES.N)
 class QuickSettingsTileService : TileService() {
     override fun onTileAdded() {
         super.onTileAdded()

@@ -46,15 +46,11 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         _binding = SettingsActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG) == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(binding.settingsContainer.id, MainPreferencesFragment(), FRAGMENT_TAG)
-                .commit()
-        }
+        if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG) == null)
+            supportFragmentManager.beginTransaction().replace(binding.settingsContainer.id, MainPreferencesFragment(), FRAGMENT_TAG).commit()
+
         val intent = intent
-        if (intent.getBooleanExtra(OPEN_AUTO_DOWNLOAD_SETTINGS, false)) {
-            openScreen(R.xml.preferences_autodownload)
-        }
+        if (intent.getBooleanExtra(OPEN_AUTO_DOWNLOAD_SETTINGS, false)) openScreen(R.xml.preferences_autodownload)
     }
 
     private fun getPreferenceScreen(screen: Int): PreferenceFragmentCompat? {
@@ -81,27 +77,20 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
             intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
             startActivity(intent)
-        } else {
-            supportFragmentManager.beginTransaction()
-                .replace(binding.settingsContainer.id, fragment!!)
-                .addToBackStack(getString(getTitleOfPage(screen)))
-                .commit()
-        }
+        } else
+            supportFragmentManager.beginTransaction().replace(binding.settingsContainer.id, fragment!!).addToBackStack(getString(getTitleOfPage(screen))).commit()
 
         return fragment
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            if (supportFragmentManager.backStackEntryCount == 0) {
-                finish()
-            } else {
+            if (supportFragmentManager.backStackEntryCount == 0) finish()
+            else {
                 val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 var view = currentFocus
                 //If no view currently has focus, create a new one, just so we can grab a window token from it
-                if (view == null) {
-                    view = View(this)
-                }
+                if (view == null) view = View(this)
                 imm.hideSoftInputFromWindow(view.windowToken, 0)
                 supportFragmentManager.popBackStack()
             }
@@ -156,9 +145,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     fun onEventMainThread(event: FlowEvent.MessageEvent) {
 //        Logd(FRAGMENT_TAG, "onEvent($event)")
         val s = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
-        if (event.action != null) {
-            s.setAction(event.actionText) { event.action.accept(this) }
-        }
+        if (event.action != null) s.setAction(event.actionText) { event.action.accept(this) }
         s.show()
     }
 
@@ -167,35 +154,16 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         const val OPEN_AUTO_DOWNLOAD_SETTINGS: String = "OpenAutoDownloadSettings"
         @JvmStatic
         fun getTitleOfPage(preferences: Int): Int {
-            when (preferences) {
-                R.xml.preferences_downloads -> {
-                    return R.string.downloads_pref
-                }
-                R.xml.preferences_autodownload -> {
-                    return R.string.pref_automatic_download_title
-                }
-                R.xml.preferences_playback -> {
-                    return R.string.playback_pref
-                }
-                R.xml.preferences_import_export -> {
-                    return R.string.import_export_pref
-                }
-                R.xml.preferences_user_interface -> {
-                    return R.string.user_interface_label
-                }
-                R.xml.preferences_synchronization -> {
-                    return R.string.synchronization_pref
-                }
-                R.xml.preferences_notifications -> {
-                    return R.string.notification_pref_fragment
-                }
-//                R.xml.feed_settings -> {
-//                    return R.string.feed_settings_label
-//                }
-                R.xml.preferences_swipe -> {
-                    return R.string.swipeactions_label
-                }
-                else -> return R.string.settings_label
+            return when (preferences) {
+                R.xml.preferences_downloads -> R.string.downloads_pref
+                R.xml.preferences_autodownload -> R.string.pref_automatic_download_title
+                R.xml.preferences_playback -> R.string.playback_pref
+                R.xml.preferences_import_export -> R.string.import_export_pref
+                R.xml.preferences_user_interface -> R.string.user_interface_label
+                R.xml.preferences_synchronization -> R.string.synchronization_pref
+                R.xml.preferences_notifications -> R.string.notification_pref_fragment
+                R.xml.preferences_swipe -> R.string.swipeactions_label
+                else -> R.string.settings_label
             }
         }
     }

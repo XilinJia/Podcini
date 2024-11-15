@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,7 +57,7 @@ fun ChaptersDialog(media: Playable, onDismissRequest: () -> Unit) {
                                 Text(ch.title ?: "No title", color = textColor, fontWeight = FontWeight.Bold)
 //                                Text(ch.link?: "")
                                 val duration = if (index + 1 < chapters.size) chapters[index + 1].start - ch.start
-                                else (media.getDuration() ?: 0) - ch.start
+                                else media.getDuration() - ch.start
                                 Text(stringResource(R.string.chapter_duration0) + getDurationStringLocalized(LocalContext.current, duration), color = textColor)
                             }
                             val playRes = if (index == currentChapterIndex) R.drawable.ic_replay else R.drawable.ic_play_48dp

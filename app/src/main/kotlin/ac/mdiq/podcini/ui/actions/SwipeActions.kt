@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.actions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -14,19 +15,19 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes
-import ac.mdiq.podcini.ui.actions.SwipeAction.ActionTypes.NO_ACTION
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.util.TypedValue
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -50,12 +51,31 @@ import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
-open class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
+interface SwipeAction {
+    fun getId(): String?
+    fun getTitle(context: Context): String
+
+    @DrawableRes
+    fun getActionIcon(): Int
+
+    @AttrRes
+    @DrawableRes
+    fun getActionColor(): Int
+
+    fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter)
+
+    fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+        return false
+    }
+}
+
+class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
 
     @set:JvmName("setFilterProperty")
     var filter: EpisodeFilter? = null
@@ -111,6 +131,22 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
     }
 
+    enum class ActionTypes {
+        NO_ACTION,
+        COMBO,
+        RATING,
+        COMMENT,
+        SET_PLAY_STATE,
+        ADD_TO_QUEUE,
+        PUT_TO_QUEUE,
+        REMOVE_FROM_QUEUE,
+        START_DOWNLOAD,
+        DELETE,
+        REMOVE_FROM_HISTORY,
+        SHELVE,
+        ERASE
+    }
+
     class AddToQueueSwipeAction : SwipeAction {
         override fun getId(): String {
             return ActionTypes.ADD_TO_QUEUE.name
@@ -155,7 +191,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
                             Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
                                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                     for (action in swipeActions) {
-                                        if (action.getId() == NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
+                                        if (action.getId() == ActionTypes.NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
                                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                                             action.performAction(item, fragment, filter)
                                             showDialog = false
@@ -280,7 +316,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
     class NoActionSwipeAction : SwipeAction {
         override fun getId(): String {
-            return NO_ACTION.name
+            return ActionTypes.NO_ACTION.name
         }
         override fun getActionIcon(): Int {
             return R.drawable.ic_questionmark
@@ -569,13 +605,32 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
 
          @JvmStatic
         fun getPrefsWithDefaults(tag: String): Actions {
-             val defaultActions = "${NO_ACTION.name},${NO_ACTION.name}"
+             val defaultActions = "${ActionTypes.NO_ACTION.name},${ActionTypes.NO_ACTION.name}"
             return getPrefs(tag, defaultActions)
         }
 
 //        fun isSwipeActionEnabled(tag: String): Boolean {
 //            return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
 //        }
+
+        fun deleteEpisodesWarnLocal(context: Context, items: Iterable<Episode>) {
+            val localItems: MutableList<Episode> = mutableListOf()
+            for (item in items) {
+                if (item.feed?.isLocalFeed == true) localItems.add(item)
+                else deleteEpisodeMedia(context, item)
+            }
+
+            if (localItems.isNotEmpty()) {
+                MaterialAlertDialogBuilder(context)
+                    .setTitle(R.string.delete_episode_label)
+                    .setMessage(R.string.delete_local_feed_warning_body)
+                    .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int ->
+                        for (item in localItems) deleteEpisodeMedia(context, item)
+                    }
+                    .setNegativeButton(R.string.cancel_label, null)
+                    .show()
+            }
+        }
 
         fun showSettingDialog(fragment: Fragment, tag: String) {
             val composeView = ComposeView(fragment.requireContext()).apply {

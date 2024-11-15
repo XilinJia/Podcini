@@ -13,7 +13,6 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOW
 import ac.mdiq.podcini.preferences.UserPreferences.Prefs
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
-import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -215,11 +214,7 @@ object Episodes {
      */
     fun setPlayState(played: Int, resetMediaPosition: Boolean, vararg episodes: Episode) : Job {
         Logd(TAG, "setPlayState called")
-        return runOnIOScope {
-            for (episode in episodes) {
-                setPlayStateSync(played, episode, resetMediaPosition)
-            }
-        }
+        return runOnIOScope { for (episode in episodes) setPlayStateSync(played, episode, resetMediaPosition) }
     }
 
     suspend fun setPlayStateSync(played: Int, episode: Episode, resetMediaPosition: Boolean, removeFromQueue: Boolean = true) : Episode {

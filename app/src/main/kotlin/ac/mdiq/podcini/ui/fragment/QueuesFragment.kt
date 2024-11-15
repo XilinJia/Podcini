@@ -143,7 +143,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         queueNames = queues.map { it.name }.toTypedArray()
         spinnerTexts.clear()
         spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
-        curIndex = queues.indexOf(curQueue)
+//        curIndex = queues.indexOf(curQueue)
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
@@ -156,7 +156,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Logd(TAG, "Queue selected: $queues[index].name")
                         val prevQueueSize = curQueue.size()
                         curQueue = upsertBlk(queues[index]) { it.update() }
-                        toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
+                        toolbar.menu?.findItem(R.id.rename_queue)?.isVisible = curQueue.name != "Default"
                         loadCurQueue(true)
                         playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
                     }
@@ -246,7 +246,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
              items(feedsAssociated.size, key = {index -> feedsAssociated[index].id}) { index ->
                  val feed by remember { mutableStateOf(feedsAssociated[index]) }
                  ConstraintLayout {
-                     val (coverImage, episodeCount, rating, error) = createRefs()
+                     val (coverImage, episodeCount, rating, _) = createRefs()
                      val imgLoc = remember(feed) { feed.imageUrl }
                      AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                          .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
@@ -374,7 +374,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
-        curIndex = queues.indexOf(curQueue)
+        curIndex = queues.indexOfFirst { it.id == curQueue.id }
         spinnerTexts.clear()
         spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
         refreshMenuItems()
@@ -451,20 +451,20 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun refreshMenuItems() {
         if (showBin) {
-            toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(false)
-            toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(false)
-            toolbar.menu?.findItem(R.id.associated_feed)?.setVisible(false)
-            toolbar.menu?.findItem(R.id.add_queue)?.setVisible(false)
-            toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(false)
-            toolbar.menu?.findItem(R.id.action_search)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.queue_sort)?.isVisible = false
+            toolbar.menu?.findItem(R.id.rename_queue)?.isVisible = false
+            toolbar.menu?.findItem(R.id.associated_feed)?.isVisible = false
+            toolbar.menu?.findItem(R.id.add_queue)?.isVisible = false
+            toolbar.menu?.findItem(R.id.queue_lock)?.isVisible = false
+            toolbar.menu?.findItem(R.id.action_search)?.isVisible = false
         } else {
-            toolbar.menu?.findItem(R.id.action_search)?.setVisible(true)
-            toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(true)
-            toolbar.menu?.findItem(R.id.associated_feed)?.setVisible(true)
-            toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
-            toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!isQueueKeepSorted)
-            toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
-            toolbar.menu?.findItem(R.id.add_queue)?.setVisible(queueNames.size < 9)
+            toolbar.menu?.findItem(R.id.action_search)?.isVisible = true
+            toolbar.menu?.findItem(R.id.queue_sort)?.isVisible = true
+            toolbar.menu?.findItem(R.id.associated_feed)?.isVisible = true
+            toolbar.menu?.findItem(R.id.queue_lock)?.isChecked = isQueueLocked
+            toolbar.menu?.findItem(R.id.queue_lock)?.isVisible = !isQueueKeepSorted
+            toolbar.menu?.findItem(R.id.rename_queue)?.isVisible = curQueue.name != "Default"
+            toolbar.menu?.findItem(R.id.add_queue)?.isVisible = queueNames.size < 9
         }
     }
 
@@ -584,7 +584,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 upsertBlk(newQueue) {}
                                 queues = realm.query(PlayQueue::class).find()
                                 queueNames = queues.map { it.name }.toTypedArray()
-                                curIndex = queues.indexOf(curQueue)
+                                curIndex = queues.indexOfFirst { it.id == curQueue.id }
                                 spinnerTexts.clear()
                                 spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
                                 onDismiss()
@@ -625,7 +625,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         refreshMenuItems()
-        if (queueItems.size == 0) {
+        if (queueItems.isEmpty()) {
             if (locked) (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
             else (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_unlocked, Snackbar.LENGTH_SHORT)
         }
@@ -673,7 +673,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             for (e in queueItems) vms.add(EpisodeVM(e))
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
             queues = realm.query(PlayQueue::class).find()
-            curIndex = queues.indexOf(curQueue)
+            curIndex = queues.indexOfFirst { it.id == curQueue.id }
             spinnerTexts.clear()
             spinnerTexts.addAll(queues.map { "${it.name} : ${it.size()}" })
             refreshInfoBar()

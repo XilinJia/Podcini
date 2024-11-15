@@ -79,7 +79,7 @@ class ShownotesCleaner(context: Context) {
     private fun addTimecodes(document: Document, playableDuration: Int) {
         val elementsWithTimeCodes = document.body().getElementsMatchingOwnText(TIMECODE_REGEX)
         Logd(TAG, "Recognized " + elementsWithTimeCodes.size + " timecodes")
-        if (elementsWithTimeCodes.size == 0) return  // No elements with timecodes
+        if (elementsWithTimeCodes.isEmpty()) return  // No elements with timecodes
 
         var useHourFormat = true
         if (playableDuration != Int.MAX_VALUE) {

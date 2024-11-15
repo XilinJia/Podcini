@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.view
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.utils.NetworkUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.ui.actions.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.util.*
@@ -142,7 +141,23 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
             menu.add(Menu.NONE, R.id.share_url_item, Menu.NONE, R.string.share_url_label)
             menu.setHeaderTitle(selectedUrl)
         }
-        MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this.onContextItemSelected(item) }
+        setOnClickListeners(menu) { item: MenuItem -> this.onContextItemSelected(item) }
+    }
+
+    /**
+     * When pressing a context menu item, Android calls onContextItemSelected
+     * for ALL fragments in arbitrary order, not just for the fragment that the
+     * context menu was created from. This assigns the listener to every menu item,
+     * so that the correct fragment is always called first and can consume the click.
+     *
+     * Note that Android still calls the onContextItemSelected methods of all fragments
+     * when the passed listener returns false.
+     */
+    fun setOnClickListeners(menu: Menu?, listener: MenuItem.OnMenuItemClickListener?) {
+        for (i in 0 until menu!!.size()) {
+            if (menu.getItem(i).subMenu != null) setOnClickListeners(menu.getItem(i).subMenu, listener)
+            menu.getItem(i).setOnMenuItemClickListener(listener)
+        }
     }
 
     fun setTimecodeSelectedListener(timecodeSelectedListener: Consumer<Int>?) {

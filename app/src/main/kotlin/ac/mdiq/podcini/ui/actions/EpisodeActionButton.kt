@@ -19,9 +19,9 @@ import ac.mdiq.podcini.storage.database.RealmDB
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
 import ac.mdiq.podcini.storage.utils.FilesUtils
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
-import ac.mdiq.podcini.ui.utils.LocalDeleteModal
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils
@@ -86,7 +86,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         val media = item.media ?: return TTSActionButton(item)
         val isDownloadingMedia = when (media.downloadUrl) {
             null -> false
-            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
+            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
         }
         Logd("ItemActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${item.title} ")
         return when {
@@ -292,7 +292,7 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
     }
     
     override fun onClick(context: Context) {
-        LocalDeleteModal.deleteEpisodesWarnLocal(context, listOf(item))
+        deleteEpisodesWarnLocal(context, listOf(item))
         actionState.value = getLabel()
     }
 }
@@ -360,7 +360,7 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 
     private fun shouldNotDownload(media: EpisodeMedia?): Boolean {
         if (media?.downloadUrl == null) return true
-        val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
+        val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
         return isDownloading || media.downloaded
     }
 

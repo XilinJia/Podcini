@@ -5,11 +5,11 @@ import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
+import ac.mdiq.podcini.storage.database.LogsAndStats.DownloadResultComparator
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
-import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.ShareReceiverActivity.Companion.receiveShared
@@ -301,7 +301,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @Deprecated("Deprecated in Java")
     override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.clear_logs_item).setVisible(shareLogs.isNotEmpty())
+        menu.findItem(R.id.clear_logs_item).isVisible = shareLogs.isNotEmpty()
     }
 
     private fun clearAllLogs() {

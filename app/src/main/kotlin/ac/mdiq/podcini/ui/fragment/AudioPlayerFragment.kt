@@ -97,7 +97,7 @@ import java.text.NumberFormat
 import kotlin.math.max
 
 class AudioPlayerFragment : Fragment() {
-    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF, Context.MODE_PRIVATE) }
+    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences("AudioPlayerFragmentPrefs", Context.MODE_PRIVATE) }
 
     private var isCollapsed by mutableStateOf(true)
 
@@ -999,13 +999,7 @@ class AudioPlayerFragment : Fragment() {
         val TAG = AudioPlayerFragment::class.simpleName ?: "Anonymous"
         var media3Controller: MediaController? = null
 
-        private const val PREF = "ItemDescriptionFragmentPrefs"
         private const val PREF_SCROLL_Y = "prefScrollY"
         private const val PREF_PLAYABLE_ID = "prefPlayableId"
-
-//        var prefs: SharedPreferences? = null
-//        fun getSharedPrefs(context: Context) {
-//            if (prefs == null) prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
-//        }
     }
 }

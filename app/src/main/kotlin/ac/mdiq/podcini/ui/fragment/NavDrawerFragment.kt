@@ -59,6 +59,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
     val TAG = this::class.simpleName ?: "Anonymous"
@@ -68,13 +69,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         super.onCreateView(inflater, container, savedInstanceState)
         checkHiddenItems()
         getRecentPodcasts()
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    MainView()
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
 
         Logd(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(composeView)
@@ -87,7 +82,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 navigationBarHeight = if (requireActivity().window.navigationBarDividerColor == Color.TRANSPARENT) 0f
                 else 1 * resources.displayMetrics.density // Assuming the divider is 1dp in height
             }
-            val bottomInset = max(0.0, Math.round(bars.bottom - navigationBarHeight).toDouble()).toFloat()
+            val bottomInset = max(0.0, (bars.bottom - navigationBarHeight).roundToInt().toDouble()).toFloat()
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
             insets
         }

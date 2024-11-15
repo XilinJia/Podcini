@@ -112,24 +112,16 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, 
     Logd("InforBar", "textState: ${text.value}")
     Row {
         Icon(imageVector = ImageVector.vectorResource(leftAction.value.getActionIcon()), tint = textColor, contentDescription = "left_action_icon",
-            modifier = Modifier
-                .width(24.dp)
-                .height(24.dp)
-                .clickable(onClick = actionConfig))
-        Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow", modifier = Modifier
-            .width(24.dp)
-            .height(24.dp))
+            modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
+        Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow",
+            modifier = Modifier.width(24.dp).height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
         Text(text.value, color = textColor, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.weight(1f))
-        Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier
-            .width(24.dp)
-            .height(24.dp))
+        Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow",
+            modifier = Modifier.width(24.dp).height(24.dp))
         Icon(imageVector = ImageVector.vectorResource(rightAction.value.getActionIcon()), tint = textColor, contentDescription = "right_action_icon",
-            modifier = Modifier
-                .width(24.dp)
-                .height(24.dp)
-                .clickable(onClick = actionConfig))
+            modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
     }
 }
 
@@ -213,20 +205,6 @@ class EpisodeVM(var episode: Episode) {
             }
         }
     }
-
-//    override fun equals(other: Any?): Boolean {
-//        if (this === other) return true
-//        if (javaClass != other?.javaClass) return false
-//        other as EpisodeVM
-//
-//        if (episode.id != other.episode.id) return false
-//        return true
-//    }
-//
-//    override fun hashCode(): Int {
-//        var result = episode.id.hashCode()
-//        return result
-//    }
 }
 
 @Composable
@@ -333,9 +311,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         if (removeChecked) {
                             val toRemove = mutableSetOf<Long>()
                             val toRemoveCur = mutableListOf<Episode>()
-                            selected.forEach { e ->
-                                if (curQueue.contains(e)) toRemoveCur.add(e)
-                            }
+                            selected.forEach { e -> if (curQueue.contains(e)) toRemoveCur.add(e) }
                             selected.forEach { e ->
                                 for (q in queues) {
                                     if (q.contains(e)) {
@@ -347,13 +323,9 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                             if (toRemove.isNotEmpty()) runBlocking { removeFromAllQueuesQuiet(toRemove.toList()) }
                             if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
                         }
-                        selected.forEach { e ->
-                            runBlocking { addToQueueSync(e, toQueue) }
-                        }
+                        selected.forEach { e -> runBlocking { addToQueueSync(e, toQueue) } }
                         onDismissRequest()
-                    }) {
-                        Text("Confirm")
-                    }
+                    }) { Text("Confirm") }
                 }
             }
         }
@@ -395,11 +367,7 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                 e_.media?.id = e_.id
                             } else {
                                 val feed = realm.query(Feed::class).query("id == $0", e_.feedId).first().find()
-                                if (feed != null) {
-                                    upsertBlk(feed) {
-                                        it.episodes.remove(e_)
-                                    }
-                                }
+                                if (feed != null) upsertBlk(feed) { it.episodes.remove(e_) }
                             }
                             upsertBlk(e_) {
                                 it.feed = toFeed
@@ -407,13 +375,9 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                 eList.add(it)
                             }
                         }
-                        upsertBlk(toFeed!!) {
-                            it.episodes.addAll(eList)
-                        }
+                        upsertBlk(toFeed!!) { it.episodes.addAll(eList) }
                         onDismissRequest()
-                    }) {
-                        Text("Confirm")
-                    }
+                    }) { Text("Confirm") }
                 }
             }
         }
@@ -464,9 +428,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                         } catch (e: Throwable) { Log.e("EraseEpisodesDialog", Log.getStackTraceString(e)) }
                     }
                     onDismissRequest()
-                }) {
-                    Text("Confirm")
-                }
+                }) { Text("Confirm") }
             }
         }
     }
@@ -490,9 +452,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 
     val showConfirmYoutubeDialog = remember { mutableStateOf(false) }
     val youtubeUrls = remember { mutableListOf<String>() }
-    ConfirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = {
-        showConfirmYoutubeDialog.value = false
-    })
+    ConfirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = { showConfirmYoutubeDialog.value = false })
 
     var showChooseRatingDialog by remember { mutableStateOf(false) }
     if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
@@ -513,152 +473,133 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
     fun EpisodeSpeedDial(modifier: Modifier = Modifier) {
         var isExpanded by remember { mutableStateOf(false) }
         val options = mutableListOf<@Composable () -> Unit>(
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_delete: ${selected.size}")
-                    runOnIOScope {
-                        for (item_ in selected) {
-                            var item = item_
-                            if (!item.isDownloaded && item.feed?.isLocalFeed != true) continue
-                            val media = item.media
-                            if (media != null) {
-                                val almostEnded = hasAlmostEnded(media)
-                                if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
-                                if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
-                                deleteEpisodeMedia(activity, item)
-                            }
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_delete: ${selected.size}")
+                runOnIOScope {
+                    for (item_ in selected) {
+                        var item = item_
+                        if (!item.isDownloaded && item.feed?.isLocalFeed != true) continue
+                        val media = item.media
+                        if (media != null) {
+                            val almostEnded = hasAlmostEnded(media)
+                            if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                            if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
+                            deleteEpisodeMedia(activity, item)
                         }
                     }
+                }
 //                    LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
-                }, verticalAlignment = Alignment.CenterVertically) {
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "Delete media")
                 Text(stringResource(id = R.string.delete_episode_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_download: ${selected.size}")
-                    for (episode in selected) {
-                        if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
-                    }
-                }, verticalAlignment = Alignment.CenterVertically) {
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_download: ${selected.size}")
+                for (episode in selected) {
+                    if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
+                }
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "Download")
                 Text(stringResource(id = R.string.download_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    showPlayStateDialog = true
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_mark_played: ${selected.size}")
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                showPlayStateDialog = true
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_mark_played: ${selected.size}")
 //                    setPlayState(PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
-                }, verticalAlignment = Alignment.CenterVertically) {
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mark_played), "Toggle played state")
                 Text(stringResource(id = R.string.set_play_state_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_playlist_remove: ${selected.size}")
-                    runOnIOScope {
-                        for (item_ in selected) {
-                            var item = item_
-                            val media = item.media
-                            if (media != null) {
-                                val almostEnded = hasAlmostEnded(media)
-                                if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
-                                if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
-                            }
-                            if (item.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, item)
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_playlist_remove: ${selected.size}")
+                runOnIOScope {
+                    for (item_ in selected) {
+                        var item = item_
+                        val media = item.media
+                        if (media != null) {
+                            val almostEnded = hasAlmostEnded(media)
+                            if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                            if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
                         }
-                        removeFromQueueSync(curQueue, *selected.toTypedArray())
-//                        removeFromQueue(*selected.toTypedArray())
+                        if (item.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, item)
                     }
-                }, verticalAlignment = Alignment.CenterVertically) {
+                    removeFromQueueSync(curQueue, *selected.toTypedArray())
+//                        removeFromQueue(*selected.toTypedArray())
+                }
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_remove), "Remove from active queue")
                 Text(stringResource(id = R.string.remove_from_queue_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_playlist_play: ${selected.size}")
-                    Queues.addToQueue(*selected.toTypedArray())
-                }, verticalAlignment = Alignment.CenterVertically) {
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_playlist_play: ${selected.size}")
+                Queues.addToQueue(*selected.toTypedArray())
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "Add to active queue")
                 Text(stringResource(id = R.string.add_to_queue_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "shelve_label: ${selected.size}")
-                    showShelveDialog = true
-                }, verticalAlignment = Alignment.CenterVertically) {
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "shelve_label: ${selected.size}")
+                showShelveDialog = true
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_shelves_24), "Shelve")
                 Text(stringResource(id = R.string.shelve_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    isExpanded = false
-                    selectMode = false
-                    Logd(TAG, "ic_playlist_play: ${selected.size}")
-                    showPutToQueueDialog = true
-                }, verticalAlignment = Alignment.CenterVertically) {
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                isExpanded = false
+                selectMode = false
+                Logd(TAG, "ic_playlist_play: ${selected.size}")
+                showPutToQueueDialog = true
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "Add to queue...")
                 Text(stringResource(id = R.string.put_in_queue_label)) } },
-            { Row(modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    selectMode = false
-                    Logd(TAG, "ic_star: ${selected.size}")
-                    showChooseRatingDialog = true
-                    isExpanded = false
-                }, verticalAlignment = Alignment.CenterVertically) {
+            { Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                selectMode = false
+                Logd(TAG, "ic_star: ${selected.size}")
+                showChooseRatingDialog = true
+                isExpanded = false
+            }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_star), "Set rating")
                 Text(stringResource(id = R.string.set_rating_label)) } },
         )
         if (selected.isNotEmpty() && selected[0].isRemote.value)
             options.add {
-                Row(modifier = Modifier.padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        Logd(TAG, "reserve: ${selected.size}")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            youtubeUrls.clear()
-                            for (e in selected) {
-                                Logd(TAG, "downloadUrl: ${e.media?.downloadUrl}")
-                                val url = URL(e.media?.downloadUrl ?: "")
-                                if ((isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url)) {
-                                    youtubeUrls.add(e.media!!.downloadUrl!!)
-                                } else addToMiscSyndicate(e)
-                            }
-                            Logd(TAG, "youtubeUrls: ${youtubeUrls.size}")
-                            withContext(Dispatchers.Main) {
-                                showConfirmYoutubeDialog.value = youtubeUrls.isNotEmpty()
-                            }
+                Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "reserve: ${selected.size}")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        youtubeUrls.clear()
+                        for (e in selected) {
+                            Logd(TAG, "downloadUrl: ${e.media?.downloadUrl}")
+                            val url = URL(e.media?.downloadUrl ?: "")
+                            if ((isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url)) {
+                                youtubeUrls.add(e.media!!.downloadUrl!!)
+                            } else addToMiscSyndicate(e)
                         }
-                    }, verticalAlignment = Alignment.CenterVertically) {
+                        Logd(TAG, "youtubeUrls: ${youtubeUrls.size}")
+                        withContext(Dispatchers.Main) {
+                            showConfirmYoutubeDialog.value = youtubeUrls.isNotEmpty()
+                        }
+                    }
+                }, verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.AddCircle, "Reserve episodes")
                     Text(stringResource(id = R.string.reserve_episodes_label))
                 }
             }
         if (feed != null && feed.id <= MAX_SYNTHETIC_ID) {
             options.add {
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .clickable {
-                        isExpanded = false
-                        selectMode = false
-                        showEraseDialog = true
-                        Logd(TAG, "reserve: ${selected.size}")
-                    }, verticalAlignment = Alignment.CenterVertically) {
+                Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
+                    isExpanded = false
+                    selectMode = false
+                    showEraseDialog = true
+                    Logd(TAG, "reserve: ${selected.size}")
+                }, verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_delete_forever_24), "Erase episodes")
                     Text(stringResource(id = R.string.erase_episodes_label))
                 }
@@ -668,14 +609,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         val scrollState = rememberScrollState()
         Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
             if (isExpanded) options.forEachIndexed { _, button ->
-                FloatingActionButton(modifier = Modifier
-                    .padding(start = 4.dp, bottom = 6.dp)
-                    .height(40.dp),
-                    containerColor = Color.LightGray,
-                    onClick = {}) { button() }
+                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), containerColor = Color.LightGray, onClick = {}) { button() }
             }
-            FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.secondary,
+            FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.secondary,
                 onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
         }
     }
@@ -807,8 +743,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                     strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(30.dp).height(35.dp))
             }
-            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, vm.showAltActionsDialog,
-                onDismiss = { vm.showAltActionsDialog = false })
+            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, vm.showAltActionsDialog, onDismiss = { vm.showAltActionsDialog = false })
         }
     }
 
@@ -1037,9 +972,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     }
                                     onFilterChanged(filterValues)
                                 },
-                            ) {
-                                Text(text = stringResource(item.values[0].displayName), color = textColor)
-                            }
+                            ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
                             Spacer(Modifier.weight(0.1f))
                             OutlinedButton(
                                 modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
@@ -1055,9 +988,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     }
                                     onFilterChanged(filterValues)
                                 },
-                            ) {
-                                Text(text = stringResource(item.values[1].displayName), color = textColor)
-                            }
+                            ) { Text(text = stringResource(item.values[1].displayName), color = textColor) }
                             Spacer(Modifier.weight(0.5f))
                         }
                     } else {
@@ -1133,9 +1064,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                         else filterValues.remove(item.values[index].filterId)
                                         onFilterChanged(filterValues)
                                     },
-                                ) {
-                                    Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor)
-                                }
+                                ) { Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor) }
                             }
                         }
                     }
@@ -1145,15 +1074,9 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                     Button(onClick = {
                         selectNone = true
                         onFilterChanged(setOf(""))
-                    }) {
-                        Text(stringResource(R.string.reset))
-                    }
+                    }) { Text(stringResource(R.string.reset)) }
                     Spacer(Modifier.weight(0.4f))
-                    Button(onClick = {
-                        onDismissRequest()
-                    }) {
-                        Text(stringResource(R.string.close_label))
-                    }
+                    Button(onClick = { onDismissRequest() }) { Text(stringResource(R.string.close_label)) }
                     Spacer(Modifier.weight(0.3f))
                 }
             }

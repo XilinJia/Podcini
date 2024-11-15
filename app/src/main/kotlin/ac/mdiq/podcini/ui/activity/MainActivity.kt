@@ -92,10 +92,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.min
 
-/**
- * The activity that is shown when the user launches the app.
- */
-
 class MainActivity : CastEnabledActivity() {
     private var drawerLayout: DrawerLayout? = null
 
@@ -119,7 +115,7 @@ class MainActivity : CastEnabledActivity() {
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
-    val prefs by lazy { getSharedPreferences(PREF_NAME, MODE_PRIVATE) }
+    val prefs by lazy { getSharedPreferences("MainActivityPrefs", MODE_PRIVATE) }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
@@ -129,52 +125,9 @@ class MainActivity : CastEnabledActivity() {
         }
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.notification_permission_text)
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                checkAndRequestUnrestrictedBackgroundActivity(this)
-            }
-            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int ->
-                checkAndRequestUnrestrictedBackgroundActivity(this)
-            }
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> checkAndRequestUnrestrictedBackgroundActivity(this) }
+            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> checkAndRequestUnrestrictedBackgroundActivity(this) }
             .show()
-    }
-
-    @Composable
-    fun UnrestrictedBackgroundPermissionDialog(onDismiss: () -> Unit) {
-        var dontAskAgain by remember { mutableStateOf(false) }
-        AlertDialog(onDismissRequest = onDismiss, title = { Text("Permission Required") },
-            text = {
-                Column {
-                    Text(stringResource(R.string.unrestricted_background_permission_text))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = dontAskAgain, onCheckedChange = { dontAskAgain = it })
-                        Text(stringResource(R.string.dont_ask_again))
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (dontAskAgain) prefs.edit().putBoolean("dont_ask_again_unrestricted_background", true).apply()
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                    this@MainActivity.startActivity(intent)
-                    onDismiss()
-                }) { Text("OK") }
-            },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
-        )
-    }
-
-    fun checkAndRequestUnrestrictedBackgroundActivity(context: Context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
-        val dontAskAgain = prefs.getBoolean("dont_ask_again_unrestricted_background", false)
-        if (!isIgnoringBatteryOptimizations && !dontAskAgain) {
-            val composeView = ComposeView(this).apply {
-                setContent { UnrestrictedBackgroundPermissionDialog(onDismiss = { (parent as? ViewGroup)?.removeView(this) }) }
-            }
-            (window.decorView as? ViewGroup)?.addView(composeView)
-        }
     }
 
     private var prevState: Int = 0
@@ -205,7 +158,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     private val isDrawerOpen: Boolean
-        get() = drawerLayout?.isDrawerOpen(navDrawer)?:false
+        get() = drawerLayout?.isDrawerOpen(navDrawer) == true
 
     private val screenWidth: Int
         get() {
@@ -227,19 +180,13 @@ class MainActivity : CastEnabledActivity() {
         }
 
         val ioScope = CoroutineScope(Dispatchers.IO)
-//       init shared preferences
         ioScope.launch {
 //            RealmDB.apply { }
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
-//            QueuesFragment.getSharedPrefs(this@MainActivity)
             buildTags()
             monitorFeeds()
-//            AudioPlayerFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
-//            StatisticsFragment.getSharedPrefs(this@MainActivity)
-//            OnlineFeedFragment.getSharedPrefs(this@MainActivity)
-//            ItunesTopListLoader.getSharedPrefs(this@MainActivity)
         }
 
         if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
@@ -247,7 +194,6 @@ class MainActivity : CastEnabledActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         _binding = MainActivityBinding.inflate(layoutInflater)
-//        setContentView(R.layout.main_activity)
         setContentView(binding.root)
         recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
         dummyView = object : View(this) {}
@@ -319,6 +265,45 @@ class MainActivity : CastEnabledActivity() {
                 EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(isRefreshingFeeds))
             }
         observeDownloads()
+    }
+
+    @Composable
+    fun UnrestrictedBackgroundPermissionDialog(onDismiss: () -> Unit) {
+        var dontAskAgain by remember { mutableStateOf(false) }
+        AlertDialog(onDismissRequest = onDismiss, title = { Text("Permission Required") },
+            text = {
+                Column {
+                    Text(stringResource(R.string.unrestricted_background_permission_text))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = dontAskAgain, onCheckedChange = { dontAskAgain = it })
+                        Text(stringResource(R.string.dont_ask_again))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (dontAskAgain) prefs.edit().putBoolean("dont_ask_again_unrestricted_background", true).apply()
+                    val intent = Intent()
+                    intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    this@MainActivity.startActivity(intent)
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        )
+    }
+
+    fun checkAndRequestUnrestrictedBackgroundActivity(context: Context) {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        val powerManager = context.getSystemService(POWER_SERVICE) as PowerManager
+        val isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        val dontAskAgain = prefs.getBoolean("dont_ask_again_unrestricted_background", false)
+        if (!isIgnoringBatteryOptimizations && !dontAskAgain) {
+            val composeView = ComposeView(this).apply {
+                setContent { UnrestrictedBackgroundPermissionDialog(onDismiss = { (parent as? ViewGroup)?.removeView(this) }) }
+            }
+            (window.decorView as? ViewGroup)?.addView(composeView)
+        }
     }
 
     private fun observeDownloads() {
@@ -718,7 +703,7 @@ class MainActivity : CastEnabledActivity() {
         val s: Snackbar
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
             s = Snackbar.make(mainView, text, duration)
-            if (audioPlayerView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerView)
+            if (audioPlayerView.visibility == View.VISIBLE) s.anchorView = audioPlayerView
         } else s = Snackbar.make(binding.root, text, duration)
 
         s.show()
@@ -813,7 +798,7 @@ class MainActivity : CastEnabledActivity() {
     companion object {
         private val TAG: String = MainActivity::class.simpleName ?: "Anonymous"
         const val MAIN_FRAGMENT_TAG: String = "main"
-        const val PREF_NAME: String = "MainActivityPrefs"
+//        const val PREF_NAME: String = "MainActivityPrefs"
 
         const val REQUEST_CODE_FIRST_PERMISSION = 1001
         const val REQUEST_CODE_SECOND_PERMISSION = 1002

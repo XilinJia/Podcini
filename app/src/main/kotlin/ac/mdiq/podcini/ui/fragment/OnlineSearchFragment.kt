@@ -36,10 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * Provides actions for adding new podcast subscriptions.
- */
-
 class OnlineSearchFragment : Fragment() {
 
     private var _binding: AddfeedBinding? = null
@@ -56,11 +52,11 @@ class OnlineSearchFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = AddfeedBinding.inflate(inflater)
-        activity = getActivity() as? MainActivity
+//        activity = activity
         Logd(TAG, "fragment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        (getActivity() as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
+        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         binding.searchButton.setOnClickListener { performSearch() }
         binding.searchVistaGuideButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }
@@ -172,12 +168,12 @@ class OnlineSearchFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (feed != null) {
                         val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                        (getActivity() as MainActivity).loadChildFragment(fragment)
+                        (activity as MainActivity).loadChildFragment(fragment)
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                (getActivity() as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
+                (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
             }
         }
     }

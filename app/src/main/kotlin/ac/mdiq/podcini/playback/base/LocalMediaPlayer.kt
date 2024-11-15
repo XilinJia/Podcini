@@ -193,7 +193,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         if (curMedia is EpisodeMedia) {
             val media_ = curMedia as EpisodeMedia
             var item = media_.episodeOrFetch()
-            if (item != null && item.playState < PlayState.INPROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item!!, false) }
+            if (item != null && item.playState < PlayState.INPROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item, false) }
             val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
             curIndexInQueue = EpisodeUtil.indexOfItemWithId(eList, media_.id)
         } else curIndexInQueue = -1
@@ -629,8 +629,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         var exoPlayer: ExoPlayer? = null
 
         private var exoplayerListener: Listener? = null
-        private var audioSeekCompleteListener: java.lang.Runnable? = null
-        private var audioCompletionListener: java.lang.Runnable? = null
+        private var audioSeekCompleteListener: Runnable? = null
+        private var audioCompletionListener: Runnable? = null
         private var audioErrorListener: Consumer<String>? = null
         private var bufferingUpdateListener: Consumer<Int>? = null
         private var loudnessEnhancer: LoudnessEnhancer? = null

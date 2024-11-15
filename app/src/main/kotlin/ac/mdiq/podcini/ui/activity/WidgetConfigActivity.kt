@@ -1,16 +1,5 @@
 package ac.mdiq.podcini.ui.activity
 
-import android.appwidget.AppWidgetManager
-import android.content.Intent
-import android.graphics.Color
-import android.os.Build
-import android.os.Bundle
-import android.view.View
-import android.widget.CheckBox
-import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ActivityWidgetConfigBinding
 import ac.mdiq.podcini.databinding.PlayerWidgetBinding
@@ -19,6 +8,17 @@ import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.prefs
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
 import ac.mdiq.podcini.util.Logd
+import android.appwidget.AppWidgetManager
+import android.content.Intent
+import android.graphics.Color
+import android.os.Bundle
+import android.view.View
+import android.widget.CheckBox
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.roundToInt
 
 class WidgetConfigActivity : AppCompatActivity() {
 
@@ -96,18 +96,15 @@ class WidgetConfigActivity : AppCompatActivity() {
 
     private fun setInitialState() {
         PlayerWidget.getSharedPrefs(this)
-
 //        val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         ckPlaybackSpeed.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_playback_speed.name + appWidgetId, true)
         ckRewind.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_rewind.name + appWidgetId, true)
         ckFastForward.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_fast_forward.name + appWidgetId, true)
         ckSkip.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_skip.name + appWidgetId, true)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val color = prefs!!.getInt(PlayerWidget.Prefs.widget_color.name + appWidgetId, PlayerWidget.DEFAULT_COLOR)
-            val opacity = Color.alpha(color) * 100 / 0xFF
 
-            opacitySeekBar.setProgress(opacity, false)
-        }
+        val color = prefs!!.getInt(PlayerWidget.Prefs.widget_color.name + appWidgetId, PlayerWidget.DEFAULT_COLOR)
+        val opacity = Color.alpha(color) * 100 / 0xFF
+        opacitySeekBar.setProgress(opacity, false)
         displayPreviewPanel()
     }
 
@@ -142,6 +139,6 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun getColorWithAlpha(color: Int, opacity: Int): Int {
-        return Math.round(0xFF * (0.01 * opacity)).toInt() * 0x1000000 + (color and 0xffffff)
+        return (0xFF * (0.01 * opacity)).roundToInt() * 0x1000000 + (color and 0xffffff)
     }
 }

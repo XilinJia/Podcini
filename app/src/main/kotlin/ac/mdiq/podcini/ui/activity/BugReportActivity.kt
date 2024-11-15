@@ -12,7 +12,6 @@ import android.content.ClipboardManager
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -26,9 +25,6 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.nio.charset.Charset
 
-/**
- * Displays the 'crash report' screen
- */
 class BugReportActivity : AppCompatActivity() {
     private var _binding: BugReportBinding? = null
     private val binding get() = _binding!!

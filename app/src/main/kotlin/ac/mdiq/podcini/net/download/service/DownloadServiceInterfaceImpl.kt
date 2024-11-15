@@ -15,13 +15,12 @@ import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.EpisodeMedia.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.storage.utils.ChapterUtils
-import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
@@ -314,7 +313,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                         MediaMetadataRetrieverCompat().use { mmr ->
                             if (it.media != null) mmr.setDataSource(it.media!!.fileUrl)
                             durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                            if (durationStr != null) it.media?.setDuration(durationStr!!.toInt())
+                            if (durationStr != null) it.media?.setDuration(durationStr.toInt())
                         }
                     } catch (e: NumberFormatException) { Logd(TAG, "Invalid file duration: $durationStr")
                     } catch (e: Exception) {

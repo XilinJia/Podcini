@@ -11,7 +11,7 @@ import ac.mdiq.podcini.net.feed.parser.utils.MimeTypeUtils
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
+import ac.mdiq.podcini.storage.model.EpisodeMedia.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.media.MediaMetadataRetriever

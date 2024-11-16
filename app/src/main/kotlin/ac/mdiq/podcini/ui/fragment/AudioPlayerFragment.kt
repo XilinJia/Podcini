@@ -342,7 +342,7 @@ class AudioPlayerFragment : Fragment() {
         if (showDialog) {
             val (selectedOption, onOptionSelected) = remember { mutableStateOf((currentMedia as? EpisodeMedia)?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Column {
                             VolumeAdaptionSetting.entries.forEach { item ->
@@ -698,9 +698,9 @@ class AudioPlayerFragment : Fragment() {
 
     private fun displayMediaInfo(media: Playable) {
         Logd(TAG, "displayMediaInfo ${currentItem?.title} ${media.getEpisodeTitle()}")
-        val pubDateStr = MiscFormatter.formatAbbrev(context, media.getPubDate())
-        txtvPodcastTitle = StringUtils.stripToEmpty(media.getFeedTitle())
-        episodeDate = StringUtils.stripToEmpty(pubDateStr)
+        val pubDateStr = MiscFormatter.formatDateTimeFlex(media.getPubDate())
+        txtvPodcastTitle = media.getFeedTitle().trim()
+        episodeDate = pubDateStr.trim()
         titleText = currentItem?.title ?:""
         displayedChapterIndex = -1
         refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.getPosition())) //calls displayCoverImage

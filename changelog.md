@@ -1,3 +1,18 @@
+# 6.14.0
+
+* fixed crash when adding podcast (introduced since 6.13.11)
+* naming changes in PlayState: InQueue -> Queue, InProgress -> Progress
+* PlayState Queue is user settable, once set, the episode is put to associated queue of the feed
+* in getting next to play in a virtual queue, PlayStates Again and Forever are included
+* fixed the not-updating queue and tag spinners in Subscriptions
+* various dates display are in flex format
+* in Statistics, data for today are shown in the HH:mm format
+* added view count for Youtube and YT Music media
+* reworked episodes sort routines in Compose
+* re-colored border color for Compose dialogs
+* changed sort items' direction icon
+* QuickDiscovery fragment is in Compose
+
 # 6.13.11
 
 * created private shared preferences for Subscriptions view and moved related properties there from the apps prefs

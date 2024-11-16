@@ -32,7 +32,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -424,8 +424,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         itemLink = episode!!.link?: ""
 
         if (episode?.pubDate != null) {
-            val pubDateStr = formatAbbrev(context, Date(episode!!.pubDate))
-            txtvPublished = pubDateStr
+            txtvPublished = formatDateTimeFlex(Date(episode!!.pubDate))
 //            binding.txtvPublished.setContentDescription(formatForAccessibility(Date(episode!!.pubDate)))
         }
 

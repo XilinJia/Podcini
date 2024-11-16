@@ -40,7 +40,6 @@ object DurationConverter {
         val firstPart = duration / firstPartBase
         val leftoverFromFirstPart = duration - firstPart * firstPartBase
         val secondPart = leftoverFromFirstPart / (if (durationIsInHours) MINUTES_MIL else SECONDS_MIL)
-
         return String.format(Locale.getDefault(), "%02d:%02d", firstPart, secondPart)
     }
 

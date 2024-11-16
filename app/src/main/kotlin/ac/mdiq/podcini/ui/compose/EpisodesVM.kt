@@ -46,7 +46,7 @@ import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
@@ -210,7 +210,7 @@ class EpisodeVM(var episode: Episode) {
 @Composable
 fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
@@ -232,7 +232,7 @@ fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val context = LocalContext.current
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (state in PlayState.entries) {
                     if (state.userSet) {
@@ -271,6 +271,9 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                                 }
                                             }
                                         }
+                                        PlayState.QUEUE -> {
+                                            if (item_.feed?.preferences?.queue != null) runBlocking { addToQueueSync(item, item.feed?.preferences?.queue) }
+                                        }
                                         else -> {}
                                     }
                                 }
@@ -290,7 +293,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val queues = realm.query(PlayQueue::class).find()
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val scrollState = rememberScrollState()
             Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 var removeChecked by remember { mutableStateOf(false) }
@@ -336,7 +339,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     val synthetics = realm.query(Feed::class).query("id >= 100 && id <= 1000").find()
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val scrollState = rememberScrollState()
             Column(modifier = Modifier
                 .verticalScroll(scrollState)
@@ -392,7 +395,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
     val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             if (feed == null || feed.id > MAX_SYNTHETIC_ID) Text(stringResource(R.string.not_erase_message), modifier = Modifier.padding(10.dp))
             else Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(message + ": ${selected.size}")
@@ -702,7 +705,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     val curContext = LocalContext.current
                     val dur = remember { vm.episode.media?.getDuration() ?: 0 }
                     val durText = remember { DurationConverter.getDurationStringLong(dur) }
-                    val dateSizeText = " · " + formatAbbrev(curContext, vm.episode.getPubDate()) + " · " + durText + " · " +
+                    val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) + " · " + durText + " · " +
                             if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -743,7 +746,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                     strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(30.dp).height(35.dp))
             }
-            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, vm.showAltActionsDialog, onDismiss = { vm.showAltActionsDialog = false })
+            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
         }
     }
 
@@ -889,7 +892,7 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
 
     if (showDialog) {
         Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                     var audioOnly by remember { mutableStateOf(false) }
                     Row(Modifier.fillMaxWidth()) {
@@ -939,7 +942,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
             window.setDimAmount(0f)
         }
         Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             val scrollState = rememberScrollState()
             Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
@@ -1078,6 +1081,42 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                     Spacer(Modifier.weight(0.4f))
                     Button(onClick = { onDismissRequest() }) { Text(stringResource(R.string.close_label)) }
                     Spacer(Modifier.weight(0.3f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EpisodeSortDialog(initOrder: EpisodeSortOrder, showKeepSorted: Boolean = false, onDismissRequest: () -> Unit, onSelectionChanged: (EpisodeSortOrder, Boolean) -> Unit) {
+    val orderList = remember { EpisodeSortOrder.entries.filterIndexed { index, _ -> index % 2 != 0 } }
+    Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
+        val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+        dialogWindowProvider?.window?.let { window ->
+            window.setGravity(Gravity.BOTTOM)
+            window.setDimAmount(0f)
+        }
+        Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            val scrollState = rememberScrollState()
+            var sortIndex by remember { mutableIntStateOf(initOrder.ordinal) }
+            var keepSorted by remember { mutableStateOf(false) }
+            Column(Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp).verticalScroll(scrollState)) {
+                NonlazyGrid(columns = 2, itemCount = orderList.size) { index ->
+                    var dir by remember { mutableStateOf(true) }
+                    OutlinedButton(modifier = Modifier.padding(2.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != index) textColor else Color.Green),
+                        onClick = {
+                            sortIndex = index
+                            dir = !dir
+                            val sortOrder = EpisodeSortOrder.entries[2*index + if(dir) 0 else 1]
+                            onSelectionChanged(sortOrder, keepSorted)
+                        }
+                    ) { Text(text = stringResource(orderList[index].res) + if (dir) "\u00A0▲" else "\u00A0▼", color = textColor) }
+                }
+                if (showKeepSorted) Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = keepSorted, onCheckedChange = { keepSorted = it })
+                    Text(text = stringResource(R.string.remove_from_other_queues), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
                 }
             }
         }

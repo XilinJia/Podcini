@@ -58,7 +58,6 @@
                 app:srcCompat="@drawable/ic_search" />
 
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
     <ScrollView

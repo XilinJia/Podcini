@@ -30,7 +30,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
-import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -121,6 +120,8 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var showBin by mutableStateOf(false)
     private var showFeeds by mutableStateOf(false)
     private var dragDropEnabled by mutableStateOf(!(isQueueKeepSorted || isQueueLocked))
+    var showSortDialog by mutableStateOf(false)
+    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
@@ -138,6 +139,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.setOnMenuItemClickListener(this)
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        if (isQueueKeepSorted) sortOrder = queueKeepSortedOrder ?: EpisodeSortOrder.DATE_NEW_OLD
 
         queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
@@ -152,7 +154,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         spinnerView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    Spinner(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
+                    SpinnerExternalSet(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
                         Logd(TAG, "Queue selected: $queues[index].name")
                         val prevQueueSize = curQueue.size()
                         curQueue = upsertBlk(queues[index]) { it.update() }
@@ -189,6 +191,12 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     if (showFeeds) FeedsGrid()
                     else {
                         Column {
+                            if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, showKeepSorted = true, onDismissRequest = {showSortDialog = false}) { sortOrder, keep ->
+                                if (sortOrder != EpisodeSortOrder.RANDOM && sortOrder != EpisodeSortOrder.RANDOM1) isQueueKeepSorted = keep
+                                queueKeepSortedOrder = sortOrder
+                                reorderQueue(sortOrder, true)
+                            }
+
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                             val leftCB = { episode: Episode ->
                                 if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
@@ -487,7 +495,10 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             R.id.associated_feed -> showFeeds = !showFeeds
             R.id.queue_lock -> toggleQueueLock()
-            R.id.queue_sort -> QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
+            R.id.queue_sort -> {
+                showSortDialog = true
+//                QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
+            }
             R.id.rename_queue -> renameQueue()
             R.id.add_queue -> addQueue()
             R.id.clear_queue -> {
@@ -548,7 +559,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun RenameQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf(curQueue.name) }
                         TextField(value = newName, onValueChange = { newName = it }, label = { Text("Rename (Unique name only)") })
@@ -572,7 +583,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun AddQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         var newName by remember { mutableStateOf("") }
                         TextField(value = newName, onValueChange = { newName = it }, label = { Text("Add queue (Unique name only)") })
@@ -681,51 +692,28 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    class QueueSortDialog : EpisodeSortDialog() {
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            if (isQueueKeepSorted) sortOrder = queueKeepSortedOrder
-            val view: View = super.onCreateView(inflater, container, savedInstanceState)!!
-            binding.keepSortedCheckbox.visibility = View.VISIBLE
-            binding.keepSortedCheckbox.setChecked(isQueueKeepSorted)
-            // Disable until something gets selected
-            binding.keepSortedCheckbox.setEnabled(isQueueKeepSorted)
-            return view
+    /**
+     * Sort the episodes in the queue with the given the named sort order.
+     * @param broadcastUpdate `true` if this operation should trigger a
+     * QueueUpdateBroadcast. This option should be set to `false`
+     * if the caller wants to avoid unexpected updates of the GUI.
+     */
+    private fun reorderQueue(sortOrder: EpisodeSortOrder?, broadcastUpdate: Boolean) : Job {
+        Logd(TAG, "reorderQueue called")
+        if (sortOrder == null) {
+            Logd(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
+            return Job()
         }
-        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending != EpisodeSortOrder.EPISODE_FILENAME_A_Z && ascending != EpisodeSortOrder.SIZE_SMALL_LARGE)
-                super.onAddItem(title, ascending, descending, ascendingIsDefault)
-        }
-         override fun onSelectionChanged() {
-            super.onSelectionChanged()
-            binding.keepSortedCheckbox.setEnabled(sortOrder != EpisodeSortOrder.RANDOM)
-            if (sortOrder == EpisodeSortOrder.RANDOM) binding.keepSortedCheckbox.setChecked(false)
-            isQueueKeepSorted = binding.keepSortedCheckbox.isChecked
-            queueKeepSortedOrder = sortOrder
-            reorderQueue(sortOrder, true)
-        }
-        /**
-         * Sort the episodes in the queue with the given the named sort order.
-         * @param broadcastUpdate `true` if this operation should trigger a
-         * QueueUpdateBroadcast. This option should be set to `false`
-         * if the caller wants to avoid unexpected updates of the GUI.
-         */
-        private fun reorderQueue(sortOrder: EpisodeSortOrder?, broadcastUpdate: Boolean) : Job {
-            Logd(TAG, "reorderQueue called")
-            if (sortOrder == null) {
-                Logd(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
-                return Job()
+        val permutor = getPermutor(sortOrder)
+        return runOnIOScope {
+            permutor.reorder(curQueue.episodes)
+            val episodes_ = curQueue.episodes.toMutableList()
+            curQueue = upsert(curQueue) {
+                it.episodeIds.clear()
+                for (e in episodes_) it.episodeIds.add(e.id)
+                it.update()
             }
-            val permutor = getPermutor(sortOrder)
-            return runOnIOScope {
-                permutor.reorder(curQueue.episodes)
-                val episodes_ = curQueue.episodes.toMutableList()
-                curQueue = upsert(curQueue) {
-                    it.episodeIds.clear()
-                    for (e in episodes_) it.episodeIds.add(e.id)
-                    it.update()
-                }
-                if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.sorted(curQueue.episodes))
-            }
+            if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.sorted(curQueue.episodes))
         }
     }
 
@@ -735,10 +723,5 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         private const val KEY_UP_ARROW = "up_arrow"
         private const val PREFS = "QueueFragment"
         private const val PREF_SHOW_LOCK_WARNING = "show_lock_warning"
-
-//        private var prefs: SharedPreferences? = null
-//        fun getSharedPrefs(context: Context) {
-//            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-//        }
     }
 }

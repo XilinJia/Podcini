@@ -82,6 +82,9 @@ class Episode : RealmObject {
 
     var rating: Int = Rating.UNRATED.code
 
+    // infor from youtube
+    var viewCount: Int = 0
+
     @Ignore
     var isSUPER: Boolean = (rating == Rating.SUPER.code)
         private set

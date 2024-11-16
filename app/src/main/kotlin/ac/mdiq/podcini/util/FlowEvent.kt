@@ -169,7 +169,7 @@ sealed class FlowEvent {
 
 //    data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
-    data class AllEpisodesSortEvent(val dummy: Unit = Unit) : FlowEvent()
+//    data class AllEpisodesSortEvent(val dummy: Unit = Unit) : FlowEvent()
 
 //    data class DownloadsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 

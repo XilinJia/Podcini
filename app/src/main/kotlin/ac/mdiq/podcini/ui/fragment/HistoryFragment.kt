@@ -10,7 +10,6 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
-import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -28,8 +27,7 @@ import java.util.*
 import kotlin.math.min
 
 class HistoryFragment : BaseEpisodesFragment() {
-
-    private var sortOrder : EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
+//    private var sortOrder : EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
     private var allHistory: List<Episode> = listOf()
@@ -38,9 +36,10 @@ class HistoryFragment : BaseEpisodesFragment() {
         return TAG
     }
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
+        sortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
         toolbar.inflateMenu(R.menu.playback_history)
         toolbar.setTitle(R.string.playback_history_label)
         updateToolbar()
@@ -62,10 +61,17 @@ class HistoryFragment : BaseEpisodesFragment() {
         super.onDestroyView()
     }
 
+    override fun onSort(order: EpisodeSortOrder) {
+//        EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder))
+        sortOrder = order
+        loadItems()
+        updateToolbar()
+    }
+
      override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
         when (item.itemId) {
-            R.id.episodes_sort -> HistorySortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
+            R.id.episodes_sort -> showSortDialog = true
             R.id.filter_items -> {
                 val dialog = object: DatesFilterDialog(requireContext(), 0L) {
                     override fun initParams() {
@@ -158,25 +164,6 @@ class HistoryFragment : BaseEpisodesFragment() {
                 }
             }
             EventFlow.postEvent(FlowEvent.HistoryEvent())
-        }
-    }
-
-    class HistorySortDialog : EpisodeSortDialog() {
-        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
-                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
-                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE
-                    || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
-                super.onAddItem(title, ascending, descending, ascendingIsDefault)
-            }
-        }
-        override fun onSelectionChanged() {
-            super.onSelectionChanged()
-            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder?: EpisodeSortOrder.PLAYED_DATE_NEW_OLD))
         }
     }
 

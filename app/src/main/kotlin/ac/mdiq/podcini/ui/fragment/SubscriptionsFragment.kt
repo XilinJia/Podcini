@@ -26,13 +26,9 @@ import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOp
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import android.app.Activity.RESULT_OK
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -416,7 +412,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun AutoDeleteHandlerDialog(onDismissRequest: () -> Unit) {
             val (selectedOption, _) = remember { mutableStateOf("") }
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Column {
                             FeedAutoDeleteOptions.forEach { text ->
@@ -441,7 +437,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun SetAssociateQueueDialog(onDismissRequest: () -> Unit) {
             var selectedOption by remember {mutableStateOf("")}
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         queueSettingOptions.forEach { option ->
                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -471,7 +467,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                         if (selectedOption == "Custom") {
                             val queues = realm.query(PlayQueue::class).find()
-                            Spinner(items = queues.map { it.name }, selectedIndex = 0) { index ->
+                            SpinnerExternalSet(items = queues.map { it.name }, selectedIndex = 0) { index ->
                                 Logd(TAG, "Queue selected: ${queues[index]}")
                                 saveFeedPreferences { it: FeedPreferences -> it.queueId = queues[index].id }
                                 onDismissRequest()
@@ -485,7 +481,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         @Composable
         fun SetKeepUpdateDialog(onDismissRequest: () -> Unit) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
@@ -507,7 +503,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         @Composable
         fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
             Dialog(onDismissRequest = onDismissRequest) {
-                Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         for (rating in Rating.entries.reversed()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
@@ -960,7 +956,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         for (f in feedList_) {
                             val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                             counterMap[f.id] = d
-                            f.sortInfo = formatAbbrev(requireContext(), Date(d))
+                            f.sortInfo = formatDateTimeFlex(Date(d))
                         }
                         comparator(counterMap, dir)
                     }
@@ -970,7 +966,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         for (f in feedList_) {
                             val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
                             counterMap[f.id] = d
-                            f.sortInfo = "Downloaded: " + formatAbbrev(requireContext(), Date(d))
+                            f.sortInfo = "Downloaded: " + formatDateTimeFlex(Date(d))
                         }
                         Logd(TAG, "queryString: $queryString")
                         comparator(counterMap, dir)
@@ -1031,7 +1027,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 window.setDimAmount(0f)
             }
             Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 val scrollState = rememberScrollState()
                 Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
@@ -1043,13 +1039,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 doSort()
                                 saveSortingPrefs()
                             }
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = stringResource(R.string.title), color = textColor)
-                                Icon(imageVector = ImageVector.vectorResource(if (titleAscending) R.drawable.baseline_arrow_upward_24 else R.drawable.baseline_arrow_downward_24),
-                                    contentDescription = "Title", modifier = Modifier.padding(start = 8.dp), tint = textColor)
-                            }
-                        }
+                        ) { Text(text = stringResource(R.string.title) + if (titleAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                         Spacer(Modifier.weight(1f))
                         OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != 1) textColor else Color.Green),
                             onClick = {
@@ -1058,13 +1048,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 doSort()
                                 saveSortingPrefs()
                             }
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = stringResource(R.string.date), color = textColor)
-                                Icon(imageVector = ImageVector.vectorResource(if (dateAscending) R.drawable.baseline_arrow_upward_24 else R.drawable.baseline_arrow_downward_24),
-                                    contentDescription = "Date", modifier = Modifier.padding(start = 8.dp), tint = textColor)
-                            }
-                        }
+                        ) { Text(text = stringResource(R.string.date) + if (dateAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                         Spacer(Modifier.weight(1f))
                         OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != 2) textColor else Color.Green),
                             onClick = {
@@ -1073,15 +1057,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 doSort()
                                 saveSortingPrefs()
                             }
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = stringResource(R.string.count), color = textColor)
-                                Icon(imageVector = ImageVector.vectorResource(if (countAscending) R.drawable.baseline_arrow_upward_24 else R.drawable.baseline_arrow_downward_24),
-                                    contentDescription = "Date", modifier = Modifier.padding(start = 8.dp), tint = textColor)
-                            }
-                        }
+                        ) { Text(text = stringResource(R.string.count) + if (countAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                     }
-                    HorizontalDivider(color = Color.Yellow, thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onTertiaryContainer, thickness = 1.dp)
                     if (sortIndex == 1) {
                         Row {
                             OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (dateSortIndex != 0) textColor else Color.Green),
@@ -1101,7 +1079,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             ) { Text(stringResource(R.string.download_date)) }
                         }
                     }
-                    HorizontalDivider(color = Color.Yellow, thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onTertiaryContainer, thickness = 1.dp)
                     Column(modifier = Modifier.padding(start = 5.dp, bottom = 2.dp).fillMaxWidth()) {
                         if (sortIndex == 2) {
                             Row(modifier = Modifier.padding(2.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
@@ -1325,7 +1303,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 window.setDimAmount(0f)
             }
             Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 val scrollState = rememberScrollState()
                 Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {

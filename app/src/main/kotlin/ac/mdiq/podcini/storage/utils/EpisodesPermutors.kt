@@ -32,10 +32,12 @@ object EpisodesPermutors {
             EpisodeSortOrder.COMPLETED_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? -> completeDate(f2).compareTo(completeDate(f1)) }
             EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? -> downloadDate(f1).compareTo(downloadDate(f2)) }
             EpisodeSortOrder.DOWNLOAD_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? -> downloadDate(f2).compareTo(downloadDate(f1)) }
+            EpisodeSortOrder.VIEWS_LOW_HIGH -> comparator = Comparator { f1: Episode?, f2: Episode? -> viewCount(f1).compareTo(viewCount(f2)) }
+            EpisodeSortOrder.VIEWS_HIGH_LOW -> comparator = Comparator { f1: Episode?, f2: Episode? -> viewCount(f2).compareTo(viewCount(f1)) }
 
             EpisodeSortOrder.FEED_TITLE_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? -> feedTitle(f1).compareTo(feedTitle(f2)) }
             EpisodeSortOrder.FEED_TITLE_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? -> feedTitle(f2).compareTo(feedTitle(f1)) }
-            EpisodeSortOrder.RANDOM -> permutor = object : Permutor<Episode> {
+            EpisodeSortOrder.RANDOM, EpisodeSortOrder.RANDOM1 -> permutor = object : Permutor<Episode> {
                 override fun reorder(queue: MutableList<Episode>?) {
                     if (!queue.isNullOrEmpty()) queue.shuffle()
                 }
@@ -96,6 +98,10 @@ object EpisodesPermutors {
 
     private fun feedTitle(item: Episode?): String {
         return (item?.feed?.title ?: "").lowercase(Locale.getDefault())
+    }
+
+    private fun viewCount(item: Episode?): Int {
+        return item?.viewCount ?: 0
     }
 
     /**

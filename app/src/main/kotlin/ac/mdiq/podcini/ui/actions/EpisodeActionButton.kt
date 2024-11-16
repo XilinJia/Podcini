@@ -44,6 +44,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
@@ -101,43 +102,41 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     }
 
     @Composable
-    fun AltActionsDialog(context: Context, showDialog: Boolean, onDismiss: () -> Unit) {
-        if (showDialog) {
-            Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val label = getLabel()
-                        Logd(TAG, "button label: $label")
-                        if (label != R.string.play_label && label != R.string.pause_label && label != R.string.download_label) {
-                            IconButton(onClick = {
-                                PlayActionButton(item).onClick(context)
-                                onDismiss()
-                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_play_24dp), contentDescription = "Play") }
-                        }
-                        if (label != R.string.stream_label && label != R.string.play_label && label != R.string.pause_label && label != R.string.delete_label) {
-                            IconButton(onClick = {
-                                StreamActionButton(item).onClick(context)
-                                onDismiss()
-                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_stream), contentDescription = "Stream") }
-                        }
-                        if (label != R.string.download_label && label != R.string.play_label && label != R.string.delete_label) {
-                            IconButton(onClick = {
-                                DownloadActionButton(item).onClick(context)
-                                onDismiss()
-                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "Download") }
-                        }
-                        if (label != R.string.delete_label && label != R.string.download_label && label != R.string.stream_label) {
-                            IconButton(onClick = {
-                                DeleteActionButton(item).onClick(context)
-                                onDismiss()
-                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), contentDescription = "Delete") }
-                        }
-                        if (label != R.string.visit_website_label) {
-                            IconButton(onClick = {
-                                VisitWebsiteActionButton(item).onClick(context)
-                                onDismiss()
-                            }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "Web") }
-                        }
+    fun AltActionsDialog(context: Context, onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val label = getLabel()
+                    Logd(TAG, "button label: $label")
+                    if (label != R.string.play_label && label != R.string.pause_label && label != R.string.download_label) {
+                        IconButton(onClick = {
+                            PlayActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_play_24dp), contentDescription = "Play") }
+                    }
+                    if (label != R.string.stream_label && label != R.string.play_label && label != R.string.pause_label && label != R.string.delete_label) {
+                        IconButton(onClick = {
+                            StreamActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_stream), contentDescription = "Stream") }
+                    }
+                    if (label != R.string.download_label && label != R.string.play_label && label != R.string.delete_label) {
+                        IconButton(onClick = {
+                            DownloadActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "Download") }
+                    }
+                    if (label != R.string.delete_label && label != R.string.download_label && label != R.string.stream_label) {
+                        IconButton(onClick = {
+                            DeleteActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), contentDescription = "Delete") }
+                    }
+                    if (label != R.string.visit_website_label) {
+                        IconButton(onClick = {
+                            VisitWebsiteActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "Web") }
                     }
                 }
             }
@@ -250,7 +249,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
-            if (item.playState < PlayState.INPROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item, false) }
+            if (item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         playVideoIfNeeded(context, media)
@@ -424,7 +423,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
             if (media !is EpisodeMedia || !InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
             if (media is EpisodeMedia && media.episode != null) {
-                val item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, media.episode!!, false) }
+                val item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, media.episode!!, false) }
                 EventFlow.postEvent(FlowEvent.PlayEvent(item))
             }
             playVideoIfNeeded(context, media)
@@ -590,7 +589,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
         } else {
             PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
-            item = runBlocking { setPlayStateSync(PlayState.INPROGRESS.code, item, false) }
+            item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context,

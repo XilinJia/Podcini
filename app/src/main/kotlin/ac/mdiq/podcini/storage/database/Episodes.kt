@@ -243,6 +243,7 @@ object Episodes {
         e.description = "Short: ${item.shortDescription}"
         e.imageUrl = item.thumbnails.first().url
         e.setPubDate(item.uploadDate?.date()?.time)
+        e.viewCount = item.viewCount.toInt()
         val m = EpisodeMedia(e, item.url, 0, "video/*")
         if (item.duration > 0) m.duration = item.duration.toInt() * 1000
         m.fileUrl = getMediafilename(m)
@@ -257,6 +258,7 @@ object Episodes {
         e.description = info.description?.content
         e.imageUrl = info.thumbnails.first().url
         e.setPubDate(info.uploadDate?.date()?.time)
+        e.viewCount = info.viewCount.toInt()
         val m = EpisodeMedia(e, info.url, 0, "video/*")
         if (info.duration > 0) m.duration = info.duration.toInt() * 1000
         m.fileUrl = getMediafilename(m)

@@ -1,16 +1,12 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Queues.inAnyQueue
 import ac.mdiq.podcini.util.Logd
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties_: String) : Serializable {
     val properties: HashSet<String> = setOf(*properties_).filter { it.isNotEmpty() }.map {it.trim()}.toHashSet()
 
-//    val showPlayed: Boolean = properties.contains(States.played.name)
-//    val showUnplayed: Boolean = properties.contains(States.unplayed.name)
-//    val showNew: Boolean = properties.contains(States.new.name)
     val showQueued: Boolean = properties.contains(States.queued.name)
     val showNotQueued: Boolean = properties.contains(States.not_queued.name)
     val showDownloaded: Boolean = properties.contains(States.downloaded.name)
@@ -18,23 +14,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
 
-//    filter on queues does not have a query string so it's not applied on query results, need to filter separately
-    fun matchesForQueues(item: Episode): Boolean {
-        return when {
-            showQueued && !inAnyQueue(item) -> false
-            showNotQueued && inAnyQueue(item) -> false
-            else -> true
-        }
-    }
-
     fun queryString(): String {
         val statements: MutableList<String> = mutableListOf()
-//        when {
-////            showPlayed -> statements.add("playState >= ${PlayState.PLAYED.code}")
-////            showUnplayed -> statements.add(" playState < ${PlayState.PLAYED.code} ") // Match "New" items (read = -1) as well
-////            showNew -> statements.add("playState == -1 ")
-//        }
-
         val mediaTypeQuerys = mutableListOf<String>()
         if (properties.contains(States.unknown.name)) mediaTypeQuerys.add(" media == nil OR media.mimeType == nil OR media.mimeType == '' ")
         if (properties.contains(States.audio.name)) mediaTypeQuerys.add(" media.mimeType BEGINSWITH 'audio' ")
@@ -74,8 +55,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.unplayed.name)) stateQuerys.add(" playState == ${PlayState.UNPLAYED.code} ")
         if (properties.contains(States.later.name)) stateQuerys.add(" playState == ${PlayState.LATER.code} ")
         if (properties.contains(States.soon.name)) stateQuerys.add(" playState == ${PlayState.SOON.code} ")
-        if (properties.contains(States.inQueue.name)) stateQuerys.add(" playState == ${PlayState.INQUEUE.code} ")
-        if (properties.contains(States.inProgress.name)) stateQuerys.add(" playState == ${PlayState.INPROGRESS.code} ")
+        if (properties.contains(States.inQueue.name)) stateQuerys.add(" playState == ${PlayState.QUEUE.code} ")
+        if (properties.contains(States.inProgress.name)) stateQuerys.add(" playState == ${PlayState.PROGRESS.code} ")
         if (properties.contains(States.skipped.name)) stateQuerys.add(" playState == ${PlayState.SKIPPED.code} ")
         if (properties.contains(States.played.name)) stateQuerys.add(" playState == ${PlayState.PLAYED.code} ")
         if (properties.contains(States.again.name)) stateQuerys.add(" playState == ${PlayState.AGAIN.code} ")
@@ -95,10 +76,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             properties.contains(States.paused.name) -> statements.add(" media.position > 0 ")
             properties.contains(States.not_paused.name) -> statements.add(" media.position == 0 ")
         }
-//        when {
-//            showQueued -> statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
-//            showNotQueued -> statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
-//        }
         when {
             showDownloaded -> statements.add("media.downloaded == true ")
             showNotDownloaded -> statements.add("media.downloaded == false ")
@@ -119,10 +96,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             properties.contains(States.has_comments.name) -> statements.add(" comment != '' ")
             properties.contains(States.no_comments.name) -> statements.add(" comment == '' ")
         }
-//        when {
-//            showIsFavorite -> statements.add("rating == ${Rating.FAVORITE.code} ")
-//            showNotFavorite -> statements.add("rating != ${Rating.FAVORITE.code} ")
-//        }
 
         if (statements.isEmpty()) return "id > 0"
         val query = StringBuilder(" (" + statements[0])
@@ -158,8 +131,6 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         audio_app,
         paused,
         not_paused,
-//        is_favorite,
-//        not_favorite,
         has_media,
         no_media,
         has_comments,

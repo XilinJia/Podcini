@@ -120,7 +120,7 @@ class FeedSettingsFragment : Fragment() {
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 val showDialog = remember { mutableStateOf(false) }
-                                if (showDialog.value) VideoModeDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                                if (showDialog.value) VideoModeDialog(onDismissRequest = { showDialog.value = false })
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.feed_video_mode_label), style = MaterialTheme.typography.titleLarge, color = textColor,
@@ -154,7 +154,7 @@ class FeedSettingsFragment : Fragment() {
                         Column {
                             var showDialog by remember { mutableStateOf(false) }
                             var selectedOption by remember { mutableStateOf(feed?.preferences?.audioQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag) }
-                            if (showDialog) SetAudioQuality(showDialog, selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                            if (showDialog) SetAudioQuality(selectedOption = selectedOption, onDismissRequest = { showDialog = false })
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
@@ -172,7 +172,7 @@ class FeedSettingsFragment : Fragment() {
                             Column {
                                 var showDialog by remember { mutableStateOf(false) }
                                 var selectedOption by remember { mutableStateOf(feed?.preferences?.videoQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag) }
-                                if (showDialog) SetVideoQuality(showDialog, selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                                if (showDialog) SetVideoQuality(selectedOption = selectedOption, onDismissRequest = { showDialog = false })
                                 Row(Modifier.fillMaxWidth()) {
                                     Icon(ImageVector.vectorResource(id = R.drawable.ic_videocam), "", tint = textColor)
                                     Spacer(modifier = Modifier.width(20.dp))
@@ -192,7 +192,7 @@ class FeedSettingsFragment : Fragment() {
                         curPrefQueue = feed?.preferences?.queueTextExt ?: "Default"
                         var showDialog by remember { mutableStateOf(false) }
                         var selectedOption by remember { mutableStateOf(feed?.preferences?.queueText ?: "Default") }
-                        if (showDialog) SetAssociatedQueue(showDialog, selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                        if (showDialog) SetAssociatedQueue(selectedOption = selectedOption, onDismissRequest = { showDialog = false })
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
@@ -229,7 +229,7 @@ class FeedSettingsFragment : Fragment() {
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 val showDialog = remember { mutableStateOf(false) }
-                                if (showDialog.value) AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                                if (showDialog.value) AutoDeleteDialog(onDismissRequest = { showDialog.value = false })
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.auto_delete_label), style = MaterialTheme.typography.titleLarge, color = textColor,
@@ -266,7 +266,7 @@ class FeedSettingsFragment : Fragment() {
                     Column {
                         Row(Modifier.fillMaxWidth()) {
                             val showDialog = remember { mutableStateOf(false) }
-                            if (showDialog.value) AutoSkipDialog(showDialog.value, onDismiss = { showDialog.value = false })
+                            if (showDialog.value) AutoSkipDialog(onDismiss = { showDialog.value = false })
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_skip_24dp), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.pref_feed_skip), style = MaterialTheme.typography.titleLarge, color = textColor,
@@ -278,7 +278,7 @@ class FeedSettingsFragment : Fragment() {
                     Column {
                         Row(Modifier.fillMaxWidth()) {
                             val showDialog = remember { mutableStateOf(false) }
-                            if (showDialog.value) VolumeAdaptionDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                            if (showDialog.value) VolumeAdaptionDialog(onDismissRequest = { showDialog.value = false })
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_volume_adaption), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.feed_volume_adapdation), style = MaterialTheme.typography.titleLarge, color = textColor,
@@ -291,7 +291,7 @@ class FeedSettingsFragment : Fragment() {
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 val showDialog = remember { mutableStateOf(false) }
-                                if (showDialog.value) AuthenticationDialog(showDialog.value, onDismiss = { showDialog.value = false })
+                                if (showDialog.value) AuthenticationDialog(onDismiss = { showDialog.value = false })
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_key), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.authentication_label), style = MaterialTheme.typography.titleLarge, color = textColor,
@@ -321,7 +321,7 @@ class FeedSettingsFragment : Fragment() {
                             Column (modifier = Modifier.padding(start = 20.dp)){
                                 Row(Modifier.fillMaxWidth()) {
                                     val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) AutoDownloadPolicyDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                                    if (showDialog.value) AutoDownloadPolicyDialog(onDismissRequest = { showDialog.value = false })
                                     Text(text = stringResource(R.string.feed_auto_download_policy), style = MaterialTheme.typography.titleLarge, color = textColor,
                                         modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                                 }
@@ -330,7 +330,7 @@ class FeedSettingsFragment : Fragment() {
                             Column (modifier = Modifier.padding(start = 20.dp)) {
                                 Row(Modifier.fillMaxWidth()) {
                                     val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) SetEpisodesCacheDialog(showDialog.value, onDismiss = { showDialog.value = false })
+                                    if (showDialog.value) SetEpisodesCacheDialog(onDismiss = { showDialog.value = false })
                                     Text(text = stringResource(R.string.pref_episode_cache_title), style = MaterialTheme.typography.titleLarge, color = textColor,
                                         modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                                 }
@@ -419,35 +419,33 @@ class FeedSettingsFragment : Fragment() {
         }
     }
     @Composable
-    fun VideoModeDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-        if (showDialog) {
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(videoMode) }
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            videoModeTags.forEach { text ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(checked = (text == selectedOption),
-                                        onCheckedChange = {
-                                            Logd(TAG, "row clicked: $text $selectedOption")
-                                            if (text != selectedOption) {
-                                                onOptionSelected(text)
-                                                val mode_ = when (text) {
-                                                    VideoMode.NONE.tag -> VideoMode.NONE
-                                                    VideoMode.WINDOW_VIEW.tag -> VideoMode.WINDOW_VIEW
-                                                    VideoMode.FULL_SCREEN_VIEW.tag -> VideoMode.FULL_SCREEN_VIEW
-                                                    VideoMode.AUDIO_ONLY.tag -> VideoMode.AUDIO_ONLY
-                                                    else -> VideoMode.NONE
-                                                }
-                                                feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode_ }
-                                                getVideoModePolicy()
-                                                onDismissRequest()
+    fun VideoModeDialog(onDismissRequest: () -> Unit) {
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(videoMode) }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        videoModeTags.forEach { text ->
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = (text == selectedOption),
+                                    onCheckedChange = {
+                                        Logd(TAG, "row clicked: $text $selectedOption")
+                                        if (text != selectedOption) {
+                                            onOptionSelected(text)
+                                            val mode_ = when (text) {
+                                                VideoMode.NONE.tag -> VideoMode.NONE
+                                                VideoMode.WINDOW_VIEW.tag -> VideoMode.WINDOW_VIEW
+                                                VideoMode.FULL_SCREEN_VIEW.tag -> VideoMode.FULL_SCREEN_VIEW
+                                                VideoMode.AUDIO_ONLY.tag -> VideoMode.AUDIO_ONLY
+                                                else -> VideoMode.NONE
                                             }
+                                            feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode_ }
+                                            getVideoModePolicy()
+                                            onDismissRequest()
                                         }
-                                    )
-                                    Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                                }
+                                    }
+                                )
+                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -473,34 +471,32 @@ class FeedSettingsFragment : Fragment() {
         }
     }
     @Composable
-    fun AutoDeleteDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-        if (showDialog) {
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(autoDeletePolicy) }
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            FeedAutoDeleteOptions.forEach { text ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(checked = (text == selectedOption),
-                                        onCheckedChange = {
-                                            Logd(TAG, "row clicked: $text $selectedOption")
-                                            if (text != selectedOption) {
-                                                onOptionSelected(text)
-                                                val action_ = when (text) {
-                                                    AutoDeleteAction.GLOBAL.tag -> AutoDeleteAction.GLOBAL
-                                                    AutoDeleteAction.ALWAYS.tag -> AutoDeleteAction.ALWAYS
-                                                    AutoDeleteAction.NEVER.tag -> AutoDeleteAction.NEVER
-                                                    else -> AutoDeleteAction.GLOBAL
-                                                }
-                                                feed = upsertBlk(feed!!) { it.preferences?.autoDeleteAction = action_ }
-                                                getAutoDeletePolicy()
-                                                onDismissRequest()
+    fun AutoDeleteDialog(onDismissRequest: () -> Unit) {
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(autoDeletePolicy) }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        FeedAutoDeleteOptions.forEach { text ->
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = (text == selectedOption),
+                                    onCheckedChange = {
+                                        Logd(TAG, "row clicked: $text $selectedOption")
+                                        if (text != selectedOption) {
+                                            onOptionSelected(text)
+                                            val action_ = when (text) {
+                                                AutoDeleteAction.GLOBAL.tag -> AutoDeleteAction.GLOBAL
+                                                AutoDeleteAction.ALWAYS.tag -> AutoDeleteAction.ALWAYS
+                                                AutoDeleteAction.NEVER.tag -> AutoDeleteAction.NEVER
+                                                else -> AutoDeleteAction.GLOBAL
                                             }
+                                            feed = upsertBlk(feed!!) { it.preferences?.autoDeleteAction = action_ }
+                                            getAutoDeletePolicy()
+                                            onDismissRequest()
                                         }
-                                    )
-                                    Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                                }
+                                    }
+                                )
+                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -510,27 +506,25 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
-    fun VolumeAdaptionDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-        if (showDialog) {
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            VolumeAdaptionSetting.entries.forEach { item ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(checked = (item == selectedOption),
-                                        onCheckedChange = { _ ->
-                                            Logd(TAG, "row clicked: $item $selectedOption")
-                                            if (item != selectedOption) {
-                                                onOptionSelected(item)
-                                                feed = upsertBlk(feed!!) { it.preferences?.volumeAdaptionSetting = item }
-                                                onDismissRequest()
-                                            }
+    fun VolumeAdaptionDialog(onDismissRequest: () -> Unit) {
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        VolumeAdaptionSetting.entries.forEach { item ->
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = (item == selectedOption),
+                                    onCheckedChange = { _ ->
+                                        Logd(TAG, "row clicked: $item $selectedOption")
+                                        if (item != selectedOption) {
+                                            onOptionSelected(item)
+                                            feed = upsertBlk(feed!!) { it.preferences?.volumeAdaptionSetting = item }
+                                            onDismissRequest()
                                         }
-                                    )
-                                    Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                                }
+                                    }
+                                )
+                                Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -540,102 +534,26 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
-    fun AutoDownloadPolicyDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-        if (showDialog) {
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.autoDLPolicy ?: AutoDownloadPolicy.ONLY_NEW) }
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            AutoDownloadPolicy.entries.forEach { item ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(checked = (item == selectedOption),
-                                        onCheckedChange = {
-                                            Logd(TAG, "row clicked: $item $selectedOption")
-                                            if (item != selectedOption) {
-                                                onOptionSelected(item)
-                                                feed = upsertBlk(feed!!) { it.preferences?.autoDLPolicy = item }
+    fun AutoDownloadPolicyDialog(onDismissRequest: () -> Unit) {
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.autoDLPolicy ?: AutoDownloadPolicy.ONLY_NEW) }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        AutoDownloadPolicy.entries.forEach { item ->
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = (item == selectedOption),
+                                    onCheckedChange = {
+                                        Logd(TAG, "row clicked: $item $selectedOption")
+                                        if (item != selectedOption) {
+                                            onOptionSelected(item)
+                                            feed = upsertBlk(feed!!) { it.preferences?.autoDLPolicy = item }
 //                                                getAutoDeletePolicy()
-                                                onDismissRequest()
-                                            }
-                                        }
-                                    )
-                                    Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun SetEpisodesCacheDialog(showDialog: Boolean, onDismiss: () -> Unit) {
-        if (showDialog) {
-            Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        var newCache by remember { mutableStateOf((feed?.preferences?.autoDLMaxEpisodes ?: 1).toString()) }
-                        TextField(value = newCache, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) newCache = it },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text(stringResource(R.string.max_episodes_cache)) })
-                        Button(onClick = {
-                            if (newCache.isNotEmpty()) {
-                                feed = upsertBlk(feed!!) { it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }
-                                onDismiss()
-                            }
-                        }) { Text("Confirm") }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SetAssociatedQueue(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
-        var selected by remember {mutableStateOf(selectedOption)}
-        if (showDialog) {
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        queueSettingOptions.forEach { option ->
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = option == selected,
-                                    onCheckedChange = { isChecked ->
-                                        selected = option
-                                        if (isChecked) Logd(TAG, "$option is checked")
-                                        when (selected) {
-                                            "Default" -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = 0L }
-                                                curPrefQueue = selected
-                                                onDismissRequest()
-                                            }
-                                            "Active" -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = -1L }
-                                                curPrefQueue = selected
-                                                onDismissRequest()
-                                            }
-                                            "None" -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = -2L }
-                                                curPrefQueue = selected
-                                                onDismissRequest()
-                                            }
-                                            "Custom" -> {}
+                                            onDismissRequest()
                                         }
                                     }
                                 )
-                                Text(option)
-                            }
-                        }
-                        if (selected == "Custom") {
-                            if (queues == null) queues = realm.query(PlayQueue::class).find()
-                            Logd(TAG, "queues: ${queues?.size}")
-                            Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { index ->
-                                Logd(TAG, "Queue selected: $queues[index].name")
-                                val q = queues!![index]
-                                feed = upsertBlk(feed!!) { it.preferences?.queue = q }
-                                curPrefQueue = q.name
-                                onDismissRequest()
+                                Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -645,40 +563,108 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
-    private fun SetAudioQuality(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
+    fun SetEpisodesCacheDialog(onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    var newCache by remember { mutableStateOf((feed?.preferences?.autoDLMaxEpisodes ?: 1).toString()) }
+                    TextField(value = newCache, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) newCache = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text(stringResource(R.string.max_episodes_cache)) })
+                    Button(onClick = {
+                        if (newCache.isNotEmpty()) {
+                            feed = upsertBlk(feed!!) { it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }
+                            onDismiss()
+                        }
+                    }) { Text("Confirm") }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SetAssociatedQueue(selectedOption: String, onDismissRequest: () -> Unit) {
         var selected by remember {mutableStateOf(selectedOption)}
-        if (showDialog) {
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FeedPreferences.AVQuality.entries.forEach { option ->
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = option.tag == selected,
-                                    onCheckedChange = { isChecked ->
-                                        selected = option.tag
-                                        if (isChecked) Logd(TAG, "$option is checked")
-                                        when (selected) {
-                                            FeedPreferences.AVQuality.LOW.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.LOW.code }
-                                                onDismissRequest()
-                                            }
-                                            FeedPreferences.AVQuality.MEDIUM.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.MEDIUM.code }
-                                                onDismissRequest()
-                                            }
-                                            FeedPreferences.AVQuality.HIGH.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.HIGH.code }
-                                                onDismissRequest()
-                                            }
-                                            else -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.GLOBAL.code }
-                                                onDismissRequest()
-                                            }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    queueSettingOptions.forEach { option ->
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = option == selected,
+                                onCheckedChange = { isChecked ->
+                                    selected = option
+                                    if (isChecked) Logd(TAG, "$option is checked")
+                                    when (selected) {
+                                        "Default" -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.queueId = 0L }
+                                            curPrefQueue = selected
+                                            onDismissRequest()
+                                        }
+                                        "Active" -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.queueId = -1L }
+                                            curPrefQueue = selected
+                                            onDismissRequest()
+                                        }
+                                        "None" -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.queueId = -2L }
+                                            curPrefQueue = selected
+                                            onDismissRequest()
+                                        }
+                                        "Custom" -> {}
+                                    }
+                                }
+                            )
+                            Text(option)
+                        }
+                    }
+                    if (selected == "Custom") {
+                        if (queues == null) queues = realm.query(PlayQueue::class).find()
+                        Logd(TAG, "queues: ${queues?.size}")
+                        Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { index ->
+                            Logd(TAG, "Queue selected: $queues[index].name")
+                            val q = queues!![index]
+                            feed = upsertBlk(feed!!) { it.preferences?.queue = q }
+                            curPrefQueue = q.name
+                            onDismissRequest()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SetAudioQuality(selectedOption: String, onDismissRequest: () -> Unit) {
+        var selected by remember {mutableStateOf(selectedOption)}
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FeedPreferences.AVQuality.entries.forEach { option ->
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = option.tag == selected,
+                                onCheckedChange = { isChecked ->
+                                    selected = option.tag
+                                    if (isChecked) Logd(TAG, "$option is checked")
+                                    when (selected) {
+                                        FeedPreferences.AVQuality.LOW.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.LOW.code }
+                                            onDismissRequest()
+                                        }
+                                        FeedPreferences.AVQuality.MEDIUM.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.MEDIUM.code }
+                                            onDismissRequest()
+                                        }
+                                        FeedPreferences.AVQuality.HIGH.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.HIGH.code }
+                                            onDismissRequest()
+                                        }
+                                        else -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.GLOBAL.code }
+                                            onDismissRequest()
                                         }
                                     }
-                                )
-                                Text(option.tag)
-                            }
+                                }
+                            )
+                            Text(option.tag)
                         }
                     }
                 }
@@ -687,40 +673,38 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
-    private fun SetVideoQuality(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
+    private fun SetVideoQuality(selectedOption: String, onDismissRequest: () -> Unit) {
         var selected by remember {mutableStateOf(selectedOption)}
-        if (showDialog) {
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FeedPreferences.AVQuality.entries.forEach { option ->
-                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = option.tag == selected,
-                                    onCheckedChange = { isChecked ->
-                                        selected = option.tag
-                                        if (isChecked) Logd(TAG, "$option is checked")
-                                        when (selected) {
-                                            FeedPreferences.AVQuality.LOW.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.LOW.code }
-                                                onDismissRequest()
-                                            }
-                                            FeedPreferences.AVQuality.MEDIUM.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.MEDIUM.code }
-                                                onDismissRequest()
-                                            }
-                                            FeedPreferences.AVQuality.HIGH.tag -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.HIGH.code }
-                                                onDismissRequest()
-                                            }
-                                            else -> {
-                                                feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.GLOBAL.code }
-                                                onDismissRequest()
-                                            }
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FeedPreferences.AVQuality.entries.forEach { option ->
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = option.tag == selected,
+                                onCheckedChange = { isChecked ->
+                                    selected = option.tag
+                                    if (isChecked) Logd(TAG, "$option is checked")
+                                    when (selected) {
+                                        FeedPreferences.AVQuality.LOW.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.LOW.code }
+                                            onDismissRequest()
+                                        }
+                                        FeedPreferences.AVQuality.MEDIUM.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.MEDIUM.code }
+                                            onDismissRequest()
+                                        }
+                                        FeedPreferences.AVQuality.HIGH.tag -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.HIGH.code }
+                                            onDismissRequest()
+                                        }
+                                        else -> {
+                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.GLOBAL.code }
+                                            onDismissRequest()
                                         }
                                     }
-                                )
-                                Text(option.tag)
-                            }
+                                }
+                            )
+                            Text(option.tag)
                         }
                     }
                 }
@@ -729,55 +713,51 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
-    fun AuthenticationDialog(showDialog: Boolean, onDismiss: () -> Unit) {
-        if (showDialog) {
-            Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val oldName = feed?.preferences?.username?:""
-                        var newName by remember { mutableStateOf(oldName) }
-                        TextField(value = newName, onValueChange = { newName = it }, label = { Text("Username") })
-                        val oldPW = feed?.preferences?.password?:""
-                        var newPW by remember { mutableStateOf(oldPW) }
-                        TextField(value = newPW, onValueChange = { newPW = it }, label = { Text("Password") })
-                        Button(onClick = {
-                            if (newName.isNotEmpty() && oldName != newName) {
-                                feed = upsertBlk(feed!!) {
-                                    it.preferences?.username = newName
-                                    it.preferences?.password = newPW
-                                }
-                                Thread({ runOnce(requireContext(), feed) }, "RefreshAfterCredentialChange").start()
-                                onDismiss()
+    fun AuthenticationDialog(onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val oldName = feed?.preferences?.username?:""
+                    var newName by remember { mutableStateOf(oldName) }
+                    TextField(value = newName, onValueChange = { newName = it }, label = { Text("Username") })
+                    val oldPW = feed?.preferences?.password?:""
+                    var newPW by remember { mutableStateOf(oldPW) }
+                    TextField(value = newPW, onValueChange = { newPW = it }, label = { Text("Password") })
+                    Button(onClick = {
+                        if (newName.isNotEmpty() && oldName != newName) {
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.username = newName
+                                it.preferences?.password = newPW
                             }
-                        }) { Text("Confirm") }
-                    }
+                            Thread({ runOnce(requireContext(), feed) }, "RefreshAfterCredentialChange").start()
+                            onDismiss()
+                        }
+                    }) { Text("Confirm") }
                 }
             }
         }
     }
 
     @Composable
-    fun AutoSkipDialog(showDialog: Boolean, onDismiss: () -> Unit) {
-        if (showDialog) {
-            Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        var intro by remember { mutableStateOf((feed?.preferences?.introSkip ?: 0).toString()) }
-                        TextField(value = intro, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) intro = it },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip first (seconds)") })
-                        var ending by remember { mutableStateOf((feed?.preferences?.endingSkip ?: 0).toString()) }
-                        TextField(value = ending, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) ending = it  },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip last (seconds)") })
-                        Button(onClick = {
-                            if (intro.isNotEmpty() || ending.isNotEmpty()) {
-                                feed = upsertBlk(feed!!) {
-                                    it.preferences?.introSkip = intro.toIntOrNull() ?: 0
-                                    it.preferences?.endingSkip = ending.toIntOrNull() ?: 0
-                                }
-                                onDismiss()
+    fun AutoSkipDialog(onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    var intro by remember { mutableStateOf((feed?.preferences?.introSkip ?: 0).toString()) }
+                    TextField(value = intro, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) intro = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip first (seconds)") })
+                    var ending by remember { mutableStateOf((feed?.preferences?.endingSkip ?: 0).toString()) }
+                    TextField(value = ending, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) ending = it  },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("Skip last (seconds)") })
+                    Button(onClick = {
+                        if (intro.isNotEmpty() || ending.isNotEmpty()) {
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.introSkip = intro.toIntOrNull() ?: 0
+                                it.preferences?.endingSkip = ending.toIntOrNull() ?: 0
                             }
-                        }) { Text("Confirm") }
-                    }
+                            onDismiss()
+                        }
+                    }) { Text("Confirm") }
                 }
             }
         }

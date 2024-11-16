@@ -34,13 +34,13 @@ object MiscFormatter {
         return DateFormat.getDateInstance(DateFormat.LONG).format(date)
     }
 
-    fun formatDateTimeFlex(date: Date): String {
+    fun formatDateTimeFlex(date: Date?): String {
+        if (date == null) return "0000"
         val now = Date()
-        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         return when {
             isSameDay(date, now) -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
             isSameYear(date, now) -> SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(date)
-            else -> formatter.format(date)
+            else -> SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
         }
     }
 

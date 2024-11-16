@@ -108,7 +108,7 @@ object Queues {
                 updatedItems.add(episode)
                 qItems.add(insertPosition, episode)
                 queueModified = true
-                if (episode.playState < PlayState.INQUEUE.code) setInQueue.add(episode)
+                if (episode.playState < PlayState.QUEUE.code) setInQueue.add(episode)
                 insertPosition++
             }
             if (queueModified) {
@@ -120,7 +120,7 @@ object Queues {
                     it.update()
                 }
                 for (event in events) EventFlow.postEvent(event)
-                setPlayState(PlayState.INQUEUE.code, false, *setInQueue.toTypedArray())
+                setPlayState(PlayState.QUEUE.code, false, *setInQueue.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
         }
@@ -143,7 +143,7 @@ object Queues {
         }
         if (queue.id == curQueue.id) curQueue = queueNew
 
-        if (episode.playState < PlayState.INQUEUE.code) setPlayState(PlayState.INQUEUE.code, false, episode)
+        if (episode.playState < PlayState.QUEUE.code) setPlayState(PlayState.QUEUE.code, false, episode)
         if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }

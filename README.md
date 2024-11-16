@@ -29,7 +29,7 @@ Compared to AntennaPod this project:
 3. Modern object-base Realm DB replaced SQLite, Coil replaced Glide, coroutines replaced RxJava and threads, and SharedFlow replaced EventBus.
 4. Boasts new UI's including streamlined drawer, subscriptions view and player controller, and many more.
 5. Supports multiple, virtual and circular play queues associable with any podcast.
-6. Auto-download is governed by policy and limit settings of individual feed.
+6. Auto-download is governed by policy and limit settings of individual feed (podcast).
 7. Features synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
 8. Supports channels, playlists, single media from YouTube and YT Music, as well as normal podcasts and plain RSS,
 9. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
@@ -41,9 +41,91 @@ The project aims to profit from modern frameworks, improve efficiency and provid
 
 While podcast subscriptions' OPML files (from AntennaPod or any other sources) can be easily imported, Podcini can not import DB from AntennaPod.
 
-## Notable new features & enhancements
+## Notable new features description
 
-### Player and Queues
+### Quick start
+
+* On a fresh install of Podcini, do any of the following to get started enjoying the power of Podcini:
+  * Open the drawer by right-swipe from the left edge of the phone
+  * Tap "Add Podcast", in the new view, enter any key words to search for desired podcasts, see "Online feed" section below
+  * Or, from the drawer -> Settings -> Import/Export, tap OPML import to import your opml file containing a set of podcast
+  * Or, open YouTube or YT Music app on the phone, select a channel/playlist or a single media, and share it to Podcini, see "Youtube & YT Music" section below
+
+### Podcast (Feed)
+
+* Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue
+* In addition to subscribed podcasts, synthetic podcasts can be created and work as subscribed podcasts but with extra features:
+  * episodes can be copied/moved to any synthetic podcast
+  * episodes from online feeds can be shelved into any synthetic podcasts without having to subscribe to the online feed
+  * media shared from Youtube or YT Music are added in synthetic podcast
+* FeedInfo view offers a link for direct search of feeds related to author
+* FeedInfo view has button showing number of episodes to open the FeedEpisodes view
+* A rating of Trash, Bad, OK, Good, Super can be set on any feed
+* In FeedInfo view, one can enter personal comments/notes under "My opinion" for the feed
+* on action bar of FeedEpisodes view there is a direct access to Queue
+* Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
+* Podcast's settings can be accessed in FeedInfo and FeedEpisodes views
+* "Prefer streaming over download" is now on setting of individual feed
+* added setting in individual feed to play audio only for video feeds,
+  * an added benefit for setting it enables Youtube media to only stream audio content, saving bandwidth.
+  * this differs from switching to "Audio only" on each episode, in which case, video is also streamed
+
+### Episode
+
+* New share notes menu option on various episode views
+* instead of only favorite, there is a new rating system for every episode: Trash, Bad, OK, Good, Super
+* instead of Played or Unplayed status, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, Queue, Progress, Skipped, Played, Again, Forever, Ignored
+  	* among which Unplayed, Later, Soon, Queue, Skipped, Played, Again, Forever, Ignored are settable by the user
+	* when an episode is started to play, its state is set to Progress
+	* when an episode is manually set to Queue, it's added to the queue according to the associated queue setting of the feed
+	* when episode is added to a queue, its state is set to Queue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
+* in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
+* New episode home view with two display modes: webpage or reader
+* In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
+* RSS feeds with no playable media can be subscribed and read/listened (via TTS)
+
+### Podcast/Episode list
+
+* Subscriptions page by default has a list layout and can be opted for a grid layout for the podcasts subscribed
+* An all new sorting dialog and mechanism for Subscriptions based on title, date, and count combinable with other criteria
+* An all new way of filtering for both podcasts and episodes with expanded criteria
+* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
+* Episodes list is shown in views of Queues, Downloads, All episodes, FeedEpisodes
+* New and efficient ways of click and long-click operations on both podcast and episode lists:
+  * click on title area opens the podcast/episode
+  * long-press on title area automatically enters in selection mode
+  * options to select all above or below are shown action bar together with Select All
+  * operation options are prompted for the selected (single or multiple)
+  * in episodes lists, click on an episode image brings up the FeedInfo view
+* Episodes lists supports swipe actions
+  * Left and right swipe actions on lists now have telltales and can be configured on the spot
+  * Swipe actions are brought to perform anything on the multi-select menu, and there is a Combo swipe action
+* Downward swipe triggered feeds update
+  * in Subscriptions view, all feeds are updated
+  * in FeedInfo view, only the single feed is updated
+* in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
+* Long-press on the action button on the right of any episode list brings up more options
+* Deleting and updating feeds are performed promptly
+* Local search for feeds or episodes can be separately specified on title, author(feed only), description(including transcript in episodes), and comment (My opinion)
+
+### Queues
+
+* Multiple queues can be used: 5 queues are provided by default, user can rename or add up to 10 queues
+  * on app startup, the most recently updated queue is set to active queue
+  * any episodes can be easily added/moved to the active or any designated queues
+  * any queue can be associated with any podcast for customized playing experience
+* Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
+* Every queue has a bin containing past episodes removed from the queue, useful for further review and handling
+* Feed associated queue can be set to None, in which case:
+  * episodes in the feed are not automatically added to any queue,
+  * the episodes in the feed forms a virtual queue
+  * the next episode is determined in such a way:
+    * if the currently playing episode had been (manually) added to the active queue, then it's the next in queue
+    * else if "prefer streaming" is set, it's the next unplayed (or Again and Forever) episode in the virtual queue based on the current filter and sort order
+    * else it's the next downloaded unplayed (or Again and Forever) episode
+* Otherwise, episode played from a list other than the queue is a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
+
+### Player
 
 * More convenient player control displayed on all pages
 * Revamped and more efficient expanded player view showing episode description on the front
@@ -65,80 +147,22 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * enabled intro- and end- skipping
   * mark as played when finished
   * streamed media is added to queue and is resumed after restart
-* new video episode view, with video player on top and episode descriptions in portrait mode
-* easy switches on video player to other video mode or audio only, in seamless way
-* video player automatically switch to audio when app invisible
+* There are three modes for playing video: fullscreen, window and audio-only, they can be switched seamlessly in video player
+* Video player automatically switch to audio when app invisible
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
-* "Prefer streaming over download" is now on setting of individual feed
-* added setting in individual feed to play audio only for video feeds,
-  * an added benefit for setting it enables Youtube media to only stream audio content, saving bandwidth.
-  * this differs from switching to "Audio only" on each episode, in which case, video is also streamed
-* Multiple queues can be used: 5 queues are provided by default, user can rename or add up to 10 queues
-  * on app startup, the most recently updated queue is set to curQueue
-  * any episodes can be easily added/moved to the active or any designated queues
-  * any queue can be associated with any feed for customized playing experience
-* Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* Every queue has a bin containing past episodes removed from the queue, useful for further review and handling
-* Feed associated queue can be set to None, in which case:
-  * episodes in the feed are not automatically added to any queue, but are used as a natural queue for getting the next episode to play
-  * the next episode is determined in such a way:
-    * if the currently playing episode had been (manually) added to the active queue, then it's the next in queue
-    * else if "prefer streaming" is set, it's the next unplayed episode in the feed episodes list based on the current sort order
-    * else it's the next downloaded unplayed episode
-* Otherwise, episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
 * Episodes played to 95% of the full duration is considered completely played
-
-### Podcast list and Episode list
-
-* Subscriptions page by default has a list layout and can be opted for a grid layout
-* New and efficient ways of click and long-click operations on lists:
-  * click on title area opens the podcast/episode
-  * long-press on title area automatically enters in selection mode
-  * options to select all above or below are shown action bar together with Select All
-  * operations are only on the selected (single or multiple)
-* List info is shown in Queue and Downloads views
-* Local search for feeds or episodes can be separately specified on title, author(feed only), description(including transcript in episodes), and comment (My opinion)
-* Left and right swipe actions on lists now have telltales and can be configured on the spot
-* Swipe actions are brought to perform anything on the multi-select menu, and there is a Combo swipe action
-* Played or new episodes have clearer markings
-* An all new sorting dialog and mechanism for Subscriptions based on title, date, and count
-* An all new way of filtering for both podcasts and episodes with expanded criteria
-* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
-* in all episodes list views, click on an episode image brings up the FeedInfo view
-* in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
-* on action bar of FeedEpisodes view there is a direct access to Queue
-* Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
-* Long-press on the action button on the right of any episode in the list brings up more options
-* History view shows time of last play, and allows filters and sorts
-
-### Podcast/Episode
-
-* New share notes menu option on various episode views
-* Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue
-* FeedInfo view offers a link for direct search of feeds related to author
-* FeedInfo view has button showing number of episodes to open the FeedEpisodes view
-* instead of isFavorite, there is a new rating system for every episode: Trash, Bad, OK, Good, Super
-* instead of Played or Unplayed, there is a new play state system Unspecified, Building, New, Unplayed, Later, Soon, InQueue, InProgress, Skipped, Played, Again, Forever, Ignored
-  	* among which Unplayed, Later, Soon, Skipped, Played, Again, Forever, Ignored are settable by the user
-	* when an episode is started to play, its state is set to InProgress
-	* when episode is added to a queue, its state is set to InQueue, when it's removed from a queue, the state (if lower than Skipped) is set to Skipped
-* in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
-* in FeedInfo view, one can enter personal comments/notes under "My opinion" for the feed
-* New episode home view with two display modes: webpage or reader
-* In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
-* RSS feeds with no playable media can be subscribed and read/listened (via TTS)
-* deleting feeds is performed promptly
 
 ### Online feed
 
+* Upon any online search (by Add podcast), there appear a list of online feeds related to searched key words
+  * a webpage address is accepted as a search term
 * Long-press on a feed in online feed list prompts to subscribe it straight out.
-* More info about feeds are shown in the online search view
-* Ability to open podcast with webpage address
+* Press on a feed opens Online feed view for info or episodes of the feed and opting to subscribe the feed
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* Online feed episodes can be selectively reserved into synthetic podcasts
+* Online feed episodes can be selectively reserved into synthetic podcasts without subscribing to the feed
 
-### Youtube & Youtube Music
+### Youtube & YT Music
 
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
@@ -165,10 +189,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
   * Each feed also has its own download policy (only new episodes, newest episodes, oldest episodes or episodes marked as Soon. "newest episodes" meaning most recent episodes, new or old)
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
-  * Auto downloads run feeds or feed refreshes, scheduled or manual
-  * auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue
-  * After auto download run, episodes with New status is changed to Unplayed.
-  * auto download feed setting dialog is also changed:
+  * Auto downloads run after feed updates, scheduled or manual
+  * Auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue
+  * After auto download run, episodes with New status in the feed is changed to Unplayed.
+  * in auto download feed setting:
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
     * on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
 * Sleep timer has a new option of "To the end of episode"
@@ -176,6 +200,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Statistics
 
 * Statistics compiles the media that's been played during a specified period
+* There are usage statistics for today
 * There are 2 numbers regarding played time: duration and time spent
   * time spent is simply time spent playing a media, so play speed, rewind and forward can play a role
   * Duration shows differently under 2 settings: "including marked as play" or not

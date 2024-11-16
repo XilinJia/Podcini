@@ -37,11 +37,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OnlineSearchFragment : Fragment() {
-
     private var _binding: AddfeedBinding? = null
     private val binding get() = _binding!!
 
-    private var activity: MainActivity? = null
+    private var mainAct: MainActivity? = null
     private var displayUpArrow = false
 
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -52,18 +51,18 @@ class OnlineSearchFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = AddfeedBinding.inflate(inflater)
-//        activity = activity
+        mainAct = activity as? MainActivity
         Logd(TAG, "fragment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
+        mainAct?.setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         binding.searchButton.setOnClickListener { performSearch() }
-        binding.searchVistaGuideButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }
-        binding.searchItunesButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }
-        binding.searchFyydButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }
-        binding.searchGPodderButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }
-        binding.searchPodcastIndexButton.setOnClickListener { activity?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }
+        binding.searchVistaGuideButton.setOnClickListener { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }
+        binding.searchItunesButton.setOnClickListener { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }
+        binding.searchFyydButton.setOnClickListener { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }
+        binding.searchGPodderButton.setOnClickListener { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }
+        binding.searchPodcastIndexButton.setOnClickListener { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }
         binding.combinedFeedSearchEditText.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
             performSearch()
             true
@@ -73,14 +72,14 @@ class OnlineSearchFragment : Fragment() {
             try { chooseOpmlImportPathLauncher.launch("*/*")
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
         binding.addLocalFolderButton.setOnClickListener {
             try { addLocalFolderLauncher.launch(null)
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
 
@@ -124,7 +123,7 @@ class OnlineSearchFragment : Fragment() {
 
     private fun addUrl(url: String) {
         val fragment: Fragment = OnlineFeedFragment.newInstance(url)
-        (activity as MainActivity).loadChildFragment(fragment)
+        mainAct?.loadChildFragment(fragment)
     }
 
     private fun performSearch() {
@@ -136,7 +135,7 @@ class OnlineSearchFragment : Fragment() {
             addUrl(query)
             return
         }
-        activity?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
+        mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
         binding.combinedFeedSearchEditText.post { binding.combinedFeedSearchEditText.setText("") }
     }
 
@@ -168,12 +167,12 @@ class OnlineSearchFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (feed != null) {
                         val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                        (activity as MainActivity).loadChildFragment(fragment)
+                        mainAct?.loadChildFragment(fragment)
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
+                mainAct?.showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
             }
         }
     }

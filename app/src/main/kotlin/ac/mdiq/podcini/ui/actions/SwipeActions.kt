@@ -188,7 +188,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                             (fragment.view as? ViewGroup)?.removeView(this@apply)
                         }) {
                             val context = LocalContext.current
-                            Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                            Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                     for (action in swipeActions) {
                                         if (action.getId() == ActionTypes.NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
@@ -670,7 +670,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             var showPickerDialog by remember { mutableStateOf(false) }
             if (showPickerDialog) {
                 Dialog(onDismissRequest = { showPickerDialog = false }) {
-                    Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                    Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.padding(16.dp)) {
                             items(keys.size) { index ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp).clickable {
@@ -719,7 +719,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                     else -> {}
                 }
                 if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text(stringResource(R.string.swipeactions_label) + " - " + forFragment)
                         Text(stringResource(R.string.swipe_left))

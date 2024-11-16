@@ -5,12 +5,14 @@ import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
+import ac.mdiq.podcini.ui.fragment.DownloadsFragment.Companion.downloadsSortedOrder
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -54,8 +56,10 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     val episodes = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
     var showFilterDialog by mutableStateOf(false)
+    var showSortDialog by mutableStateOf(false)
+    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = ComposeFragmentBinding.inflate(inflater)
@@ -80,9 +84,9 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         lifecycle.addObserver(swipeActions)
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
-                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), onDismissRequest = { showFilterDialog = false } ) {
-                    onFilterChanged(it)
-                }
+                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), onDismissRequest = { showFilterDialog = false } ) { onFilterChanged(it) }
+                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { order, _ -> onSort(order) }
+
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(
@@ -106,6 +110,8 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     }
 
     open fun onFilterChanged(filterValues: Set<String>) {}
+
+    open fun onSort(order: EpisodeSortOrder) {}
 
     override fun onStart() {
         super.onStart()

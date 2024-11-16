@@ -39,6 +39,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.AudioManager
@@ -115,7 +116,7 @@ class MainActivity : CastEnabledActivity() {
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
-    val prefs by lazy { getSharedPreferences("MainActivityPrefs", MODE_PRIVATE) }
+    val prefs: SharedPreferences by lazy { getSharedPreferences("MainActivityPrefs", MODE_PRIVATE) }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()

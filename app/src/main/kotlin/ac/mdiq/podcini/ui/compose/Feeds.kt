@@ -52,7 +52,7 @@ import java.util.*
 @Composable
 fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 for (rating in Rating.entries.reversed()) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
@@ -79,7 +79,7 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
     val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(message)
                 Text(stringResource(R.string.feed_delete_reason_msg))
@@ -133,7 +133,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
     fun confirmSubscribe(feed: PodcastSearchResult, showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     val textColor = MaterialTheme.colorScheme.onSurface
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                         Text("Subscribe: \"${feed.title}\" ?", color = textColor, modifier = Modifier.padding(bottom = 10.dp))
@@ -223,7 +223,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
 @Composable
 fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Text(stringResource(R.string.rename_feed_label), color = textColor, style = MaterialTheme.typography.bodyLarge)

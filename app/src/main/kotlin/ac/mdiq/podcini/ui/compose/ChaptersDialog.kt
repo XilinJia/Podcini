@@ -36,7 +36,7 @@ fun ChaptersDialog(media: Playable, onDismissRequest: () -> Unit) {
     val chapters = media.getChapters()
     val textColor = MaterialTheme.colorScheme.onSurface
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(stringResource(R.string.chapters_label))
                 var currentChapterIndex by remember { mutableIntStateOf(-1) }

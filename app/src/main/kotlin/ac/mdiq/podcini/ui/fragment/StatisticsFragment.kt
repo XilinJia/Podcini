@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
 import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
@@ -149,9 +150,9 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.statistics_today), color = MaterialTheme.colorScheme.onSurface)
             Row {
-                Text(stringResource(R.string.duration) + ": " + shortLocalizedDuration(context, timePlayedToday), color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.duration) + ": " + getDurationStringShort(timePlayedToday.toInt(), true), color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(20.dp))
-                Text( stringResource(R.string.spent) + ": " + shortLocalizedDuration(context, timeSpentToday), color = MaterialTheme.colorScheme.onSurface)
+                Text( stringResource(R.string.spent) + ": " + getDurationStringShort(timeSpentToday.toInt(), true), color = MaterialTheme.colorScheme.onSurface)
             }
             val headerCaption = if (includeMarkedAsPlayed) stringResource(R.string.statistics_counting_total)
             else {
@@ -541,7 +542,7 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             loadStatistics()
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color.Yellow)) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     val context = LocalContext.current
                     val textColor = MaterialTheme.colorScheme.onSurface
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {

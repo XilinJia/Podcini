@@ -332,11 +332,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val alert = MaterialAlertDialogBuilder(requireContext())
                 alert.setMessage(R.string.reconnect_local_folder_warning)
                 alert.setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
-                    try {
-                        addLocalFolderLauncher.launch(null)
-                    } catch (e: ActivityNotFoundException) {
-                        Log.e(TAG, "No activity found. Should never happen...")
-                    }
+                    try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                 }
                 alert.setNegativeButton(string.cancel, null)
                 alert.show()
@@ -349,14 +345,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }.show()
             }
-            R.id.remove_feed -> {
-                showRemoveFeedDialog = true
-//                RemoveFeedDialog.show(requireContext(), feed) {
-//                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-//                    // Make sure fragment is hidden before actually starting to delete
-//                    requireActivity().supportFragmentManager.executePendingTransactions()
-//                }
-            }
+            R.id.remove_feed -> showRemoveFeedDialog = true
             else -> return false
         }
         return true

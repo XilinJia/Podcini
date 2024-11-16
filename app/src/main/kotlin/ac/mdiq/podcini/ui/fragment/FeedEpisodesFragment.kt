@@ -10,15 +10,18 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
 import android.content.Context
@@ -62,7 +65,7 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
- class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
@@ -88,11 +91,13 @@ import java.util.concurrent.Semaphore
     private var ueMap: Map<String, Int> = mapOf()
 
     private var enableFilter: Boolean = true
-    private var filterButColor = mutableStateOf(Color.White)
+    private var filterButtonColor = mutableStateOf(Color.White)
 
     private var showRemoveFeedDialog by mutableStateOf(false)
     private var showFilterDialog by mutableStateOf(false)
     private var showNewSynthetic by mutableStateOf(false)
+     var showSortDialog by mutableStateOf(false)
+    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -104,11 +109,12 @@ import java.util.concurrent.Semaphore
         if (args != null) feedID = args.getLong(ARGUMENT_FEED_ID)
     }
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
 
         _binding = ComposeFragmentBinding.inflate(inflater)
 
+        sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
         binding.toolbar.inflateMenu(R.menu.feed_episodes)
         binding.toolbar.setOnMenuItemClickListener(this)
 //        binding.toolbar.setOnLongClickListener {
@@ -139,15 +145,15 @@ import java.util.concurrent.Semaphore
                 loadItemsRunning = true
                 val etmp = mutableListOf<Episode>()
                 if (enableFilter) {
-                    filterButColor.value = Color.White
+                    filterButtonColor.value = Color.White
                     val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
 //                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
                     etmp.addAll(episodes_)
                 } else {
-                    filterButColor.value = Color.Red
+                    filterButtonColor.value = Color.Red
                     etmp.addAll(feed!!.episodes)
                 }
-                val sortOrder = fromCode(feed!!.preferences?.sortOrderCode ?: 0)
+                val sortOrder = fromCode(feed?.preferences?.sortOrderCode ?: 0)
                 if (sortOrder != null) getPermutor(sortOrder).reorder(etmp)
                 episodes.clear()
                 episodes.addAll(etmp)
@@ -180,11 +186,18 @@ import java.util.concurrent.Semaphore
                     }
                 }
                 if (showNewSynthetic) RenameOrCreateSyntheticFeed(feed) {showNewSynthetic = false}
+                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { sortOrder, _ ->
+                    if (feed != null) {
+                        Logd(TAG, "persist Episode SortOrder")
+                        runOnIOScope {
+                            val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
+                            if (feed_ != null) upsert(feed_) { it.sortOrder = sortOrder }
+                        }
+                    }
+                }
                 Column {
-                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
-                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {
-                        swipeActions.showDialog()
-                    })
+                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                     EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
@@ -278,7 +291,10 @@ import java.util.concurrent.Semaphore
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), tint = textColor, contentDescription = "butSort",
-                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = { SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog") }))
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
+                        showSortDialog = true
+//                        SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
+                    }))
                 Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
@@ -417,27 +433,9 @@ import java.util.concurrent.Semaphore
                     } catch (e: InterruptedException) { throw RuntimeException(e) }
                 }.start()
             }
-//            R.id.sort_items -> SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
-//            R.id.filter_items -> {}
-//            R.id.settings -> {
-//                if (feed != null) {
-//                    val fragment = FeedSettingsFragment.newInstance(feed!!)
-//                    (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-//                }
-//            }
-            R.id.rename_feed -> {
-                showNewSynthetic = true
-//                CustomFeedNameDialog(activity as Activity, feed!!).show()
-            }
-            R.id.remove_feed -> { showRemoveFeedDialog = true
-//                RemoveFeedDialog.show(requireContext(), feed!!) {
-//                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-//                    // Make sure fragment is hidden before actually starting to delete
-//                    requireActivity().supportFragmentManager.executePendingTransactions()
-//                }
-            }
+            R.id.rename_feed -> showNewSynthetic = true
+            R.id.remove_feed -> showRemoveFeedDialog = true
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
-//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             R.id.open_queue -> {
                 val qFrag = QueuesFragment()
                 (activity as MainActivity).loadChildFragment(qFrag)
@@ -446,23 +444,6 @@ import java.util.concurrent.Semaphore
             else -> return false
         }
         return true
-    }
-
-     // TODO: not really needed
-    private fun onQueueEvent(event: FlowEvent.QueueEvent) {
-        if (feed == null || episodes.isEmpty()) return
-//        var i = 0
-//        val size: Int = event.episodes.size
-//        while (i < size) {
-//            val item = event.episodes[i++]
-//            if (item.feedId != feed!!.id) continue
-//            val pos: Int = ieMap[item.id] ?: -1
-//            if (pos >= 0) {
-////                episodes[pos].inQueueState.value = event.inQueue()
-////                queueChanged++
-//            }
-//            break
-//        }
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
@@ -507,7 +488,6 @@ import java.util.concurrent.Semaphore
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
                     is FlowEvent.PlayerSettingsEvent -> loadFeed()
@@ -562,14 +542,7 @@ import java.util.concurrent.Semaphore
         infoTextFiltered = ""
         if (!feed?.preferences?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter
-            if (filter.properties.isNotEmpty()) {
-                infoTextFiltered = this.getString(R.string.filtered_label)
-//                binding.header.txtvInformation.setOnClickListener {
-//                    val dialog = FeedEpisodeFilterDialog(feed)
-//                    dialog.filter = feed!!.episodeFilter
-//                    dialog.show(childFragmentManager, null)
-//                }
-            }
+            if (filter.properties.isNotEmpty()) infoTextFiltered = this.getString(R.string.filtered_label)
         }
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
     }
@@ -596,13 +569,6 @@ import java.util.concurrent.Semaphore
 //            }
 //        }.invokeOnCompletion { throwable ->
 //            throwable?.printStackTrace()
-//        }
-//    }
-
-//     private fun showFeedInfo() {
-//        if (feed != null) {
-//            val fragment = FeedInfoFragment.newInstance(feed!!)
-//            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
 //        }
 //    }
 
@@ -638,7 +604,6 @@ import java.util.concurrent.Semaphore
                             if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
                                 Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                                 val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
-//                                val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
                                 etmp.addAll(episodes_)
                             } else etmp.addAll(feed_.episodes)
                             val sortOrder = feed_.sortOrder
@@ -702,47 +667,6 @@ import java.util.concurrent.Semaphore
 //            KeyEvent.KEYCODE_T -> binding.recyclerView.smoothScrollToPosition(0)
 //            KeyEvent.KEYCODE_B -> binding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
             else -> {}
-        }
-    }
-
-//    class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
-//         override fun onFilterChanged(newFilterValues: Set<String>) {
-//            if (feed != null) {
-//                Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
-//                runOnIOScope {
-//                    val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-//                    if (feed_ != null) upsert(feed_) { it.preferences?.filterString = newFilterValues.joinToString() }
-//                }
-//            }
-//        }
-//    }
-
-    class SingleFeedSortDialog(val feed: Feed?) : EpisodeSortDialog() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-        }
-        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
-                    || ascending == EpisodeSortOrder.RANDOM
-                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
-                    || (feed?.isLocalFeed == true && ascending == EpisodeSortOrder.EPISODE_FILENAME_A_Z)) {
-                super.onAddItem(title, ascending, descending, ascendingIsDefault)
-            }
-        }
-         override fun onSelectionChanged() {
-            super.onSelectionChanged()
-            if (feed != null) {
-                Logd(TAG, "persist Episode SortOrder")
-                runOnIOScope {
-                    val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-                    if (feed_ != null) upsert(feed_) { it.sortOrder = sortOrder }
-                }
-            }
         }
     }
 

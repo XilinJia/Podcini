@@ -378,13 +378,13 @@
     <string name="clear_bin_label">Clear bin</string>
     <string name="undo">Undo</string>
 
-
     <string name="sort">Sort</string>
     <string name="rename">Rename</string>
     <string name="add_queue">Add queue</string>
     <string name="keep_sorted">Keep sorted</string>
     <string name="publish_date">Publish date</string>
     <string name="download_date">Download date</string>
+    <string name="view_count">View count</string>
     <string name="date">Date</string>
     <string name="count">Count</string>
     <string name="last_played_date">Played date</string>
@@ -872,6 +872,7 @@
     <string name="add_podcast_by_url_hint" translatable="false">www.example.com/feed</string>
     <string name="discover">Discover</string>
     <string name="discover_hide">Hide</string>
+
     <string name="discover_is_hidden">You selected to hide suggestions.</string>
     <string name="discover_more">more »</string>
     <string name="discover_powered_by_itunes">Suggestions by Apple Podcasts</string>

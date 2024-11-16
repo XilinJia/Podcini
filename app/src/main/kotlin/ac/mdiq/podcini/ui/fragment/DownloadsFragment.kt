@@ -21,7 +21,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -40,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -67,14 +65,18 @@ import java.util.*
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     var showFilterDialog by mutableStateOf(false)
+    var showSortDialog by mutableStateOf(false)
+    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
 
     private var displayUpArrow = false
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = ComposeFragmentBinding.inflate(inflater)
+
+        sortOrder = downloadsSortedOrder ?: EpisodeSortOrder.DATE_NEW_OLD
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -104,6 +106,11 @@ import java.util.*
                     Logd(TAG, "onFilterChanged: $prefFilterDownloads")
                     loadItems()
                 }
+                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { order, _ ->
+                    downloadsSortedOrder = order
+                    loadItems()
+                }
+
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
@@ -139,12 +146,6 @@ import java.util.*
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
-//        val childCount = recyclerView.childCount
-//        for (i in 0 until childCount) {
-//            val child = recyclerView.getChildAt(i)
-//            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
-//            viewHolder?.stopDBMonitor()
-//        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -164,14 +165,9 @@ import java.util.*
 
      override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.filter_items -> {
-                showFilterDialog = true
-//                DownloadsFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
-            }
-//            R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
+            R.id.filter_items -> showFilterDialog = true
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
-//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+            R.id.downloads_sort -> showSortDialog = true
             R.id.reconcile -> reconcile()
             else -> return false
         }
@@ -403,30 +399,6 @@ import java.util.*
         Logd(TAG, "refreshInfoBar filter value: ${getFilter().properties.size} ${getFilter().properties.joinToString()}")
         if (getFilter().properties.size > 1) info += " - ${getString(R.string.filtered_label)}"
         infoBarText.value = info
-    }
-
-    class DownloadsSortDialog : EpisodeSortDialog() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            sortOrder = downloadsSortedOrder
-        }
-        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
-                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
-                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE
-                    || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
-                super.onAddItem(title, ascending, descending, ascendingIsDefault)
-            }
-        }
-        override fun onSelectionChanged() {
-            super.onSelectionChanged()
-            downloadsSortedOrder = sortOrder
-            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
-        }
     }
 
     companion object {

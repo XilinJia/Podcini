@@ -3,8 +3,6 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
-import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
-import ac.mdiq.podcini.databinding.QuickFeedDiscoveryItemBinding
 import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
@@ -12,12 +10,14 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.NonlazyGrid
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -25,12 +25,10 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
@@ -38,13 +36,18 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import coil.load
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -60,57 +63,46 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
-    val prefs by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
+class QuickDiscoveryFragment : Fragment() {
+    val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
 
-    private var _binding: QuickFeedDiscoveryBinding? = null
-    private val binding get() = _binding!!
+    private var showError by mutableStateOf(false)
+    private var errorText by mutableStateOf("")
+    private var showPowerBy by mutableStateOf(false)
+    private var showRetry by mutableStateOf(false)
+    private var retryTextRes by mutableIntStateOf(0)
+    private var showGrid by mutableStateOf(false)
 
-    private lateinit var adapter: FeedDiscoverAdapter
-    private lateinit var discoverGridLayout: GridView
-    private lateinit var errorTextView: TextView
-    private lateinit var poweredByTextView: TextView
-    private lateinit var errorView: LinearLayout
-    private lateinit var errorRetry: Button
+    private var numColumns by mutableIntStateOf(4)
+    private val searchResult = mutableStateListOf<PodcastSearchResult>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        _binding = QuickFeedDiscoveryBinding.inflate(inflater)
-
         Logd(TAG, "fragment onCreateView")
-        val discoverMore = binding.discoverMore
-        discoverMore.setOnClickListener { (activity as MainActivity).loadChildFragment(DiscoveryFragment()) }
-
-        discoverGridLayout = binding.discoverGrid
-        errorView = binding.discoverError
-        errorTextView = binding.discoverErrorTxtV
-        errorRetry = binding.discoverErrorRetryBtn
-        poweredByTextView = binding.discoverPoweredByItunes
-
-        adapter = FeedDiscoverAdapter(activity as MainActivity)
-        discoverGridLayout.setAdapter(adapter)
-        discoverGridLayout.onItemClickListener = this
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    MainView()
+                }
+            }
+        }
 
         val displayMetrics: DisplayMetrics = requireContext().resources.displayMetrics
         val screenWidthDp: Float = displayMetrics.widthPixels / displayMetrics.density
-        if (screenWidthDp > 600) discoverGridLayout.numColumns = 6
-        else discoverGridLayout.numColumns = 4
+        if (screenWidthDp > 600) numColumns = 6
 
         // Fill with dummy elements to have a fixed height and
         // prevent the UI elements below from jumping on slow connections
         val dummies: MutableList<PodcastSearchResult> = ArrayList<PodcastSearchResult>()
         for (i in 0 until NUM_SUGGESTIONS) {
             dummies.add(PodcastSearchResult.dummy())
+            searchResult.add(PodcastSearchResult.dummy())
         }
-
-        adapter.updateData(dummies)
         loadToplist()
-
-        return binding.root
+        return composeView
     }
 
     override fun onStart() {
@@ -123,9 +115,41 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         cancelFlowEvents()
     }
 
-    override fun onDestroy() {
-        _binding = null
-        super.onDestroy()
+    @Composable
+    fun MainView() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        val context = LocalContext.current
+        Column {
+            Row {
+                Text(stringResource(R.string.discover), color = textColor)
+                Spacer(Modifier.weight(1f))
+                Text(stringResource(R.string.discover_more), color = textColor, modifier = Modifier.clickable(onClick = {(activity as MainActivity).loadChildFragment(DiscoveryFragment())}))
+            }
+            ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+                val (grid, error) = createRefs()
+                if (showGrid) NonlazyGrid(columns = numColumns, itemCount = searchResult.size, modifier = Modifier.fillMaxWidth().constrainAs(grid) { centerTo(parent) }) { index ->
+                    AsyncImage(model = ImageRequest.Builder(context).data(searchResult[index].imageUrl)
+                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                        contentDescription = "imgvCover", modifier = Modifier.padding(top = 8.dp)
+                            .clickable(onClick = {
+                                Logd(TAG, "icon clicked!")
+                                val podcast: PodcastSearchResult? = searchResult[index]
+                                if (!podcast?.feedUrl.isNullOrEmpty()) {
+                                    val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
+                                    (activity as MainActivity).loadChildFragment(fragment)
+                                }
+                            }))
+                }
+                if (showError) Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().constrainAs(error) { centerTo(parent) }) {
+                    Text(errorText, color = textColor)
+                    if (showRetry) Button(onClick = {
+                        prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                        loadToplist()
+                    }) { Text(stringResource(retryTextRes)) }
+                }
+            }
+            Text(stringResource(R.string.discover_powered_by_itunes), color = textColor, modifier = Modifier.align(Alignment.End))
+        }
     }
 
     private var eventSink: Job?     = null
@@ -147,68 +171,52 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     }
 
     private fun loadToplist() {
-        errorView.visibility = View.GONE
-        errorRetry.visibility = View.INVISIBLE
-        errorRetry.setText(R.string.retry_label)
-        poweredByTextView.visibility = View.VISIBLE
-
+        showError = false
+        showPowerBy = true
+        showRetry = false
+        retryTextRes = R.string.retry_label
         val loader = ItunesTopListLoader(requireContext())
-        val countryCode: String = prefs!!.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
-        if (prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
-            errorTextView.setText(R.string.discover_is_hidden)
-            errorView.visibility = View.VISIBLE
-            discoverGridLayout.visibility = View.GONE
-            errorRetry.visibility = View.GONE
-            poweredByTextView.visibility = View.GONE
+        val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
+        if (prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
+            showError = true
+            errorText = requireContext().getString(R.string.discover_is_hidden)
+            showPowerBy = false
+            showRetry = false
             return
         }
-        if (BuildConfig.FLAVOR == "free" && prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)) {
-            errorTextView.text = ""
-            errorView.visibility = View.VISIBLE
-            discoverGridLayout.visibility = View.VISIBLE
-            errorRetry.visibility = View.VISIBLE
-            errorRetry.setText(R.string.discover_confirm)
-            poweredByTextView.visibility = View.VISIBLE
-            errorRetry.setOnClickListener {
-                prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
-                loadToplist()
-            }
+        if (BuildConfig.FLAVOR == "free" && prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true) == true) {
+            showError = true
+            errorText = ""
+            showGrid = true
+            showRetry = true
+            retryTextRes = R.string.discover_confirm
+            showPowerBy = true
             return
         }
 
         lifecycleScope.launch {
             try {
-                val podcasts = withContext(Dispatchers.IO) {
-                    loader.loadToplist(countryCode, NUM_SUGGESTIONS, getFeedList())
-                }
+                val searchResults_ = withContext(Dispatchers.IO) { loader.loadToplist(countryCode, NUM_SUGGESTIONS, getFeedList()) }
                 withContext(Dispatchers.Main) {
-                    errorView.visibility = View.GONE
-                    if (podcasts.isEmpty()) {
-                        errorTextView.text = resources.getText(R.string.search_status_no_results)
-                        errorView.visibility = View.VISIBLE
-                        discoverGridLayout.visibility = View.INVISIBLE
+                    showError = false
+                    if (searchResults_.isEmpty()) {
+                        errorText = requireContext().getString(R.string.search_status_no_results)
+                        showError = true
+                        showGrid = false
                     } else {
-                        discoverGridLayout.visibility = View.VISIBLE
-                        adapter.updateData(podcasts)
+                        showGrid = true
+                        searchResult.clear()
+                        searchResult.addAll(searchResults_)
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                errorTextView.text = e.localizedMessage
-                errorView.visibility = View.VISIBLE
-                discoverGridLayout.visibility = View.INVISIBLE
-                errorRetry.visibility = View.VISIBLE
-                errorRetry.setOnClickListener { loadToplist() }
+                showError = true
+                showGrid = false
+                showRetry = true
+                errorText = e.localizedMessage ?: ""
             }
         }
-    }
-
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        val podcast: PodcastSearchResult? = adapter.getItem(position)
-        if (podcast?.feedUrl.isNullOrEmpty()) return
-
-        val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
-        (activity as MainActivity).loadChildFragment(fragment)
     }
 
     class ItunesTopListLoader(private val context: Context) {
@@ -248,7 +256,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             try {
                 feed = result.getJSONObject("feed")
                 entries = feed.getJSONArray("entry")
-            } catch (e: JSONException) { return ArrayList() }
+            } catch (_: JSONException) { return ArrayList() }
             val results: MutableList<PodcastSearchResult> = ArrayList()
             for (i in 0 until entries.length()) {
                 val json = entries.getJSONObject(i)
@@ -266,11 +274,6 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             const val COUNTRY_CODE_UNSET: String = "99"
             private const val NUM_LOADED = 25
 
-//        var prefs: SharedPreferences? = null
-//        fun getSharedPrefs(context: Context) {
-//            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-//        }
-
             private fun removeSubscribed(suggestedPodcasts: List<PodcastSearchResult>, subscribedFeeds: List<Feed>, limit: Int): List<PodcastSearchResult> {
                 val subscribedPodcastsSet: MutableSet<String> = HashSet()
                 for (subscribedFeed in subscribedFeeds) {
@@ -287,60 +290,8 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         }
     }
 
-    class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
-        private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
-        private val data: MutableList<PodcastSearchResult> = ArrayList()
-
-        fun updateData(newData: List<PodcastSearchResult>) {
-            data.clear()
-            data.addAll(newData)
-            notifyDataSetChanged()
-        }
-
-        override fun getCount(): Int {
-            return data.size
-        }
-
-        override fun getItem(position: Int): PodcastSearchResult? {
-            return if (position in data.indices) data[position] else null
-        }
-
-        override fun getItemId(position: Int): Long {
-            return 0
-        }
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            var convertView = convertView
-            val holder: Holder
-
-            if (convertView == null) {
-                convertView = View.inflate(mainActivityRef.get(), R.layout.quick_feed_discovery_item, null)
-                val binding = QuickFeedDiscoveryItemBinding.bind(convertView)
-                holder = Holder()
-                holder.imageView = binding.discoveryCover
-                convertView.tag = holder
-            } else holder = convertView.tag as Holder
-
-            val podcast: PodcastSearchResult? = getItem(position)
-            holder.imageView!!.contentDescription = podcast?.title
-
-            holder.imageView?.load(podcast?.imageUrl) {
-                placeholder(R.color.light_gray)
-                error(R.mipmap.ic_launcher)
-            }
-            return convertView!!
-        }
-
-        internal class Holder {
-            var imageView: ImageView? = null
-        }
-    }
-
-    /**
-     * Searches iTunes store for top podcasts and displays results in a list.
-     */
     class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-        val prefs by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
+        val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
 
         private var _binding: ComposeFragmentBinding? = null
         private val binding get() = _binding!!
@@ -374,10 +325,9 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-//        prefs = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
-            countryCode = prefs!!.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
-            hidden = prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
-            needsConfirm = prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
+            countryCode = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
+            hidden = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
+            needsConfirm = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
         }
 
          override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -394,7 +344,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
             toolbar.inflateMenu(R.menu.countries_menu)
             val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
-            discoverHideItem.setChecked(hidden)
+             discoverHideItem.isChecked = hidden
             toolbar.setOnMenuItemClickListener(this)
 
             loadToplist(countryCode)
@@ -424,7 +374,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                 if (retryQerry.isNotEmpty()) Button(modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom)},
                     onClick = {
                         if (needsConfirm) {
-                            prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                            prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
                             needsConfirm = false
                         }
                         loadToplist(countryCode)
@@ -469,9 +419,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             val loader = ItunesTopListLoader(requireContext())
             lifecycleScope.launch {
                 try {
-                    val podcasts = withContext(Dispatchers.IO) {
-                        loader.loadToplist(country?:"", NUM_OF_TOP_PODCASTS, getFeedList())
-                    }
+                    val podcasts = withContext(Dispatchers.IO) { loader.loadToplist(country?:"", NUM_OF_TOP_PODCASTS, getFeedList()) }
                     withContext(Dispatchers.Main) {
                         showProgress = false
                         topList = podcasts
@@ -492,9 +440,9 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             val itemId = item.itemId
             when (itemId) {
                 R.id.discover_hide_item -> {
-                    item.setChecked(!item.isChecked)
+                    item.isChecked = !item.isChecked
                     hidden = item.isChecked
-                    prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
+                    prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
 
                     EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                     loadToplist(countryCode)
@@ -543,12 +491,12 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                         if (countryNameCodes.containsKey(countryName)) {
                             countryCode = countryNameCodes[countryName]
                             val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
-                            discoverHideItem.setChecked(false)
+                            discoverHideItem.isChecked = false
                             hidden = false
                         }
 
-                        prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
-                        prefs!!.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
+                        prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
+                        prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
 
                         EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                         loadToplist(countryCode)

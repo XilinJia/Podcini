@@ -3,9 +3,16 @@ package ac.mdiq.podcini.ui.compose
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -89,6 +97,35 @@ fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modi
 @Composable
 fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    var curIndex by remember { mutableIntStateOf(selectedIndex) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        BasicTextField(readOnly = true, value = items.getOrNull(curIndex) ?: "Select Item", onValueChange = { },
+            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
+            modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
+            decorationBox = { innerTextField ->
+                Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+                    innerTextField()
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                }
+            })
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            for (i in items.indices) {
+                DropdownMenuItem(text = { Text(items[i]) },
+                    onClick = {
+                        curIndex = i
+                        onItemSelected(i)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SpinnerExternalSet(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         BasicTextField(readOnly = true, value = items.getOrNull(selectedIndex) ?: "Select Item", onValueChange = { },
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
@@ -131,7 +168,7 @@ fun CustomToast(message: String, durationMillis: Long = 2000L, onDismiss: () -> 
 @Composable
 fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldValue) -> Unit, onDismissRequest: () -> Unit, onSave: (String) -> Unit) {
     Dialog(onDismissRequest = { onDismissRequest() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, Color.Yellow)) {
+        Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = "Add comment", color = textColor, style = MaterialTheme.typography.titleLarge)
@@ -179,4 +216,56 @@ fun NonlazyGrid(columns: Int, itemCount: Int, modifier: Modifier = Modifier, con
             }
         }
     }
+}
+
+@Composable
+fun AutoCompleteTextField(suggestions: List<String>) {
+    var text by remember { mutableStateOf("") }
+    var filteredSuggestions by remember { mutableStateOf(suggestions) }
+    var showSuggestions by remember { mutableStateOf(false) }
+
+    Column {
+        TextField(value = text, onValueChange = {
+                text = it
+                filteredSuggestions = suggestions.filter { item ->
+                    item.contains(text, ignoreCase = true)
+                }
+                showSuggestions = text.isNotEmpty() && filteredSuggestions.isNotEmpty()
+            },
+            placeholder = { Text("Type something...") },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                }
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (showSuggestions) {
+            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(min = 0.dp, max = 200.dp)) {
+                items(filteredSuggestions.size) { index ->
+                    Text(text = filteredSuggestions[index], modifier = Modifier.clickable(onClick = {
+                        text = filteredSuggestions[index]
+                        showSuggestions = false
+                    }).padding(8.dp))
+
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InputChipExample(text: String, onDismiss: () -> Unit) {
+    var enabled by remember { mutableStateOf(true) }
+    if (!enabled) return
+
+    InputChip(onClick = {
+        onDismiss()
+        enabled = !enabled
+    }, label = { Text(text) }, selected = enabled,
+        trailingIcon = {
+            Icon(Icons.Default.Delete, contentDescription = "Localized description", Modifier.size(InputChipDefaults.AvatarSize))
+        },
+    )
 }

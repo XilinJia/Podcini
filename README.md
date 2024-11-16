@@ -41,7 +41,7 @@ The project aims to profit from modern frameworks, improve efficiency and provid
 
 While podcast subscriptions' OPML files (from AntennaPod or any other sources) can be easily imported, Podcini can not import DB from AntennaPod.
 
-## Notable new features description
+## Notable features description
 
 ### Quick start
 

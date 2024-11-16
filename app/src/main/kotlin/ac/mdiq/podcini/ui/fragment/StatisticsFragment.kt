@@ -150,9 +150,9 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.statistics_today), color = MaterialTheme.colorScheme.onSurface)
             Row {
-                Text(stringResource(R.string.duration) + ": " + getDurationStringShort(timePlayedToday.toInt(), true), color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.duration) + ": " + getDurationStringShort(timePlayedToday.toInt()*1000, true), color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(20.dp))
-                Text( stringResource(R.string.spent) + ": " + getDurationStringShort(timeSpentToday.toInt(), true), color = MaterialTheme.colorScheme.onSurface)
+                Text( stringResource(R.string.spent) + ": " + getDurationStringShort(timeSpentToday.toInt()*1000, true), color = MaterialTheme.colorScheme.onSurface)
             }
             val headerCaption = if (includeMarkedAsPlayed) stringResource(R.string.statistics_counting_total)
             else {
@@ -471,11 +471,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         const val PREF_INCLUDE_MARKED_PLAYED: String = "countAll"
         const val PREF_FILTER_FROM: String = "filterFrom"
         const val PREF_FILTER_TO: String = "filterTo"
-//        var prefs: SharedPreferences? = null
-//
-//        fun getSharedPrefs(context: Context) {
-//            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-//        }
 
         fun getStatistics(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long, feedId: Long = 0L, forDL: Boolean = false): StatisticsResult {
             Logd(TAG, "getStatistics called")

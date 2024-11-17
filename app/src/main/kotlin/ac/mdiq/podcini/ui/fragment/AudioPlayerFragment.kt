@@ -518,7 +518,7 @@ class AudioPlayerFragment : Fragment() {
                     }
                 }
             }, update = { webView ->
-                Logd(TAG, "AndroidView update: $cleanedNotes")
+//                Logd(TAG, "AndroidView update: $cleanedNotes")
                 webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
             })
             if (displayedChapterIndex >= 0) {

@@ -26,8 +26,8 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020299
-        versionName "6.14.0"
+        versionCode 3020300
+        versionName "6.14.1"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -198,7 +198,7 @@ dependencies {
     implementation libs.androidx.appcompat
     implementation libs.androidx.coordinatorlayout
     implementation libs.androidx.fragment.fragment.ktx
-    implementation libs.androidx.gridlayout
+//    implementation libs.androidx.gridlayout
     implementation libs.androidx.media3.exoplayer
     implementation libs.androidx.media3.ui
     implementation libs.androidx.media3.media3.datasource.okhttp
@@ -207,7 +207,7 @@ dependencies {
     implementation libs.androidx.palette.ktx
     implementation libs.androidx.preference.ktx
     implementation libs.androidx.recyclerview
-    implementation libs.androidx.viewpager2
+//    implementation libs.androidx.viewpager2
     implementation libs.androidx.work.runtime
     implementation libs.androidx.core.splashscreen
     implementation libs.androidx.documentfile

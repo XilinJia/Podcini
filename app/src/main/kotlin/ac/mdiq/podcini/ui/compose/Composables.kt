@@ -254,18 +254,3 @@ fun AutoCompleteTextField(suggestions: List<String>) {
         }
     }
 }
-
-@Composable
-fun InputChipExample(text: String, onDismiss: () -> Unit) {
-    var enabled by remember { mutableStateOf(true) }
-    if (!enabled) return
-
-    InputChip(onClick = {
-        onDismiss()
-        enabled = !enabled
-    }, label = { Text(text) }, selected = enabled,
-        trailingIcon = {
-            Icon(Icons.Default.Delete, contentDescription = "Localized description", Modifier.size(InputChipDefaults.AvatarSize))
-        },
-    )
-}

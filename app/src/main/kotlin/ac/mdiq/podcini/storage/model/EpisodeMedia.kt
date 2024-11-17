@@ -91,6 +91,9 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     @Ignore
     var forceVideo by mutableStateOf(false)
 
+    @Ignore
+    var audioUrl = ""
+
     /* Used for loading item when restoring from parcel. */
 //    var episodeId: Long = 0
 //        private set

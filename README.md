@@ -24,18 +24,16 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 
 Compared to AntennaPod this project:
 
-1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
-2. Is purely `Kotlin` based and mono-modular, and multiple views are in Jetpack Compose,
-3. Modern object-base Realm DB replaced SQLite, Coil replaced Glide, coroutines replaced RxJava and threads, and SharedFlow replaced EventBus.
-4. Boasts new UI's including streamlined drawer, subscriptions view and player controller, and many more.
-5. Supports multiple, virtual and circular play queues associable with any podcast.
-6. Auto-download is governed by policy and limit settings of individual feed (podcast).
-7. Features synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
-8. Supports channels, playlists, single media from YouTube and YT Music, as well as normal podcasts and plain RSS,
-9. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
-10. Supports sophisticated filtering and sorting on episodes and podcasts.
-11. Offers Readability and Text-to-Speech for RSS contents,
-12. Features `instant sync` across devices without a server.
+1. Is mono-modular, purely in `Kotlin`, mostly in Jetpack Compose, based on `medai3` with `AudioOffloadMode` enabled (nicer to device battery).
+2. Supports contents from YouTube and YT Music, as well as normal podcasts and plain RSS.
+3. Features multiple, natural and circular play queues associable with any podcast.
+4. Presents synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
+5. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
+6. Boasts sophisticated filtering and sorting on episodes and podcasts.
+7. Promotes auto-download governed by policy and limit settings of individual feed (podcast).
+8. Spotlights `instant sync` across devices without a server.
+9. Offers Readability and Text-to-Speech for RSS contents,
+10. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 
@@ -117,11 +115,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
 * Every queue has a bin containing past episodes removed from the queue, useful for further review and handling
 * Feed associated queue can be set to None, in which case:
-  * episodes in the feed are not automatically added to any queue,
-  * the episodes in the feed forms a virtual queue
-  * the next episode is determined in such a way:
-    * if the currently playing episode had been (manually) added to the active queue, then it's the next in queue
-    * else if "prefer streaming" is set, it's the next unplayed (or Again and Forever) episode in the virtual queue based on the current filter and sort order
+  * the episodes in the feed are not automatically added to any queue, instead forms a natural queue on their own
+  * the next episode to play is determined in such a way:
+    * if the currently playing episode had been (manually) added to the active queue, then it's the next in the queue
+    * else if "prefer streaming" is set, it's the next unplayed (or Again and Forever) episode in the natural queue based on the current filter and sort order
     * else it's the next downloaded unplayed (or Again and Forever) episode
 * Otherwise, episode played from a list other than the queue is a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
 

@@ -1,8 +1,10 @@
 package ac.mdiq.podcini.playback.cast
 
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.RemoteMedia
+import ac.mdiq.podcini.util.Logd
 import android.net.Uri
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaMetadata
@@ -36,7 +38,9 @@ object MediaInfoCreator {
         metadata.putString(CastUtils.KEY_STREAM_URL, media.getStreamUrl()!!)
 
         val builder = MediaInfo.Builder(media.getStreamUrl()?:"")
-            .setContentType(media.getMimeType())
+            // TODO: test
+//            .setContentType(media.getMimeType())
+            .setContentType("audio/*")
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setMetadata(metadata)
         if (media.getDuration() > 0) builder.setStreamDuration(media.getDuration().toLong())
@@ -66,7 +70,7 @@ object MediaInfoCreator {
             val url: String = if (feedItem.imageUrl == null && feed != null) feed.imageUrl?:"" else feedItem.imageUrl?:""
             if (url.isNotEmpty()) metadata.addImage(WebImage(Uri.parse(url)))
             val calendar = Calendar.getInstance()
-            if (media.episode?.getPubDate() != null) calendar.time = media.episode!!.getPubDate()!!
+            calendar.time = feedItem.getPubDate()
             metadata.putDate(MediaMetadata.KEY_RELEASE_DATE, calendar)
             if (feed != null) {
                 if (!feed.author.isNullOrEmpty()) metadata.putString(MediaMetadata.KEY_ARTIST, feed.author!!)
@@ -87,8 +91,13 @@ object MediaInfoCreator {
         metadata.putInt(CastUtils.KEY_FORMAT_VERSION, CastUtils.FORMAT_VERSION_VALUE)
         metadata.putString(CastUtils.KEY_STREAM_URL, media.getStreamUrl()!!)
 
-        val builder = MediaInfo.Builder(media.getStreamUrl()!!)
-            .setContentType(media.mimeType)
+        Logd("MediaInfoCreator", "media.mimeType: ${media.mimeType} ${media.audioUrl}")
+        // TODO: these are hardcoded for audio only
+//        val builder = MediaInfo.Builder(media.getStreamUrl()!!)
+//            .setContentType(media.mimeType)
+        var url: String = if (media.getMediaType() == MediaType.AUDIO) media.getStreamUrl() ?: "" else media.audioUrl
+        val builder = MediaInfo.Builder(url)
+            .setContentType("audio/*")
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setMetadata(metadata)
         if (media.getDuration() > 0) builder.setStreamDuration(media.getDuration().toLong())

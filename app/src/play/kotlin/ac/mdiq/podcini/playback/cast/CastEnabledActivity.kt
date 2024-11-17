@@ -50,11 +50,7 @@ abstract class CastEnabledActivity : AppCompatActivity() {
     fun CastIconButton() {
         if (canCast) {
             AndroidView( modifier = Modifier.size(24.dp),
-                factory = { ctx ->
-                    MediaRouteButton(ctx).apply {
-                        CastButtonFactory.setUpMediaRouteButton(ctx, this)
-                    }
-                },
+                factory = { ctx -> MediaRouteButton(ctx).apply { CastButtonFactory.setUpMediaRouteButton(ctx, this) } },
             )
         }
     }

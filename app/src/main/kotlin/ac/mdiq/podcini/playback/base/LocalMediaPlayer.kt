@@ -183,7 +183,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             }
             // stop playback of this episode
             if (status == PlayerStatus.PAUSED || status == PlayerStatus.PLAYING || status == PlayerStatus.PREPARED) exoPlayer?.stop()
-            if (prevMedia != null && curMedia!!.getIdentifier() != prevMedia?.getIdentifier())
+            if (prevMedia != null && curMedia?.getIdentifier() != prevMedia?.getIdentifier())
                 callback.onPostPlayback(prevMedia, ended = false, skipped = true, true)
             setPlayerStatus(PlayerStatus.INDETERMINATE, null)
         }

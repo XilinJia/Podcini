@@ -353,6 +353,7 @@ object Feeds {
         // Look for new or updated Items
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
+            if ((episode.media?.duration?: 0) < 1000) continue
             if (episode.getPubDate() <= priorMostRecentDate || episode.media?.getStreamUrl() == priorMostRecent?.media?.getStreamUrl()) continue
 
             Logd(TAG, "Found new episode: ${episode.title}")

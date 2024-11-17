@@ -196,7 +196,11 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
         private var prefs: SharedPreferences? = null
-        var feedCount: Int = 0
+        var feedCount: Int = -1
+            get() {
+                if (field < 0) field = getFeedCount()
+                return field
+            }
 
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

@@ -1,9 +1,20 @@
+# 6.14.1
+
+* changed the term "virtual queue" to "natural queue" in the literature to refer to the list of episodes in a given feed
+* ignore updating episodes with duration of less than 1 second
+* start using Podcini's own cast provider in the play app
+	* audio-only youtube media can now be cast to speaker (experimental for now)
+	* cast of any video is disabled for now
+* OnlineSearch fragment is in Compose
+* minor Compose amendments in fragments of Search, About
+* updates in documents of required licenses
+
 # 6.14.0
 
 * fixed crash when adding podcast (introduced since 6.13.11)
 * naming changes in PlayState: InQueue -> Queue, InProgress -> Progress
 * PlayState Queue is user settable, once set, the episode is put to associated queue of the feed
-* in getting next to play in a virtual queue, PlayStates Again and Forever are included
+* in getting next to play in a natural queue, PlayStates Again and Forever are included
 * fixed the not-updating queue and tag spinners in Subscriptions
 * various dates display are in flex format
 * in Statistics, data for today are shown in the HH:mm format
@@ -40,7 +51,7 @@
 # 6.13.9
 
 * made Spinner in Queues view update accordingly
-* if playing from the virtual queue in FeedEpisodes, the next episode comes from the filtered list
+* if playing from the natural queue in FeedEpisodes, the next episode comes from the filtered list
 * when playing another media, post playback is performed on the current media so as to set the right state
 * fixed timeSpent not being correctly recorded
 * further enhanced efficiency of statistics calculations
@@ -516,7 +527,7 @@
 * added ability to receive music or playlist shared from YT Music
 * single music received from YT Music is added to "YTMusic Syndicate"
 * in newly subscribed Youtube channel or playlist, prefStreamOverDownload is set to true
-* ensured virtual queue (continuous streaming) for previously subscribed "Youtube" type feed when the associated queue is set to None
+* ensured natural queue (continuous streaming) for previously subscribed "Youtube" type feed when the associated queue is set to None
 * the max number of media is dropped to 60 on subscribing a Youtube type feed (higher number may cause delay or even failure due to network issues, will investigate other ways to handle)
 * fixed a bug in Reconcile that can cause downloaded files to be mistakenly deleted
 * action button on each episode now reacts to LongClick to provide more options

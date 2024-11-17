@@ -14,28 +14,28 @@
     <attr name="icon_green" format="color"/>
     <attr name="icon_purple" format="color"/>
     <attr name="icon_gray" format="color"/>
-    <declare-styleable name="TriangleLabelView">
-        <attr name="backgroundColor" format="color"/>
-        <attr name="primaryTextColor" format="color"/>
-        <attr name="primaryText" format="string"/>
-        <attr name="primaryTextSize" format="dimension"/>
+<!--    <declare-styleable name="TriangleLabelView">-->
+<!--        <attr name="backgroundColor" format="color"/>-->
+<!--        <attr name="primaryTextColor" format="color"/>-->
+<!--        <attr name="primaryText" format="string"/>-->
+<!--        <attr name="primaryTextSize" format="dimension"/>-->
 
-        <attr name="labelTopPadding" format="dimension"/>
-        <attr name="labelCenterPadding" format="dimension"/>
-        <attr name="labelBottomPadding" format="dimension"/>
+<!--        <attr name="labelTopPadding" format="dimension"/>-->
+<!--        <attr name="labelCenterPadding" format="dimension"/>-->
+<!--        <attr name="labelBottomPadding" format="dimension"/>-->
 
-        <attr name="corner">
-            <enum name="leftTop" value="1" />
-            <enum name="rightTop" value="2" />
-        </attr>
-    </declare-styleable>
-    <declare-styleable name="NestedScrollableHost">
-        <attr name="scrollDirection" format="enum">
-            <enum name="both" value="0"/>
-            <enum name="vertical" value="1"/>
-            <enum name="horizontal" value="2"/>
-        </attr>
-        <attr name="preferHorizontal" format="integer"/>
-        <attr name="preferVertical" format="integer"/>
-    </declare-styleable>
+<!--        <attr name="corner">-->
+<!--            <enum name="leftTop" value="1" />-->
+<!--            <enum name="rightTop" value="2" />-->
+<!--        </attr>-->
+<!--    </declare-styleable>-->
+<!--    <declare-styleable name="NestedScrollableHost">-->
+<!--        <attr name="scrollDirection" format="enum">-->
+<!--            <enum name="both" value="0"/>-->
+<!--            <enum name="vertical" value="1"/>-->
+<!--            <enum name="horizontal" value="2"/>-->
+<!--        </attr>-->
+<!--        <attr name="preferHorizontal" format="integer"/>-->
+<!--        <attr name="preferVertical" format="integer"/>-->
+<!--    </declare-styleable>-->
 </resources>

@@ -3,7 +3,7 @@
 * fixed crash when adding podcast (introduced since 6.13.11)
 * naming changes in PlayState: InQueue -> Queue, InProgress -> Progress
 * PlayState Queue is user settable, once set, the episode is put to associated queue of the feed
-* in getting next to play in a virtual queue, PlayStates Again and Forever are included
+* in getting next to play in a natural queue, PlayStates Again and Forever are included
 * fixed the not-updating queue and tag spinners in Subscriptions
 * various dates display are in flex format
 * in Statistics, data for today are shown in the HH:mm format

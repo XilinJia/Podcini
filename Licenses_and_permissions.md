@@ -30,12 +30,12 @@ Apache License 2.0
 
 [com.github.skydoves](https://github.com/skydoves/Only/blob/master/LICENSE) Apache License 2.0
 
-[com.github.xabaras](https://github.com/xabaras/RecyclerViewSwipeDecorator/blob/master/LICENSE) Apache License 2.0
+[//]: # ([com.github.xabaras]&#40;https://github.com/xabaras/RecyclerViewSwipeDecorator/blob/master/LICENSE&#41; Apache License 2.0)
 
-[com.annimon](https://github.com/aNNiMON/Lightweight-Stream-API/blob/master/LICENSE) Apache License 2.0
+[//]: # ([com.annimon]&#40;https://github.com/aNNiMON/Lightweight-Stream-API/blob/master/LICENSE&#41; Apache License 2.0)
 
 [com.github.mfietz](https://github.com/mfietz/fyydlin/blob/master/LICENSE) Apache License 2.0
 
-[javax.inject](https://github.com/javax-inject/javax-inject) Apache License 2.0
+[//]: # ([javax.inject]&#40;https://github.com/javax-inject/javax-inject&#41; Apache License 2.0)
 
 [org.conscrypt](https://github.com/google/conscrypt/blob/master/LICENSE) Apache License 2.0

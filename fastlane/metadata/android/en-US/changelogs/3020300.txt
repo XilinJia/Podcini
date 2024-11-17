@@ -1,0 +1,10 @@
+ Version 6.14.1
+
+* changed the term "virtual queue" to "natural queue" in the literature to refer to the list of episodes in a given feed
+* ignore updating episodes with duration of less than 1 second
+* start using Podcini's own cast provider in the play app
+	* audio-only youtube media can now be cast to speaker (experimental for now)
+	* cast of any video is disabled for now
+* OnlineSearch fragment is in Compose
+* minor Compose amendments in fragments of Search, About
+* updates in documents of required licenses

@@ -625,9 +625,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         episode = realm.query(Episode::class).query("id == ${item_.id}").first().find()
     }
 
-    /**
-     * Displays information about an Episode (FeedItem) and actions.
-     */
     class EpisodeHomeFragment : Fragment() {
         private var _binding: EpisodeHomeFragmentBinding? = null
         private val binding get() = _binding!!
@@ -647,7 +644,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         private var tts: TextToSpeech? = null
         private var ttsReady = false
 
-        
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
             _binding = EpisodeHomeFragmentBinding.inflate(inflater, container, false)
@@ -689,7 +685,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             val htmlSource = fetchHtmlSource(url)
                             val article = Readability4JExtended(episode?.link!!, htmlSource).parse()
                             readerText = article.textContent
-//                    Log.d(TAG, "readability4J: ${article.textContent}")
                             readerhtml = article.contentWithDocumentsCharsetOrUtf8
                         } else {
                             readerhtml = episode!!.transcript
@@ -698,26 +693,18 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         if (!readerhtml.isNullOrEmpty()) {
                             val shownotesCleaner = ShownotesCleaner(requireContext())
                             cleanedNotes = shownotesCleaner.processShownotes(readerhtml!!, 0)
-                            episode = upsertBlk(episode!!) {
-                                it.setTranscriptIfLonger(readerhtml)
-                            }
-//                        persistEpisode(episode)
+                            episode = upsertBlk(episode!!) { it.setTranscriptIfLonger(readerhtml) }
                         }
                     }
                 }
                 if (!cleanedNotes.isNullOrEmpty()) {
                     if (!ttsReady) initializeTTS(requireContext())
                     withContext(Dispatchers.Main) {
-                        binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes ?: "No notes",
-                            "text/html", "UTF-8", null)
+                        binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes ?: "No notes", "text/html", "UTF-8", null)
                         binding.readerView.visibility = View.VISIBLE
                         binding.webView.visibility = View.GONE
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
-                    }
-                }
+                } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             }
         }
 
@@ -767,9 +754,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "onPrepareMenu called")
                 val textSpeech = menu.findItem(R.id.text_speech)
                 textSpeech?.isVisible = readMode && tts != null
-                if (textSpeech?.isVisible == true) {
-                    if (ttsPlaying) textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
-                }
+                if (textSpeech?.isVisible == true && ttsPlaying)
+                    textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
+
                 menu.findItem(R.id.share_notes)?.isVisible = readMode
                 menu.findItem(R.id.switchJS)?.isVisible = !readMode
                 val btn = menu.findItem(R.id.switch_home)
@@ -812,7 +799,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             } else ttsPlaying = false
                             updateAppearance()
                         } else Toast.makeText(context, R.string.tts_not_available, Toast.LENGTH_LONG).show()
-
                         return true
                     }
                     R.id.share_notes -> {
@@ -829,14 +815,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                         return true
                     }
-                    else -> {
-                        return episode != null
-                    }
+                    else -> return episode != null
                 }
             }
         }
 
-        
         override fun onResume() {
             super.onResume()
             updateAppearance()
@@ -850,7 +833,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             webview.destroy()
         }
 
-         override fun onDestroyView() {
+        override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             cleatWebview(binding.webView)
             cleatWebview(binding.readerView)
@@ -861,15 +844,12 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             super.onDestroyView()
         }
 
-        
         private fun updateAppearance() {
             if (episode == null) {
                 Logd(TAG, "updateAppearance currentItem is null")
                 return
             }
-//        onPrepareOptionsMenu(toolbar.menu)
             toolbar.invalidateMenu()
-//        menuProvider.onPrepareMenu(toolbar.menu)
         }
 
         companion object {

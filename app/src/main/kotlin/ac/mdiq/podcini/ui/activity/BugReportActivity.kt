@@ -98,12 +98,7 @@ class BugReportActivity : AppCompatActivity() {
             try {
                 val authority = getString(R.string.provider_authority)
                 val fileUri = FileProvider.getUriForFile(this, authority, filename)
-
-                IntentBuilder(this)
-                    .setType("text/*")
-                    .addStream(fileUri)
-                    .setChooserTitle(R.string.share_file_label)
-                    .startChooser()
+                IntentBuilder(this).setType("text/*").addStream(fileUri).setChooserTitle(R.string.share_file_label).startChooser()
             } catch (e: Exception) {
                 e.printStackTrace()
                 val strResId = R.string.log_file_share_exception

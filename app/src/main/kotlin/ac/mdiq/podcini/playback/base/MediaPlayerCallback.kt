@@ -7,9 +7,6 @@ import ac.mdiq.podcini.storage.model.MediaType
 interface MediaPlayerCallback {
     fun statusChanged(newInfo: MediaPlayerInfo?)
 
-    // TODO: not used
-    fun shouldStop() {}
-
     fun onMediaChanged(reloadUI: Boolean)
 
     fun onPostPlayback(playable: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean)

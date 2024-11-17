@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.playback.cast
 
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.util.Logd
 import android.content.ContentResolver
 import android.util.Log
 import com.google.android.gms.cast.CastDevice
@@ -56,12 +57,11 @@ object CastUtils {
      * @return [Playable] object in a format proper for casting.
      */
     fun makeRemoteMedia(media: MediaInfo): Playable? {
+        Logd(TAG, "makeRemoteMedia called")
         val metadata = media.metadata
         val version = metadata!!.getInt(KEY_FORMAT_VERSION)
         if (version <= 0 || version > MAX_VERSION_FORWARD_COMPATIBILITY) {
-            Log.w(TAG, "MediaInfo object obtained from the cast device is not compatible with this"
-                    + "version of Podcini CastUtils, curVer=" + FORMAT_VERSION_VALUE
-                    + ", object version=" + version)
+            Log.w(TAG, "MediaInfo object obtained from the cast device is not compatible with this version of Podcini CastUtils, curVer=$FORMAT_VERSION_VALUE, object version=$version")
             return null
         }
         val imageList = metadata.images
@@ -87,11 +87,9 @@ object CastUtils {
     /**
      * Compares a [MediaInfo] instance with a [EpisodeMedia] one and evaluates whether they
      * represent the same podcast episode.
-     *
      * @param info      the [MediaInfo] object to be compared.
      * @param media     the [EpisodeMedia] object to be compared.
      * @return <true>true</true> if there's a match, `false` otherwise.
-     *
      * @see RemoteMedia.equals
      */
     fun matches(info: MediaInfo?, media: EpisodeMedia?): Boolean {
@@ -109,11 +107,9 @@ object CastUtils {
     /**
      * Compares a [MediaInfo] instance with a [RemoteMedia] one and evaluates whether they
      * represent the same podcast episode.
-     *
      * @param info      the [MediaInfo] object to be compared.
      * @param media     the [RemoteMedia] object to be compared.
      * @return <true>true</true> if there's a match, `false` otherwise.
-     *
      * @see RemoteMedia.equals
      */
     fun matches(info: MediaInfo?, media: RemoteMedia?): Boolean {
@@ -129,11 +125,9 @@ object CastUtils {
      * Compares a [MediaInfo] instance with a [Playable] and evaluates whether they
      * represent the same podcast episode. Useful every time we get a MediaInfo from the Cast Device
      * and want to avoid unnecessary conversions.
-     *
      * @param info      the [MediaInfo] object to be compared.
      * @param media     the [Playable] object to be compared.
      * @return <true>true</true> if there's a match, `false` otherwise.
-     *
      * @see RemoteMedia.equals
      */
     fun matches(info: MediaInfo?, media: Playable?): Boolean {

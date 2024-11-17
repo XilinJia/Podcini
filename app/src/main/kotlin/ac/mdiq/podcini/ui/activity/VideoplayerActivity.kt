@@ -154,7 +154,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         if (::videoEpisodeFragment.isInitialized) videoEpisodeFragment.setForVideoMode()
     }
 
-    
     override fun onResume() {
         super.onResume()
         setForVideoMode()
@@ -180,7 +179,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     public override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (!isInPictureInPictureMode()) compatEnterPictureInPicture()
+        if (!isInPictureInPictureMode) compatEnterPictureInPicture()
     }
 
     override fun onStart() {
@@ -230,13 +229,13 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
-        requestCastButton(menu)
+        // TODO: consider enable this
+//        requestCastButton(menu)
         val inflater = menuInflater
         inflater.inflate(R.menu.mediaplayer, menu)
         return true
     }
 
-    
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
 
@@ -501,7 +500,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
             Logd(TAG, "onVideoviewTouched ${event.action}")
             if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
-            if (requireActivity().isInPictureInPictureMode()) return@OnTouchListener true
+            if (requireActivity().isInPictureInPictureMode) return@OnTouchListener true
             videoControlsHider.removeCallbacks(hideVideoControls)
             Logd(TAG, "onVideoviewTouched $videoControlsVisible ${System.currentTimeMillis() - lastScreenTap}")
             if (System.currentTimeMillis() - lastScreenTap < 300) {
@@ -594,7 +593,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         override fun onStop() {
             super.onStop()
             cancelFlowEvents()
-            if (!requireActivity().isInPictureInPictureMode()) videoControlsHider.removeCallbacks(hideVideoControls)
+            if (!requireActivity().isInPictureInPictureMode) videoControlsHider.removeCallbacks(hideVideoControls)
             // Controller released; we will not receive buffering updates
             binding.progressBar.visibility = View.GONE
         }
@@ -731,8 +730,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                                     invalidateOptionsMenu(activity)
                                 }
                             }
-                            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData,
-                                "text/html", "utf-8", "about:blank")
+                            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
                             itemsLoaded = true
                         }
                     } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -746,7 +744,6 @@ class VideoplayerActivity : CastEnabledActivity() {
             }
         }
 
-        
         private fun setupView() {
             showTimeLeft = shouldShowRemainingTime()
             Logd(TAG, "setupView showTimeLeft: $showTimeLeft")
@@ -802,8 +799,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 (curMedia as? EpisodeMedia)?.forceVideo = false
                 (activity as? VideoplayerActivity)?.finish()
             }
-            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData,
-                "text/html", "utf-8", "about:blank")
+            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
         }
 
         fun toggleVideoControlsVisibility() {
@@ -840,19 +836,16 @@ class VideoplayerActivity : CastEnabledActivity() {
             })
         }
 
-        
         fun onRewind() {
             playbackService?.mPlayer?.seekDelta(-rewindSecs * 1000)
             setupVideoControlsToggler()
         }
 
-        
         fun onPlayPause() {
             playPause()
             setupVideoControlsToggler()
         }
 
-        
         fun onFastForward() {
             playbackService?.mPlayer?.seekDelta(fastForwardSecs * 1000)
             setupVideoControlsToggler()

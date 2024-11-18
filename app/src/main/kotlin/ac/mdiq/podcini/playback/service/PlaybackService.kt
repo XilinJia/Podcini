@@ -65,6 +65,7 @@ import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
@@ -220,8 +221,8 @@ class PlaybackService : MediaLibraryService() {
 
     private val taskManagerCallback: TaskManager.PSTMCallback = object : TaskManager.PSTMCallback {
         override fun positionSaverTick() {
+            Logd(TAG, "positionSaverTick currentPosition: $curPosition, currentPlaybackSpeed: $curSpeed")
             if (curPosition != prevPosition) {
-//                Log.d(TAG, "positionSaverTick currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, curPosition, curDuration))
                 skipEndingIfNecessary()
                 persistCurrentPosition(true, null, Playable.INVALID_TIME)
@@ -356,15 +357,6 @@ class PlaybackService : MediaLibraryService() {
                     if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode)) {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
-
-//                        item = setPlayStateSync(PlayState.PLAYED.code, item!!, ended || (skipped && smartMarkAsPlayed), false)
-//                        if (playable is EpisodeMedia && (ended || skipped || playingNext)) {
-//                            item = upsert(item!!) {
-//                                it.media?.playbackCompletionDate = Date()
-//                            }
-//                            EventFlow.postEvent(FlowEvent.HistoryEvent())
-//                        }
-
                         if (playable !is EpisodeMedia)
                             item = setPlayStateSync(PlayState.PLAYED.code, item!!, ended || (skipped && smartMarkAsPlayed), false)
                         else {
@@ -784,12 +776,9 @@ class PlaybackService : MediaLibraryService() {
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) == true
-        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU)
-            intent?.getParcelableExtra(EXTRA_KEY_EVENT, KeyEvent::class.java)
-        else {
-            @Suppress("DEPRECATION")
-            intent?.getParcelableExtra(EXTRA_KEY_EVENT)
-        }
+        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(EXTRA_KEY_EVENT, KeyEvent::class.java)
+        else intent?.getParcelableExtra(EXTRA_KEY_EVENT)
+
         val playable = curMedia
         Log.d(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode keyEvent=$keyEvent customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
         if (keycode == -1 && playable == null && customAction == null) {
@@ -817,6 +806,19 @@ class PlaybackService : MediaLibraryService() {
                 return super.onStartCommand(intent, flags, startId)
             }
             playable != null -> {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    val CHANNEL_ID = "podcini playback service"
+                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+                        val channel = NotificationChannel(CHANNEL_ID, "Title", NotificationManager.IMPORTANCE_LOW).apply {
+                            setSound(null, null)
+                            enableVibration(false)
+                        }
+                        notificationManager.createNotificationChannel(channel)
+                    }
+                    val notification = NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle("").setContentText("").build()
+                    startForeground(1, notification)
+                }
                 recreateMediaSessionIfNeeded()
                 Logd(TAG, "onStartCommand status: $status")
                 val allowStreamThisTime = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_THIS_TIME, false) == true
@@ -825,7 +827,8 @@ class PlaybackService : MediaLibraryService() {
                 if (allowStreamAlways) isAllowMobileStreaming = true
                 startPlaying(allowStreamThisTime)
 //                    return super.onStartCommand(intent, flags, startId)
-                return START_NOT_STICKY
+//                return START_NOT_STICKY
+                return START_STICKY
             }
             else -> Logd(TAG, "onStartCommand case when not (keycode != -1 and playable != null)")
         }
@@ -1163,7 +1166,7 @@ class PlaybackService : MediaLibraryService() {
         } else duration_ = playable?.getDuration() ?: Playable.INVALID_TIME
 
         if (position != Playable.INVALID_TIME && duration_ != Playable.INVALID_TIME && playable != null) {
-//            Log.d(TAG, "Saving current position to $position $duration")
+            Logd(TAG, "persistCurrentPosition to $position $duration_ ${playable.getEpisodeTitle()}")
             playable.setPosition(position)
             playable.setLastPlayedTime(System.currentTimeMillis())
 

@@ -136,14 +136,14 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         bufferingUpdateListener = null
     }
 
-    private fun setAudioStreamType(i: Int) {
-        val a = exoPlayer!!.audioAttributes
-        val b = AudioAttributes.Builder()
-        b.setContentType(i)
-        b.setFlags(a.flags)
-        b.setUsage(a.usage)
-        exoPlayer?.setAudioAttributes(b.build(), true)
-    }
+//    private fun setAudioStreamType(i: Int) {
+//        val a = exoPlayer!!.audioAttributes
+//        val b = AudioAttributes.Builder()
+//        b.setContentType(i)
+//        b.setFlags(a.flags)
+//        b.setUsage(a.usage)
+//        exoPlayer?.setAudioAttributes(b.build(), true)
+//    }
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
@@ -208,7 +208,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         val metadata = buildMetadata(curMedia!!)
         try {
             callback.ensureMediaInfoLoaded(curMedia!!)
-            callback.onMediaChanged(false)
+            // TODO: test
+            callback.onMediaChanged(true)
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), isSkipSilence)
             CoroutineScope(Dispatchers.IO).launch {
                 when {
@@ -484,7 +485,13 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             status = PlayerStatus.STOPPED
             return
         }
-        setAudioStreamType(C.AUDIO_CONTENT_TYPE_SPEECH)
+        val i = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.audioType?: C.AUDIO_CONTENT_TYPE_SPEECH
+        val a = exoPlayer!!.audioAttributes
+        val b = AudioAttributes.Builder()
+        b.setContentType(i)
+        b.setFlags(a.flags)
+        b.setUsage(a.usage)
+        exoPlayer?.setAudioAttributes(b.build(), true)
         setMediaPlayerListeners()
     }
 

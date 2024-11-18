@@ -300,12 +300,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     override fun onPlaybackPause(context: Context) {
         Logd(TAG, "onPlaybackPause $position $duration")
-        if (position > startPosition) {
-//            playedDuration = playedDurationWhenStarted + position - startPosition
-//            playedDurationWhenStarted = playedDuration
-            playedDuration = playedDurationWhenStarted + position - startPosition
-//            playedDurationWhenStarted = playedDuration
-        }
+        if (position > startPosition) playedDuration = playedDurationWhenStarted + position - startPosition
         timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime).toInt()
         startPosition = position
     }
@@ -321,9 +316,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     override fun setChapters(chapters: List<Chapter>) {
         if (episode != null) {
             episode!!.chapters.clear()
-            for (c in chapters) {
-                c.episode = episode
-            }
+            for (c in chapters) c.episode = episode
             episode!!.chapters.addAll(chapters)
         }
     }

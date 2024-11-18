@@ -125,7 +125,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     }
 
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
-    protected fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
+    protected open fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
         Logd(TAG, "setDataSource1 called")
         val url = media.getStreamUrl() ?: return
         val preferences = media.episodeOrFetch()?.feed?.preferences
@@ -185,8 +185,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     private fun setSourceCredentials(user: String?, password: String?) {
         if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
             if (httpDataSourceFactory == null)
-                httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
-                    .setUserAgent(ClientConfig.USER_AGENT)
+                httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory).setUserAgent(ClientConfig.USER_AGENT)
 
             val requestProperties = HashMap<String, String>()
             requestProperties["Authorization"] = HttpCredentialEncoder.encode(user, password, "ISO-8859-1")
@@ -211,7 +210,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * @param preferVideoOnlyStreams if video-only streams should preferred when both video-only streams and normal video streams are available
      * @return the sorted list
      */
-    private fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
+    protected fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
                                           preferVideoOnlyStreams: Boolean): List<VideoStream> {
         val videoStreamsOrdered = if (preferVideoOnlyStreams) listOf(videoStreams, videoOnlyStreams) else listOf(videoOnlyStreams, videoStreams)
         val allInitialStreams = videoStreamsOrdered.filterNotNull().flatten().toList()
@@ -228,7 +227,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         }
     }
 
-    private fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
+    protected fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
         if (audioStreams == null) return listOf()
         val collectedStreams = mutableSetOf<AudioStream>()
         for (stream in audioStreams) {

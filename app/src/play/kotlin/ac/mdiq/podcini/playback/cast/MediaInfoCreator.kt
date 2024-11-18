@@ -91,12 +91,13 @@ object MediaInfoCreator {
         metadata.putInt(CastUtils.KEY_FORMAT_VERSION, CastUtils.FORMAT_VERSION_VALUE)
         metadata.putString(CastUtils.KEY_STREAM_URL, media.getStreamUrl()!!)
 
-        Logd("MediaInfoCreator", "media.mimeType: ${media.mimeType} ${media.audioUrl}")
+        Logd("MediaInfoCreator", "media.mimeType: ${media.getIdentifier()} ${feedItem?.title}")
         // TODO: these are hardcoded for audio only
 //        val builder = MediaInfo.Builder(media.getStreamUrl()!!)
 //            .setContentType(media.mimeType)
         var url: String = if (media.getMediaType() == MediaType.AUDIO) media.getStreamUrl() ?: "" else media.audioUrl
         val builder = MediaInfo.Builder(url)
+            .setEntity(media.getIdentifier().toString())
             .setContentType("audio/*")
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setMetadata(metadata)

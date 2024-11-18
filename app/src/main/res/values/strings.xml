@@ -538,6 +538,8 @@
     <string name="pref_feed_skip">Auto skip</string>
     <string name="pref_feed_skip_sum">Skip introductions and ending credits.</string>
     <string name="associated">Associated</string>
+    <string name="pref_feed_audio_type">Audio type</string>
+    <string name="pref_feed_audio_type_sum">Either Speech, Music or Movie for improved processing.</string>
     <string name="pref_feed_audio_quality">Audio quality</string>
     <string name="pref_feed_audio_quality_sum">Global generally equals high quality except when prefLowQualityMedia is set for metered network. Quality setting here takes precedence over the setting of prefLowQualityMedia for metered network.</string>
     <string name="pref_feed_video_quality">Video quality</string>

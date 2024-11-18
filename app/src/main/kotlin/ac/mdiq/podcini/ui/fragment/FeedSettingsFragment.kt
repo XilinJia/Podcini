@@ -8,6 +8,7 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -39,16 +40,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -114,6 +119,22 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
+                    }
+                    Column {
+                        var showDialog by remember { mutableStateOf(false) }
+                        var selectedOption by remember { mutableStateOf(feed?.preferences?.audioTypeSetting?.tag ?: FeedPreferences.AudioType.SPEECH.tag) }
+                        if (showDialog) SetAudioType(selectedOption = selectedOption, onDismissRequest = { showDialog = false })
+                        Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(text = stringResource(R.string.pref_feed_audio_type), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                modifier = Modifier.clickable(onClick = {
+                                    selectedOption = feed!!.preferences?.audioTypeSetting?.tag ?: FeedPreferences.AudioType.SPEECH.tag
+                                    showDialog = true
+                                })
+                            )
+                        }
+                        Text(text = stringResource(R.string.pref_feed_audio_type_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
                     }
                     if ((feed?.id?:0) >= MAX_NATURAL_SYNTHETIC_ID && feed?.hasVideoMedia == true) {
                         //                    video mode
@@ -240,11 +261,14 @@ class FeedSettingsFragment : Fragment() {
                     }
                     //                    tags
                     Column {
+                        var showDialog by remember { mutableStateOf(false) }
+                        if (showDialog) TagSettingDialog(onDismiss = { showDialog = false })
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_tag), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.feed_tags_label), style = MaterialTheme.typography.titleLarge, color = textColor,
                                 modifier = Modifier.clickable(onClick = {
+//                                    showDialog = true
                                     val dialog = TagSettingsDialog.newInstance(listOf(feed!!))
                                     dialog.show(parentFragmentManager, TagSettingsDialog.TAG)
                                 })
@@ -633,6 +657,31 @@ class FeedSettingsFragment : Fragment() {
     }
 
     @Composable
+    private fun SetAudioType(selectedOption: String, onDismissRequest: () -> Unit) {
+        var selected by remember {mutableStateOf(selectedOption)}
+        Dialog(onDismissRequest = { onDismissRequest() }) {
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FeedPreferences.AudioType.entries.forEach { option ->
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = option.tag == selected,
+                                onCheckedChange = { isChecked ->
+                                    selected = option.tag
+                                    if (isChecked) Logd(TAG, "$option is checked")
+                                    val type = FeedPreferences.AudioType.fromTag(selected)
+                                    feed = upsertBlk(feed!!) { it.preferences?.audioType = type.code }
+                                    onDismissRequest()
+                                }
+                            )
+                            Text(option.tag)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun SetAudioQuality(selectedOption: String, onDismissRequest: () -> Unit) {
         var selected by remember {mutableStateOf(selectedOption)}
         Dialog(onDismissRequest = { onDismissRequest() }) {
@@ -644,26 +693,10 @@ class FeedSettingsFragment : Fragment() {
                                 onCheckedChange = { isChecked ->
                                     selected = option.tag
                                     if (isChecked) Logd(TAG, "$option is checked")
-                                    when (selected) {
-                                        FeedPreferences.AVQuality.LOW.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.LOW.code }
-                                            onDismissRequest()
-                                        }
-                                        FeedPreferences.AVQuality.MEDIUM.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.MEDIUM.code }
-                                            onDismissRequest()
-                                        }
-                                        FeedPreferences.AVQuality.HIGH.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.HIGH.code }
-                                            onDismissRequest()
-                                        }
-                                        else -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.audioQuality = FeedPreferences.AVQuality.GLOBAL.code }
-                                            onDismissRequest()
-                                        }
-                                    }
-                                }
-                            )
+                                    val type = FeedPreferences.AVQuality.fromTag(selected)
+                                    feed = upsertBlk(feed!!) { it.preferences?.audioQuality = type.code }
+                                    onDismissRequest()
+                                })
                             Text(option.tag)
                         }
                     }
@@ -684,29 +717,69 @@ class FeedSettingsFragment : Fragment() {
                                 onCheckedChange = { isChecked ->
                                     selected = option.tag
                                     if (isChecked) Logd(TAG, "$option is checked")
-                                    when (selected) {
-                                        FeedPreferences.AVQuality.LOW.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.LOW.code }
-                                            onDismissRequest()
-                                        }
-                                        FeedPreferences.AVQuality.MEDIUM.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.MEDIUM.code }
-                                            onDismissRequest()
-                                        }
-                                        FeedPreferences.AVQuality.HIGH.tag -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.HIGH.code }
-                                            onDismissRequest()
-                                        }
-                                        else -> {
-                                            feed = upsertBlk(feed!!) { it.preferences?.videoQuality = FeedPreferences.AVQuality.GLOBAL.code }
-                                            onDismissRequest()
-                                        }
-                                    }
-                                }
-                            )
+                                    val type = FeedPreferences.AVQuality.fromTag(selected)
+                                    feed = upsertBlk(feed!!) { it.preferences?.videoQuality = type.code }
+                                    onDismissRequest()
+                                })
                             Text(option.tag)
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalLayoutApi::class)
+    @Composable
+    fun TagSettingDialog(onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            val suggestions = remember { getTags() }
+            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    var text by remember { mutableStateOf("") }
+                    var filteredSuggestions by remember { mutableStateOf(suggestions) }
+                    var showSuggestions by remember { mutableStateOf(false) }
+                    var tags = remember { mutableStateListOf<String>() }
+                    Column {
+                        FlowRow {
+                            tags.forEach {
+                                FilterChip(onClick = {  }, label = { Text(text) }, selected = false,
+                                    trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(
+                                        onClick = {
+                                        })) })
+                            }
+                        }
+                        TextField(value = text, onValueChange = {
+                            text = it
+                            filteredSuggestions = suggestions.filter { item ->
+                                item.contains(text, ignoreCase = true)
+                            }
+                            showSuggestions = text.isNotEmpty() && filteredSuggestions.isNotEmpty()
+                        },
+                            placeholder = { Text("Type something...") },
+                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    tags.add(text)
+                                }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (showSuggestions) {
+                            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(min = 0.dp, max = 200.dp)) {
+                                items(filteredSuggestions.size) { index ->
+                                    Text(text = filteredSuggestions[index], modifier = Modifier.clickable(onClick = {
+                                        text = filteredSuggestions[index]
+                                        showSuggestions = false
+                                    }).padding(8.dp))
+
+                                }
+                            }
+                        }
+                    }
+                    Button(onClick = {
+                        onDismiss()
+                    }) { Text("Confirm") }
                 }
             }
         }

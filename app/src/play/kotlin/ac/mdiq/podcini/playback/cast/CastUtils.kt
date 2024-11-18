@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.playback.cast
 
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.util.Logd
 import android.content.ContentResolver
@@ -9,9 +10,6 @@ import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.framework.CastSession
 
-/**
- * Helper functions for Cast support.
- */
 object CastUtils {
     private val TAG: String = CastUtils::class.simpleName ?: "Anonymous"
 
@@ -45,7 +43,11 @@ object CastUtils {
             if (url.startsWith(ContentResolver.SCHEME_CONTENT)) return false /* Local feed */
             return when (media.getMediaType()) {
                 MediaType.AUDIO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
-                MediaType.VIDEO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
+                MediaType.VIDEO -> {
+                    if ((media as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
+                        castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
+                    else castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
+                }
                 else -> false
             }
         }

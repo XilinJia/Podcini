@@ -1,3 +1,9 @@
+# 6.14.2
+
+* in feed settings, added audio type setting (Speech, Music, Movie) for improved audio processing from media3
+* improved the behavior of the cast player in the Play app
+	* casting youtube audio appears working fine
+
 # 6.14.1
 
 * changed the term "virtual queue" to "natural queue" in the literature to refer to the list of episodes in a given feed

@@ -5,14 +5,12 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
+import androidx.media3.common.C
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmSet
 import io.realm.kotlin.types.annotations.Ignore
 
-/**
- * Contains preferences for a single feed.
- */
 class FeedPreferences : EmbeddedRealmObject {
 
     var feedID: Long = 0L
@@ -49,6 +47,15 @@ class FeedPreferences : EmbeddedRealmObject {
             autoDelete = field.code
         }
     var autoDelete: Int = AutoDeleteAction.GLOBAL.code
+
+    @Ignore
+    var audioTypeSetting: AudioType = AudioType.SPEECH
+        get() = AudioType.fromCode(audioType)
+        set(value) {
+            field = value
+            audioType = field.code
+        }
+    var audioType: Int = AudioType.SPEECH.code
 
     @Ignore
     var volumeAdaptionSetting: VolumeAdaptionSetting = VolumeAdaptionSetting.OFF
@@ -132,7 +139,7 @@ class FeedPreferences : EmbeddedRealmObject {
             autoDLInclude = value?.includeFilterRaw ?: ""
             autoDLExclude = value?.excludeFilterRaw ?: ""
             autoDLMinDuration = value?.minimalDurationFilter ?: -1
-            markExcludedPlayed = value?.markExcludedPlayed ?: false
+            markExcludedPlayed = value?.markExcludedPlayed == true
         }
     var autoDLInclude: String? = ""
     var autoDLExclude: String? = ""
@@ -140,8 +147,7 @@ class FeedPreferences : EmbeddedRealmObject {
     var markExcludedPlayed: Boolean = false
 
     var autoDLMaxEpisodes: Int = 3
-
-    var countingPlayed: Boolean = true
+    var countingPlayed: Boolean = true      // relates to autoDLMaxEpisodes
 
     @Ignore
     var autoDLPolicy: AutoDownloadPolicy = AutoDownloadPolicy.ONLY_NEW
@@ -211,6 +217,22 @@ class FeedPreferences : EmbeddedRealmObject {
             }
             fun fromTag(tag: String): AutoDeleteAction {
                 return enumValues<AutoDeleteAction>().firstOrNull { it.tag == tag } ?: NEVER
+            }
+        }
+    }
+
+    enum class AudioType(val code: Int, val tag: String) {
+        UNKNOWN(C.AUDIO_CONTENT_TYPE_UNKNOWN, "Unknown"),
+        SPEECH(C.AUDIO_CONTENT_TYPE_SPEECH, "Speech"),
+        MUSIC(C.AUDIO_CONTENT_TYPE_MUSIC, "Music"),
+        MOVIE(C.AUDIO_CONTENT_TYPE_MOVIE, "Movie");
+
+        companion object {
+            fun fromCode(code: Int): AudioType {
+                return enumValues<AudioType>().firstOrNull { it.code == code } ?: SPEECH
+            }
+            fun fromTag(tag: String): AudioType {
+                return enumValues<AudioType>().firstOrNull { it.tag == tag } ?: SPEECH
             }
         }
     }

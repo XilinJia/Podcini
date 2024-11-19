@@ -87,6 +87,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
 * RSS feeds with no playable media can be subscribed and read/listened (via TTS)
+* there are two ways to access TTS: from the action bar of EpisodeHome view, and on the list of FeedEspiosdes view
+  * the former plays the TTS instantly on the text available, and regardless of whether the episode as playable media or not, and the speed is not controlled in the app
+  * the latter, only available when the episode has no media (plain RSS), constructs an audio file (like download) to be played as normal media file and the speed can be controlled in Podcini
 
 ### Podcast/Episode list
 

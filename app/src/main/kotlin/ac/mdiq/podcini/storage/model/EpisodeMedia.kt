@@ -100,8 +100,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     constructor() {}
 
-    constructor(i: Episode?, downloadUrl: String?, size: Long, mimeType: String?) {
-        this.episode = i
+    constructor(e: Episode?, downloadUrl: String?, size: Long, mimeType: String?) {
+        this.episode = e
         this.size = size
         this.mimeType = mimeType
         setfileUrlOrNull(null)

@@ -300,7 +300,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         cancelFlowEvents()
     }
 
-    
     private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
         val isLocaleRtl = (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL)
         val balloon: Balloon = Balloon.Builder(requireContext())
@@ -337,7 +336,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
     }
 
-    
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.share_notes -> {
@@ -397,7 +395,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onDestroyView()
     }
 
-    
     private fun onFragmentLoaded() {
 //        if (!itemLoaded)
 //            webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
@@ -411,7 +408,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
 //    }
 
-    
     private fun updateAppearance() {
         if (episode == null) {
             Logd(TAG, "updateAppearance item is null")
@@ -442,11 +438,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             else -> txtvSize = ""
         }
-
         updateButtons()
     }
 
-    
     private fun updateButtons() {
 //        binding.circularProgressBar.visibility = View.GONE
         val dls = DownloadServiceInterface.get()

@@ -351,9 +351,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Logd(TAG, "TTS init success")
                 } else {
                     Log.w(TAG, "TTS init failed")
-                        requireActivity().runOnUiThread {
-                        Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
-                    }
+                    requireActivity().runOnUiThread { Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
                 }
             }
         }
@@ -441,6 +439,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 (activity as MainActivity).loadChildFragment(qFrag)
                 (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             }
+//            R.id.init_tts -> initTTS()
             else -> return false
         }
         return true
@@ -624,16 +623,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         break
                                     }
                                 }
-                                if (hasNonMediaItems) {
-                                    ioScope.launch {
-                                        withContext(Dispatchers.IO) {
-                                            if (!ttsReady) {
-                                                initializeTTS(requireContext())
-                                                semaphore.acquire()
-                                            }
-                                        }
-                                    }
-                                }
+                                if (hasNonMediaItems) initTTS()
                                 onInit = false
                             }
                         }
@@ -657,6 +647,17 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Log.e(TAG, Log.getStackTraceString(e))
                 } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e))
                 } finally { loadItemsRunning = false }
+            }
+        }
+    }
+
+    private fun initTTS() {
+        ioScope.launch {
+            withContext(Dispatchers.IO) {
+                if (!ttsReady) {
+                    initializeTTS(requireContext())
+                    semaphore.acquire()
+                }
             }
         }
     }

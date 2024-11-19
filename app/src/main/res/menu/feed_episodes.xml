@@ -79,7 +79,7 @@
     </item>
 
 <!--    <item-->
-<!--        android:id="@+id/switch_queue"-->
-<!--        android:title="@string/switch_queue" />-->
+<!--        android:id="@+id/init_tts"-->
+<!--        android:title="@string/init_tts" />-->
 
 </menu>

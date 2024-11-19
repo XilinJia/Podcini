@@ -142,19 +142,24 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
             var infoItems = playlistInfo.relatedItems
             var nextPage = playlistInfo.nextPage
             Logd(TAG, "infoItems: ${infoItems.size}")
+            val map = mutableMapOf<String, Episode>()
             CoroutineScope(Dispatchers.IO).launch {
+                var count = 0
                 while (infoItems.isNotEmpty()) {
                     eList.clear()
                     for (r in infoItems) {
                         Logd(TAG, "startFeedBuilding relatedItem: $r")
                         if (r.infoType != InfoItem.InfoType.STREAM) continue
+                        count++
+//                        if (map[r.url] != null) continue
                         val e = episodeFromStreamInfoItem(r)
+                        map[r.url] = e
                         e.feed = feed_
                         e.feedId = feed_.id
                         eList.add(e)
                     }
                     feed_.episodes.addAll(eList)
-                    if (nextPage == null || feed_.episodes.size > 2000) break
+                    if (nextPage == null || count > 2000) break
                     try {
                         val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
                         nextPage = page.nextPage
@@ -167,6 +172,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                     }
                 }
                 feed_.isBuilding = false
+                map.clear()
             }
             withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
         } catch (e: Throwable) {

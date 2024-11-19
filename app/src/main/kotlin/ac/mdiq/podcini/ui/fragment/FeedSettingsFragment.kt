@@ -1,14 +1,12 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.AutodownloadFilterDialogBinding
 import ac.mdiq.podcini.databinding.FeedsettingsBinding
 import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -18,13 +16,10 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDownloadPolicy
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
-import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.Spinner
-import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
-import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.compose.TagSettingDialog
 import ac.mdiq.podcini.util.Logd
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -38,10 +33,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -53,12 +49,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.*
 
@@ -262,17 +261,12 @@ class FeedSettingsFragment : Fragment() {
                     //                    tags
                     Column {
                         var showDialog by remember { mutableStateOf(false) }
-                        if (showDialog) TagSettingDialog(onDismiss = { showDialog = false })
+                        if (showDialog) TagSettingDialog(feeds = listOf(feed!!), onDismiss = { showDialog = false })
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_tag), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.feed_tags_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                modifier = Modifier.clickable(onClick = {
-//                                    showDialog = true
-                                    val dialog = TagSettingsDialog.newInstance(listOf(feed!!))
-                                    dialog.show(parentFragmentManager, TagSettingsDialog.TAG)
-                                })
-                            )
+                                modifier = Modifier.clickable(onClick = { showDialog = true }))
                         }
                         Text(text = stringResource(R.string.feed_tags_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
                     }
@@ -378,14 +372,12 @@ class FeedSettingsFragment : Fragment() {
                             //                    inclusive filter
                             Column (modifier = Modifier.padding(start = 20.dp)) {
                                 Row(Modifier.fillMaxWidth()) {
+                                    val showDialog = remember { mutableStateOf(false) }
+                                    if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.INCLUDE, onDismiss = { showDialog.value = false }) { filter ->
+                                        feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
+                                    }
                                     Text(text = stringResource(R.string.episode_inclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = {
-                                            object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, 1) {
-                                                override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
-                                                }
-                                            }.show()
-                                        })
+                                        modifier = Modifier.clickable(onClick = { showDialog.value = true })
                                     )
                                 }
                                 Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -393,14 +385,12 @@ class FeedSettingsFragment : Fragment() {
                             //                    exclusive filter
                             Column (modifier = Modifier.padding(start = 20.dp)) {
                                 Row(Modifier.fillMaxWidth()) {
+                                    val showDialog = remember { mutableStateOf(false) }
+                                    if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.EXCLUDE, onDismiss = { showDialog.value = false }) { filter ->
+                                        feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
+                                    }
                                     Text(text = stringResource(R.string.episode_exclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = {
-                                            object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, -1) {
-                                                override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
-                                                }
-                                            }.show()
-                                        })
+                                        modifier = Modifier.clickable(onClick = { showDialog.value = true })
                                     )
                                 }
                                 Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -729,62 +719,6 @@ class FeedSettingsFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalLayoutApi::class)
-    @Composable
-    fun TagSettingDialog(onDismiss: () -> Unit) {
-        Dialog(onDismissRequest = onDismiss) {
-            val suggestions = remember { getTags() }
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    var text by remember { mutableStateOf("") }
-                    var filteredSuggestions by remember { mutableStateOf(suggestions) }
-                    var showSuggestions by remember { mutableStateOf(false) }
-                    var tags = remember { mutableStateListOf<String>() }
-                    Column {
-                        FlowRow {
-                            tags.forEach {
-                                FilterChip(onClick = {  }, label = { Text(text) }, selected = false,
-                                    trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(
-                                        onClick = {
-                                        })) })
-                            }
-                        }
-                        TextField(value = text, onValueChange = {
-                            text = it
-                            filteredSuggestions = suggestions.filter { item ->
-                                item.contains(text, ignoreCase = true)
-                            }
-                            showSuggestions = text.isNotEmpty() && filteredSuggestions.isNotEmpty()
-                        },
-                            placeholder = { Text("Type something...") },
-                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    tags.add(text)
-                                }
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (showSuggestions) {
-                            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(min = 0.dp, max = 200.dp)) {
-                                items(filteredSuggestions.size) { index ->
-                                    Text(text = filteredSuggestions[index], modifier = Modifier.clickable(onClick = {
-                                        text = filteredSuggestions[index]
-                                        showSuggestions = false
-                                    }).padding(8.dp))
-
-                                }
-                            }
-                        }
-                    }
-                    Button(onClick = {
-                        onDismiss()
-                    }) { Text("Confirm") }
-                }
-            }
-        }
-    }
-
     @Composable
     fun AuthenticationDialog(onDismiss: () -> Unit) {
         Dialog(onDismissRequest = onDismiss) {
@@ -867,90 +801,98 @@ class FeedSettingsFragment : Fragment() {
 //        }
 //    }
 
-    /**
-     * Displays a dialog with a text box for filtering episodes and two radio buttons for exclusion/inclusion
-     */
-    abstract class AutoDownloadFilterPrefDialog(context: Context, val filter: FeedAutoDownloadFilter, val inexcl: Int) : MaterialAlertDialogBuilder(context) {
-        private val binding = AutodownloadFilterDialogBinding.inflate(LayoutInflater.from(context))
-        private var termList: MutableList<String> = mutableListOf()
-
-        init {
-            setTitle(R.string.episode_filters_label)
-            setView(binding.root)
-            if (inexcl == -1) {
-//                exclusive
-                binding.durationCheckBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                    binding.episodeFilterDurationText.isEnabled = isChecked
-                }
-                if (filter.hasMinimalDurationFilter()) {
-                    binding.durationCheckBox.isChecked = true
-                    // Store minimal duration in seconds, show in minutes
-                    binding.episodeFilterDurationText.setText((filter.minimalDurationFilter / 60).toString())
-                } else binding.episodeFilterDurationText.isEnabled = false
-                if (filter.hasExcludeFilter()) {
-                    termList = filter.getExcludeFilter().toMutableList()
-                    binding.excludeRadio.isChecked = true
-                }
-                binding.markPlayedCheckBox.isChecked = filter.markExcludedPlayed
-                binding.includeRadio.visibility = View.GONE
-            } else {
-//                inclusive
-                binding.durationBlock.visibility = View.GONE
-                if (filter.hasIncludeFilter()) {
-                    termList = filter.getIncludeFilter().toMutableList()
-                    binding.includeRadio.isChecked = true
-                }
-                binding.excludeRadio.visibility = View.GONE
-                binding.markPlayedCheckBox.visibility = View.GONE
-            }
-            setupWordsList()
-            setNegativeButton(R.string.cancel_label, null)
-            setPositiveButton(R.string.confirm_label) { _: DialogInterface, _: Int ->
-//                this.onConfirmClick(dialog, which)
-                if (inexcl == -1) {
-                    var minimalDuration = -1
-                    if (binding.durationCheckBox.isChecked) {
-                        try {
-                            // Store minimal duration in seconds
-                            minimalDuration = binding.episodeFilterDurationText.text.toString().toInt() * 60
-                        } catch (e: NumberFormatException) {
-                            // Do not change anything on error
-                        }
-                    }
-                    val excludeFilter = toFilterString(termList)
-                    onConfirmed(FeedAutoDownloadFilter(filter.includeFilterRaw, excludeFilter, minimalDuration, binding.markPlayedCheckBox.isChecked))
-                } else {
-                    val includeFilter = toFilterString(termList)
-                    onConfirmed(FeedAutoDownloadFilter(includeFilter, filter.excludeFilterRaw, filter.minimalDurationFilter, filter.markExcludedPlayed))
-                }
-            }
-        }
-        private fun setupWordsList() {
-            binding.termsRecycler.layoutManager = GridLayoutManager(context, 2)
-            binding.termsRecycler.addItemDecoration(ItemOffsetDecoration(context, 4))
-            val adapter: SimpleChipAdapter = object : SimpleChipAdapter(context) {
-                override fun getChips(): List<String> {
-                    return termList
-                }
-                override fun onRemoveClicked(position: Int) {
-                    termList.removeAt(position)
-                    notifyDataSetChanged()
-                }
-            }
-            binding.termsRecycler.adapter = adapter
-            binding.termsTextInput.setEndIconOnClickListener {
-                val newWord = binding.termsTextInput.editText!!.text.toString().replace("\"", "").trim { it <= ' ' }
-                if (newWord.isEmpty() || termList.contains(newWord)) return@setEndIconOnClickListener
-                termList.add(newWord)
-                binding.termsTextInput.editText!!.setText("")
-                adapter.notifyDataSetChanged()
-            }
-        }
-        protected abstract fun onConfirmed(filter: FeedAutoDownloadFilter)
-        private fun toFilterString(words: List<String>?): String {
+    enum class ADLIncExc {
+        INCLUDE,
+        EXCLUDE
+    }
+    @OptIn(ExperimentalLayoutApi::class)
+    @Composable
+    fun AutoDownloadFilterDialog(filter: FeedAutoDownloadFilter, inexcl: ADLIncExc, onDismiss: () -> Unit, onConfirmed: (FeedAutoDownloadFilter) -> Unit) {
+        fun toFilterString(words: List<String>?): String {
             val result = StringBuilder()
             for (word in words!!) result.append("\"").append(word).append("\" ")
             return result.toString()
+        }
+        Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = onDismiss) {
+            Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                val textColor = MaterialTheme.colorScheme.onSurface
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.episode_filters_label), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                    var termList = remember { if (inexcl == ADLIncExc.EXCLUDE) filter.getExcludeFilter().toMutableStateList() else filter.getIncludeFilter().toMutableStateList() }
+                    var filterDuration by remember { mutableStateOf(filter.hasMinimalDurationFilter()) }
+                    var excludeChecked by remember { mutableStateOf(filter.hasExcludeFilter()) }
+                    var includeChecked by remember { mutableStateOf(filter.hasIncludeFilter()) }
+                    Row {
+                        if (inexcl != ADLIncExc.EXCLUDE) {
+                            Checkbox(checked = includeChecked, onCheckedChange = { isChecked -> includeChecked = isChecked })
+                            Text(text = stringResource(R.string.include_terms), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.weight(1f))
+                        } else {
+                            Checkbox(checked = excludeChecked, onCheckedChange = { isChecked -> excludeChecked = isChecked })
+                            Text(text = stringResource(R.string.exclude_terms), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.weight(1f))
+                        }
+                    }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        termList.forEach {
+                            FilterChip(onClick = {  }, label = { Text(it) }, selected = false,
+                                trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = {  })) })
+                        }
+                    }
+                    var text by remember { mutableStateOf("") }
+                    TextField(value = text, onValueChange = { newTerm -> text = newTerm },
+                        placeholder = { Text(stringResource(R.string.add_term)) }, keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (text.isNotBlank()) {
+                                    val newWord = text.replace("\"", "").trim { it <= ' ' }
+                                    if (newWord.isNotBlank() && newWord !in termList) {
+                                        termList.add(newWord)
+                                        text = ""
+                                    }
+                                }
+                            }
+                        ),
+                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyMedium.fontSize, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+                    var filterDurationMinutes by remember { mutableStateOf((filter.minimalDurationFilter / 60).toString()) }
+                    var markPlayedChecked by remember { mutableStateOf(filter.markExcludedPlayed) }
+                    if (inexcl == ADLIncExc.EXCLUDE) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = filterDuration, onCheckedChange = { isChecked -> filterDuration = isChecked })
+                            Text(text = stringResource(R.string.exclude_episodes_shorter_than), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            if (filterDuration) {
+                                BasicTextField(value = filterDurationMinutes, onValueChange = { if (it.all { it.isDigit() }) filterDurationMinutes = it },
+                                    textStyle = TextStyle(fontSize = 16.sp, color = textColor),
+                                    modifier = Modifier.width(40.dp).height(30.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                                )
+                                Text(stringResource(R.string.time_minutes), color = textColor)
+                            }
+                        }
+                    }
+                    Row {
+                        Checkbox(checked = markPlayedChecked, onCheckedChange = { isChecked -> markPlayedChecked = isChecked })
+                        Text(text = stringResource(R.string.mark_excluded_episodes_played), style = MaterialTheme.typography.bodyMedium.merge())
+                    }
+                    Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
+                        Button(onClick = {
+                            if (inexcl == ADLIncExc.EXCLUDE) {
+                                var minimalDuration = -1
+                                if (filterDuration) minimalDuration = filterDurationMinutes.toInt()
+                                val excludeFilter = toFilterString(termList)
+                                onConfirmed(FeedAutoDownloadFilter(filter.includeFilterRaw, excludeFilter, minimalDuration, markPlayedChecked))
+                            } else {
+                                val includeFilter = toFilterString(termList)
+                                onConfirmed(FeedAutoDownloadFilter(includeFilter, filter.excludeFilterRaw, filter.minimalDurationFilter, filter.markExcludedPlayed))
+                            }
+                            onDismiss()
+                        }) { Text("Confirm") }
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = { onDismiss() }) { Text("Cancel") }
+                    }
+                }
+            }
         }
     }
 

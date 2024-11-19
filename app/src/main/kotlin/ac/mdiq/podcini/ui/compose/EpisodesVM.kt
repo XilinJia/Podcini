@@ -35,6 +35,7 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.model.PlayState.Companion.fromCode
 import ac.mdiq.podcini.storage.utils.DurationConverter
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
@@ -130,6 +131,7 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, 
 @Stable
 class EpisodeVM(var episode: Episode) {
     var positionState by mutableStateOf(episode.media?.position?:0)
+    var durationState by mutableStateOf(episode.media?.duration?:0)
     var playedState by mutableIntStateOf(episode.playState)
     var isPlayingState by mutableStateOf(false)
     var ratingState by mutableIntStateOf(episode.rating)
@@ -159,7 +161,7 @@ class EpisodeVM(var episode: Episode) {
         if (episodeMonitor == null) {
             episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
                 val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
-                Logd("EpisodeVM", "start monitoring episode: ${episode.title}")
+                Logd("EpisodeVM", "start monitoring episode: ${episode.id} ${episode.title}")
                 val episodeFlow = item_.asFlow()
                 episodeFlow.collect { changes: SingleQueryChange<Episode> ->
                     when (changes) {
@@ -191,6 +193,7 @@ class EpisodeVM(var episode: Episode) {
                             if (episode.id == changes.obj.id) {
                                 withContext(Dispatchers.Main) {
                                     positionState = changes.obj.media?.position ?: 0
+                                    durationState = changes.obj.media?.duration ?: 0
                                     inProgressState = changes.obj.isInProgress
                                     downloadState = if (changes.obj.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal
                                     Logd("EpisodeVM", "mediaMonitor $positionState $inProgressState ${episode.title}")
@@ -703,9 +706,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val curContext = LocalContext.current
-                    val dur = remember { vm.episode.media?.getDuration() ?: 0 }
-                    val durText = remember { DurationConverter.getDurationStringLong(dur) }
-                    val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) + " · " + durText + " · " +
+//                    val dur = remember { vm.episode.media?.getDuration() ?: 0 }
+//                    val durText = DurationConverter.getDurationStringLong(vm.durationState)
+                    val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) + " · " + getDurationStringLong(vm.durationState) + " · " +
                             if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -722,7 +725,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
                     Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
                     vm.actionButton = vm.actionButton.forItem(vm.episode)
-                    if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
+                    if (vm.actionButton.getLabel() != actionButton.getLabel()) {
+                        actionButton = vm.actionButton
+                    }
                 }
             } else {
                 LaunchedEffect(Unit) {
@@ -744,7 +749,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 vm.actionRes = actionButton.getDrawable()
                 Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                 if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
-                    strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(30.dp).height(35.dp))
+                    strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(33.dp).height(37.dp))
+                if (actionButton.processing > -1) CircularProgressIndicator(progress = { 0.01f * actionButton.processing },
+                    strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(33.dp).height(37.dp))
             }
             if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
         }

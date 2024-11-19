@@ -82,7 +82,7 @@ class Episode : RealmObject {
 
     var rating: Int = Rating.UNRATED.code
 
-    // infor from youtube
+    // info from youtube
     var viewCount: Int = 0
 
     @Ignore

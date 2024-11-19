@@ -196,6 +196,7 @@
     <string name="switch_queue_label">Choose active queue</string>
     <string name="rename_feed_label">Rename podcast</string>
     <string name="remove_feed_label">Remove podcast</string>
+    <string name="init_tts">Start TTS</string>
     <string name="share_label">Share</string>
     <string name="share_file_label">Share file</string>
     <string name="share_notes_label">Share notes</string>

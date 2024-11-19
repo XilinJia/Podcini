@@ -42,7 +42,6 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
-
 open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private var _binding: SpeedSelectDialogBinding? = null
     private val binding get() = _binding!!

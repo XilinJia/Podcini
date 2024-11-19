@@ -4,8 +4,10 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
 import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
+import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
@@ -24,8 +26,13 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -35,6 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -252,6 +261,80 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
                         upsertBlk(feed) { if (feed_ != null) it.setCustomTitle1(name) }
                         onDismissRequest()
                     }) { Text(stringResource(R.string.confirm_label)) }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        val suggestions = remember { getTags() }
+        val commonTags = remember {
+            if (feeds.size == 1) feeds[0].preferences?.tags?.toMutableStateList()?: mutableStateListOf<String>()
+            else {
+                val commons = feeds[0].preferences?.tags?.toMutableSet()?: mutableSetOf()
+                if (commons.isNotEmpty()) for (f in feeds) if (f.preferences != null) commons.retainAll(f.preferences!!.tags)
+                commons.toMutableStateList()
+            }
+        }
+        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.feed_tags_label), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                var text by remember { mutableStateOf("") }
+                var filteredSuggestions by remember { mutableStateOf(suggestions) }
+                var showSuggestions by remember { mutableStateOf(false) }
+                var tags = remember { commonTags }
+                if (feeds.size > 1 && commonTags.isNotEmpty()) Text(stringResource(R.string.multi_feed_common_tags_info))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    tags.forEach {
+                        FilterChip(onClick = {  }, label = { Text(it) }, selected = false,
+                            trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon",
+                                modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = { tags.remove(it) })) })
+                    }
+                }
+                ExposedDropdownMenuBox(expanded = showSuggestions, onExpandedChange = { }) {
+                    TextField(value = text, onValueChange = {
+                        text = it
+                        filteredSuggestions = suggestions.filter { item -> item.contains(text, ignoreCase = true) && item !in tags }
+                        showSuggestions = text.isNotEmpty() && filteredSuggestions.isNotEmpty()
+                    },
+                        placeholder = { Text("Type something...") }, keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (text.isNotBlank()) {
+                                    if (text !in tags) tags.add(text)
+                                    text = ""
+                                }
+                            }
+                        ),
+                        textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
+                    )
+                    ExposedDropdownMenu(expanded = showSuggestions, onDismissRequest = { showSuggestions = false }) {
+                        for (i in filteredSuggestions.indices) {
+                            DropdownMenuItem(text = { Text(filteredSuggestions[i]) },
+                                onClick = {
+                                    text = filteredSuggestions[i]
+                                    showSuggestions = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
+                    Button(onClick = {
+                        if ((tags.toSet() + commonTags.toSet()).isNotEmpty()) for (f in feeds) upsertBlk(f) {
+                            if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
+                            if (tags.isNotEmpty()) it.preferences?.tags?.addAll(tags)
+                        }
+                        buildTags()
+                        onDismiss()
+                    }) { Text("Confirm") }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = { onDismiss() }) { Text("Cancel") }
                 }
             }
         }

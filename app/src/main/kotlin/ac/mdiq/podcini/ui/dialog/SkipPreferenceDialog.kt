@@ -11,9 +11,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import java.text.NumberFormat
 import java.util.*
 
-/**
- * Shows the dialog that allows setting the skip time.
- */
 object SkipPreferenceDialog {
     fun showSkipPreference(context: Context, direction: SkipDirection, textView: TextView? = null) {
         var checked = 0

@@ -124,12 +124,10 @@ object LocalFeedUpdater {
         val item = Episode(0L, file.name, UUID.randomUUID().toString(), file.name, Date(file.lastModified), PlayState.UNPLAYED.code, feed)
         item.disableAutoDownload()
         val size = file.length
-        val media = EpisodeMedia(0, item, 0, 0, size, file.type,
-            file.uri.toString(), file.uri.toString(), false, null, 0, 0)
+        val media = EpisodeMedia(0, item, 0, 0, size, file.type, file.uri.toString(), file.uri.toString(), false, null, 0, 0)
         item.media = media
         for (existingItem in feed.episodes) {
-            if (existingItem.media != null && existingItem.media!!.downloadUrl == file.uri.toString()
-                    && file.length == existingItem.media!!.size) {
+            if (existingItem.media != null && existingItem.media!!.downloadUrl == file.uri.toString() && file.length == existingItem.media!!.size) {
                 // We found an old file that we already scanned. Re-use metadata.
                 item.updateFromOther(existingItem)
                 return item
@@ -148,7 +146,7 @@ object LocalFeedUpdater {
                 try {
                     val simpleDateFormat = SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault())
                     item.pubDate = simpleDateFormat.parse(dateStr)?.time ?: 0L
-                } catch (parseException: ParseException) {
+                } catch (e: ParseException) {
                     val date = DateUtils.parse(dateStr)
                     if (date != null) item.pubDate = date.time
                 }

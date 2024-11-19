@@ -1,3 +1,12 @@
+# 6.14.3
+
+* fixed crash when constructing TTS
+* enhanced some TTS handlings including getting the duration after TTS audio is constructed
+* issue: some shared playlists from YT Music are circular
+	* getting mostly duplicates of over 2000 episodes when subscribed
+	* checking on unique url seems to miss some episodes
+* Tags setting and AutoDownload filer dialogs are in Compose
+
 # 6.14.2
 
 * in feed settings, added audio type setting (Speech, Music, Movie) for improved audio processing from media3

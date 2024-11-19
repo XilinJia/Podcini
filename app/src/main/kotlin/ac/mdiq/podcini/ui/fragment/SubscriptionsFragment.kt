@@ -21,7 +21,6 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOpt
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOptions
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -527,6 +526,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showAssociateDialog) SetAssociateQueueDialog {showAssociateDialog = false}
         var showKeepUpdateDialog by remember { mutableStateOf(false) }
         if (showKeepUpdateDialog) SetKeepUpdateDialog {showKeepUpdateDialog = false}
+        var showTagsSettingDialog by remember { mutableStateOf(false) }
+        if (showTagsSettingDialog) TagSettingDialog(selected) { showTagsSettingDialog = false }
 
         @Composable
         fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Feed>, modifier: Modifier = Modifier) {
@@ -604,7 +605,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_tag: ${selected.size}")
-                    TagSettingsDialog.newInstance(selected).show(activity.supportFragmentManager, Companion.TAG)
+                    showTagsSettingDialog = true
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_tag), "")
                     Text(stringResource(id = R.string.edit_tags)) } },

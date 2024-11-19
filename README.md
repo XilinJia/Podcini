@@ -11,37 +11,40 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
-#### The play app of Podcini.R 6.14 allows casting audio-only Youtube media to a Chromecast speaker
-#### Podcini.R 6.10 allows creating synthetic podcast and shelving any episdes to any synthetic podcasts
+### Note:
+
 #### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
-#### Podcini.R requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
-#### If you intend to sync through a server, be cautious as it's not well tested with Podcini. Welcome any ideas and contribution on this.
+
+Podcini.R requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
+
+If you intend to sync through a server, be cautious as it's not well tested with Podcini. Welcome any ideas and contribution on this.
 
 If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
-Compared to AntennaPod this project:
+### Compared to AntennaPod this project:
 
-1. Is mono-modular, purely in `Kotlin`, mostly in Jetpack Compose, based on `medai3` with `AudioOffloadMode` enabled (nicer to device battery).
-2. Supports contents from YouTube and YT Music, as well as normal podcasts and plain RSS.
+1. Is mono-modular, purely in `Kotlin`, mostly in Jetpack Compose, based on `media3` with `AudioOffloadMode` enabled (nicer to device battery).
+2. Handles contents from YouTube and YT Music, as well as normal podcasts and plain RSS.
 3. Features multiple, natural and circular play queues associable with any podcast.
 4. Presents synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
 5. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
 6. Boasts sophisticated filtering and sorting on episodes and podcasts.
 7. Promotes auto-download governed by policy and limit settings of individual feed (podcast).
-8. Spotlights `instant sync` across devices without a server.
-9. Offers Readability and Text-to-Speech for RSS contents,
-10. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,
+8. Supports casting audio-only Youtube media to a Chromecast speaker (the play app)
+9. Spotlights `instant sync` across devices without a server.
+10. Offers Readability and Text-to-Speech for RSS contents,
+11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 
 While podcast subscriptions' OPML files (from AntennaPod or any other sources) can be easily imported, Podcini can not import DB from AntennaPod.
 
-## Notable features description
+## Usage and notable features description
 
 ### Quick start
 
@@ -66,7 +69,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * Podcast's settings can be accessed in FeedInfo and FeedEpisodes views
 * "Prefer streaming over download" is now on setting of individual feed
-* added setting in individual feed to play audio only for video feeds,
+* Added audio type setting (Speech, Music, Movie) for improved audio processing
+* added setting to play audio only for video feeds,
   * an added benefit for setting it enables Youtube media to only stream audio content, saving bandwidth.
   * this differs from switching to "Audio only" on each episode, in which case, video is also streamed
 

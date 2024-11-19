@@ -172,27 +172,6 @@ class FeedPreferences : EmbeddedRealmObject {
         this.volumeAdaption = volumeAdaptionSetting?.toInteger() ?: 0
     }
 
-//    These appear not needed
-    /**
-     * Compare another FeedPreferences with this one. .
-     * @return True if the two objects are different.
-     */
-//    fun compareWithOther(other: FeedPreferences?): Boolean {
-//        if (other == null) return true
-//        if (username != other.username) return true
-//        if (password != other.password) return true
-//        return false
-//    }
-
-    /**
-     * Update this FeedPreferences object from another one.
-     */
-//    fun updateFromOther(other: FeedPreferences?) {
-//        if (other == null) return
-//        this.username = other.username
-//        this.password = other.password
-//    }
-
     enum class AutoDownloadPolicy(val code: Int, val resId: Int) {
         ONLY_NEW(0, R.string.feed_auto_download_new),
         NEWER(1, R.string.feed_auto_download_newer),

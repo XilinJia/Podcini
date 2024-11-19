@@ -284,6 +284,8 @@ object Feeds {
                 if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
                 else savedFeed.episodes.add(idx, episode)
 
+                savedFeedAssistant.addidvToMap(episode)
+
                 val pubDate = episode.getPubDate()
                 if (priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                     Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
@@ -417,7 +419,6 @@ object Feeds {
                 if (feed.preferences == null)
                     feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                 else feed.preferences!!.feedID = feed.id
-
                 feed.totleDuration = 0
                 Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
@@ -643,7 +644,15 @@ object Feeds {
                      map[title] = e
                  }
              }
-         }
+        }
+        fun addUrlToMap(episode: Episode) {
+            val url = episode.media?.getStreamUrl()
+            if (url != episode.identifyingValue && !url.isNullOrEmpty() && !map.containsKey(url)) map[url] = episode
+        }
+        fun addidvToMap(episode: Episode) {
+            val idv = episode.identifyingValue
+            if (idv != episode.identifier && !idv.isNullOrEmpty()) map[idv] = episode
+        }
         private fun addDownloadStatus(episode: Episode, possibleDuplicate: Episode) {
             addDownloadStatus(DownloadResult(savedFeedId, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                 """

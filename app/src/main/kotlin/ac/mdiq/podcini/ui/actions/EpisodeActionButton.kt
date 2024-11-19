@@ -16,6 +16,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
 import ac.mdiq.podcini.storage.utils.FilesUtils
@@ -28,6 +30,7 @@ import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
+import android.media.MediaMetadataRetriever
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -46,10 +49,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -72,7 +76,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     open val visibility: Boolean
         get() = true
 
-    var processing: Float = -1f
+    var processing by mutableIntStateOf(-1)
 
     val actionState = mutableIntStateOf(0)
 
@@ -102,7 +106,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     }
 
     @Composable
-    fun AltActionsDialog(context: Context, onDismiss: () -> Unit) {
+    fun AltActionsDialog(context: Context, includeTTS: Boolean = false, onDismiss: () -> Unit) {
         Dialog(onDismissRequest = onDismiss) {
             Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -137,6 +141,12 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                             VisitWebsiteActionButton(item).onClick(context)
                             onDismiss()
                         }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "Web") }
+                    }
+                    if (includeTTS && label != R.string.TTS_label) {
+                        IconButton(onClick = {
+                            TTSActionButton(item).onClick(context)
+                            onDismiss()
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.text_to_speech), contentDescription = "TTS") }
                     }
                 }
             }
@@ -212,7 +222,7 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         val media = item.media
         if (media != null) DownloadServiceInterface.get()?.cancel(context, media)
         if (UserPreferences.isEnableAutodownload) {
-            val item_ = RealmDB.upsertBlk(item) {
+            val item_ = upsertBlk(item) {
                 it.disableAutoDownload()
             }
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))
@@ -263,10 +273,10 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     fun notifyMissingEpisodeMediaFile(context: Context, media: EpisodeMedia) {
         Logd(TAG, "notifyMissingEpisodeMediaFile called")
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
-        val episode = RealmDB.realm.query(Episode::class).query("id == media.id").first().find()
+        val episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
 //        val episode = media.episodeOrFetch()
         if (episode != null) {
-            val episode_ = RealmDB.upsertBlk(episode) {
+            val episode_ = upsertBlk(episode) {
 //                it.media = media
                 it.media?.downloaded = false
                 it.media?.fileUrl = null
@@ -403,7 +413,6 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {
-        
         fun show() {
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.stream_label)
@@ -432,9 +441,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
 }
 
 class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
-
     private var readerText: String? = null
-
     override val visibility: Boolean
         get() = !item.link.isNullOrEmpty()
 
@@ -445,14 +452,14 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.text_to_speech
     }
 
-     override fun onClick(context: Context) {
+    override fun onClick(context: Context) {
         Logd("TTSActionButton", "onClick called")
         if (item.link.isNullOrEmpty()) {
             Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show()
             return
         }
-        processing = 0.01f
-        item.playState = PlayState.BUILDING.code
+        processing = 1
+        item = upsertBlk(item) { it.playState = PlayState.BUILDING.code }
         EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
         RealmDB.runOnIOScope {
             if (item.transcript == null) {
@@ -460,19 +467,15 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                 val htmlSource = NetworkUtils.fetchHtmlSource(url)
                 val article = Readability4J(item.link!!, htmlSource).parse()
                 readerText = article.textContent
-                item = RealmDB.upsertBlk(item) {
-                    it.setTranscriptIfLonger(article.contentWithDocumentsCharsetOrUtf8)
-                }
-//                persistEpisode(item)
-                Logd(TAG,
-                    "readability4J: ${readerText?.substring(max(0, readerText!!.length - 100), readerText!!.length)}")
+                item = upsertBlk(item) { it.setTranscriptIfLonger(article.contentWithDocumentsCharsetOrUtf8) }
+                Logd(TAG, "readability4J: ${readerText?.substring(max(0, readerText!!.length - 100), readerText!!.length)}")
             } else readerText = HtmlCompat.fromHtml(item.transcript!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-            processing = 0.1f
+            Logd(TAG, "readerText: [$readerText]")
+            processing = 1
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
             if (!readerText.isNullOrEmpty()) {
                 while (!FeedEpisodesFragment.ttsReady) runBlocking { delay(100) }
-
-                processing = 0.15f
+                processing = 15
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
                 while (FeedEpisodesFragment.ttsWorking) runBlocking { delay(100) }
                 FeedEpisodesFragment.ttsWorking = true
@@ -480,18 +483,16 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     val result = FeedEpisodesFragment.tts?.setLanguage(Locale(item.feed!!.language!!))
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.w(TAG, "TTS language not supported ${item.feed!!.language} $result")
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context,
-                                context.getString(R.string.language_not_supported_by_tts) + " ${item.feed!!.language} $result",
-                                Toast.LENGTH_LONG).show()
-                        }
+                        withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${item.feed!!.language} $result", Toast.LENGTH_LONG).show() }
                     }
                 }
 
                 var j = 0
                 val mediaFile = File(FilesUtils.getMediafilePath(item), FilesUtils.getMediafilename(item))
                 FeedEpisodesFragment.tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) {}
+                    override fun onStart(utteranceId: String?) {
+                        Logd(TAG, "onStart $utteranceId")
+                    }
                     override fun onDone(utteranceId: String?) {
                         j++
                         Logd(TAG, "onDone ${mediaFile.length()} $utteranceId")
@@ -511,47 +512,52 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                 var startIndex = 0
                 var i = 0
                 val parts = mutableListOf<String>()
-                val chunkLength = TextToSpeech.getMaxSpeechInputLength()
+                val chunkLength = TextToSpeech.getMaxSpeechInputLength() - 300  // TTS engine can't handle longer text
                 var status = TextToSpeech.ERROR
                 while (startIndex < readerText!!.length) {
                     Logd(TAG, "working on chunk $i $startIndex")
                     val endIndex = minOf(startIndex + chunkLength, readerText!!.length)
                     val chunk = readerText!!.substring(startIndex, endIndex)
-                    val tempFile = File.createTempFile("tts_temp_${i}_", ".wav")
-                    parts.add(tempFile.absolutePath)
-                    status =
-                        FeedEpisodesFragment.tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
-                    Logd(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
-                    if (status == TextToSpeech.ERROR) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context,
-                                "Error generating audio file $tempFile.absolutePath",
-                                Toast.LENGTH_LONG).show()
+                    Logd(TAG, "chunk: $chunk")
+                    try {
+                        val tempFile = File.createTempFile("tts_temp_${i}_", ".wav")
+                        parts.add(tempFile.absolutePath)
+                        status = FeedEpisodesFragment.tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
+                        Logd(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
+                        if (status == TextToSpeech.ERROR) {
+                            withContext(Dispatchers.Main) { Toast.makeText(context, "Error generating audio file $tempFile.absolutePath", Toast.LENGTH_LONG).show() }
+                            break
                         }
-                        break
-                    }
+                    } catch (e: Exception) { Log.e(TAG, "writing temp file error: ${e.message}")}
                     startIndex += chunkLength
                     i++
                     while (i - j > 0) runBlocking { delay(100) }
-                    processing = 0.15f + 0.7f * startIndex / readerText!!.length
+                    processing = 15 + 70 * startIndex / readerText!!.length
                     EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
                 }
-                processing = 0.85f
+                processing = 85
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
                 if (status == TextToSpeech.SUCCESS) {
                     AudioMediaTools.mergeAudios(parts.toTypedArray(), mediaFile.absolutePath, null)
+                    val retriever = MediaMetadataRetriever()
+                    retriever.setDataSource(mediaFile.absolutePath)
+                    val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toInt() ?: 0
 
+                    retriever.release()
                     val mFilename = mediaFile.absolutePath
                     Logd(TAG, "saving TTS to file $mFilename")
-                    val media = EpisodeMedia(item, null, 0, "audio/*")
-                    media.fileUrl = mFilename
-//                    media.downloaded = true
-                    media.setIsDownloaded()
-                    item = RealmDB.upsertBlk(item) {
-                        it.media = media
-                        it.setTranscriptIfLonger(readerText)
+                    val item_ = realm.query(Episode::class).query("id = ${item.id}").first().find()
+                    if (item_ != null) {
+                        item = upsertBlk(item_) {
+                            val media = EpisodeMedia(it, null, 0, "audio/*")
+                            media.id = it.id
+                            media.fileUrl = mFilename
+                            media.duration = durationMs
+                            it.media = media
+                            it.media?.setIsDownloaded()
+                            it.setTranscriptIfLonger(readerText)
+                        }
                     }
-//                    persistEpisode(item)
                 }
                 for (p in parts) {
                     val f = File(p)
@@ -560,8 +566,9 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                 FeedEpisodesFragment.ttsWorking = false
             } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show() }
 
-            item.setPlayed(false)
-            processing = 1f
+            item = upsertBlk(item) { it.playState = PlayState.UNPLAYED.code }
+
+            processing = 100
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
             actionState.value = getLabel()
         }
@@ -592,8 +599,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
             item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
-        if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context,
-            MediaType.VIDEO))
+        if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         actionState.value = getLabel()
     }
 }

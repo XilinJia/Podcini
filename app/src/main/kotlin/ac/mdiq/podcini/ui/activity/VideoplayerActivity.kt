@@ -34,6 +34,7 @@ import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -65,8 +66,10 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.DialogFragment
@@ -315,16 +318,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 val media = curMedia ?: return false
                 val feedItem = (media as? EpisodeMedia)?.episodeOrFetch()
                 when {
-//                    item.itemId == R.id.add_to_favorites_item && feedItem != null -> {
-//                        setFavorite(feedItem, true)
-//                        videoEpisodeFragment.isFavorite = true
-//                        invalidateOptionsMenu()
-//                    }
-//                    item.itemId == R.id.remove_from_favorites_item && feedItem != null -> {
-//                        setFavorite(feedItem, false)
-//                        videoEpisodeFragment.isFavorite = false
-//                        invalidateOptionsMenu()
-//                    }
                     item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item ->
                         SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                     item.itemId == R.id.audio_controls -> {
@@ -343,8 +336,20 @@ class VideoplayerActivity : CastEnabledActivity() {
                         val shareDialog = ShareDialog.newInstance(feedItem)
                         shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
                     }
-                    item.itemId == R.id.playback_speed ->
-                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true))?.show(supportFragmentManager, null)
+                    item.itemId == R.id.playback_speed -> {
+                        val composeView = ComposeView(this).apply {
+                            setContent {
+                                var showSpeedDialog by remember { mutableStateOf(true) }
+                                if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f,
+                                    onDismiss = {
+                                        showSpeedDialog = false
+                                        (parent as? ViewGroup)?.removeView(this)
+                                    })
+                            }
+                        }
+                        (window.decorView as? ViewGroup)?.addView(composeView)
+//                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true))?.show(supportFragmentManager, null)
+                    }
                     else -> return false
                 }
                 return true

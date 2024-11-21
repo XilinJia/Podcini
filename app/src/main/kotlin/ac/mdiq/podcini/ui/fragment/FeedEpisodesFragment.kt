@@ -98,6 +98,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var showNewSynthetic by mutableStateOf(false)
      var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+    var layoutMode by mutableIntStateOf(0)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -111,7 +112,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-
         _binding = ComposeFragmentBinding.inflate(inflater)
 
         sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
@@ -164,6 +164,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 loadItemsRunning = false
             }
         }
+        layoutMode = if (feed?.preferences?.useWideLayout == true) 1 else 0
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = {showRemoveFeedDialog = false}) {
@@ -198,7 +199,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Column {
                     FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
-                    EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed,
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
                             if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
@@ -598,6 +599,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     feed = withContext(Dispatchers.IO) {
                         val feed_ = getFeed(feedID)
                         if (feed_ != null) {
+                            layoutMode = if (feed_.preferences?.useWideLayout == true) 1 else 0
                             Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                             val etmp = mutableListOf<Episode>()
                             if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {

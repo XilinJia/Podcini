@@ -33,8 +33,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
-import ac.mdiq.podcini.storage.model.PlayState.Companion.fromCode
-import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
@@ -48,6 +46,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
+import ac.mdiq.podcini.util.MiscFormatter.formatNumber
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
@@ -94,7 +93,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
@@ -110,9 +108,10 @@ import kotlin.math.roundToInt
 @Composable
 fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, rightAction: MutableState<SwipeAction>, actionConfig: () -> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
+    val buttonColor = MaterialTheme.colorScheme.tertiary
     Logd("InforBar", "textState: ${text.value}")
     Row {
-        Icon(imageVector = ImageVector.vectorResource(leftAction.value.getActionIcon()), tint = textColor, contentDescription = "left_action_icon",
+        Icon(imageVector = ImageVector.vectorResource(leftAction.value.getActionIcon()), tint = buttonColor, contentDescription = "left_action_icon",
             modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
         Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow",
             modifier = Modifier.width(24.dp).height(24.dp))
@@ -121,12 +120,10 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, 
         Spacer(modifier = Modifier.weight(1f))
         Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow",
             modifier = Modifier.width(24.dp).height(24.dp))
-        Icon(imageVector = ImageVector.vectorResource(rightAction.value.getActionIcon()), tint = textColor, contentDescription = "right_action_icon",
+        Icon(imageVector = ImageVector.vectorResource(rightAction.value.getActionIcon()), tint = buttonColor, contentDescription = "right_action_icon",
             modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
     }
 }
-
-//var queueChanged by mutableIntStateOf(0)
 
 @Stable
 class EpisodeVM(var episode: Episode) {
@@ -137,12 +134,11 @@ class EpisodeVM(var episode: Episode) {
     var ratingState by mutableIntStateOf(episode.rating)
     var inProgressState by mutableStateOf(episode.isInProgress)
     var downloadState by mutableIntStateOf(if (episode.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
-//    var actionButton by mutableStateOf(forItem(episode))
+    var viewCount by mutableIntStateOf(episode.viewCount)
     var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode))
     var actionRes by mutableIntStateOf(actionButton.getDrawable())
     var showAltActionsDialog by mutableStateOf(false)
     var dlPercent by mutableIntStateOf(0)
-//    var inQueueState by mutableStateOf(curQueue.contains(episode))
     var isSelected by mutableStateOf(false)
     var prog by mutableFloatStateOf(0f)
 
@@ -442,7 +438,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null,
+fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null, layoutMode: Int = 0,
                       isDraggable: Boolean = false, dragCB: ((Int, Int)->Unit)? = null,
                       refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
                       actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
@@ -622,21 +618,88 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         }
     }
 
+    fun toggleSelected(vm: EpisodeVM) {
+        vm.isSelected = !vm.isSelected
+        if (vm.isSelected) selected.add(vm.episode)
+        else selected.remove(vm.episode)
+    }
+
+    val titleMaxLines = if (layoutMode == 0) 2 else 3
+    @Composable
+    fun TitleColumn(vm: EpisodeVM, index: Int, modifier: Modifier) {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        Column(modifier.padding(start = 6.dp, end = 6.dp)
+            .combinedClickable(onClick = {
+                Logd(TAG, "clicked: ${vm.episode.title}")
+                if (selectMode) toggleSelected(vm)
+                else activity.loadChildFragment(EpisodeInfoFragment.newInstance(vm.episode))
+            }, onLongClick = {
+                selectMode = !selectMode
+                vm.isSelected = selectMode
+                selected.clear()
+                if (selectMode) {
+                    selected.add(vms[index].episode)
+                    longPressIndex = index
+                } else {
+                    selectedSize = 0
+                    longPressIndex = -1
+                }
+                Logd(TAG, "long clicked: ${vm.episode.title}")
+            })) {
+            Text(vm.episode.title ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, maxLines = titleMaxLines, overflow = TextOverflow.Ellipsis)
+            if (layoutMode == 0) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val playStateRes = PlayState.fromCode(vm.playedState).res
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState", modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(16.dp).height(16.dp))
+                    val ratingIconRes = Rating.fromCode(vm.ratingState).res
+                    if (vm.ratingState != Rating.UNRATED.code)
+                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
+                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
+                    val curContext = LocalContext.current
+                    val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) +
+                            if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "" +
+                                    " · " + getDurationStringLong(vm.durationState) + " · " +
+                                    if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val playStateRes = PlayState.fromCode(vm.playedState).res
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState", modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(16.dp).height(16.dp))
+                    val ratingIconRes = Rating.fromCode(vm.ratingState).res
+                    if (vm.ratingState != Rating.UNRATED.code)
+                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
+                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val curContext = LocalContext.current
+                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) +
+                            if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) + " views" else "" +
+                                    " · " + getDurationStringLong(vm.durationState) + " · " +
+                                    if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+    }
+
     @Composable
     fun MainRow(vm: EpisodeVM, index: Int, isBeingDragged: Boolean, yOffset: Float, onDragStart: () -> Unit, onDrag: (Float) -> Unit, onDragEnd: () -> Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
-        fun toggleSelected() {
-            vm.isSelected = !vm.isSelected
-            if (vm.isSelected) selected.add(vms[index].episode)
-            else selected.remove(vms[index].episode)
-        }
+        val buttonColor = MaterialTheme.colorScheme.tertiary
         val density = LocalDensity.current
+        val imageWidth = if (layoutMode == 0) 56.dp else 150.dp
+        val imageHeight = if (layoutMode == 0) 56.dp else 100.dp
         Row(Modifier.background(if (vm.isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
             .offset(y = with(density) { yOffset.toDp() })) {
             if (isDraggable) {
                 val typedValue = TypedValue()
                 context.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
-                Icon(imageVector = ImageVector.vectorResource(typedValue.resourceId), tint = textColor, contentDescription = "drag handle",
+                Icon(imageVector = ImageVector.vectorResource(typedValue.resourceId), tint = buttonColor, contentDescription = "drag handle",
                     modifier = Modifier.width(50.dp).align(Alignment.CenterVertically).padding(start = 10.dp, end = 15.dp)
                         .draggable(orientation = Orientation.Vertical,
                             state = rememberDraggableState { delta -> onDrag(delta) },
@@ -644,116 +707,53 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                             onDragStopped = { onDragEnd() }
                         ))
             }
-            ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
-                val (imgvCover, checkMark) = createRefs()
-                val imgLoc = remember(vm) { ImageResourceUtils.getEpisodeListImageLocation(vm.episode) }
-//                Logd(TAG, "imgLoc: $imgLoc")
-                AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
-                    .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                    contentDescription = "imgvCover",
-                    modifier = Modifier.width(56.dp).height(56.dp)
-                        .constrainAs(imgvCover) {
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
+            val imgLoc = remember(vm) { ImageResourceUtils.getEpisodeListImageLocation(vm.episode) }
+            AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                contentDescription = "imgvCover",
+                modifier = Modifier.width(imageWidth).height(imageHeight)
+                    .clickable(onClick = {
+                        Logd(TAG, "icon clicked!")
+                        if (selectMode) toggleSelected(vm)
+                        else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
+                    }))
+            Box {
+                TitleColumn(vm, index, modifier = Modifier.fillMaxWidth())
+                var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
+                fun isDownloading(): Boolean {
+                    return vms[index].downloadState > DownloadStatus.State.UNKNOWN.ordinal && vms[index].downloadState < DownloadStatus.State.COMPLETED.ordinal
+                }
+                if (actionButton_ == null) {
+                    LaunchedEffect(key1 = status, key2 = vm.downloadState) {
+                        if (index >= vms.size) return@LaunchedEffect
+                        if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
+                        Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
+                        Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
+                        vm.actionButton = vm.actionButton.forItem(vm.episode)
+                        if (vm.actionButton.getLabel() != actionButton.getLabel()) {
+                            actionButton = vm.actionButton
                         }
-                        .clickable(onClick = {
-                            Logd(TAG, "icon clicked!")
-                            if (selectMode) toggleSelected()
-                            else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
-                        }))
-                if (vm.playedState >= PlayState.SKIPPED.code) {
-                    Icon(imageVector = ImageVector.vectorResource(fromCode(vm.playedState).res), tint = textColor, contentDescription = "play state",
-                        modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(20.dp).height(20.dp)
-                            .constrainAs(checkMark) {
-                                bottom.linkTo(parent.bottom)
-                                end.linkTo(parent.end)
-                            })
-                }
-            }
-            Column(Modifier.weight(1f).padding(start = 6.dp, end = 6.dp)
-                .combinedClickable(onClick = {
-                    Logd(TAG, "clicked: ${vm.episode.title}")
-                    if (selectMode) toggleSelected()
-                    else activity.loadChildFragment(EpisodeInfoFragment.newInstance(vm.episode))
-                }, onLongClick = {
-                    selectMode = !selectMode
-                    vm.isSelected = selectMode
-                    selected.clear()
-                    if (selectMode) {
-                        selected.add(vms[index].episode)
-                        longPressIndex = index
-                    } else {
-                        selectedSize = 0
-                        longPressIndex = -1
                     }
-                    Logd(TAG, "long clicked: ${vm.episode.title}")
-                })) {
-//                LaunchedEffect(key1 = queueChanged) {
-//                    if (index >= vms.size) return@LaunchedEffect
-//                    vms[index].inQueueState = curQueue.contains(vms[index].episode)
-//                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-//                    Logd(TAG, "info row")
-                    val ratingIconRes = Rating.fromCode(vm.ratingState).res
-                    if (vm.ratingState != Rating.UNRATED.code)
-                        Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
-                    val playStateRes = PlayState.fromCode(vm.playedState).res
-                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = textColor, contentDescription = "playState", modifier = Modifier.width(16.dp).height(16.dp))
-//                    if (vm.inQueueState)
-//                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(16.dp).height(16.dp))
-                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
-                        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
-                    val curContext = LocalContext.current
-//                    val dur = remember { vm.episode.media?.getDuration() ?: 0 }
-//                    val durText = DurationConverter.getDurationStringLong(vm.durationState)
-                    val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) + " · " + getDurationStringLong(vm.durationState) + " · " +
-                            if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
-                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                Text(vm.episode.title ?: "", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
-            var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
-            fun isDownloading(): Boolean {
-                return vms[index].downloadState > DownloadStatus.State.UNKNOWN.ordinal && vms[index].downloadState < DownloadStatus.State.COMPLETED.ordinal
-            }
-            if (actionButton_ == null) {
-                LaunchedEffect(key1 = status, key2 = vm.downloadState) {
-                    if (index >= vms.size) return@LaunchedEffect
-                    if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
-                    Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
-                    Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
-                    vm.actionButton = vm.actionButton.forItem(vm.episode)
-                    if (vm.actionButton.getLabel() != actionButton.getLabel()) {
+                } else {
+                    LaunchedEffect(Unit) {
+                        Logd(TAG, "LaunchedEffect init actionButton")
+                        vm.actionButton = actionButton_(vm.episode)
                         actionButton = vm.actionButton
                     }
                 }
-            } else {
-                LaunchedEffect(Unit) {
-                    Logd(TAG, "LaunchedEffect init actionButton")
-                    vm.actionButton =  actionButton_(vm.episode)
-                    actionButton = vm.actionButton
-//                                  vm.actionRes = vm.actionButton!!.getDrawable()
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.BottomEnd)
+                    .pointerInput(Unit) {
+                        detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true }, onTap = { actionButton.onClick(activity) })
+                    }) {
+                    vm.actionRes = actionButton.getDrawable()
+                    Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = buttonColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
+                    if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
+                        strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))
+                    if (actionButton.processing > -1) CircularProgressIndicator(progress = { 0.01f * actionButton.processing },
+                        strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))
                 }
+                if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
             }
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.CenterVertically)
-                .pointerInput(Unit) {
-                    detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true },
-                        onTap = {
-//                            vms[index].actionButton.onClick(activity)
-                            actionButton.onClick(activity)
-                        })
-                }, ) {
-//                Logd(TAG, "button box")
-                vm.actionRes = actionButton.getDrawable()
-                Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
-                if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
-                    strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(33.dp).height(37.dp))
-                if (actionButton.processing > -1) CircularProgressIndicator(progress = { 0.01f * actionButton.processing },
-                    strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(33.dp).height(37.dp))
-            }
-            if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
         }
     }
 
@@ -763,11 +763,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         if (vm.inProgressState || InTheatre.isCurMedia(vm.episode.media)) {
             val pos = vm.positionState
             val dur = remember { vm.episode.media?.getDuration() ?: 0 }
-            val durText = remember { DurationConverter.getDurationStringLong(dur) }
+            val durText = remember { getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
 //            Logd(TAG, "$index vm.prog: ${vm.prog}")
             Row {
-                Text(DurationConverter.getDurationStringLong(vm.positionState), color = textColor, style = MaterialTheme.typography.bodySmall)
+                Text(getDurationStringLong(vm.positionState), color = textColor, style = MaterialTheme.typography.bodySmall)
                 LinearProgressIndicator(progress = { vm.prog }, modifier = Modifier.weight(1f).height(4.dp).align(Alignment.CenterVertically))
                 Text(durText, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
@@ -851,9 +851,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
             }
         }
         if (selectMode) {
+            val buttonColor = MaterialTheme.colorScheme.tertiary
             Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp)
                 .background(Color.LightGray), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = buttonColor, contentDescription = null,
                     modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
                         selected.clear()
@@ -861,7 +862,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         selectedSize = selected.size
                         Logd(TAG, "selectedIds: ${selected.size}")
                     }))
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = buttonColor, contentDescription = null,
                     modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
                         selected.clear()
@@ -870,7 +871,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Logd(TAG, "selectedIds: ${selected.size}")
                     }))
                 var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
-                Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = buttonColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
                     .clickable(onClick = {
                         if (selectedSize != vms.size) {
                             selected.clear()
@@ -951,6 +952,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
         Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
+            val buttonColor = MaterialTheme.colorScheme.tertiary
             val scrollState = rememberScrollState()
             Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
                 var selectNone by remember { mutableStateOf(false) }
@@ -1012,7 +1014,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                 var lowerSelected by remember { mutableStateOf(false) }
                                 var higherSelected by remember { mutableStateOf(false) }
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
                                     val hIndex = selectedList.indexOfLast { it.value }
                                     if (hIndex < 0) return@clickable
                                     if (!lowerSelected) {
@@ -1029,7 +1031,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     onFilterChanged(filterValues)
                                 })
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text("X", color = buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
                                     lowerSelected = false
                                     higherSelected = false
                                     for (i in item.values.indices) {
@@ -1039,7 +1041,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     onFilterChanged(filterValues)
                                 })
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
                                     val lIndex = selectedList.indexOfFirst { it.value }
                                     if (lIndex < 0) return@clickable
                                     if (!higherSelected) {

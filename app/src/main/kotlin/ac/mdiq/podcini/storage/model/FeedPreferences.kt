@@ -15,6 +15,8 @@ class FeedPreferences : EmbeddedRealmObject {
 
     var feedID: Long = 0L
 
+    var useWideLayout: Boolean = false
+
     /**
      * @return true if this feed should be refreshed when everything else is being refreshed
      * if false the feed should only be refreshed if requested directly.

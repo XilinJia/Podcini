@@ -39,6 +39,7 @@ import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -63,7 +64,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -94,7 +100,9 @@ import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.sin
 
 class AudioPlayerFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences("AudioPlayerFragmentPrefs", Context.MODE_PRIVATE) }
@@ -117,6 +125,7 @@ class AudioPlayerFragment : Fragment() {
     private var imgLoc by mutableStateOf<String?>(null)
     private var imgLocLarge by mutableStateOf<String?>(null)
     private var txtvPlaybackSpeed by mutableStateOf("")
+    private var curPlaybackSpeed by mutableStateOf(1f)
     private var remainingTime by mutableIntStateOf(0)
     private var isVideoScreen = false
     private var playButRes by mutableIntStateOf(R.drawable.ic_play_48dp)
@@ -125,6 +134,7 @@ class AudioPlayerFragment : Fragment() {
     private var txtvLengtTexth by mutableStateOf("")
     private var sliderValue by mutableFloatStateOf(0f)
     private var sleepTimerActive by mutableStateOf(isSleepTimerActive())
+    private var showSpeedDialog by mutableStateOf(false)
 
     private var shownotesCleaner: ShownotesCleaner? = null
 
@@ -156,6 +166,7 @@ class AudioPlayerFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
+                    if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = {showSpeedDialog = false})
                     Box(modifier = Modifier.fillMaxWidth().then(if (isCollapsed) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
                         PlayerUI(Modifier.align(if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
                         if (!isCollapsed) {
@@ -188,6 +199,22 @@ class AudioPlayerFragment : Fragment() {
     fun ControlUI() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val context = LocalContext.current
+
+        @Composable
+        fun SpeedometerWithArc(speed: Float, maxSpeed: Float, trackColor: Color, modifier: Modifier) {
+            val needleAngle = (speed / maxSpeed) * 270f - 225
+            Canvas(modifier = modifier) {
+                val radius = 1.3 * size.minDimension / 2
+                val strokeWidth = 6.dp.toPx()
+                val arcRect = Rect(left = strokeWidth / 2, top = strokeWidth / 2, right = size.width - strokeWidth / 2, bottom = size.height - strokeWidth / 2)
+                drawArc(color = trackColor, startAngle = 135f, sweepAngle = 270f, useCenter = false, style = Stroke(width = strokeWidth), topLeft = arcRect.topLeft, size = arcRect.size)
+                val needleAngleRad = Math.toRadians(needleAngle.toDouble())
+                val needleEnd = Offset(x = size.center.x + (radius * 0.7f * cos(needleAngleRad)).toFloat(), y = size.center.y + (radius * 0.7f * sin(needleAngleRad)).toFloat())
+                drawLine(color = Color.Red, start = size.center, end = needleEnd, strokeWidth = 4.dp.toPx(), cap = StrokeCap.Round)
+                drawCircle(color = Color.Cyan, center = size.center, radius = 3.dp.toPx())
+            }
+        }
+
         Row {
             fun ensureService() {
                 if (curMedia == null) return
@@ -219,10 +246,15 @@ class AudioPlayerFragment : Fragment() {
                     }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor, contentDescription = "speed",
+                SpeedometerWithArc(speed = curPlaybackSpeed*100, maxSpeed = 300f, trackColor = textColor,
                     modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
-                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
-                    }))
+                        showSpeedDialog = true
+//                    VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
+                }))
+//                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor, contentDescription = "speed",
+//                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
+//                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
+//                    }))
                 Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))
@@ -555,6 +587,7 @@ class AudioPlayerFragment : Fragment() {
     }
     private fun updatePlaybackSpeedButton(event: FlowEvent.SpeedChangedEvent) {
         val speedStr: String = DecimalFormat("0.00").format(event.newSpeed.toDouble())
+        curPlaybackSpeed = event.newSpeed
         txtvPlaybackSpeed = speedStr
     }
 
@@ -593,6 +626,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
+        curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {

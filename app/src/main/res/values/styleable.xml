@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="CircularProgressBar">
-        <attr name="foregroundColor" format="color" />
-    </declare-styleable>
+<!--    <declare-styleable name="CircularProgressBar">-->
+<!--        <attr name="foregroundColor" format="color" />-->
+<!--    </declare-styleable>-->
 
-    <declare-styleable name="PlaybackSpeedIndicatorView">
-        <attr name="foregroundColor" /> <!-- format omitted to avoid double definition -->
-    </declare-styleable>
+<!--    <declare-styleable name="PlaybackSpeedIndicatorView">-->
+<!--        <attr name="foregroundColor" /> &lt;!&ndash; format omitted to avoid double definition &ndash;&gt;-->
+<!--    </declare-styleable>-->
 </resources>

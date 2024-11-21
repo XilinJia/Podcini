@@ -1,24 +1,32 @@
 package ac.mdiq.podcini.ui.activity
 
-import android.content.DialogInterface
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTranslucentTheme
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
+import android.os.Bundle
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 
 // This is for widget
 class PlaybackSpeedDialogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
-        val speedDialog: VariableSpeedDialog? = VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), 2)
-        speedDialog?.show(supportFragmentManager, null)
-    }
-
-    class InnerVariableSpeedDialog : VariableSpeedDialog() {
-        override fun onDismiss(dialog: DialogInterface) {
-            super.onDismiss(dialog)
-            requireActivity().finish()
+        val composeView = ComposeView(this).apply {
+            setContent {
+                var showSpeedDialog by remember { mutableStateOf(true) }
+                if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f,
+                    onDismiss = {
+                        showSpeedDialog = false
+                        (parent as? ViewGroup)?.removeView(this)
+                        finish()
+                    })
+            }
         }
+        (window.decorView as? ViewGroup)?.addView(composeView)
     }
 }

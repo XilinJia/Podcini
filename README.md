@@ -73,6 +73,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * added setting to play audio only for video feeds,
   * an added benefit for setting it enables Youtube media to only stream audio content, saving bandwidth.
   * this differs from switching to "Audio only" on each episode, in which case, video is also streamed
+* RSS feeds with no playable media can be subscribed and read/listened (via TTS)
+* there are two ways to access TTS: from the action bar of EpisodeHome view, and on the list of FeedEspiosdes view
+  * the former plays the TTS instantly on the text available, and regardless of whether the episode as playable media or not, and the app can't control the playing except for play/pause
+  * the latter, only available when the episode has no media (plain RSS), does not play anything, instead, it constructs an audio file (like download) to be played as a normal media and the speed/rewind/forward can be controlled in Podcini
 
 ### Episode
 
@@ -86,10 +90,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for the episode
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
-* RSS feeds with no playable media can be subscribed and read/listened (via TTS)
-* there are two ways to access TTS: from the action bar of EpisodeHome view, and on the list of FeedEspiosdes view
-  * the former plays the TTS instantly on the text available, and regardless of whether the episode as playable media or not, and the speed is not controlled in the app
-  * the latter, only available when the episode has no media (plain RSS), constructs an audio file (like download) to be played as normal media file and the speed can be controlled in Podcini
 
 ### Podcast/Episode list
 
@@ -97,6 +97,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * An all new sorting dialog and mechanism for Subscriptions based on title, date, and count combinable with other criteria
 * An all new way of filtering for both podcasts and episodes with expanded criteria
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
+* FeedEpisodes has the option to show larger image on the list by changing the "Use wide layout" setting of the feed
 * Episodes list is shown in views of Queues, Downloads, All episodes, FeedEpisodes
 * New and efficient ways of click and long-click operations on both podcast and episode lists:
   * click on title area opens the podcast/episode

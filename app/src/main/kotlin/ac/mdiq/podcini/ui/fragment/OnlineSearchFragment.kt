@@ -40,8 +40,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -139,7 +141,8 @@ class OnlineSearchFragment : Fragment() {
     @Composable
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
-        Column(Modifier.padding(horizontal = 10.dp)) {
+        val scrollState = rememberScrollState()
+        Column(Modifier.fillMaxSize().padding(horizontal = 10.dp).verticalScroll(scrollState)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 var queryText by remember { mutableStateOf("") }
                 fun performSearch() {
@@ -154,20 +157,20 @@ class OnlineSearchFragment : Fragment() {
             }
             QuickDiscoveryView()
             Text(stringResource(R.string.advanced), color = textColor, fontWeight = FontWeight.Bold)
-            Text(stringResource(R.string.add_podcast_by_url), color = textColor, modifier = Modifier.clickable(onClick = { showAddViaUrlDialog() }))
-            Text(stringResource(R.string.add_local_folder), color = textColor, modifier = Modifier.clickable(onClick = {
+            Text(stringResource(R.string.add_podcast_by_url), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { showAddViaUrlDialog() }))
+            Text(stringResource(R.string.add_local_folder), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 4.dp).clickable(onClick = {
                 try { addLocalFolderLauncher.launch(null)
                 } catch (e: ActivityNotFoundException) {
                     e.printStackTrace()
                     mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
                 }
             }))
-            Text(stringResource(R.string.search_vistaguide_label), color = textColor, modifier = Modifier.clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_itunes_label), color = textColor, modifier = Modifier.clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.clickable(onClick = {
+            Text(stringResource(R.string.search_vistaguide_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
+            Text(stringResource(R.string.search_itunes_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
+            Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
+            Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
+            Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
+            Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = {
                 try { chooseOpmlImportPathLauncher.launch("*/*")
                 } catch (e: ActivityNotFoundException) {
                     e.printStackTrace()
@@ -197,9 +200,8 @@ class OnlineSearchFragment : Fragment() {
                 Spacer(Modifier.weight(1f))
                 Text(stringResource(R.string.discover_more), color = textColor, modifier = Modifier.clickable(onClick = {(activity as MainActivity).loadChildFragment(DiscoveryFragment())}))
             }
-            ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
-                val (grid, error) = createRefs()
-                if (showGrid) NonlazyGrid(columns = numColumns, itemCount = searchResult.size, modifier = Modifier.fillMaxWidth().constrainAs(grid) { centerTo(parent) }) { index ->
+            Box(modifier = Modifier.fillMaxWidth()) {
+                if (showGrid) NonlazyGrid(columns = numColumns, itemCount = searchResult.size, modifier = Modifier.fillMaxWidth()) { index ->
                     AsyncImage(model = ImageRequest.Builder(context).data(searchResult[index].imageUrl)
                         .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                         contentDescription = "imgvCover", modifier = Modifier.padding(top = 8.dp)
@@ -212,7 +214,7 @@ class OnlineSearchFragment : Fragment() {
                                 }
                             }))
                 }
-                if (showError) Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().constrainAs(error) { centerTo(parent) }) {
+                if (showError) Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     Text(errorText, color = textColor)
                     if (showRetry) Button(onClick = {
                         prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()

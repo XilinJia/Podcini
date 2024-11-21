@@ -839,6 +839,8 @@
     <string name="include_terms">Include only episodes containing any of the terms below</string>
     <string name="exclude_episodes_shorter_than">Exclude episodes shorter than</string>
     <string name="mark_excluded_episodes_played">Mark excluded episodes played</string>
+    <string name="use_wide_layout">Use wide layout</string>
+    <string name="use_wide_layout_summary">Wide layout on episode list shows larger image, more suitable for video contents.</string>
     <string name="keep_updated">Keep updated</string>
     <string name="keep_updated_summary">Include this podcast when (auto-)refreshing all podcasts</string>
     <string name="audo_add_new_queue">Auto add new to queue</string>

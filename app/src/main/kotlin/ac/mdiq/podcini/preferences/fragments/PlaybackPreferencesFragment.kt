@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.preferences.fragments
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.EditTextDialogBinding
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -10,46 +10,55 @@ import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.speedforwardSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.InputType
-import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.collection.ArrayMap
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.lang.ref.WeakReference
 import kotlin.math.round
 
 class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_playback)
-
         setupPlaybackScreen()
 //        buildSmartMarkAsPlayedPreference()
     }
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.playback_pref)
+        (activity as PreferenceActivity).supportActionBar?.setTitle(R.string.playback_pref)
     }
 
-    
     private fun setupPlaybackScreen() {
-        findPreference<Preference>(Prefs.prefPlaybackSpeedLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
+        findPreference<Preference>(Prefs.prefPlaybackSpeedLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            val composeView = ComposeView(requireContext()).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(requireContext()) {
+                        PlaybackSpeedDialog(listOf(), initSpeed = prefPlaybackSpeed, maxSpeed = 3f, isGlobal = true, onDismiss = {
+                            showDialog.value = false
+                            (view as? ViewGroup)?.removeView(this@apply)
+                        }) { speed -> UserPreferences.setPlaybackSpeed(speed) }
+                    }
+                }
+            }
+            (view as? ViewGroup)?.addView(composeView)
             true
         }
-        findPreference<Preference>(Prefs.prefPlaybackRewindDeltaLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackRewindDeltaLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
             true
         }
@@ -58,19 +67,55 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             true
         }
 
-        findPreference<Preference>(Prefs.prefPlaybackSpeedForwardLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            EditForwardSpeedDialog(requireActivity()).show()
+        findPreference<Preference>(Prefs.prefPlaybackSpeedForwardLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            val composeView = ComposeView(requireContext()).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(requireContext()) {
+                        PlaybackSpeedDialog(listOf(), initSpeed = speedforwardSpeed, maxSpeed = 10f, isGlobal = true, onDismiss = {
+                            showDialog.value = false
+                            (view as? ViewGroup)?.removeView(this@apply)
+                        }) { speed ->
+                            val speed_ = when {
+                                speed < 0.0f -> 0.0f
+                                speed > 10.0f -> 10.0f
+                                else -> 0f
+                            }
+                            speedforwardSpeed = round(10 * speed_) / 10
+                        }
+                    }
+                }
+            }
+            (view as? ViewGroup)?.addView(composeView)
             true
         }
-        findPreference<Preference>(Prefs.prefPlaybackFallbackSpeedLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            EditFallbackSpeedDialog(requireActivity()).show()
+        findPreference<Preference>(Prefs.prefPlaybackFallbackSpeedLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            val composeView = ComposeView(requireContext()).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(requireContext()) {
+                        PlaybackSpeedDialog(listOf(), initSpeed = fallbackSpeed, maxSpeed = 3f, isGlobal = true, onDismiss = {
+                            showDialog.value = false
+                            (view as? ViewGroup)?.removeView(this@apply)
+                        }) { speed ->
+                            val speed_ = when {
+                                speed < 0.0f -> 0.0f
+                                speed > 3.0f -> 3.0f
+                                else -> 0f
+                            }
+                            fallbackSpeed = round(100 * speed_) / 100f
+                        }
+                    }
+                }
+            }
+            (view as? ViewGroup)?.addView(composeView)
             true
         }
-        findPreference<Preference>(Prefs.prefPlaybackFastForwardDeltaLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackFastForwardDeltaLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
             true
         }
-        findPreference<Preference>(Prefs.prefStreamOverDownload.name)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
+        findPreference<Preference>(Prefs.prefStreamOverDownload.name)?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
             // Update all visible lists to reflect new streaming action button
 //            TODO: need another event type?
             EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
@@ -79,8 +124,8 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             true
         }
         if (Build.VERSION.SDK_INT >= 31) {
-            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name)!!.isVisible = false
-            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)!!.isVisible = false
+            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name)?.isVisible = false
+            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)?.isVisible = false
         }
         buildEnqueueLocationPreference()
     }
@@ -108,57 +153,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     private fun <T : Preference?> requirePreference(key: CharSequence): T {
         // Possibly put it to a common method in abstract base class
         return  findPreference<T>(key) ?: throw IllegalArgumentException("Preference with key '$key' is not found")
-    }
-    
-    class EditFallbackSpeedDialog(activity: Activity) {
-        val TAG = this::class.simpleName ?: "Anonymous"
-        private val activityRef = WeakReference(activity)
-
-        fun show() {
-            val activity = activityRef.get() ?: return
-            val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
-            binding.editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            binding.editText.text = Editable.Factory.getInstance().newEditable(fallbackSpeed.toString())
-            MaterialAlertDialogBuilder(activity)
-                .setView(binding.root)
-                .setTitle(R.string.edit_fallback_speed)
-                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                    var speed = binding.editText.text.toString().toFloatOrNull() ?: 0.0f
-                    when {
-                        speed < 0.0f -> speed = 0.0f
-                        speed > 3.0f -> speed = 3.0f
-                    }
-                    fallbackSpeed = round(100 * speed) / 100
-                }
-                .setNegativeButton(R.string.cancel_label, null)
-                .show()
-        }
-    }
-
-    
-    class EditForwardSpeedDialog(activity: Activity) {
-        val TAG = this::class.simpleName ?: "Anonymous"
-        private val activityRef = WeakReference(activity)
-
-        fun show() {
-            val activity = activityRef.get() ?: return
-            val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
-            binding.editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            binding.editText.text = Editable.Factory.getInstance().newEditable(speedforwardSpeed.toString())
-            MaterialAlertDialogBuilder(activity)
-                .setView(binding.root)
-                .setTitle(R.string.edit_fast_forward_speed)
-                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                    var speed = binding.editText.text.toString().toFloatOrNull() ?: 0.0f
-                    when {
-                        speed < 0.0f -> speed = 0.0f
-                        speed > 10.0f -> speed = 10.0f
-                    }
-                    speedforwardSpeed = round(10 * speed) / 10
-                }
-                .setNegativeButton(R.string.cancel_label, null)
-                .show()
-        }
     }
 
     object VideoModeDialog {

@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedsettingsBinding
-import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
@@ -17,10 +16,10 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDownloadPolicy
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
 import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.compose.TagSettingDialog
 import ac.mdiq.podcini.util.Logd
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -28,10 +27,8 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -58,8 +55,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.util.*
 
 class FeedSettingsFragment : Fragment() {
     private var _binding: FeedsettingsBinding? = null
@@ -100,6 +95,22 @@ class FeedSettingsFragment : Fragment() {
             CustomTheme(requireContext()) {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Column(modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.rounded_responsive_layout_24), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(text = stringResource(R.string.use_wide_layout), style = MaterialTheme.typography.titleLarge, color = textColor)
+                            Spacer(modifier = Modifier.weight(1f))
+                            var checked by remember { mutableStateOf(feed?.preferences?.useWideLayout == true) }
+                            Switch(checked = checked, modifier = Modifier.height(24.dp),
+                                onCheckedChange = {
+                                    checked = it
+                                    feed = upsertBlk(feed!!) { f -> f.preferences?.useWideLayout = checked }
+                                }
+                            )
+                        }
+                        Text(text = stringResource(R.string.use_wide_layout_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                    }
                     if ((feed?.id ?: 0) > MAX_SYNTHETIC_ID) {
                         //                    refresh
                         Column {
@@ -108,7 +119,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated != false) }
+                                var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated == true) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         checked = it
@@ -273,10 +284,15 @@ class FeedSettingsFragment : Fragment() {
                     //                    playback speed
                     Column {
                         Row(Modifier.fillMaxWidth()) {
+                            val showDialog = remember { mutableStateOf(false) }
+                            if (showDialog.value) PlaybackSpeedDialog(listOf(feed!!), initSpeed = feed!!.preferences!!.playSpeed, maxSpeed = 3f,
+                                onDismiss = { showDialog.value = false }) { newSpeed ->
+                                feed = upsertBlk(feed!!) { it.preferences?.playSpeed = newSpeed }
+                            }
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(text = stringResource(R.string.playback_speed), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                modifier = Modifier.clickable(onClick = { PlaybackSpeedDialog().show() }))
+                                modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                         }
                         Text(text = stringResource(R.string.pref_feed_playback_speed_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
                     }
@@ -768,29 +784,6 @@ class FeedSettingsFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun PlaybackSpeedDialog(): AlertDialog {
-        val binding = PlaybackSpeedFeedSettingDialogBinding.inflate(LayoutInflater.from(requireContext()))
-        binding.seekBar.setProgressChangedListener { speed: Float? ->
-            binding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
-        }
-        binding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-            binding.seekBar.isEnabled = !isChecked
-            binding.seekBar.alpha = if (isChecked) 0.4f else 1f
-            binding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
-        }
-        val speed = feed?.preferences!!.playSpeed
-        binding.useGlobalCheckbox.isChecked = speed == FeedPreferences.SPEED_USE_GLOBAL
-        binding.seekBar.updateSpeed(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)
-        return MaterialAlertDialogBuilder(requireContext()).setTitle(R.string.playback_speed).setView(binding.root)
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                val newSpeed = if (binding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
-                else binding.seekBar.currentSpeed
-                feed = upsertBlk(feed!!) { it.preferences?.playSpeed = newSpeed }
-            }
-            .setNegativeButton(R.string.cancel_label, null)
-            .create()
     }
 
 //    class PositiveIntegerTransform : VisualTransformation {

@@ -3,17 +3,24 @@ package ac.mdiq.podcini.ui.compose
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
+import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curState
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
-import ac.mdiq.podcini.storage.model.Rating
-import ac.mdiq.podcini.storage.model.SubscriptionLog
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
@@ -22,6 +29,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter
 import android.util.Log
+import android.view.Gravity
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,16 +37,17 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -49,14 +58,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONException
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.*
+import kotlin.math.round
 
 @Composable
 fun ChooseRatingDialog(selected: List<Feed>, onDismissRequest: () -> Unit) {
@@ -154,7 +169,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                                     val url = feed.feedUrl
                                     if (feedBuilder.isYoutube(url)) {
                                         if (feedBuilder.isYoutubeChannel()) {
-                                            val nTabs = feedBuilder.youtubeChannelValidTabs()
+//                                            val nTabs = feedBuilder.youtubeChannelValidTabs()
                                             feedBuilder.buildYTChannel(0, "") { feed, _ -> feedBuilder.subscribe(feed) }
 //                                            if (nTabs > 1) showYTChannelDialog = true
 //                                            else feedBuilder.buildYTChannel(0, "") { feed, map -> feedBuilder.subscribe(feed) }
@@ -188,25 +203,17 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
         val textColor = MaterialTheme.colorScheme.onSurface
         Text(feed.title, color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = 4.dp))
         Row {
-            ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
-                val (imgvCover, checkMark) = createRefs()
+            Box(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val imgLoc = remember(feed) { feed.imageUrl }
                 AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                     .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(), contentDescription = "imgvCover",
-                    modifier = Modifier.width(65.dp).height(65.dp).constrainAs(imgvCover) {
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                    })
+                    modifier = Modifier.fillMaxSize())
                 if (feed.feedId > 0 || log != null) {
                     Logd("OnlineFeedItem", "${feed.feedId} $log")
                     val alpha = 1.0f
                     val iRes = if (feed.feedId > 0) R.drawable.ic_check else R.drawable.baseline_clear_24
                     Icon(imageVector = ImageVector.vectorResource(iRes), tint = textColor, contentDescription = "played_mark",
-                        modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
-                            bottom.linkTo(parent.bottom)
-                            end.linkTo(parent.end)
-                        })
+                        modifier = Modifier.background(Color.Green).alpha(alpha).align(Alignment.BottomEnd))
                 }
             }
             Column(Modifier.padding(start = 10.dp)) {
@@ -325,6 +332,8 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                     }
                 }
                 Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
+                    Button(onClick = { onDismiss() }) { Text("Cancel") }
+                    Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         if ((tags.toSet() + commonTags.toSet()).isNotEmpty()) for (f in feeds) upsertBlk(f) {
                             if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
@@ -333,8 +342,232 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                         buildTags()
                         onDismiss()
                     }) { Text("Confirm") }
-                    Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlaybackSpeedDialog(feeds: List<Feed>, initSpeed: Float, maxSpeed: Float, isGlobal: Boolean = false, onDismiss: () -> Unit, speedCB: (Float) -> Unit) {
+    // min speed set to 0.1 and max speed at 10
+    fun speed2Slider(speed: Float): Float {
+        return if (speed < 1) (speed - 0.1f) / 1.8f else (speed - 2f + maxSpeed) / 2 / (maxSpeed - 1f)
+    }
+    fun slider2Speed(slider: Float): Float {
+        return if (slider < 0.5) 1.8f * slider + 0.1f else 2 * (maxSpeed - 1f) * slider + 2f - maxSpeed
+    }
+    Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = onDismiss) {
+        Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            Column {
+                Text(stringResource(R.string.playback_speed), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+//                var speed by remember { mutableStateOf(if (isGlobal) prefPlaybackSpeed else if (feeds.size == 1) feeds[0].preferences!!.playSpeed else 1f) }
+                var speed by remember { mutableStateOf(initSpeed) }
+                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)) }
+                var useGlobal by remember { mutableStateOf(!isGlobal && speed == FeedPreferences.SPEED_USE_GLOBAL) }
+                if (!isGlobal) Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = useGlobal, onCheckedChange = { isChecked ->
+                        useGlobal = isChecked
+                        speed = if (useGlobal) FeedPreferences.SPEED_USE_GLOBAL
+                        else if (feeds.size == 1) {
+                            if (feeds[0].preferences!!.playSpeed == FeedPreferences.SPEED_USE_GLOBAL) prefPlaybackSpeed
+                            else feeds[0].preferences!!.playSpeed
+                        } else 1f
+                        if (!useGlobal) sliderPosition = speed2Slider(speed)
+                    })
+                    Text(stringResource(R.string.global_default))
+                }
+                if (!useGlobal) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        Text(text = String.format(Locale.getDefault(), "%.2fx", speed))
+                    }
+                    val stepSize = 0.05f
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("-", fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable(onClick = {
+                                val speed_ = round(speed / stepSize) * stepSize - stepSize
+                                if (speed_ >= 0.1f) {
+                                    speed = speed_
+                                    sliderPosition = speed2Slider(speed)
+                                }
+                            }))
+                        Slider(value = sliderPosition, modifier = Modifier.weight(1f).height(5.dp).padding(start = 20.dp, end = 20.dp),
+                            onValueChange = {
+                                sliderPosition = it
+                                speed = slider2Speed(sliderPosition)
+                                Logd("PlaybackSpeedDialog", "slider value: $it $speed}")
+                            })
+                        Text("+", fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable(onClick = {
+                                val speed_ = round(speed / stepSize) * stepSize + stepSize
+                                if (speed_ <= maxSpeed) {
+                                    speed = speed_
+                                    sliderPosition = speed2Slider(speed)
+                                }
+                            }))
+                    }
+                }
+                Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
                     Button(onClick = { onDismiss() }) { Text("Cancel") }
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        val newSpeed = if (useGlobal) FeedPreferences.SPEED_USE_GLOBAL else speed
+                        speedCB(newSpeed)
+                        onDismiss()
+                    }) { Text("Confirm") }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpeed: Float, onDismiss: () -> Unit) {
+    val TAG = "PlaybackSpeedFullDialog"
+    // min speed set to 0.1 and max speed at 10
+    fun speed2Slider(speed: Float): Float {
+        return if (speed < 1) (speed - 0.1f) / 1.8f else (speed - 2f + maxSpeed) / 2 / (maxSpeed - 1f)
+    }
+    fun slider2Speed(slider: Float): Float {
+        return if (slider < 0.5) 1.8f * slider + 0.1f else 2 * (maxSpeed - 1f) * slider + 2f - maxSpeed
+    }
+    fun readPlaybackSpeedArray(valueFromPrefs: String?): List<Float> {
+        if (valueFromPrefs != null) {
+            try {
+                val jsonArray = JSONArray(valueFromPrefs)
+                val selectedSpeeds: MutableList<Float> = ArrayList()
+                for (i in 0 until jsonArray.length()) selectedSpeeds.add(jsonArray.getDouble(i).toFloat())
+                return selectedSpeeds
+            } catch (e: JSONException) {
+                Log.e(TAG, "Got JSON error when trying to get speeds from JSONArray")
+                e.printStackTrace()
+            }
+        }
+        return mutableListOf(1.0f, 1.25f, 1.5f)
+    }
+//    fun getPlaybackSpeedArray() = readPlaybackSpeedArray(appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null))
+    fun setPlaybackSpeedArray(speeds: List<Float>) {
+        val format = DecimalFormatSymbols(Locale.US)
+        format.decimalSeparator = '.'
+        val speedFormat = DecimalFormat("0.00", format)
+        val jsonArray = JSONArray()
+        for (speed in speeds) jsonArray.put(speedFormat.format(speed.toDouble()))
+        appPrefs.edit().putString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, jsonArray.toString()).apply()
+    }
+    fun setCurTempSpeed(speed: Float) {
+        curState = upsertBlk(curState) { it.curTempSpeed = speed }
+    }
+    Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = onDismiss) {
+        val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+        dialogWindowProvider?.window?.let { window ->
+            window.setGravity(Gravity.BOTTOM)
+            window.setDimAmount(0f)
+        }
+        Card(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 10.dp, bottom = 10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            Column {
+                var speed by remember { mutableStateOf(curSpeedFB) }
+                var speeds = remember { readPlaybackSpeedArray(appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null)).toMutableStateList() }
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.playback_speed), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                    Spacer(Modifier.width(50.dp))
+                    FilterChip(onClick = {
+                        if (speed !in speeds) {
+                            speeds.add(speed)
+                            speeds.sort()
+                            setPlaybackSpeedArray(speeds)
+                    } }, label = { Text(String.format(Locale.getDefault(), "%.2f", speed)) }, selected = false,
+                        trailingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add icon", modifier = Modifier.size(FilterChipDefaults.IconSize)) })
+                }
+                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)) }
+                val stepSize = 0.05f
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("-", fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable(onClick = {
+                            val speed_ = round(speed / stepSize) * stepSize - stepSize
+                            if (speed_ >= 0.1f) {
+                                speed = speed_
+                                sliderPosition = speed2Slider(speed)
+                            }
+                        }))
+                    Slider(value = sliderPosition, modifier = Modifier.weight(1f).height(10.dp).padding(start = 20.dp, end = 20.dp),
+                        onValueChange = {
+                            sliderPosition = it
+                            speed = slider2Speed(sliderPosition)
+                            Logd("PlaybackSpeedDialog", "slider value: $it $speed}")
+                        })
+                    Text("+", fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable(onClick = {
+                            val speed_ = round(speed / stepSize) * stepSize + stepSize
+                            if (speed_ <= maxSpeed) {
+                                speed = speed_
+                                sliderPosition = speed2Slider(speed)
+                            }
+                        }))
+                }
+                var forCurrent by remember { mutableStateOf(indexDefault == 0) }
+                var forPodcast by remember { mutableStateOf(indexDefault == 1) }
+                var forGlobal by remember { mutableStateOf(indexDefault == 2) }
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(Modifier.weight(1f))
+                    Checkbox(checked = forCurrent, onCheckedChange = { isChecked -> forCurrent = isChecked })
+                    Text(stringResource(R.string.current_episode))
+                    Spacer(Modifier.weight(1f))
+                    Checkbox(checked = forPodcast, onCheckedChange = { isChecked -> forPodcast = isChecked })
+                    Text(stringResource(R.string.current_podcast))
+                    Spacer(Modifier.weight(1f))
+                    Checkbox(checked = forGlobal, onCheckedChange = { isChecked -> forGlobal = isChecked })
+                    Text(stringResource(R.string.global))
+                    Spacer(Modifier.weight(1f))
+                }
+                FlowRow(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+                    speeds.forEach { chipSpeed ->
+                        FilterChip(onClick = {
+                            Logd("VariableSpeedDialog", "holder.chip settingCode0: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                            settingCode[0] = forCurrent
+                            settingCode[1] = forPodcast
+                            settingCode[2] = forGlobal
+                            Logd("VariableSpeedDialog", "holder.chip settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                            if (playbackService != null) {
+                                playbackService!!.isSpeedForward = false
+                                playbackService!!.isFallbackSpeed = false
+                                if (settingCode.size == 3) {
+                                    Logd(TAG, "setSpeed codeArray: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                                    if (settingCode[2]) UserPreferences.setPlaybackSpeed(chipSpeed)
+                                    if (settingCode[1]) {
+                                        val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
+                                        if (episode?.feed?.preferences != null) upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = chipSpeed }
+                                    }
+                                    if (settingCode[0]) {
+                                        setCurTempSpeed(chipSpeed)
+                                        playbackService!!.mPlayer?.setPlaybackParams(chipSpeed, isSkipSilence)
+                                    }
+                                } else {
+                                    setCurTempSpeed(chipSpeed)
+                                    playbackService!!.mPlayer?.setPlaybackParams(chipSpeed, isSkipSilence)
+                                }
+                            }
+                            else {
+                                UserPreferences.setPlaybackSpeed(chipSpeed)
+                                EventFlow.postEvent(FlowEvent.SpeedChangedEvent(chipSpeed))
+                            }
+                            onDismiss()
+                        }, label = { Text(String.format(Locale.getDefault(), "%.2f", chipSpeed)) }, selected = false,
+                            trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon",
+                                modifier = Modifier.size(30.dp).padding(start = 10.dp).clickable(onClick = {
+                                    speeds.remove(chipSpeed)
+                                    setPlaybackSpeedArray(speeds)
+                                })) })
+                    }
+                }
+                var isSkipSilence by remember { mutableStateOf(false) }
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isSkipSilence, onCheckedChange = { isChecked ->
+                        isSkipSilence = isChecked
+                        playbackService?.mPlayer?.setPlaybackParams(playbackService!!.curSpeed, isChecked)
+                    })
+                    Text(stringResource(R.string.pref_skip_silence_title))
                 }
             }
         }

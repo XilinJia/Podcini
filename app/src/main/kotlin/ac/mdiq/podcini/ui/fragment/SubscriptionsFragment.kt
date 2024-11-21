@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
-import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -32,7 +31,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.CompoundButton
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
@@ -528,6 +526,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showKeepUpdateDialog) SetKeepUpdateDialog {showKeepUpdateDialog = false}
         var showTagsSettingDialog by remember { mutableStateOf(false) }
         if (showTagsSettingDialog) TagSettingDialog(selected) { showTagsSettingDialog = false }
+        var showSpeedDialog by remember { mutableStateOf(false) }
+        if (showSpeedDialog) PlaybackSpeedDialog(selected, initSpeed = 1f, maxSpeed = 3f, onDismiss = {showSpeedDialog = false}) { newSpeed ->
+            saveFeedPreferences { it: FeedPreferences -> it.playSpeed = newSpeed }
+        }
 
         @Composable
         fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Feed>, modifier: Modifier = Modifier) {
@@ -576,28 +578,30 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_playback_speed: ${selected.size}")
-                    val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
-                    vBinding.seekBar.setProgressChangedListener { speed: Float? ->
-                        vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
-                    }
-                    vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                        vBinding.seekBar.isEnabled = !isChecked
-                        vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
-                        vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
-                    }
-                    vBinding.seekBar.updateSpeed(1.0f)
-                    MaterialAlertDialogBuilder(activity)
-                        .setTitle(R.string.playback_speed)
-                        .setView(vBinding.root)
-                        .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-                            val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
-                            else vBinding.seekBar.currentSpeed
-                            saveFeedPreferences { it: FeedPreferences ->
-                                it.playSpeed = newSpeed
-                            }
-                        }
-                        .setNegativeButton(R.string.cancel_label, null)
-                        .show()
+                    showSpeedDialog = true
+
+//                    val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
+//                    vBinding.seekBar.setProgressChangedListener { speed: Float? ->
+//                        vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
+//                    }
+//                    vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+//                        vBinding.seekBar.isEnabled = !isChecked
+//                        vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
+//                        vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
+//                    }
+//                    vBinding.seekBar.updateSpeed(1.0f)
+//                    MaterialAlertDialogBuilder(activity)
+//                        .setTitle(R.string.playback_speed)
+//                        .setView(vBinding.root)
+//                        .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
+//                            val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+//                            else vBinding.seekBar.currentSpeed
+//                            saveFeedPreferences { it: FeedPreferences ->
+//                                it.playSpeed = newSpeed
+//                            }
+//                        }
+//                        .setNegativeButton(R.string.cancel_label, null)
+//                        .show()
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "")
                     Text(stringResource(id = R.string.playback_speed)) } },

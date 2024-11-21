@@ -515,6 +515,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             var playbackSpeed = FeedPreferences.SPEED_USE_GLOBAL
             if (media != null) {
                 playbackSpeed = curState.curTempSpeed
+                // TODO: something strange here?
                 if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is EpisodeMedia) {
                     val prefs_ = media.episodeOrFetch()?.feed?.preferences
                     if (prefs_ != null) playbackSpeed = prefs_.playSpeed

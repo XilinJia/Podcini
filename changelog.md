@@ -1,3 +1,17 @@
+# 6.14.4
+
+* a new speedometer on the player UI
+* adjusted padding in advanced options in OnlineSearch view
+* in episode lists, added view count (available in Youtube contents)
+* amended episode lists layout
+	* playState marking on the image is removed
+	* title is at the top and takes full length to the right of the image
+	* the action button (play/pause etc) is at the lower right corner may overlay on other text if any
+* colored some actionable icons
+* created a new layout for FeedEpsiodes with a larger image, more suitable for video contents
+* in feed settings created useWideLayout for choosing the desired layout
+* reworked speed setting dialogs in Compose and removed unused old codes
+
 # 6.14.3
 
 * fixed crash when constructing TTS

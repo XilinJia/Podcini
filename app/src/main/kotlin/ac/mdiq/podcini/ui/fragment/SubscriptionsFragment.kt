@@ -657,9 +657,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val scrollState = rememberScrollState()
             Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
                 if (isExpanded) options.forEachIndexed { _, button ->
-                    FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), containerColor = Color.LightGray, onClick = {}) { button() }
+                    FloatingActionButton(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), onClick = {}) { button() }
                 }
-                FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.secondary,
+                FloatingActionButton(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.tertiary,
                     onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
             }
         }
@@ -821,16 +822,17 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
             }
             if (selectMode) {
-                Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray),
+                val buttonColor = MaterialTheme.colorScheme.tertiary
+                Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(MaterialTheme.colorScheme.tertiaryContainer),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = buttonColor, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
                             selected.clear()
                             for (i in 0..longPressIndex) selected.add(feedListFiltered[i])
                             selectedSize = selected.size
                             Logd(TAG, "selectedIds: ${selected.size}")
                         }))
-                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_downward_24), tint = buttonColor, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp).clickable(onClick = {
                             selected.clear()
                             for (i in longPressIndex..<feedListFiltered.size) selected.add(feedListFiltered[i])
@@ -838,7 +840,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Logd(TAG, "selectedIds: ${selected.size}")
                         }))
                     var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
-                    Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = Color.Black, contentDescription = null,
+                    Icon(imageVector = ImageVector.vectorResource(selectAllRes), tint = buttonColor, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).clickable(onClick = {
                             if (selectedSize != feedListFiltered.size) {
                                 selected.clear()

@@ -611,9 +611,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         val scrollState = rememberScrollState()
         Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
             if (isExpanded) options.forEachIndexed { _, button ->
-                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), containerColor = Color.LightGray, onClick = {}) { button() }
+                FloatingActionButton(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),onClick = {}) { button() }
             }
-            FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.secondary,
+            FloatingActionButton(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.tertiary,
                 onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
         }
     }
@@ -650,7 +651,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
             if (layoutMode == 0) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val playStateRes = PlayState.fromCode(vm.playedState).res
-                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState", modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(16.dp).height(16.dp))
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState",
+                        modifier = Modifier.background(if (vm.playedState >= PlayState.SKIPPED.code) Color.Green.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface).width(16.dp).height(16.dp))
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
                     if (vm.ratingState != Rating.UNRATED.code)
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
@@ -665,23 +667,26 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
+                val curContext = LocalContext.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val playStateRes = PlayState.fromCode(vm.playedState).res
-                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState", modifier = Modifier.background(Color.Green.copy(alpha = 0.6f)).width(16.dp).height(16.dp))
+                    Icon(imageVector = ImageVector.vectorResource(playStateRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "playState",
+                        modifier = Modifier.background(if (vm.playedState >= PlayState.SKIPPED.code) Color.Green.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surface).width(16.dp).height(16.dp))
                     val ratingIconRes = Rating.fromCode(vm.ratingState).res
                     if (vm.ratingState != Rating.UNRATED.code)
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                             modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
+                    val dateSizeText = " · " + getDurationStringLong(vm.durationState) +
+                                    if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                    Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val curContext = LocalContext.current
-                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) +
-                            if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) + " views" else "" +
-                                    " · " + getDurationStringLong(vm.durationState) + " · " +
-                                    if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) + if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else ""
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (vm.viewCount > 0)
+                        Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_people_alt_24), tint = textColor, contentDescription = "people", modifier = Modifier.width(16.dp).height(16.dp))
                 }
             }
         }
@@ -717,7 +722,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         if (selectMode) toggleSelected(vm)
                         else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
                     }))
-            Box {
+            Box(Modifier.weight(1f).height(imageHeight)) {
                 TitleColumn(vm, index, modifier = Modifier.fillMaxWidth())
                 var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
                 fun isDownloading(): Boolean {
@@ -852,8 +857,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         }
         if (selectMode) {
             val buttonColor = MaterialTheme.colorScheme.tertiary
-            Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp)
-                .background(Color.LightGray), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(MaterialTheme.colorScheme.tertiaryContainer),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_upward_24), tint = buttonColor, contentDescription = null,
                     modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {

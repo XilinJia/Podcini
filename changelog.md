@@ -1,5 +1,11 @@
 # 6.14.4
 
+* minor adjustments in episode lists layout
+* improved Tags setting a bit
+* adjusted colors on the multi-selection menus
+
+# 6.14.4
+
 * a new speedometer on the player UI
 * adjusted padding in advanced options in OnlineSearch view
 * in episode lists, added view count (available in Youtube contents)

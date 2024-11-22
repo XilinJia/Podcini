@@ -293,7 +293,7 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                 var text by remember { mutableStateOf("") }
                 var filteredSuggestions by remember { mutableStateOf(suggestions) }
                 var showSuggestions by remember { mutableStateOf(false) }
-                var tags = remember { commonTags }
+                var tags = remember { commonTags.toMutableStateList() }
                 if (feeds.size > 1 && commonTags.isNotEmpty()) Text(stringResource(R.string.multi_feed_common_tags_info))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     tags.forEach {
@@ -317,8 +317,15 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                                 }
                             }
                         ),
+                        trailingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add icon",
+                            modifier = Modifier.size(30.dp).padding(start = 10.dp).clickable(onClick = {
+                                if (text.isNotBlank()) {
+                                    if (text !in tags) tags.add(text)
+                                    text = ""
+                                }
+                            })) },
                         textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
-                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true) // Material3 requirement
                     )
                     ExposedDropdownMenu(expanded = showSuggestions, onDismissRequest = { showSuggestions = false }) {
                         for (i in filteredSuggestions.indices) {
@@ -336,10 +343,14 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         if ((tags.toSet() + commonTags.toSet()).isNotEmpty()) for (f in feeds) upsertBlk(f) {
+                            Logd("TagsSettingDialog", "tags: [$tags] commonTags: [$commonTags]")
+//                            if (feeds.size == 1) it.preferences?.tags?.clear()
+//                            else if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
                             if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
                             if (tags.isNotEmpty()) it.preferences?.tags?.addAll(tags)
+                            if (text.isNotBlank()) it.preferences?.tags?.add(text)
+                            buildTags()
                         }
-                        buildTags()
                         onDismiss()
                     }) { Text("Confirm") }
                 }

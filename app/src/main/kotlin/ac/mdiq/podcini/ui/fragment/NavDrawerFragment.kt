@@ -13,6 +13,7 @@ import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ARGUMENT_FEED_ID
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfPlayed
 import ac.mdiq.podcini.ui.utils.ThemeUtils
+import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import android.R.attr
 import android.app.Activity
@@ -121,7 +122,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
             Column {
                 for (f in feeds) {
-                    Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(bottom = 5.dp).clickable {
+                    Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp).clickable {
                         val args = Bundle()
                         args.putLong(ARGUMENT_FEED_ID, f.id)
                         (activity as MainActivity).loadFragment(FeedEpisodesFragment.TAG, args)
@@ -134,6 +135,10 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 }
             }
             Spacer(Modifier.weight(1f))
+            Text("Currently launching on Google Play, please kindly support with closed testing. Thank you!", color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.clickable(onClick = {
+                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions/120")
+            }))
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
                 startActivity(Intent(activity, PreferenceActivity::class.java))

@@ -661,9 +661,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val curContext = LocalContext.current
                     val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) +
-                            if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "" +
-                                    " · " + getDurationStringLong(vm.durationState) + " · " +
-                                    if ((vm.episode.media?.size ?: 0) > 0) Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                            " · " + getDurationStringLong(vm.durationState) +
+                            (if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else "") +
+                            (if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
@@ -679,11 +679,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val dateSizeText = " · " + getDurationStringLong(vm.durationState) +
-                                    if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else ""
+                            (if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) + if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else ""
+                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) + (if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (vm.viewCount > 0)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_people_alt_24), tint = textColor, contentDescription = "people", modifier = Modifier.width(16.dp).height(16.dp))

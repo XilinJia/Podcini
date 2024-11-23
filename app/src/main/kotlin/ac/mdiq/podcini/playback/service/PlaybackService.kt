@@ -363,7 +363,7 @@ class PlaybackService : MediaLibraryService() {
                             val item_ = realm.query(Episode::class).query("id == $0", item!!.id).first().find()
                             if (item_ != null) {
                                 item = upsert(item_) {
-                                    it.playState = PlayState.PLAYED.code
+                                    if (it.playState < PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.playState = PlayState.PLAYED.code
                                     val media = it.media
                                     if (media != null) {
                                         media.startPosition = playable.startPosition

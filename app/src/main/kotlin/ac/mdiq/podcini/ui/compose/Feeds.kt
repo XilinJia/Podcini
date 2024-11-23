@@ -244,7 +244,7 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Text(stringResource(R.string.rename_feed_label), color = textColor, style = MaterialTheme.typography.bodyLarge)
                 var name by remember { mutableStateOf("") }
-                TextField(value = name, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) name = it }, label = { Text(stringResource(R.string.new_namee)) })
+                TextField(value = name, onValueChange = { name = it }, label = { Text(stringResource(R.string.new_namee)) })
                 var hasVideo by remember { mutableStateOf(true) }
                 var isYoutube by remember { mutableStateOf(false) }
                 if (feed_ == null) {
@@ -259,6 +259,7 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
                 }
                 Row {
                     Button({ onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) }
+                    Spacer(Modifier.weight(1f))
                     Button({
                         val feed = feed_ ?: createSynthetic(0, name, hasVideo)
                         if (feed_ == null) {

@@ -18,9 +18,7 @@ object IntentUtils {
     @JvmStatic
     fun isCallable(context: Context, intent: Intent?): Boolean {
         val list = context.packageManager.queryIntentActivities(intent!!, PackageManager.MATCH_DEFAULT_ONLY)
-        for (info in list) {
-            if (info.activityInfo.exported) return true
-        }
+        for (info in list) if (info.activityInfo.exported) return true
         return false
     }
 

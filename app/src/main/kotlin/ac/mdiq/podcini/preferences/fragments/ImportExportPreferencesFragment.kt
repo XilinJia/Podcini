@@ -8,7 +8,7 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.preferences.ExportWriter
-import ac.mdiq.podcini.preferences.OpmlTransporter.*
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
@@ -20,6 +20,7 @@ import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.Logd
 import android.app.Activity.RESULT_OK
 import android.app.ProgressDialog
@@ -32,16 +33,33 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -57,6 +75,7 @@ import java.nio.channels.FileChannel
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.Throws
 
 class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
@@ -102,76 +121,119 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private var progressDialog: ProgressDialog? = null
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.preferences_import_export)
-        setupStorageScreen()
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {}
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        (activity as PreferenceActivity).supportActionBar?.setTitle(R.string.import_export_pref)
         progressDialog = ProgressDialog(context)
         progressDialog!!.isIndeterminate = true
         progressDialog!!.setMessage(requireContext().getString(R.string.please_wait))
-    }
+        return ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    val scrollState = rememberScrollState()
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp).verticalScroll(scrollState)) {
+                        Text(stringResource(R.string.database), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            exportDatabase()
+                        })) {
+                            Text(stringResource(R.string.database_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.database_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            importDatabase()
+                        })) {
+                            Text(stringResource(R.string.database_import_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.database_import_summary), color = textColor)
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
 
-    override fun onStart() {
-        super.onStart()
-        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.import_export_pref)
+                        Text(stringResource(R.string.media_files), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            exportMediaFiles()
+                        })) {
+                            Text(stringResource(R.string.media_files_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.media_files_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            importMediaFiles()
+                        })) {
+                            Text(stringResource(R.string.media_files_import_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.media_files_import_summary), color = textColor)
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+
+                        Text(stringResource(R.string.preferences), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            exportPreferences()
+                        })) {
+                            Text(stringResource(R.string.preferences_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.preferences_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            importPreferences()
+                        })) {
+                            Text(stringResource(R.string.preferences_import_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.preferences_import_summary), color = textColor)
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+
+                        Text(stringResource(R.string.opml), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            openExportPathPicker(Export.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
+                        })) {
+                            Text(stringResource(R.string.opml_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.opml_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            try {
+                                chooseOpmlImportPathLauncher.launch("*/*")
+                            } catch (e: ActivityNotFoundException) {
+                                Log.e(TAG, "No activity found. Should never happen...")
+                            }
+                        })) {
+                            Text(stringResource(R.string.opml_import_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.opml_import_summary), color = textColor)
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+
+                        Text(stringResource(R.string.progress), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            openExportPathPicker(Export.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter())
+                        })) {
+                            Text(stringResource(R.string.progress_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.progress_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            importEpisodeProgress()
+                        })) {
+                            Text(stringResource(R.string.progress_import_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.progress_import_summary), color = textColor)
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+
+                        Text(stringResource(R.string.html), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            openExportPathPicker(Export.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
+                        })) {
+                            Text(stringResource(R.string.html_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.html_export_summary), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
+                        })) {
+                            Text(stringResource(R.string.favorites_export_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.favorites_export_summary), color = textColor)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun dateStampFilename(fname: String): String {
         return String.format(fname, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
-    }
-
-    private fun setupStorageScreen() {
-        findPreference<Preference>(IExport.prefOpmlExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openExportPathPicker(Export.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
-            true
-        }
-        findPreference<Preference>(IExport.prefHtmlExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openExportPathPicker(Export.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
-            true
-        }
-        findPreference<Preference>(IExport.prefProgressExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openExportPathPicker(Export.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter())
-            true
-        }
-        findPreference<Preference>(IExport.prefProgressImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            importEpisodeProgress()
-            true
-        }
-        findPreference<Preference>(IExport.prefOpmlImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            try {
-                chooseOpmlImportPathLauncher.launch("*/*")
-            } catch (e: ActivityNotFoundException) {
-                Log.e(TAG, "No activity found. Should never happen...")
-            }
-            true
-        }
-        findPreference<Preference>(IExport.prefDatabaseImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            importDatabase()
-            true
-        }
-        findPreference<Preference>(IExport.prefDatabaseExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            exportDatabase()
-            true
-        }
-        findPreference<Preference>(IExport.prefPrefImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            importPreferences()
-            true
-        }
-        findPreference<Preference>(IExport.prefPrefExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            exportPreferences()
-            true
-        }
-        findPreference<Preference>(IExport.prefMediaFilesImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            importMediaFiles()
-            true
-        }
-        findPreference<Preference>(IExport.prefMediaFilesExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            exportMediaFiles()
-            true
-        }
-        findPreference<Preference>(IExport.prefFavoritesExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
-            true
-        }
     }
 
     private fun exportWithWriter(exportWriter: ExportWriter, uri: Uri?, exportType: Export) {
@@ -1110,22 +1172,6 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         companion object {
             private val TAG: String = HtmlWriter::class.simpleName ?: "Anonymous"
         }
-    }
-
-    @Suppress("EnumEntryName")
-    private enum class IExport {
-        prefOpmlExport,
-        prefOpmlImport,
-        prefProgressExport,
-        prefProgressImport,
-        prefHtmlExport,
-        prefPrefImport,
-        prefPrefExport,
-        prefMediaFilesImport,
-        prefMediaFilesExport,
-        prefDatabaseImport,
-        prefDatabaseExport,
-        prefFavoritesExport,
     }
 
     companion object {

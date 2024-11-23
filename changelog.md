@@ -1,3 +1,11 @@
+# 6.14.6
+
+* fixed issue of unable to input in rename feed
+* fixed issue of marking played after playing even when the episode has been marked as Again or Forever
+* fixed duration not shown in narrow episode lists
+* some preferences fragments are in Compose
+* temp message on NavDrawer for closed testing
+
 # 6.14.5
 
 * minor adjustments in episode lists layout

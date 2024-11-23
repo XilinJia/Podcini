@@ -7,6 +7,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.Companion.getTitleOfPage
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.Screens
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.SwipePreferencesFragment
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.navMap
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -91,19 +94,8 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             showFullNotificationButtonsDialog()
             true
         }
-//        findPreference<Preference>(UserPreferences.PREF_FILTER_FEED)?.onPreferenceClickListener =
-//            (Preference.OnPreferenceClickListener {
-//                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
-//                true
-//            })
-
-//        findPreference<Preference>(UserPreferences.Prefs.prefDrawerFeedOrder.name)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
-////            FeedSortDialog.showDialog(requireContext())
-//            FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
-//            true
-//        })
         findPreference<Preference>(PREF_SWIPE)?.setOnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_swipe)
+            (activity as PreferenceActivity).openScreen(Screens.preferences_swipe)
             true
         }
         if (Build.VERSION.SDK_INT >= 26) findPreference<Preference>(UserPreferences.Prefs.prefExpandNotify.name)!!.isVisible = false

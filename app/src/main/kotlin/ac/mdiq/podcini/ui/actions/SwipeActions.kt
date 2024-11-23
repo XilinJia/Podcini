@@ -632,21 +632,6 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             }
         }
 
-        fun showSettingDialog(fragment: Fragment, tag: String) {
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(fragment.requireContext()) {
-                        SwipeActionsDialog(tag, onDismissRequest = {
-                            showDialog.value = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }) {}
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
-        }
-
         @Composable
         fun SwipeActionsDialog(tag: String, onDismissRequest: () -> Unit, callback: ()->Unit) {
             val context = LocalContext.current

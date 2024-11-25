@@ -1,0 +1,10 @@
+ Version 6.14.6
+
+* corrected some deeplinks in manifest file on OPMLActivity
+* added commentTime in Episode and Feed to record the time of comment/opinion added
+* when adding/editing a comment/opinion, a time stamp is automatically added in the text field
+* when removing a feed or an episode, a time stamp is automatically added in the text field
+* a new sorting item on episodes based on commentTime
+* in episodes list, if an episode belongs to a synthetic feed, tapping on the image will bring up EpisodeInfo instead of FeedInfo
+* some class restructuring
+* more preferences fragments are in Compose

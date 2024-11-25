@@ -321,7 +321,7 @@
   <string name="downloads_pref">Nedlastinger</string>
   <string name="downloads_pref_sum">Oppdaterings-intervall, Mobil data, Automatisk nedlasting, Automatisk sletting</string>
   <string name="feed_refresh_title">Oppdater podkaster</string>
-  <string name="feed_refresh_sum">Spesifiser en intervall eller et spesifikt tidspunkt når det skal sjekkes automatisk for nye episoder</string>
+
   <string name="feed_refresh_never">Aldri</string>
   <string name="feed_every_hour">Hver time</string>
   <string name="feed_every_2_hours">Hver andre time</string>

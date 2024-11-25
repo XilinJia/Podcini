@@ -15,7 +15,7 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
@@ -23,7 +23,6 @@ import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.Logd
 import android.app.Activity.RESULT_OK
-import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
@@ -42,20 +41,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
@@ -80,30 +79,30 @@ import kotlin.Throws
 class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.chooseOpmlExportPathResult(result) }
+            result: ActivityResult -> this.chooseOpmlExportPathResult(result) }
 
     private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.chooseHtmlExportPathResult(result) }
+            result: ActivityResult -> this.chooseHtmlExportPathResult(result) }
 
     private val chooseFavoritesExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.chooseFavoritesExportPathResult(result) }
+            result: ActivityResult -> this.chooseFavoritesExportPathResult(result) }
 
     private val chooseProgressExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.chooseProgressExportPathResult(result) }
+            result: ActivityResult -> this.chooseProgressExportPathResult(result) }
 
     private val restoreProgressLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result: ActivityResult -> this.restoreProgressResult(result) }
 
     private val restoreDatabaseLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.restoreDatabaseResult(result) }
+            result: ActivityResult -> this.restoreDatabaseResult(result) }
 
     private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? -> this.backupDatabaseResult(uri) }
 
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) {
-        uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
+            uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
 
     private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.restorePreferencesResult(result) }
+            result: ActivityResult -> this.restorePreferencesResult(result) }
 
     private val backupPreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
@@ -116,22 +115,28 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             result: ActivityResult -> this.restoreMediaFilesResult(result) }
 
     private val backupMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result: ActivityResult -> this.exportMediaFilesResult(result)
-    }
+            result: ActivityResult -> this.exportMediaFilesResult(result) }
 
-    private var progressDialog: ProgressDialog? = null
+    private var showProgress by mutableStateOf(false)
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {}
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         (activity as PreferenceActivity).supportActionBar?.setTitle(R.string.import_export_pref)
-        progressDialog = ProgressDialog(context)
-        progressDialog!!.isIndeterminate = true
-        progressDialog!!.setMessage(requireContext().getString(R.string.please_wait))
         return ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
                     val textColor = MaterialTheme.colorScheme.onSurface
+                    if (showProgress) {
+                        Dialog(onDismissRequest = { showProgress = false }) {
+                            Surface(modifier = Modifier.fillMaxSize(), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                    Text("Loading...", modifier = Modifier.align(Alignment.BottomCenter))
+                                }
+                            }
+                        }
+                    }
                     val scrollState = rememberScrollState()
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp).verticalScroll(scrollState)) {
                         Text(stringResource(R.string.database), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
@@ -238,7 +243,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun exportWithWriter(exportWriter: ExportWriter, uri: Uri?, exportType: Export) {
         val context: Context? = activity
-        progressDialog!!.show()
+        showProgress = true
         if (uri == null) {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
@@ -248,7 +253,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showExportSuccessSnackbar(fileUri, exportType.contentType)
                     }
                 } catch (e: Exception) { showTransportErrorDialog(e)
-                } finally { progressDialog!!.dismiss() }
+                } finally { showProgress = false }
             }
         } else {
             lifecycleScope.launch(Dispatchers.IO) {
@@ -259,7 +264,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showExportSuccessSnackbar(output.uri, exportType.contentType)
                     }
                 } catch (e: Exception) { showTransportErrorDialog(e)
-                } finally { progressDialog!!.dismiss() }
+                } finally { showProgress = false }
             }
         }
     }
@@ -355,7 +360,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun showTransportErrorDialog(error: Throwable) {
-        progressDialog!!.dismiss()
+        showProgress = false
         val alert = MaterialAlertDialogBuilder(requireContext())
         alert.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
         alert.setTitle(R.string.import_export_error_label)
@@ -421,7 +426,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 //            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
 //            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
             if (isJsonFile(uri)) {
-                progressDialog!!.show()
+                showProgress = true
                 lifecycleScope.launch {
                     try {
                         withContext(Dispatchers.IO) {
@@ -432,7 +437,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         }
                         withContext(Dispatchers.Main) {
                             showImportSuccessDialog()
-                            progressDialog!!.dismiss()
+                            showProgress = false
                         }
                     } catch (e: Throwable) { showTransportErrorDialog(e) }
                 }
@@ -456,7 +461,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 //            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
 //            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
             if (isRealmFile(uri)) {
-                progressDialog!!.show()
+                showProgress = true
                 lifecycleScope.launch {
                     try {
                         withContext(Dispatchers.IO) {
@@ -464,7 +469,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         }
                         withContext(Dispatchers.Main) {
                             showImportSuccessDialog()
-                            progressDialog!!.dismiss()
+                            showProgress = false
                         }
                     } catch (e: Throwable) { showTransportErrorDialog(e) }
                 }
@@ -497,7 +502,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 //        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
 //        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         if (isPrefDir(uri)) {
-            progressDialog!!.show()
+            showProgress = true
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
@@ -505,7 +510,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     }
                     withContext(Dispatchers.Main) {
                         showImportSuccessDialog()
-                        progressDialog!!.dismiss()
+                        showProgress = false
                     }
                 } catch (e: Throwable) { showTransportErrorDialog(e) }
             }
@@ -522,7 +527,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 //        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
 //        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         if (isMediaFilesDir(uri)) {
-            progressDialog!!.show()
+            showProgress = true
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
@@ -530,7 +535,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     }
                     withContext(Dispatchers.Main) {
                         showImportSuccessDialog()
-                        progressDialog!!.dismiss()
+                        showProgress = false
                     }
                 } catch (e: Throwable) { showTransportErrorDialog(e) }
             }
@@ -546,7 +551,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         val uri = result.data!!.data!!
 //        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
 //        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-        progressDialog!!.show()
+        showProgress = true
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -554,7 +559,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 }
                 withContext(Dispatchers.Main) {
                     showExportSuccessSnackbar(uri, null)
-                    progressDialog!!.dismiss()
+                    showProgress = false
                 }
             } catch (e: Throwable) { showTransportErrorDialog(e) }
         }
@@ -562,7 +567,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun backupDatabaseResult(uri: Uri?) {
         if (uri == null) return
-        progressDialog!!.show()
+        showProgress = true
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -570,7 +575,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 }
                 withContext(Dispatchers.Main) {
                     showExportSuccessSnackbar(uri, "application/x-sqlite3")
-                    progressDialog!!.dismiss()
+                    showProgress = false
                 }
             } catch (e: Throwable) { showTransportErrorDialog(e) }
         }
@@ -578,6 +583,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {
         if (uri == null) return
+        Logd(TAG, "chooseOpmlImportPathResult: uri: $uri")
+//        OpmlTransporter.startImport(requireContext(), uri)
+//        showImportSuccessDialog()
         val intent = Intent(context, OpmlImportActivity::class.java)
         intent.setData(uri)
         startActivity(intent)
@@ -1014,7 +1022,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     /** Writes saved favorites to file.  */
     class EpisodesProgressWriter : ExportWriter {
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-        override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
+        override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
             val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
             val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
@@ -1068,7 +1076,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     /** Writes saved favorites to file.  */
     class FavoritesWriter : ExportWriter {
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-        override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
+        override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
             val templateStream = context.assets.open("html-export-template.html")
             var template = IOUtils.toString(templateStream, UTF_8)
@@ -1145,16 +1153,16 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
          * Takes a list of feeds and a writer and writes those into an HTML document.
          */
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-        override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
+        override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
             val templateStream = context.assets.open("html-export-template.html")
             var template = IOUtils.toString(templateStream, "UTF-8")
             template = template.replace("\\{TITLE\\}".toRegex(), "Subscriptions")
             val templateParts = template.split("\\{FEEDS\\}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             writer!!.append(templateParts[0])
-            for (feed in feeds!!) {
+            for (feed in feeds) {
                 writer.append("<li><div><img src=\"")
-                writer.append(feed!!.imageUrl)
+                writer.append(feed.imageUrl)
                 writer.append("\" /><p>")
                 writer.append(feed.title)
                 writer.append(" <span><a href=\"")

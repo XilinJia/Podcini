@@ -54,11 +54,7 @@ class OpmlImportActivity : AppCompatActivity() {
     private val titleList: List<String>
         get() {
             val result: MutableList<String> = ArrayList()
-            if (!readElements.isNullOrEmpty()) {
-                for (element in readElements!!) {
-                    if (element.text != null) result.add(element.text!!)
-                }
-            }
+            if (!readElements.isNullOrEmpty()) for (element in readElements!!) if (element.text != null) result.add(element.text!!)
             return result
         }
 
@@ -85,9 +81,7 @@ class OpmlImportActivity : AppCompatActivity() {
         binding.feedlist.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, _: View?, _: Int, _: Long ->
             val checked = binding.feedlist.checkedItemPositions
             var checkedCount = 0
-            for (i in 0 until checked.size()) {
-                if (checked.valueAt(i)) checkedCount++
-            }
+            for (i in 0 until checked.size()) if (checked.valueAt(i)) checkedCount++
             if (listAdapter != null) {
                 if (checkedCount == listAdapter!!.count) {
                     selectAll.isVisible = false
@@ -104,10 +98,10 @@ class OpmlImportActivity : AppCompatActivity() {
         }
         binding.butConfirm.setOnClickListener {
             binding.progressBar.visibility = View.VISIBLE
+            val checked = binding.feedlist.checkedItemPositions
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        val checked = binding.feedlist.checkedItemPositions
                         for (i in 0 until checked.size()) {
                             if (!checked.valueAt(i)) continue
 
@@ -144,10 +138,7 @@ class OpmlImportActivity : AppCompatActivity() {
 
     private fun importUri(uri: Uri?) {
         if (uri == null) {
-            MaterialAlertDialogBuilder(this)
-                .setMessage(R.string.opml_import_error_no_file)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
+            MaterialAlertDialogBuilder(this).setMessage(R.string.opml_import_error_no_file).setPositiveButton(android.R.string.ok, null).show()
             return
         }
         this.uri = uri

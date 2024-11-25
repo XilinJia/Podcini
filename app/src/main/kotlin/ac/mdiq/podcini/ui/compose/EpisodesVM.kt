@@ -34,7 +34,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.NullActionButton
@@ -47,6 +47,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import ac.mdiq.podcini.util.MiscFormatter.formatNumber
+import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
@@ -395,7 +396,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
 
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-            if (feed == null || feed.id > MAX_SYNTHETIC_ID) Text(stringResource(R.string.not_erase_message), modifier = Modifier.padding(10.dp))
+            if (feed == null || !feed.isSynthetic()) Text(stringResource(R.string.not_erase_message), modifier = Modifier.padding(10.dp))
             else Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(message + ": ${selected.size}")
                 Text(stringResource(R.string.feed_delete_reason_msg))
@@ -410,8 +411,8 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                                 val sLog = SubscriptionLog(e.id, e.title?:"", e.media?.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
                                 upsert(sLog) {
                                     it.rating = e.rating
-                                    it.comment = e.comment
-                                    it.comment += "\nReason to remove:\n" + textState.text
+                                    it.comment = if (e.comment.isBlank()) "" else (e.comment + "\n")
+                                    it.comment += localDateTimeString() + "\nReason to remove:\n" + textState.text
                                     it.cancelDate = Date().time
                                 }
                             }
@@ -594,7 +595,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     Text(stringResource(id = R.string.reserve_episodes_label))
                 }
             }
-        if (feed != null && feed.id <= MAX_SYNTHETIC_ID) {
+        if (feed != null && feed.isSynthetic()) {
             options.add {
                 Row(modifier = Modifier.padding(horizontal = 16.dp).clickable {
                     isExpanded = false
@@ -719,8 +720,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 modifier = Modifier.width(imageWidth).height(imageHeight)
                     .clickable(onClick = {
                         Logd(TAG, "icon clicked!")
-                        if (selectMode) toggleSelected(vm)
-                        else if (vm.episode.feed != null) activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
+                        when {
+                            selectMode -> toggleSelected(vm)
+                            vm.episode.feed != null && vm.episode.feed?.isSynthetic() != true -> activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
+                            else -> activity.loadChildFragment(EpisodeInfoFragment.newInstance(vm.episode))
+                        }
                     }))
             Box(Modifier.weight(1f).height(imageHeight)) {
                 TitleColumn(vm, index, modifier = Modifier.fillMaxWidth())
@@ -735,9 +739,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
                         Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
                         vm.actionButton = vm.actionButton.forItem(vm.episode)
-                        if (vm.actionButton.getLabel() != actionButton.getLabel()) {
-                            actionButton = vm.actionButton
-                        }
+                        if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
                     }
                 } else {
                     LaunchedEffect(Unit) {
@@ -1013,18 +1015,16 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                             val selectedList = remember { MutableList(item.values.size) { mutableStateOf(false)} }
                             var expandRow by remember { mutableStateOf(false) }
                             Row {
-                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
-                                    expandRow = !expandRow
-                                })
+                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor,
+                                    modifier = Modifier.clickable { expandRow = !expandRow })
                                 var lowerSelected by remember { mutableStateOf(false) }
                                 var higherSelected by remember { mutableStateOf(false) }
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
                                     val hIndex = selectedList.indexOfLast { it.value }
                                     if (hIndex < 0) return@clickable
-                                    if (!lowerSelected) {
-                                        for (i in 0..hIndex) selectedList[i].value = true
-                                    } else {
+                                    if (!lowerSelected) for (i in 0..hIndex) selectedList[i].value = true
+                                    else {
                                         for (i in 0..hIndex) selectedList[i].value = false
                                         selectedList[hIndex].value = true
                                     }
@@ -1067,9 +1067,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                             if (expandRow) NonlazyGrid(columns = 3, itemCount = item.values.size) { index ->
                                 if (selectNone) selectedList[index].value = false
                                 LaunchedEffect(Unit) {
-                                    if (filter != null) {
-                                        if (item.values[index].filterId in filter.properties) selectedList[index].value = true
-                                    }
+                                    if (filter != null && item.values[index].filterId in filter.properties) selectedList[index].value = true
                                 }
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),

@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.preferences.fragments
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ChooseDataFolderDialogBinding
-import ac.mdiq.podcini.databinding.ChooseDataFolderDialogEntryBinding
 import ac.mdiq.podcini.databinding.ProxySettingsBinding
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
@@ -12,33 +10,43 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.storage.model.ProxyConfig
-import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
-import ac.mdiq.podcini.storage.utils.StorageUtils.getFreeSpaceAvailable
-import ac.mdiq.podcini.storage.utils.StorageUtils.getTotalSpaceAvailable
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.format.Formatter
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.core.util.Consumer
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.TwoStatePreference
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,103 +58,152 @@ import okhttp3.Request
 import okhttp3.Request.Builder
 import okhttp3.Response
 import okhttp3.Route
-import java.io.File
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.SocketAddress
 import java.util.concurrent.TimeUnit
 
-class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
+class DownloadsPreferencesFragment : PreferenceFragmentCompat() {
     private var blockAutoDeleteLocal = true
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.preferences_downloads)
-        setupNetworkScreen()
+//        addPreferencesFromResource(R.xml.preferences_downloads)
+//        setupNetworkScreen()
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.downloads_pref)
-        appPrefs.registerOnSharedPreferenceChangeListener(this)
-    }
+        return ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    val scrollState = rememberScrollState()
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp).verticalScroll(scrollState)) {
+                        Text(stringResource(R.string.automation), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.feed_refresh_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                                var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!) }
+                                TextField(value = interval, onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) interval = it },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("(hours)") },
+                                    singleLine = true, modifier = Modifier.weight(0.5f),
+                                    trailingIcon = {
+                                        Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
+                                            modifier = Modifier.size(30.dp).padding(start = 10.dp).clickable(onClick = {
+                                                if (interval.isEmpty()) interval = "0"
+                                                appPrefs.edit().putString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, interval).apply()
+                                                restartUpdateAlarm(requireContext(), true)
+                                            }))
+                                    })
+                            }
+                            Text(stringResource(R.string.feed_refresh_sum), color = textColor)
+                        }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            (activity as PreferenceActivity).openScreen(R.xml.preferences_autodownload)
+                        })) {
+                            Text(stringResource(R.string.pref_automatic_download_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.pref_automatic_download_sum), color = textColor)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.pref_auto_delete_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.pref_auto_delete_sum), color = textColor)
+                            }
+                            Switch(checked = false, onCheckedChange = { appPrefs.edit().putBoolean(UserPreferences.Prefs.prefAutoDelete.name, it).apply() })
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.pref_auto_local_delete_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.pref_auto_local_delete_sum), color = textColor)
+                            }
+                            Switch(checked = false, onCheckedChange = {
+                                if (blockAutoDeleteLocal && it) {
+//                                    showAutoDeleteEnableDialog()
+                                    MaterialAlertDialogBuilder(requireContext())
+                                        .setMessage(R.string.pref_auto_local_delete_dialog_body)
+                                        .setPositiveButton(R.string.yes) { _: DialogInterface?, _: Int ->
+                                            blockAutoDeleteLocal = false
+                                            (findPreference<Preference>(Prefs.prefAutoDeleteLocal.name) as TwoStatePreference?)!!.isChecked = true
+                                            blockAutoDeleteLocal = true
+                                        }
+                                        .setNegativeButton(R.string.cancel_label, null)
+                                        .show()
+                                }
+                            })
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.pref_keeps_important_episodes_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.pref_keeps_important_episodes_sum), color = textColor)
+                            }
+                            Switch(checked = true, onCheckedChange = { appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, it).apply() })
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.pref_delete_removes_from_queue_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.pref_delete_removes_from_queue_sum), color = textColor)
+                            }
+                            Switch(checked = true, onCheckedChange = { appPrefs.edit().putBoolean(UserPreferences.Prefs.prefDeleteRemovesFromQueue.name, it).apply() })
+                        }
+                        Text(stringResource(R.string.download_pref_details), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 10.dp))
+                        var showMeteredNetworkOptions by remember { mutableStateOf(false) }
+                        var tempSelectedOptions by remember { mutableStateOf(appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, setOf("images"))!!) }
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showMeteredNetworkOptions = true })) {
+                            Text(stringResource(R.string.pref_metered_network_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.pref_mobileUpdate_sum), color = textColor)
+                        }
+                        if (showMeteredNetworkOptions) {
+                            AlertDialog(onDismissRequest = { showMeteredNetworkOptions = false },
+                                title = { Text(stringResource(R.string.pref_metered_network_title), style = MaterialTheme.typography.headlineSmall) },
+                                text = {
+                                    Column {
+                                        MobileUpdateOptions.entries.forEach { option ->
+                                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(5.dp)
+                                                .clickable {
+                                                    tempSelectedOptions = if (tempSelectedOptions.contains(option.name)) tempSelectedOptions - option.name
+                                                    else tempSelectedOptions + option.name
+                                                }) {
+                                                Checkbox(checked = tempSelectedOptions.contains(option.name),
+                                                    onCheckedChange = {
+                                                        tempSelectedOptions = if (tempSelectedOptions.contains(option.name)) tempSelectedOptions - option.name
+                                                        else tempSelectedOptions + option.name
+                                                    })
+                                                Text(stringResource(option.res), modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodyMedium)
+                                            }
+                                        }
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, tempSelectedOptions).apply()
+                                        showMeteredNetworkOptions = false
+                                    }) { Text(text = "OK") }
+                                },
+                                dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(text = "Cancel") } }
+                            )
+                        }
 
-    override fun onStop() {
-        super.onStop()
-        appPrefs.unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-//    override fun onResume() {
-//        super.onResume()
-////        setDataFolderText()
-//    }
-
-    private fun setupNetworkScreen() {
-        findPreference<Preference>(Prefs.prefAutoDownloadSettings.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_autodownload)
-            true
-        }
-        // validate and set correct value: number of downloads between 1 and 50 (inclusive)
-        findPreference<Preference>(Prefs.prefProxy.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            val dialog = ProxyDialog(requireContext())
-            dialog.show()
-            true
-        }
-//        findPreference<Preference>(PREF_CHOOSE_DATA_DIR)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-//            ChooseDataFolderDialog.showDialog(requireContext()) { path: String? ->
-//                setDataFolder(path!!)
-////                setDataFolderText()
-//            }
-//            true
-//        }
-        findPreference<Preference>(Prefs.prefAutoDeleteLocal.name)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-            if (blockAutoDeleteLocal && newValue as Boolean) {
-                showAutoDeleteEnableDialog()
-                return@OnPreferenceChangeListener false
-            } else return@OnPreferenceChangeListener true
-        }
-    }
-
-//    private fun setDataFolderText() {
-//        val f = getDataFolder(null)
-//        if (f != null) findPreference<Preference>(PREF_CHOOSE_DATA_DIR)!!.summary = f.absolutePath
-//    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (UserPreferences.Prefs.prefAutoUpdateIntervall.name == key) restartUpdateAlarm(requireContext(), true)
-    }
-
-    private fun showAutoDeleteEnableDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setMessage(R.string.pref_auto_local_delete_dialog_body)
-            .setPositiveButton(R.string.yes) { _: DialogInterface?, _: Int ->
-                blockAutoDeleteLocal = false
-                (findPreference<Preference>(Prefs.prefAutoDeleteLocal.name) as TwoStatePreference?)!!.isChecked = true
-                blockAutoDeleteLocal = true
+                        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+                            ProxyDialog(requireContext()).show()
+                        })) {
+                            Text(stringResource(R.string.pref_proxy_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.pref_proxy_sum), color = textColor)
+                        }
+                    }
+                }
             }
-            .setNegativeButton(R.string.cancel_label, null)
-            .show()
+        }
     }
 
-    object ChooseDataFolderDialog {
-        fun showDialog(context: Context, handlerFunc: Consumer<String?>) {
-            val content = View.inflate(context, R.layout.choose_data_folder_dialog, null)
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(content)
-                .setTitle(R.string.choose_data_directory)
-                .setMessage(R.string.choose_data_directory_message)
-                .setNegativeButton(R.string.cancel_label, null)
-                .create()
-            val binding = ChooseDataFolderDialogBinding.bind(content)
-            val recyclerView = binding.recyclerView
-            recyclerView.layoutManager = LinearLayoutManager(context)
-            val adapter = DataFolderAdapter(context) { path: String? ->
-                dialog.dismiss()
-                handlerFunc.accept(path)
-            }
-            recyclerView.adapter = adapter
-            if (adapter.itemCount != 0) dialog.show()
-        }
+    enum class MobileUpdateOptions(val res: Int) {
+        feed_refresh(R.string.pref_mobileUpdate_refresh),
+        episode_download(R.string.pref_mobileUpdate_episode_download),
+        auto_download(R.string.pref_mobileUpdate_auto_download),
+        streaming(R.string.pref_mobileUpdate_streaming),
+        images(R.string.pref_mobileUpdate_images),
+        sync(R.string.synchronization_pref);
     }
 
     class ProxyDialog(private val context: Context) {
@@ -161,13 +218,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         private val port: Int
             get() {
                 val port = etPort.text.toString()
-                if (port.isNotEmpty()) {
-                    try {
-                        return port.toInt()
-                    } catch (e: NumberFormatException) {
-                        // ignore
-                    }
-                }
+                if (port.isNotEmpty()) try { return port.toInt() } catch (e: NumberFormatException) { }
                 return 0
             }
 
@@ -203,7 +254,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             val types: MutableList<String> = ArrayList()
             types.add(Proxy.Type.DIRECT.name)
             types.add(Proxy.Type.HTTP.name)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) types.add(Proxy.Type.SOCKS.name)
+            types.add(Proxy.Type.SOCKS.name)
             val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, types)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spType.setAdapter(adapter)
@@ -327,23 +378,17 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                     if (port.isNotEmpty()) portValue = port.toInt()
                     val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
                     val proxyType = Proxy.Type.valueOf(type.uppercase())
-                    val builder: OkHttpClient.Builder = newBuilder()
-                        .connectTimeout(10, TimeUnit.SECONDS)
-                        .proxy(Proxy(proxyType, address))
+                    val builder: OkHttpClient.Builder = newBuilder().connectTimeout(10, TimeUnit.SECONDS).proxy(Proxy(proxyType, address))
                     if (username.isNotEmpty()) {
                         builder.proxyAuthenticator { _: Route?, response: Response ->
                             val credentials = basic(username, password)
-                            response.request.newBuilder()
-                                .header("Proxy-Authorization", credentials)
-                                .build()
+                            response.request.newBuilder().header("Proxy-Authorization", credentials).build()
                         }
                     }
                     val client: OkHttpClient = builder.build()
                     val request: Request = Builder().url("https://www.example.com").head().build()
                     try {
-                        client.newCall(request).execute().use { response ->
-                            if (!response.isSuccessful) throw IOException(response.message)
-                        }
+                        client.newCall(request).execute().use { response -> if (!response.isSuccessful) throw IOException(response.message) }
                     } catch (e: IOException) { throw e }
                     withContext(Dispatchers.Main) {
                         txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
@@ -362,86 +407,10 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         }
     }
 
-    private class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : RecyclerView.Adapter<DataFolderAdapter.ViewHolder?>() {
-        private val selectionHandler: Consumer<String>
-        private val currentPath: String?
-        private val entries: List<StoragePath>
-        private val freeSpaceString: String
-
-        init {
-            this.entries = getStorageEntries(context)
-            this.currentPath = getCurrentPath()
-            this.selectionHandler = selectionHandler
-            this.freeSpaceString = context.getString(R.string.choose_data_directory_available_space)
-        }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val inflater = LayoutInflater.from(parent.context)
-            val entryView = inflater.inflate(R.layout.choose_data_folder_dialog_entry, parent, false)
-            return ViewHolder(entryView)
-        }
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val storagePath = entries[position]
-            val context = holder.root.context
-            val freeSpace = Formatter.formatShortFileSize(context, storagePath.availableSpace)
-            val totalSpace = Formatter.formatShortFileSize(context, storagePath.totalSpace)
-            holder.path.text = storagePath.shortPath
-            holder.size.text = String.format(freeSpaceString, freeSpace, totalSpace)
-            holder.progressBar.progress = storagePath.usagePercentage
-            val selectListener = View.OnClickListener { _: View? ->
-                selectionHandler.accept(storagePath.fullPath)
-            }
-            holder.root.setOnClickListener(selectListener)
-            holder.radioButton.setOnClickListener(selectListener)
-            if (storagePath.fullPath == currentPath) holder.radioButton.toggle()
-        }
-        override fun getItemCount(): Int {
-            return entries.size
-        }
-        private fun getCurrentPath(): String? {
-            val dataFolder = getDataFolder(null)
-            return dataFolder?.absolutePath
-        }
-        private fun getStorageEntries(context: Context): List<StoragePath> {
-            val mediaDirs = context.getExternalFilesDirs(null)
-            val entries: MutableList<StoragePath> = ArrayList(mediaDirs.size)
-            for (dir in mediaDirs) {
-                if (!isWritable(dir)) continue
-                entries.add(StoragePath(dir.absolutePath))
-            }
-            if (entries.isEmpty() && isWritable(context.filesDir)) entries.add(StoragePath(context.filesDir.absolutePath))
-            return entries
-        }
-        private fun isWritable(dir: File?): Boolean {
-            return dir != null && dir.exists() && dir.canRead() && dir.canWrite()
-        }
-        private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val binding = ChooseDataFolderDialogEntryBinding.bind(itemView)
-            val root: View = binding.root
-            val path: TextView = binding.path
-            val size: TextView = binding.size
-            val radioButton: RadioButton = binding.radioButton
-            val progressBar: ProgressBar = binding.usedSpace
-        }
-        private class StoragePath(val fullPath: String) {
-            val shortPath: String
-                get() {
-                    val prefixIndex = fullPath.indexOf("Android")
-                    return if ((prefixIndex > 0)) fullPath.substring(0, prefixIndex) else fullPath
-                }
-            val availableSpace: Long
-                get() = getFreeSpaceAvailable(fullPath)
-            val totalSpace: Long
-                get() = getTotalSpaceAvailable(fullPath)
-            val usagePercentage: Int
-                get() = 100 - (100 * availableSpace / totalSpace.toFloat()).toInt()
-        }
-    }
-
     @Suppress("EnumEntryName")
     private enum class Prefs {
         prefAutoDownloadSettings,
         prefAutoDeleteLocal,
         prefProxy,
-//        prefChooseDataDir,
     }
 }

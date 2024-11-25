@@ -82,9 +82,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
             Log.e(TAG, "Couldn't get list of configure Wi-Fi networks")
             return
         }
-        networks.sortWith { x: WifiConfiguration, y: WifiConfiguration ->
-            blankIfNull(x.SSID).compareTo(blankIfNull(y.SSID), ignoreCase = true)
-        }
+        networks.sortWith { x: WifiConfiguration, y: WifiConfiguration -> blankIfNull(x.SSID).compareTo(blankIfNull(y.SSID), ignoreCase = true) }
         selectedNetworks = arrayOfNulls(networks.size)
         val prefValues = listOf(*autodownloadSelectedNetworks)
         val prefScreen = preferenceScreen
@@ -130,10 +128,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     private fun clearAutodownloadSelectedNetworsPreference() {
         if (selectedNetworks != null) {
             val prefScreen = preferenceScreen
-
-            for (network in selectedNetworks!!) {
-                if (network != null) prefScreen.removePreference(network)
-            }
+            for (network in selectedNetworks!!) if (network != null) prefScreen.removePreference(network)
         }
     }
 
@@ -160,11 +155,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun setSelectedNetworksEnabled(b: Boolean) {
-        if (selectedNetworks != null) {
-            for (p in selectedNetworks!!) {
-                p!!.isEnabled = b
-            }
-        }
+        if (selectedNetworks != null) for (p in selectedNetworks!!) p!!.isEnabled = b
     }
 
     companion object {

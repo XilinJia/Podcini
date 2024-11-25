@@ -317,7 +317,7 @@
   <string name="downloads_pref">다운로드</string>
   <string name="downloads_pref_sum">업데이트 주기, 휴대전화 망 데이터, 자동 다운로드, 자동 삭제</string>
   <string name="feed_refresh_title">팟캐스트 새로고침</string>
-  <string name="feed_refresh_sum">새로운 에피소드가 있는지 자동으로 확인할 주기를 지정합니다</string>
+
   <string name="feed_refresh_never">안 함</string>
   <string name="feed_every_hour">매 시간</string>
   <string name="feed_every_2_hours">매 2시간</string>

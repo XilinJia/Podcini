@@ -28,6 +28,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter
+import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
 import android.util.Log
 import android.view.Gravity
 import androidx.compose.foundation.*
@@ -115,12 +116,12 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             for (f in feeds) {
-                                if (f.id > MAX_SYNTHETIC_ID) {
+                                if (!f.isSynthetic()) {
                                     val sLog = SubscriptionLog(f.id, f.title ?: "", f.downloadUrl ?: "", f.link ?: "", SubscriptionLog.Type.Feed.name)
                                     upsert(sLog) {
                                         it.rating = f.rating
-                                        it.comment = f.comment
-                                        it.comment += "\nReason to remove:\n" + textState.text
+                                        it.comment = if (f.comment.isBlank()) "" else (f.comment + "\n")
+                                        it.comment += localDateTimeString() + "\nReason to remove:\n" + textState.text
                                         it.cancelDate = Date().time
                                     }
                                 } else {
@@ -128,8 +129,8 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                                         val sLog = SubscriptionLog(e.id, e.title ?: "", e.media?.downloadUrl ?: "", e.link ?: "", SubscriptionLog.Type.Media.name)
                                         upsert(sLog) {
                                             it.rating = e.rating
-                                            it.comment = e.comment
-                                            it.comment += "\nReason to remove:\n" + textState.text
+                                            it.comment = if (e.comment.isBlank()) "" else (e.comment + "\n")
+                                            it.comment += localDateTimeString() + "\nReason to remove:\n" + textState.text
                                             it.cancelDate = Date().time
                                         }
                                     }

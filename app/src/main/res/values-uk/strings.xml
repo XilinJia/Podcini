@@ -353,7 +353,7 @@
   <string name="downloads_pref">Завантаження</string>
   <string name="downloads_pref_sum">Інтервал оновлення, Мобільні дані, Автоматичне завантаження, Автоматичне видалення</string>
   <string name="feed_refresh_title">Оновити подкасти</string>
-  <string name="feed_refresh_sum">Вкажіть інтервал, з яким Podcini автоматично шукатиме нові епізоди</string>
+
   <string name="feed_refresh_never">Ніколи</string>
   <string name="feed_every_hour">Щогодини</string>
   <string name="feed_every_2_hours">Кожні 2 години</string>

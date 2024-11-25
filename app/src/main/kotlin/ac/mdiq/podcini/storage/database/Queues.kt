@@ -5,14 +5,14 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.indexOfItemWithId
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -73,9 +73,7 @@ object Queues {
         Logd(TAG, "getQueueIDList() called")
         val queues = realm.query(PlayQueue::class).find()
         val ids = mutableSetOf<Long>()
-        for (queue in queues) {
-            ids.addAll(queue.episodeIds)
-        }
+        for (queue in queues) ids.addAll(queue.episodeIds)
         return ids
     }
 
@@ -180,9 +178,7 @@ object Queues {
                 it.episodeIds.clear()
                 it.update()
             }
-            for (e in curQueue.episodes) {
-                if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
-            }
+            for (e in curQueue.episodes) if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
             curQueue.episodes.clear()
             EventFlow.postEvent(FlowEvent.QueueEvent.cleared())
         }
@@ -191,9 +187,7 @@ object Queues {
     fun removeFromAllQueuesSync(vararg episodes: Episode) {
         Logd(TAG, "removeFromAllQueuesSync called ")
         val queues = realm.query(PlayQueue::class).find()
-        for (q in queues) {
-            if (q.id != curQueue.id) removeFromQueueSync(q, *episodes)
-        }
+        for (q in queues) if (q.id != curQueue.id) removeFromQueueSync(q, *episodes)
 //        ensure curQueue is last updated
         if (curQueue.size() > 0) removeFromQueueSync(curQueue, *episodes)
         else upsertBlk(curQueue) { it.update() }
@@ -250,9 +244,7 @@ object Queues {
             idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (idsInQueuesToRemove.isNotEmpty()) {
                 val eList = realm.query(Episode::class).query("id IN $0", idsInQueuesToRemove).find()
-                for (e in eList) {
-                    if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
-                }
+                for (e in eList) if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
                 upsert(q) {
                     it.idsBinList.removeAll(idsInQueuesToRemove)
                     it.idsBinList.addAll(idsInQueuesToRemove)
@@ -272,9 +264,7 @@ object Queues {
         idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (idsInQueuesToRemove.isNotEmpty()) {
             val eList = realm.query(Episode::class).query("id IN $0", idsInQueuesToRemove).find()
-            for (e in eList) {
-                if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
-            }
+            for (e in eList) if (e.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, e)
             curQueue = upsert(q) {
                 it.idsBinList.removeAll(idsInQueuesToRemove)
                 it.idsBinList.addAll(idsInQueuesToRemove)
@@ -313,13 +303,11 @@ object Queues {
         }
     }
 
-    fun inAnyQueue(episode: Episode): Boolean {
-        val queues = realm.query(PlayQueue::class).find()
-        for (q in queues) {
-            if (q.contains(episode)) return true
-        }
-        return false
-    }
+//    fun inAnyQueue(episode: Episode): Boolean {
+//        val queues = realm.query(PlayQueue::class).find()
+//        for (q in queues) if (q.contains(episode)) return true
+//        return false
+//    }
 
     class EnqueuePositionPolicy(private val enqueueLocation: EnqueueLocation) {
         /**
@@ -349,9 +337,7 @@ object Queues {
         }
         private fun getPositionOfFirstNonDownloadingItem(startPosition: Int, queueItems: List<Episode>): Int {
             val curQueueSize = queueItems.size
-            for (i in startPosition until curQueueSize) {
-                if (!isItemAtPositionDownloading(i, queueItems)) return i
-            }
+            for (i in startPosition until curQueueSize) if (!isItemAtPositionDownloading(i, queueItems)) return i
             return curQueueSize
         }
         private fun isItemAtPositionDownloading(position: Int, queueItems: List<Episode>): Boolean {
@@ -362,9 +348,7 @@ object Queues {
         private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
             if (currentPlaying !is EpisodeMedia) return -1
             val curPlayingItemId = currentPlaying.episodeOrFetch()?.id
-            for (i in queueItems.indices) {
-                if (curPlayingItemId == queueItems[i].id) return i
-            }
+            for (i in queueItems.indices) if (curPlayingItemId == queueItems[i].id) return i
             return -1
         }
     }

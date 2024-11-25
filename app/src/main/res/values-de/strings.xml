@@ -346,7 +346,7 @@
   <string name="downloads_pref">Downloads</string>
   <string name="downloads_pref_sum">Aktualisierungsintervall, Mobile Daten, Automatischer Download, Automatisches Löschen</string>
   <string name="feed_refresh_title">Podcasts aktualisieren</string>
-  <string name="feed_refresh_sum">Ein Intervall festlegen, in dem Podcini automatisch nach neuen Episoden sucht</string>
+
   <string name="feed_refresh_never">Niemals</string>
   <string name="feed_every_hour">Jede Stunde</string>
   <string name="feed_every_2_hours">Alle 2 Stunden</string>

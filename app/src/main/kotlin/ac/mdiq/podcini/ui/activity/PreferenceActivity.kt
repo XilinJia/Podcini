@@ -78,7 +78,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     fun openScreen(screen: Int): PreferenceFragmentCompat {
         val fragment = when (screen) {
             R.xml.preferences_user_interface -> UserInterfacePreferencesFragment()
-            R.xml.preferences_downloads -> DownloadsPreferencesFragment()
+//            R.xml.preferences_downloads -> DownloadsPreferencesFragment()
 //            R.xml.preferences_import_export -> ImportExportPreferencesFragment()
             R.xml.preferences_autodownload -> AutoDownloadPreferencesFragment()
             R.xml.preferences_synchronization -> SynchronizationPreferencesFragment()
@@ -228,7 +228,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         @JvmStatic
         fun getTitleOfPage(preferences: Int): Int {
             return when (preferences) {
-                R.xml.preferences_downloads -> R.string.downloads_pref
+//                R.xml.preferences_downloads -> R.string.downloads_pref
                 R.xml.preferences_autodownload -> R.string.pref_automatic_download_title
                 R.xml.preferences_playback -> R.string.playback_pref
 //                R.xml.preferences_import_export -> R.string.import_export_pref

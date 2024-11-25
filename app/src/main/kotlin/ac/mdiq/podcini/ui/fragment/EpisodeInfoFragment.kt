@@ -33,6 +33,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
+import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -154,11 +155,17 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
+
         var showEditComment by remember { mutableStateOf(false) }
+        val localTime = remember { System.currentTimeMillis() }
+        var editCommentText by remember { mutableStateOf(TextFieldValue((if (episode?.comment.isNullOrBlank()) "" else episode!!.comment + "\n") + fullDateTimeString(localTime) + ":\n")) }
         var commentTextState by remember { mutableStateOf(TextFieldValue(episode?.comment?:"")) }
-        if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
+        if (showEditComment) LargeTextEditingDialog(textState = editCommentText, onTextChange = { editCommentText = it }, onDismissRequest = {showEditComment = false},
             onSave = {
-                runOnIOScope { if (episode != null) episode = upsert(episode!!) { it.comment = commentTextState.text } }
+                runOnIOScope { if (episode != null) episode = upsert(episode!!) {
+                    it.comment = editCommentText.text
+                    it.commentTime = localTime
+                } }
             })
 
         var showChooseRatingDialog by remember { mutableStateOf(false) }

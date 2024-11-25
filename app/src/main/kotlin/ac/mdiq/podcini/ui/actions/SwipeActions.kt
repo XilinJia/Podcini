@@ -14,13 +14,15 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.PlayState
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
+import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -293,19 +295,18 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 setContent {
                     CustomTheme(fragment.requireContext()) {
                         if (showEditComment) {
-                            ChooseRatingDialog(listOf(item)) {
-                                showEditComment = false
-                                (fragment.view as? ViewGroup)?.removeView(this@apply)
-                            }
-                            var commentTextState by remember { mutableStateOf(TextFieldValue(item.comment)) }
+                            val localTime = remember { System.currentTimeMillis() }
+                            val initCommentText = remember { (if (item.comment.isBlank()) "" else item.comment + "\n") + fullDateTimeString(localTime) + ":\n" }
+                            var commentTextState by remember { mutableStateOf(TextFieldValue(initCommentText)) }
                             LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it },
                                 onDismissRequest = {
                                     showEditComment = false
                                     (fragment.view as? ViewGroup)?.removeView(this@apply)
                                 },
-                                onSave = {
-                                    runOnIOScope { upsert(item) { it.comment = commentTextState.text } }
-                                })
+                                onSave = { runOnIOScope { upsert(item) {
+                                    it.comment = commentTextState.text
+                                    it.commentTime = localTime
+                                } } })
                         }
                     }
                 }
@@ -510,7 +511,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
 //            delay(ceil((duration * 1.05f).toDouble()).toLong())
 //            val media: EpisodeMedia? = item.media
 //            val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
-//            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
+//            if (media != null && Episodes.hasAlmostEnded(media) && shouldAutoDelete) {
 ////                deleteMediaOfEpisode(fragment.requireContext(), item)
 //                val item_ = deleteMediaSync(fragment.requireContext(), item)
 //                if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item_)   }

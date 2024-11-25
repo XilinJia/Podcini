@@ -348,7 +348,7 @@
   <string name="downloads_pref">Descargas</string>
   <string name="downloads_pref_sum">Intervalo de actualización, datos móviles, descargas automáticas, borrado automático</string>
   <string name="feed_refresh_title">Actualizar pódcasts</string>
-  <string name="feed_refresh_sum">Especifique un intervalo para buscar nuevos episodios automáticamente</string>
+
   <string name="feed_refresh_never">Nunca</string>
   <string name="feed_every_hour">Cada hora</string>
   <string name="feed_every_2_hours">Cada 2 horas</string>

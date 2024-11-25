@@ -341,7 +341,7 @@
   <string name="downloads_pref">Nedladdningar</string>
   <string name="downloads_pref_sum">Uppdateringsintervall, Mobildata, Automatisk nedladdning, Automatisk radering</string>
   <string name="feed_refresh_title">Uppdatera podcasts</string>
-  <string name="feed_refresh_sum">Ange ett intervall med vilket Podcini letar efter nya episoder automatiskt</string>
+
   <string name="feed_refresh_never">Aldrig</string>
   <string name="feed_every_hour">Varje timme</string>
   <string name="feed_every_2_hours">Varje 2 timmar</string>

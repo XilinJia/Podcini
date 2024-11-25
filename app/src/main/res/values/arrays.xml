@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="feed_refresh_interval_entries">
-        <item>@string/feed_refresh_never</item>
-        <item>@string/feed_every_hour</item>
-        <item>@string/feed_every_2_hours</item>
-        <item>@string/feed_every_4_hours</item>
-        <item>@string/feed_every_8_hours</item>
-        <item>@string/feed_every_12_hours</item>
-        <item>@string/feed_every_24_hours</item>
-        <item>@string/feed_every_72_hours</item>
-    </string-array>
-    <string-array name="feed_refresh_interval_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>4</item>
-        <item>8</item>
-        <item>12</item>
-        <item>24</item>
-        <item>72</item>
-    </string-array>
+<!--    <string-array name="feed_refresh_interval_entries">-->
+<!--        <item>@string/feed_refresh_never</item>-->
+<!--        <item>@string/feed_every_hour</item>-->
+<!--        <item>@string/feed_every_2_hours</item>-->
+<!--        <item>@string/feed_every_4_hours</item>-->
+<!--        <item>@string/feed_every_8_hours</item>-->
+<!--        <item>@string/feed_every_12_hours</item>-->
+<!--        <item>@string/feed_every_24_hours</item>-->
+<!--        <item>@string/feed_every_72_hours</item>-->
+<!--    </string-array>-->
+<!--    <string-array name="feed_refresh_interval_values">-->
+<!--        <item>0</item>-->
+<!--        <item>1</item>-->
+<!--        <item>2</item>-->
+<!--        <item>4</item>-->
+<!--        <item>8</item>-->
+<!--        <item>12</item>-->
+<!--        <item>24</item>-->
+<!--        <item>72</item>-->
+<!--    </string-array>-->
 
 <!--    <string-array name="smart_mark_as_played_values">-->
 <!--        <item>0</item>-->
@@ -59,26 +59,25 @@
         <item>-1</item>
     </string-array>
 
-    <string-array name="mobile_update_entries">
-        <item>@string/pref_mobileUpdate_refresh</item>
-        <item>@string/pref_mobileUpdate_episode_download</item>
-        <item>@string/pref_mobileUpdate_auto_download</item>
-        <item>@string/pref_mobileUpdate_streaming</item>
-        <item>@string/pref_mobileUpdate_images</item>
-        <item>@string/synchronization_pref</item>
-    </string-array>
-    <string-array name="mobile_update_values">
-        <item>feed_refresh</item>
-        <item>episode_download</item>
-        <item>auto_download</item>
-        <item>streaming</item>
-        <item>images</item>
-        <item>sync</item>
-    </string-array>
+<!--    <string-array name="mobile_update_entries">-->
+<!--        <item>@string/pref_mobileUpdate_refresh</item>-->
+<!--        <item>@string/pref_mobileUpdate_episode_download</item>-->
+<!--        <item>@string/pref_mobileUpdate_auto_download</item>-->
+<!--        <item>@string/pref_mobileUpdate_streaming</item>-->
+<!--        <item>@string/pref_mobileUpdate_images</item>-->
+<!--        <item>@string/synchronization_pref</item>-->
+<!--    </string-array>-->
+<!--    <string-array name="mobile_update_values">-->
+<!--        <item>feed_refresh</item>-->
+<!--        <item>episode_download</item>-->
+<!--        <item>auto_download</item>-->
+<!--        <item>streaming</item>-->
+<!--        <item>images</item>-->
+<!--        <item>sync</item>-->
+<!--    </string-array>-->
 
     <string-array name="mobile_update_default_value">
         <item>images</item>
-        <item>sync</item>
     </string-array>
 
     <string-array name="episode_cleanup_entries">

@@ -352,7 +352,7 @@
   <string name="downloads_pref">Sťahovanie</string>
   <string name="downloads_pref_sum">Interval aktualizácie, Mobilné dáta, Automatické sťahovanie, Automatické mazanie</string>
   <string name="feed_refresh_title">Aktualizovať podcasty</string>
-  <string name="feed_refresh_sum">Zvoliť interval alebo čas v ktorom Podcini automaticky hľadá nové epizódy</string>
+
   <string name="feed_refresh_never">Nikdy</string>
   <string name="feed_every_hour">Každú hodinu</string>
   <string name="feed_every_2_hours">Každé 2 hodiny</string>

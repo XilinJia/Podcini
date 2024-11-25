@@ -92,6 +92,8 @@ class Episode : RealmObject {
     @FullText
     var comment: String = ""
 
+    var commentTime: Long = 0L
+
     @Ignore
     val isNew: Boolean
         get() = playState == PlayState.NEW.code

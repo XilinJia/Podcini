@@ -3,7 +3,7 @@ package ac.mdiq.podcini.storage.model
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -101,6 +101,8 @@ class Feed : RealmObject {
 
     @FullText
     var comment: String = ""
+
+    var commentTime: Long = 0L
 
     /**
      * Returns the value that uniquely identifies this Feed. If the
@@ -286,6 +288,10 @@ class Feed : RealmObject {
 
     fun addPayment(funding: FeedFunding) {
         paymentLinks.add(funding)
+    }
+
+    fun isSynthetic(): Boolean {
+        return id <= MAX_SYNTHETIC_ID
     }
 
     fun getVirtualQueueItems():  List<Episode> {

@@ -12,6 +12,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.mediaBrowser
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
 import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
@@ -21,9 +22,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
@@ -356,7 +356,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
                     for (e in event.episodes) {
-                        val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
+                        val pos: Int = Episodes.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
 //                            queueItems[pos].stopMonitoring.value = true
@@ -390,7 +390,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-        val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
+        val pos: Int = Episodes.indexOfItemWithId(queueItems, event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
         if (pos >= 0) vms[pos].isPlayingState = event.isPlaying()
     }
@@ -400,7 +400,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (loadItemsRunning) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), url)
+            val pos: Int = Episodes.indexOfItemWithDownloadUrl(queueItems.toList(), url)
             if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
 
         }

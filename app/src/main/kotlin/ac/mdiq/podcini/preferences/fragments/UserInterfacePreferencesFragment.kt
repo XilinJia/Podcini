@@ -109,9 +109,7 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
         val allButtonNames = context!!.resources.getStringArray(R.array.full_notification_buttons_options)
         val buttonIDs = intArrayOf(2, 3, 4)
         val exactItems = 2
-        val completeListener = DialogInterface.OnClickListener { _: DialogInterface?, _: Int ->
-            fullNotificationButtons = preferredButtons
-        }
+        val completeListener = DialogInterface.OnClickListener { _: DialogInterface?, _: Int -> fullNotificationButtons = preferredButtons }
         val title = context.resources.getString(
             R.string.pref_full_notification_buttons_title)
 
@@ -136,9 +134,7 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             if (!isValid) preferredButtons.removeAt(i)
         }
 
-        for (i in checked.indices) {
-            if (preferredButtons.contains(buttonIds[i])) checked[i] = true
-        }
+        for (i in checked.indices) if (preferredButtons.contains(buttonIds[i])) checked[i] = true
 
         val builder = MaterialAlertDialogBuilder(context!!)
         builder.setTitle(title)

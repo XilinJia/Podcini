@@ -388,6 +388,7 @@
     <string name="view_count">View count</string>
     <string name="date">Date</string>
     <string name="count">Count</string>
+    <string name="last_comment_date">Comment date</string>
     <string name="last_played_date">Played date</string>
     <string name="completed_date">Completed date</string>
     <string name="duration">Duration</string>
@@ -478,7 +479,7 @@
     <string name="downloads_pref">Downloads</string>
     <string name="downloads_pref_sum">Update interval, Mobile data, Automatic download, Automatic deletion</string>
     <string name="feed_refresh_title">Refresh podcasts</string>
-    <string name="feed_refresh_sum">Specify an interval at which Podcini looks for new episodes automatically</string>
+    <string name="feed_refresh_sum">Specify an interval (in hours, 0 means never) at which Podcini looks for new episodes automatically.</string>
     <string name="feed_refresh_never">Never</string>
     <string name="feed_every_hour">Every hour</string>
     <string name="feed_every_2_hours">Every 2 hours</string>

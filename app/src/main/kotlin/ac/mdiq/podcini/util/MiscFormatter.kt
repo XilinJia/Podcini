@@ -4,16 +4,30 @@ import android.content.Context
 import android.text.format.DateUtils
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
-/**
- * Formats dates.
- */
 object MiscFormatter {
     @JvmStatic
     fun formatRfc822Date(date: Date?): String {
         val format = SimpleDateFormat("dd MMM yy HH:mm:ss Z", Locale.US)
         return format.format(date?: Date(0))
+    }
+
+    fun localDateTimeString(): String {
+        val currentTime = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return currentTime.format(formatter)
+    }
+
+    fun fullDateTimeString(time: Long): String {
+        val instant = Instant.ofEpochMilli(time)
+        val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return localDateTime.format(formatter)
     }
 
     @JvmStatic

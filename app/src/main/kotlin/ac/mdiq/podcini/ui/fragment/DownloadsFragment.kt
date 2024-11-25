@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -14,7 +15,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
@@ -240,7 +240,7 @@ import java.util.*
             return  // Refreshed anyway
         }
 //        for (downloadUrl in event.urls) {
-//            val pos = EpisodeUtil.indexOfItemWithDownloadUrl(episodes.toList(), downloadUrl)
+//            val pos = Episodes.indexOfItemWithDownloadUrl(episodes.toList(), downloadUrl)
 //            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
 //        }
     }
@@ -295,7 +295,7 @@ import java.util.*
         val size: Int = event.episodes.size
         while (i < size) {
             val item: Episode = event.episodes[i++]
-            val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+            val pos = Episodes.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
                 vms.removeAt(pos)
@@ -317,7 +317,7 @@ import java.util.*
         val size: Int = event.episodes.size
         while (i < size) {
             val item: Episode = event.episodes[i++]
-            val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+            val pos = Episodes.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
                 vms.removeAt(pos)
@@ -356,7 +356,7 @@ import java.util.*
                         } else {
                             val mediaUrls: MutableList<String> = ArrayList()
                             for (url in runningDownloads) {
-                                if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
+                                if (Episodes.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
                                 mediaUrls.add(url)
                             }
                             val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()

@@ -9,10 +9,10 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
+import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
@@ -44,6 +44,7 @@ import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.Throws
 
 /**
  * Manages the MediaPlayer object of the PlaybackService.
@@ -195,7 +196,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             var item = media_.episodeOrFetch()
             if (item != null && item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
-            curIndexInQueue = EpisodeUtil.indexOfItemWithId(eList, media_.id)
+            curIndexInQueue = Episodes.indexOfItemWithId(eList, media_.id)
         } else curIndexInQueue = -1
 
         prevMedia = curMedia

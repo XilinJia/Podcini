@@ -1,80 +1,24 @@
 package ac.mdiq.podcini.ui.compose
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
-
-@Composable
-private fun CustomTextField(
-        modifier: Modifier = Modifier,
-        leadingIcon: (@Composable () -> Unit)? = null,
-        trailingIcon: (@Composable () -> Unit)? = null,
-        placeholderText: String = "Placeholder",
-        fontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize
-) {
-    var text by rememberSaveable { mutableStateOf("") }
-    BasicTextField(
-        modifier = modifier.background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small).fillMaxWidth(),
-        value = text,
-        onValueChange = { text = it },
-        singleLine = true,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        textStyle = LocalTextStyle.current.copy(
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = fontSize
-        ),
-        decorationBox = { innerTextField ->
-            Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-                if (leadingIcon != null) leadingIcon()
-                Box(Modifier.weight(1f)) {
-                    if (text.isEmpty())
-                        Text(text = placeholderText, style = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), fontSize = fontSize))
-                    innerTextField()
-                }
-                if (trailingIcon != null) trailingIcon()
-            }
-        }
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,8 +112,6 @@ fun CustomToast(message: String, durationMillis: Long = 2000L, onDismiss: () -> 
         delay(durationMillis)
         onDismiss()
     }
-
-    // Box to display the toast message at the bottom of the screen
     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.BottomCenter) {
         Box(modifier = Modifier.background(Color.Black, RoundedCornerShape(8.dp)).padding(8.dp)) {
             Text(text = message, color = Color.White, style = MaterialTheme.typography.bodyMedium)
@@ -190,15 +132,11 @@ fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldVa
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = { onDismissRequest() }) {
-                        Text("Cancel")
-                    }
+                    TextButton(onClick = { onDismissRequest() }) { Text("Cancel") }
                     TextButton(onClick = {
                         onSave(textState.text)
                         onDismissRequest()
-                    }) {
-                        Text("Save")
-                    }
+                    }) { Text("Save") }
                 }
             }
         }
@@ -221,9 +159,7 @@ fun NonlazyGrid(columns: Int, itemCount: Int, modifier: Modifier = Modifier, con
             Row {
                 for (columnId in 0 until columns) {
                     val index = firstIndex + columnId
-                    Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        if (index < itemCount) content(index)
-                    }
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f)) { if (index < itemCount) content(index) }
                 }
             }
         }

@@ -2,55 +2,37 @@ package ac.mdiq.podcini.preferences.fragments
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.ui.activity.BugReportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.activity.PreferenceActivity.Companion.getTitleOfPage
 import ac.mdiq.podcini.ui.activity.PreferenceActivity.Screens
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
-import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
@@ -63,8 +45,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
-import com.bytehamster.lib.preferencesearch.SearchPreference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -75,127 +55,148 @@ import java.io.InputStreamReader
 import javax.xml.parsers.DocumentBuilderFactory
 
 class MainPreferencesFragment : PreferenceFragmentCompat() {
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        Logd("MainPreferencesFragment", "onCreatePreferences")
 
-//  TODO: this can be expensive
-        addPreferencesFromResource(R.xml.preferences)
-        setupMainScreen()
-        setupSearch()
+    var copyrightNoticeText by mutableStateOf("")
 
-        // If you are writing a spin-off, please update the details on screens like "About" and "Report bug"
-        // and afterwards remove the following lines. Please keep in mind that Podcini is licensed under the GPL.
-        // This means that your application needs to be open-source under the GPL, too.
-        // It must also include a prominent copyright notice.
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {}
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.settings_label)
         val packageHash = requireContext().packageName.hashCode()
-//        Logd("MainPreferencesFragment", "$packageHash ${"ac.mdiq.podcini.R".hashCode()}")
         when {
             packageHash != 1329568231 && packageHash != 1297601420 -> {
-                findPreference<Preference>(Prefs.project.name)!!.isVisible = false
-                val copyrightNotice = Preference(requireContext())
-                copyrightNotice.setIcon(R.drawable.ic_info_white)
-                copyrightNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
-                copyrightNotice.summary = ("This application is based on Podcini."
+                copyrightNoticeText = ("This application is based on Podcini."
                         + " The Podcini team does NOT provide support for this unofficial version."
                         + " If you can read this message, the developers of this modification"
                         + " violate the GNU General Public License (GPL).")
-                findPreference<Preference>(Prefs.project.name)!!.parent!!.addPreference(copyrightNotice)
             }
-            packageHash == 1297601420 -> {
-                val debugNotice = Preference(requireContext())
-                debugNotice.setIcon(R.drawable.ic_info_white)
-                debugNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
-                debugNotice.order = -1
-                debugNotice.summary = "This is a development version of Podcini and not meant for daily use"
-                findPreference<Preference>(Prefs.project.name)!!.parent!!.addPreference(debugNotice)
+            packageHash == 1297601420 -> copyrightNoticeText = "This is a development version of Podcini and not meant for daily use"
+        }
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    val scrollState = rememberScrollState()
+                    Column(modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp).verticalScroll(scrollState)) {
+                        if (copyrightNoticeText.isNotBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                                Icon(imageVector = Icons.Filled.Info, contentDescription = "", tint = Color.Red, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                                Text(copyrightNoticeText, color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_appearance), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
+                            })) {
+                                Text(stringResource(R.string.user_interface_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.user_interface_sum), color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_play_24dp), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
+                            })) {
+                                Text(stringResource(R.string.playback_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.playback_pref_sum), color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(Screens.preferences_downloads)
+                            })) {
+                                Text(stringResource(R.string.downloads_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.downloads_pref_sum), color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_cloud), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
+                            })) {
+                                Text(stringResource(R.string.synchronization_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.synchronization_sum), color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_storage), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(Screens.preferences_import_export)
+                            })) {
+                                Text(stringResource(R.string.import_export_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.import_export_summary), color = textColor)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_notifications), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
+                            })) {
+                                Text(stringResource(R.string.notification_pref_fragment), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.pref_backup_on_google_sum), color = textColor)
+                            }
+                            Switch(checked = true, onCheckedChange = {
+                                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefOPMLBackup.name, it).apply()
+                                // Restart the app
+                                val intent = context?.packageManager?.getLaunchIntentForPackage(requireContext().packageName)
+                                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                context?.startActivity(intent)
+                            })
+                        }
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
+                        Text(stringResource(R.string.project_pref), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_questionmark), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
+                            })) {
+                                Text(stringResource(R.string.documentation_support), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chat), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
+                            })) {
+                                Text(stringResource(R.string.visit_user_forum), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_contribute), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
+                            })) {
+                                Text(stringResource(R.string.pref_contribute), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_bug), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                startActivity(Intent(activity, BugReportActivity::class.java))
+                            })) {
+                                Text(stringResource(R.string.bug_report_title), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                            Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                                parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, AboutFragment()).addToBackStack(getString(R.string.about_pref)).commit()
+                            })) {
+                                Text(stringResource(R.string.about_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.settings_label)
-    }
-
-    @SuppressLint("CommitTransaction")
-    private fun setupMainScreen() {
-        findPreference<Preference>(Prefs.prefScreenInterface.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
-            true
-        }
-        findPreference<Preference>(Prefs.prefScreenPlayback.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
-            true
-        }
-        findPreference<Preference>(Prefs.prefScreenDownloads.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_downloads)
-            true
-        }
-        findPreference<Preference>(Prefs.prefScreenSynchronization.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
-            true
-        }
-        findPreference<Preference>(Prefs.prefScreenImportExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(Screens.preferences_import_export)
-            true
-        }
-        findPreference<Preference>(Prefs.notifications.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
-            true
-        }
-        val switchPreference = findPreference<SwitchPreferenceCompat>("prefOPMLBackup")
-        switchPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-            if (newValue is Boolean) {
-                // Restart the app
-                val intent = context?.packageManager?.getLaunchIntentForPackage(requireContext().packageName)
-                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                context?.startActivity(intent)
-            }
-            true
-        }
-        findPreference<Preference>(Prefs.prefAbout.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, AboutFragment()).addToBackStack(getString(R.string.about_pref)).commit()
-            true
-        }
-        findPreference<Preference>(Prefs.prefDocumentation.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-            true
-        }
-        findPreference<Preference>(Prefs.prefViewForum.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
-            true
-        }
-        findPreference<Preference>(Prefs.prefContribute.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-            true
-        }
-        findPreference<Preference>(Prefs.prefSendBugReport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            startActivity(Intent(activity, BugReportActivity::class.java))
-            true
-        }
-    }
-
-    private fun setupSearch() {
-        val searchPreference = findPreference<SearchPreference>("searchPreference")
-        val config = searchPreference!!.searchConfiguration
-        config.setActivity((activity as AppCompatActivity))
-        config.setFragmentContainerViewId(R.id.settingsContainer)
-        config.setBreadcrumbsEnabled(true)
-
-        config.index(R.xml.preferences_user_interface).addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
-        config.index(R.xml.preferences_playback).addBreadcrumb(getTitleOfPage(R.xml.preferences_playback))
-        config.index(R.xml.preferences_downloads).addBreadcrumb(getTitleOfPage(R.xml.preferences_downloads))
-//        config.index(R.xml.preferences_import_export).addBreadcrumb(getTitleOfPage(R.xml.preferences_import_export))
-        config.index(R.xml.preferences_autodownload)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_downloads))
-            .addBreadcrumb(R.string.automation)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_autodownload))
-        config.index(R.xml.preferences_synchronization).addBreadcrumb(getTitleOfPage(R.xml.preferences_synchronization))
-        config.index(R.xml.preferences_notifications).addBreadcrumb(getTitleOfPage(R.xml.preferences_notifications))
-//        config.index(R.xml.feed_settings).addBreadcrumb(getTitleOfPage(R.xml.feed_settings))
-//        config.index(R.xml.preferences_swipe)
-//            .addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
-//            .addBreadcrumb(getTitleOfPage(R.xml.preferences_swipe))
     }
 
     class AboutFragment : PreferenceFragmentCompat() {
@@ -208,7 +209,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
                 setContent {
                     CustomTheme(requireContext()) {
                         val textColor = MaterialTheme.colorScheme.onSurface
-                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                        Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp)) {
                             Image(painter = painterResource(R.drawable.teaser), contentDescription = "")
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
                                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_star), contentDescription = "", tint = textColor)
@@ -323,21 +324,5 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
 
             private class LicenseItem(val title: String, val subtitle: String, val licenseUrl: String, val licenseTextFile: String)
         }
-    }
-
-    @Suppress("EnumEntryName")
-    private enum class Prefs {
-        prefScreenInterface,
-        prefScreenPlayback,
-        prefScreenDownloads,
-        prefScreenImportExport,
-        prefScreenSynchronization,
-        prefDocumentation,
-        prefViewForum,
-        prefSendBugReport,
-        project,
-        prefAbout,
-        notifications,
-        prefContribute,
     }
 }

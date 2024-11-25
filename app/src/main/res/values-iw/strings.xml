@@ -353,7 +353,7 @@
   <string name="downloads_pref">הורדות</string>
   <string name="downloads_pref_sum">הפרש בין עדכונים, חיבור סלולרי, הורדה אוטומטית, מחיקה אוטומטית</string>
   <string name="feed_refresh_title">רענון פודקאסטים</string>
-  <string name="feed_refresh_sum">נא לציין הפרש או מועד מסוים לחיפוש פרקים אוטומטית על ידי אנטנה־פּוֹד</string>
+
   <string name="feed_refresh_never">אף פעם לא</string>
   <string name="feed_every_hour">כל שעה</string>
   <string name="feed_every_2_hours">כל שעתיים</string>

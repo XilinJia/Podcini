@@ -13,7 +13,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -24,6 +23,7 @@ import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
 import ac.mdiq.podcini.ui.fragment.StatisticsFragment.Companion.FeedStatisticsDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
+import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.R.string
 import android.app.Activity
 import android.content.*
@@ -214,12 +214,17 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun DetailUI() {
         val scrollState = rememberScrollState()
         var showEditComment by remember { mutableStateOf(false) }
+        val localTime = remember { System.currentTimeMillis() }
+        var editCommentText by remember { mutableStateOf(TextFieldValue((if (feed.comment.isBlank()) "" else feed.comment + "\n") + fullDateTimeString(localTime) + ":\n")) }
         var commentTextState by remember { mutableStateOf(TextFieldValue(feed.comment)) }
-        if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
+        if (showEditComment) LargeTextEditingDialog(textState = editCommentText, onTextChange = { editCommentText = it }, onDismissRequest = {showEditComment = false},
             onSave = {
                 runOnIOScope {
-                    feed = upsert(feed) { it.comment = commentTextState.text }
-                    rating =  feed.rating
+                    feed = upsert(feed) {
+                        it.comment = editCommentText.text
+                        it.commentTime = localTime
+                    }
+                    rating = feed.rating
                 }
             })
         var showFeedStats by remember { mutableStateOf(false) }
@@ -236,7 +241,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
 
-            if (feed.id > MAX_SYNTHETIC_ID) {
+            if (!feed.isSynthetic()) {
                 Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
                 Text(text = txtvUrl ?: "", color = textColor, modifier = Modifier.clickable {
                     if (feed.downloadUrl != null) {

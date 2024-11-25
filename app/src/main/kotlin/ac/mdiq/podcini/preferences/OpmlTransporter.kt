@@ -1,18 +1,31 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.util.MiscFormatter.formatRfc822Date
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.formatRfc822Date
+import android.Manifest
 import android.content.Context
+import android.content.DialogInterface
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.util.Xml
+import androidx.core.app.ActivityCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import org.apache.commons.io.input.BOMInputStream
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.IOException
+import java.io.InputStreamReader
 import java.io.Reader
 import java.io.Writer
 import java.util.*
+import kotlin.Throws
 
 class OpmlTransporter {
 
@@ -44,11 +57,10 @@ class OpmlTransporter {
     /** Writes OPML documents.  */
     class OpmlWriter : ExportWriter {
         /**
-         * Takes a list of feeds and a writer and writes those into an OPML
-         * document.
+         * Takes a list of feeds and a writer and writes those into an OPML document.
          */
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-        override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
+        override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
             val xs = Xml.newSerializer()
             xs.setFeature(OpmlSymbols.XML_FEATURE_INDENT_OUTPUT, true)
             xs.setOutput(writer)
@@ -67,11 +79,10 @@ class OpmlTransporter {
             xs.endTag(null, OpmlSymbols.HEAD)
 
             xs.startTag(null, OpmlSymbols.BODY)
-            for (feed in feeds!!) {
-                if (feed == null) continue
-                Logd(TAG, "writeDocument ${feed?.title}")
+            for (feed in feeds) {
+                Logd(TAG, "writeDocument ${feed.title}")
                 xs.startTag(null, OpmlSymbols.OUTLINE)
-                xs.attribute(null, OpmlSymbols.TEXT, feed!!.title)
+                xs.attribute(null, OpmlSymbols.TEXT, feed.title)
                 xs.attribute(null, OpmlSymbols.TITLE, feed.title)
                 if (feed.type != null) xs.attribute(null, OpmlSymbols.TYPE, feed.type)
                 xs.attribute(null, OpmlSymbols.XMLURL, feed.downloadUrl)
@@ -138,8 +149,7 @@ class OpmlTransporter {
                     }
                 }
 //           TODO: on first install app: java.io.IOException: Underlying input stream returned zero bytes
-                try {
-                    eventType = xpp.next()
+                try { eventType = xpp.next()
                 } catch(e: Exception) {
                     Log.e(TAG, "xpp.next() invalid: $e")
                     break
@@ -150,6 +160,58 @@ class OpmlTransporter {
 
         companion object {
             private val TAG: String = OpmlReader::class.simpleName ?: "Anonymous"
+        }
+    }
+
+    companion object {
+        fun startImport(context: Context, uri: Uri) {
+            val TAG = "OpmlTransporter"
+//            CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val opmlFileStream = context.contentResolver.openInputStream(uri)
+                val bomInputStream = BOMInputStream(opmlFileStream)
+                val bom = bomInputStream.bom
+                val charsetName = if (bom == null) "UTF-8" else bom.charsetName
+                val reader: Reader = InputStreamReader(bomInputStream, charsetName)
+                val opmlReader = OpmlReader()
+                val result = opmlReader.readDocument(reader)
+                reader.close()
+//                    withContext(Dispatchers.Main) {
+//                        binding.progressBar.visibility = View.GONE
+                Logd(TAG, "Parsing was successful")
+//                        readElements = result
+//                    }
+            } catch (e: Throwable) {
+//                    withContext(Dispatchers.Main) {
+                Logd(TAG, Log.getStackTraceString(e))
+                val message = if (e.message == null) "" else e.message!!
+                if (message.lowercase().contains("permission")) {
+                    val permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (permission != PackageManager.PERMISSION_GRANTED) {
+//                                requestPermission()
+                        return
+                    }
+                }
+//                        binding.progressBar.visibility = View.GONE
+                val alert = MaterialAlertDialogBuilder(context)
+                alert.setTitle(R.string.error_label)
+                val userReadable = context.getString(R.string.opml_reader_error)
+                val details = e.message
+                val total = """
+                    $userReadable
+                    
+                    $details
+                    """.trimIndent()
+                val errorMessage = SpannableString(total)
+                errorMessage.setSpan(ForegroundColorSpan(-0x77777778), userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                alert.setMessage(errorMessage)
+                alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+//                            finish()
+                }
+                alert.show()
+//                    }
+            }
+//            }
         }
     }
 }

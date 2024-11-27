@@ -40,6 +40,8 @@ import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
+import ac.mdiq.podcini.ui.compose.SkipDialog
+import ac.mdiq.podcini.ui.compose.SkipDirection
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -62,6 +64,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -97,7 +100,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import net.dankito.readability4j.Readability4J
-import org.apache.commons.lang3.StringUtils
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.cos
@@ -259,16 +261,14 @@ class AudioPlayerFragment : Fragment() {
             }
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                var showSkipDialog by remember { mutableStateOf(false) }
+                var rewindSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())) }
+                if (showSkipDialog) SkipDialog(SkipDirection.SKIP_REWIND, onDismissRequest = { showSkipDialog = false }) { rewindSecs = it.toString() }
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor,
                     contentDescription = "rewind",
-                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                        // TODO: the check appears not necessary and hurting cast
-//                        if (controller != null && playbackService?.isServiceReady() == true)
-                            playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000)
-                    }, onLongClick = {
-                        SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND)
-                    }))
-                val rewindSecs = remember { NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()) }
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
+                        onClick = { playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000) },
+                        onLongClick = { showSkipDialog = true }))
                 Text(rewindSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))
@@ -293,16 +293,14 @@ class AudioPlayerFragment : Fragment() {
                 }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                var showSkipDialog by remember { mutableStateOf(false) }
+                var fastForwardSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())) }
+                if (showSkipDialog) SkipDialog(SkipDirection.SKIP_FORWARD, onDismissRequest = {showSkipDialog = false }) { fastForwardSecs = it.toString()}
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor,
                     contentDescription = "forward",
-                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-                        // TODO: the check appears not necessary and hurting cast
-//                        if (controller != null && playbackService?.isServiceReady() == true)
-                            playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000)
-                    }, onLongClick = {
-                        SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD)
-                    }))
-                val fastForwardSecs = remember { NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong()) }
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
+                        onClick = { playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000) },
+                        onLongClick = { showSkipDialog = true }))
                 Text(fastForwardSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))

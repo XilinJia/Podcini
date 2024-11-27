@@ -187,12 +187,13 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }
                 if (showNewSynthetic) RenameOrCreateSyntheticFeed(feed) {showNewSynthetic = false}
-                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { sortOrder, _ ->
+                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { sortOrder_, _ ->
                     if (feed != null) {
-                        Logd(TAG, "persist Episode SortOrder")
+                        Logd(TAG, "persist Episode SortOrder_")
+                        sortOrder = sortOrder_
                         runOnIOScope {
                             val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
-                            if (feed_ != null) upsert(feed_) { it.sortOrder = sortOrder }
+                            if (feed_ != null) feed = upsert(feed_) { it.sortOrder = sortOrder_ }
                         }
                     }
                 }

@@ -171,7 +171,7 @@ object AutoDownloads {
                         val autoDownloadableCount = candidates.size
                         val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                         val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount)
-                        val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
+                        val cacheIsUnlimited = episodeCacheSize <= UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                         val allowedCount =
                             if (cacheIsUnlimited || episodeCacheSize >= downloadedCount + autoDownloadableCount) autoDownloadableCount
                             else episodeCacheSize - (downloadedCount - deletedCount)

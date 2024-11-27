@@ -33,8 +33,9 @@ object NetworkUtils {
             setAllowMobileFor("auto_download", allow)
         }
 
+    // not using this
     val isEnableAutodownloadWifiFilter: Boolean
-        get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name, false)
+        get() = false && Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name, false)
 
     @JvmStatic
     val isAutoDownloadAllowed: Boolean

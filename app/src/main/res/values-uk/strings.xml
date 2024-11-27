@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Ніколи</string>
-  <string name="episode_cleanup_except_favorite_removal">Коли не вибрано</string>
-  <string name="episode_cleanup_queue_removal">Якщо не в черзі</string>
+  <string name="episode_cleanup_except_favorite">Коли не вибрано</string>
+  <string name="episode_cleanup_not_in_queue">Якщо не в черзі</string>
   <string name="episode_cleanup_after_listening">Після закінчення</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 година після завершення</item>
@@ -394,7 +394,7 @@
   <string name="pref_automatic_download_on_battery_title">Завантаження без зарядного пристрою</string>
   <string name="pref_automatic_download_on_battery_sum">Дозволити автозавантаження коли зарядний пристрій не підключений</string>
   <string name="pref_episode_cache_title">Кеш епізодів</string>
-  <string name="pref_episode_cache_summary">Загальна кількість завантажених епізодів, кешованих на пристрої. Якщо цей номер буде досягнутий, автоматичне завантаження буде призупинено.</string>
+
   <string name="pref_episode_cover_title">Показувати обкладинку епізоду</string>
   <string name="pref_episode_cover_summary">Використовуйте обкладинку для епізоду у списках, коли це можливо. Якщо цей прапорець не встановлено, програма завжди буде використовувати зображення обкладинки подкасту.</string>
   <string name="pref_show_remain_time_title">Показати залишок часу</string>

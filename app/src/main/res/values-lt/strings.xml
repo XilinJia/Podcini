@@ -72,8 +72,8 @@
   <string name="feed_auto_download_always">Visada</string>
   <string name="feed_auto_download_never">Niekada</string>
   <string name="episode_cleanup_never">Niekada</string>
-  <string name="episode_cleanup_except_favorite_removal">Kai nėra mėgstamas</string>
-  <string name="episode_cleanup_queue_removal">Jei nėra eilėje</string>
+  <string name="episode_cleanup_except_favorite">Kai nėra mėgstamas</string>
+  <string name="episode_cleanup_not_in_queue">Jei nėra eilėje</string>
   <string name="episode_cleanup_after_listening">Pabaigus klausyti</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">Praėjus 1 valandai po perklausymo</item>
@@ -252,7 +252,7 @@
   <string name="pref_autodl_wifi_filter_sum">Leisti automatinį atsiuntimą tik prisijungus prie nurodytų belaidžių tinklų.</string>
   <string name="pref_automatic_download_on_battery_title">Atsiuntimas ne įkrovimo metu</string>
   <string name="pref_automatic_download_on_battery_sum">Leisti automatinį atsiuntimą kai baterija nėra įkraunama</string>
-  <string name="pref_episode_cache_summary">Bendras podėlyje atsiųstų epizodų skaičius šiame įrenginyje. Pasiekus šį skaičių automatinis atsiuntimas bus pristabdytas.</string>
+
   <string name="pref_episode_cover_summary">Naudoti epizodo viršelį, kai prieinama. Nepažymėjus, programėlė visada naudos tinklalaidės viršelio paveikslėlį.</string>
   <string name="pref_show_remain_time_summary">Kai pažymėta, atvaizduojamas likęs epizodų laikas. Jei nepažymėta, atvaizduojama bendra epizodų trukmė.</string>
   <string name="pref_theme_title_light">Šviesi</string>

@@ -23,13 +23,7 @@ import java.net.Proxy
 object UserPreferences {
     private val TAG: String = UserPreferences::class.simpleName ?: "Anonymous"
 
-    // Experimental
-    const val EPISODE_CLEANUP_QUEUE: Int = -1
-    const val EPISODE_CLEANUP_NULL: Int = -2
-    const val EPISODE_CLEANUP_EXCEPT_FAVORITE: Int = -3
-    const val EPISODE_CLEANUP_DEFAULT: Int = 0
-
-    const val EPISODE_CACHE_SIZE_UNLIMITED: Int = -1
+    const val EPISODE_CACHE_SIZE_UNLIMITED: Int = 0
 
     const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
@@ -104,8 +98,7 @@ object UserPreferences {
 
     /**
      * Returns the capacity of the episode cache. This method will return the
-     * negative integer EPISODE_CACHE_SIZE_UNLIMITED if the cache size is set to
-     * 'unlimited'.
+     * EPISODE_CACHE_SIZE_UNLIMITED (0) if the cache size is set to 'unlimited'.
      */
     val episodeCacheSize: Int
         get() = appPrefs.getString(Prefs.prefEpisodeCacheSize.name, "20")!!.toInt()

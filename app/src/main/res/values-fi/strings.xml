@@ -105,8 +105,8 @@
 
 
   <string name="episode_cleanup_never">Ei koskaan</string>
-  <string name="episode_cleanup_except_favorite_removal">Kun ei ole suosikeissa</string>
-  <string name="episode_cleanup_queue_removal">Kun ei ole jonossa</string>
+  <string name="episode_cleanup_except_favorite">Kun ei ole suosikeissa</string>
+  <string name="episode_cleanup_not_in_queue">Kun ei ole jonossa</string>
   <string name="episode_cleanup_after_listening">Lopetuksen jälkeen</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hour after finishing</item>
@@ -355,7 +355,7 @@
   <string name="pref_automatic_download_on_battery_title">Lataa, kun akkua ei ladata</string>
   <string name="pref_automatic_download_on_battery_sum">Salli automaattiset lataukset, kun akku ei ole latautumassa</string>
   <string name="pref_episode_cache_title">Jaksovälimuisti</string>
-  <string name="pref_episode_cache_summary">Ladattuja jaksoja yhteensä välimuistissa tällä laitteella. Automaattinen lataaminen pysäytetään, jos tämä raja ylittyy.</string>
+
   <string name="pref_episode_cover_title">Käytä jakson kansikuvaa</string>
   <string name="pref_episode_cover_summary">Käytä jaksokohtaista kansikuvaa luetteloissa aina, kun se on saatavilla. Jos tätä ei ole valittu, sovellus käyttää aina podcastin kansikuvaa.</string>
   <string name="pref_show_remain_time_title">Näytä jäljellä oleva aika</string>

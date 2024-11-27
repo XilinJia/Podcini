@@ -67,8 +67,8 @@
   <string name="feed_auto_download_always">總是</string>
   <string name="feed_auto_download_never">不予下載</string>
   <string name="episode_cleanup_never">不予刪除</string>
-  <string name="episode_cleanup_except_favorite_removal">若未標記為最愛</string>
-  <string name="episode_cleanup_queue_removal">若未列入待播清單</string>
+  <string name="episode_cleanup_except_favorite">若未標記為最愛</string>
+  <string name="episode_cleanup_not_in_queue">若未列入待播清單</string>
   <string name="episode_cleanup_after_listening">聽完後</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="other">聽完後 %d 小時</item>
@@ -210,7 +210,7 @@
   <string name="pref_autodl_wifi_filter_sum">限定於特定 Wi-Fi 連線時自動下載</string>
   <string name="pref_automatic_download_on_battery_title">未充電時下載</string>
   <string name="pref_automatic_download_on_battery_sum">允許未充電時也自動下載</string>
-  <string name="pref_episode_cache_summary">在本機中可以暫存的集數，若達上限則將停止自動下載。</string>
+
   <string name="pref_episode_cover_summary">在單集有專屬封面的情況下使用該封面圖。如果取消，則一律使用 Podcast 的封面圖</string>
   <string name="pref_show_remain_time_summary">勾選時顯示剩餘播放時間，不勾選時顯示單集的總時間。</string>
   <string name="pref_theme_title_light">淡色</string>

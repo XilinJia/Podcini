@@ -105,8 +105,8 @@
 
 
   <string name="episode_cleanup_never">никогда</string>
-  <string name="episode_cleanup_except_favorite_removal">Когда не в избранном</string>
-  <string name="episode_cleanup_queue_removal">Когда не в очереди</string>
+  <string name="episode_cleanup_except_favorite">Когда не в избранном</string>
+  <string name="episode_cleanup_not_in_queue">Когда не в очереди</string>
   <string name="episode_cleanup_after_listening">После прослушивания</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 час после прослушивания</item>
@@ -371,7 +371,7 @@
   <string name="pref_automatic_download_on_battery_title">Загружать без зарядки</string>
   <string name="pref_automatic_download_on_battery_sum">Разрешать автоматическую загрузку когда батарея не заряжается</string>
   <string name="pref_episode_cache_title">Кэш выпусков</string>
-  <string name="pref_episode_cache_summary">Общее количество загруженных в кэш выпусков. По достижении этого количества автоматическая загрузка будет приостановлена.</string>
+
   <string name="pref_episode_cover_title">Использовать обложку выпуска</string>
   <string name="pref_episode_cover_summary">Если выпуск содержит свою обложку, показывать в списках её. Если не выбрано, всегда используется обложка подкаста.</string>
   <string name="pref_show_remain_time_title">Показывать оставшееся время</string>

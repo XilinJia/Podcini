@@ -119,8 +119,8 @@
 
 
   <string name="episode_cleanup_never">Jamais</string>
-  <string name="episode_cleanup_except_favorite_removal">Quand pas un favori</string>
-  <string name="episode_cleanup_queue_removal">Quand pas dans la liste de lecture</string>
+  <string name="episode_cleanup_except_favorite">Quand pas un favori</string>
+  <string name="episode_cleanup_not_in_queue">Quand pas dans la liste de lecture</string>
   <string name="episode_cleanup_after_listening">Après avoir été écouté</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 heure après avoir été écouté</item>
@@ -391,7 +391,7 @@
   <string name="pref_automatic_download_on_battery_title">Télécharger lorsque l\'appareil n\'est pas en charge</string>
   <string name="pref_automatic_download_on_battery_sum">Autoriser le téléchargement automatique quand l\'appareil n\'est pas en train de charger</string>
   <string name="pref_episode_cache_title">Nombre d\'épisodes stockés</string>
-  <string name="pref_episode_cache_summary">Nombre maximum d\'épisodes stockés sur l\'appareil. Le téléchargement automatique sera suspendu si ce nombre est atteint.</string>
+
   <string name="pref_episode_cover_title">Image des épisodes</string>
   <string name="pref_episode_cover_summary">Utiliser dans les listes les images des épisodes. Sinon l\'image du podcast sera utilisée.</string>
   <string name="pref_show_remain_time_title">Afficher la durée restante</string>

@@ -4,10 +4,12 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.preferences.DocumentFileExportWorker
+import ac.mdiq.podcini.preferences.ExportTypes
+import ac.mdiq.podcini.preferences.ExportWorker
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.fragments.ImportExportPreferencesFragment.*
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -611,7 +613,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "baseline_import_export_24: ${selected.size}")
-                    val exportType = Export.OPML_SELECTED
+                    val exportType = ExportTypes.OPML_SELECTED
                     val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
                     val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
                         .addCategory(Intent.CATEGORY_OPENABLE)

@@ -106,8 +106,8 @@
 
 
   <string name="episode_cleanup_never">Mai</string>
-  <string name="episode_cleanup_except_favorite_removal">Quan no és favorit</string>
-  <string name="episode_cleanup_queue_removal">Quan no està a la cua</string>
+  <string name="episode_cleanup_except_favorite">Quan no és favorit</string>
+  <string name="episode_cleanup_not_in_queue">Quan no està a la cua</string>
   <string name="episode_cleanup_after_listening">Després d\'acabar</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hora després d\'acabar</item>
@@ -366,7 +366,7 @@
   <string name="pref_automatic_download_on_battery_title">Baixa mentre no es carrega</string>
   <string name="pref_automatic_download_on_battery_sum">Permet les baixades automàtiques mentre la bateria no es carrega</string>
   <string name="pref_episode_cache_title">Episodis baixats</string>
-  <string name="pref_episode_cache_summary">Nombre total d\'episodis baixats al dispositiu. La baixada automàtica serà suspesa si s\'arriba a aquest nombre.</string>
+
   <string name="pref_episode_cover_title">Usa la coberta de l\'episodi</string>
   <string name="pref_episode_cover_summary">Utilitza la portada específica de l\'episodi quan sigui possible. Si es desactiva, l\'aplicació utilitzarà sempre la portada del podcast.</string>
   <string name="pref_show_remain_time_title">Mostra el temps restant</string>

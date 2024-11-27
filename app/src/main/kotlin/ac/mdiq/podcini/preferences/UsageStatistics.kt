@@ -26,7 +26,6 @@ object UsageStatistics {
 
     /**
      * Sets up the UsageStatistics class.
-     *
      * @throws IllegalArgumentException if context is null
      */
     @JvmStatic

@@ -56,8 +56,8 @@
   <string name="feed_auto_download_always">Siempres</string>
   <string name="feed_auto_download_never">Enxamás</string>
   <string name="episode_cleanup_never">Enxamás</string>
-  <string name="episode_cleanup_except_favorite_removal">Al nun tar en Favoritos</string>
-  <string name="episode_cleanup_queue_removal">Al nun tar na cola</string>
+  <string name="episode_cleanup_except_favorite">Al nun tar en Favoritos</string>
+  <string name="episode_cleanup_not_in_queue">Al nun tar na cola</string>
   <string name="episode_cleanup_after_listening">Dempués d\'acabar</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hora dempués d\'acabar</item>
@@ -182,7 +182,7 @@
   <string name="pref_autodl_wifi_filter_sum">Namás permite la descarga automática nes redes Wi-Fi esbillaes.</string>
   <string name="pref_automatic_download_on_battery_title">Baxar al nun tar cargando la batería</string>
   <string name="pref_automatic_download_on_battery_sum">Permite la descarga automática cuando la batería nun tea cargando.</string>
-  <string name="pref_episode_cache_summary">El númberu total d\'episodios baxaos y atroxaos na caché del preséu. La descarga automática va suspendese si s\'algama\'l númberu qu\'afites.</string>
+
   <string name="pref_episode_cover_summary">Nes llistes, úsase la portada de los episodios siempres que seya posible. Si nun se marca esta opción, l\'aplicación va usar siempres la portada de los podcasts.</string>
   <string name="pref_show_remain_time_summary">Al activar esta opción, amuesa\'l tiempu que falta de los episodios. Si se desactiva, amuesa la duración total de los episodios.</string>
   <string name="pref_theme_title_light">Claridá</string>

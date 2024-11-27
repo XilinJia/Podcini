@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.storage.algorithms
 
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.EPISODE_CLEANUP_NULL
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
@@ -13,6 +12,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.PlayState
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.AutoDownloadPreferencesFragment.EpisodeCleanupOptions
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
@@ -25,7 +25,7 @@ object AutoCleanups {
     private val TAG: String = AutoCleanups::class.simpleName ?: "Anonymous"
 
     private var episodeCleanupValue: Int
-        get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "" + EPISODE_CLEANUP_NULL)!!.toInt()
+        get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, EpisodeCleanupOptions.Never.num.toString())!!.toIntOrNull() ?: EpisodeCleanupOptions.Never.num
         set(episodeCleanupValue) {
             appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCleanup.name, episodeCleanupValue.toString()).apply()
         }
@@ -46,9 +46,9 @@ object AutoCleanups {
         if (!isEnableAutodownload) return APNullCleanupAlgorithm()
 
         return when (val cleanupValue = episodeCleanupValue) {
-            UserPreferences.EPISODE_CLEANUP_EXCEPT_FAVORITE -> ExceptFavoriteCleanupAlgorithm()
-            UserPreferences.EPISODE_CLEANUP_QUEUE -> APQueueCleanupAlgorithm()
-            EPISODE_CLEANUP_NULL -> APNullCleanupAlgorithm()
+            EpisodeCleanupOptions.ExceptFavorites.num -> ExceptFavoriteCleanupAlgorithm()
+            EpisodeCleanupOptions.NotInQueue.num -> APQueueCleanupAlgorithm()
+            EpisodeCleanupOptions.Never.num -> APNullCleanupAlgorithm()
             else -> APCleanupAlgorithm(cleanupValue)
         }
     }
@@ -61,9 +61,7 @@ object AutoCleanups {
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
                 val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
-                for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !item.isSUPER) candidates.add(item)
-                }
+                for (item in downloadedItems) if (item.media != null && item.media!!.downloaded && !item.isSUPER) candidates.add(item)
                 return candidates
             }
         override fun getReclaimableItems(): Int {
@@ -82,13 +80,8 @@ object AutoCleanups {
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
             for (item in delete) {
                 if (item.media == null) continue
-                try {
-                    runBlocking { deleteEpisodeMedia(context, item).join() }
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                } catch (e: ExecutionException) {
-                    e.printStackTrace()
-                }
+                try { runBlocking { deleteEpisodeMedia(context, item).join() }
+                } catch (e: InterruptedException) { e.printStackTrace() } catch (e: ExecutionException) { e.printStackTrace() }
             }
             val counter = delete.size
             Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
@@ -96,7 +89,7 @@ object AutoCleanups {
         }
         public override fun getDefaultCleanupParameter(): Int {
             val cacheSize = episodeCacheSize
-            if (cacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
+            if (cacheSize > UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
                 val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                 if (downloadedEpisodes > cacheSize) return downloadedEpisodes - cacheSize
             }
@@ -115,8 +108,7 @@ object AutoCleanups {
                 val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isSUPER)
-                        candidates.add(item)
+                    if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isSUPER) candidates.add(item)
                 }
                 return candidates
             }
@@ -136,13 +128,8 @@ object AutoCleanups {
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
             for (item in delete) {
                 if (item.media == null) continue
-                try {
-                    runBlocking { deleteEpisodeMedia(context, item).join() }
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                } catch (e: ExecutionException) {
-                    e.printStackTrace()
-                }
+                try { runBlocking { deleteEpisodeMedia(context, item).join() }
+                } catch (e: InterruptedException) { e.printStackTrace() } catch (e: ExecutionException) { e.printStackTrace() }
             }
             val counter = delete.size
             Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
@@ -203,13 +190,8 @@ object AutoCleanups {
             }
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
             for (item in delete) {
-                try {
-                    runBlocking { deleteEpisodeMedia(context, item).join() }
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                } catch (e: ExecutionException) {
-                    e.printStackTrace()
-                }
+                try { runBlocking { deleteEpisodeMedia(context, item).join() }
+                } catch (e: InterruptedException) { e.printStackTrace() } catch (e: ExecutionException) { e.printStackTrace() }
             }
             val counter = delete.size
             Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
@@ -276,7 +258,7 @@ object AutoCleanups {
          * @return the number of episodes to delete in order to make room
          */
         fun getNumEpisodesToCleanup(amountOfRoomNeeded: Int): Int {
-            if (amountOfRoomNeeded >= 0 && episodeCacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
+            if (amountOfRoomNeeded >= 0 && episodeCacheSize > UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
                 val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                 if (downloadedEpisodes + amountOfRoomNeeded >= episodeCacheSize) return (downloadedEpisodes + amountOfRoomNeeded - episodeCacheSize)
             }

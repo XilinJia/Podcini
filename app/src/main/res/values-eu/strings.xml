@@ -109,8 +109,8 @@
 
 
   <string name="episode_cleanup_never">Inoiz ez</string>
-  <string name="episode_cleanup_except_favorite_removal">Gogoko ez denean</string>
-  <string name="episode_cleanup_queue_removal">Ilaran ez dagoenean</string>
+  <string name="episode_cleanup_except_favorite">Gogoko ez denean</string>
+  <string name="episode_cleanup_not_in_queue">Ilaran ez dagoenean</string>
   <string name="episode_cleanup_after_listening">Bukatu ondoren</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 ordu bukatu ondoren</item>
@@ -345,7 +345,7 @@
   <string name="pref_automatic_download_on_battery_title">Deskargatu kargatzen ari ez denean</string>
   <string name="pref_automatic_download_on_battery_sum">Onartu deskarga bateria kargatzen ari ez denean</string>
   <string name="pref_episode_cache_title">Saioen cache-a</string>
-  <string name="pref_episode_cache_summary">Gailuan katxeatutako saioen zenbatekoa. Deskarga automatikoa bertan behera utziko da zenbaki honetara heltzean.</string>
+
   <string name="pref_episode_cover_title">Erabili saioaren azala</string>
   <string name="pref_episode_cover_summary">Erabili atalaren azal espezifikoa zerrendetan eskuragarri dagoenean. Desaktibatzen bada, aplikazioak podcastaren azala erabiliko du beti.</string>
   <string name="pref_show_remain_time_title">Erakutsi geratzen den denbora</string>

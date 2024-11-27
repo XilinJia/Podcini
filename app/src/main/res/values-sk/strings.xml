@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Nikdy</string>
-  <string name="episode_cleanup_except_favorite_removal">Ak nie je medzi obľúbenými</string>
-  <string name="episode_cleanup_queue_removal">Ak nie je v poradí</string>
+  <string name="episode_cleanup_except_favorite">Ak nie je medzi obľúbenými</string>
+  <string name="episode_cleanup_not_in_queue">Ak nie je v poradí</string>
   <string name="episode_cleanup_after_listening">Po dokončení</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hodinu po dokončení</item>
@@ -393,7 +393,7 @@
   <string name="pref_automatic_download_on_battery_title">Sťahovať keď neprebieha nabíjanie</string>
   <string name="pref_automatic_download_on_battery_sum">Povoliť automatické sťahovanie aj keď nie je batéria nabíjaná</string>
   <string name="pref_episode_cache_title">Vyrovnávacia pamäť epizód</string>
-  <string name="pref_episode_cache_summary">Celkový počet epizód stiahnutých do zariadenia. Pri dosiahnutí tejto hodnoty sa automatické sťahovanie zastaví.</string>
+
   <string name="pref_episode_cover_title">Použiť obrázok epizódy</string>
   <string name="pref_episode_cover_summary">Ak je k dispozícií, použiť v zozname obrázok priamo z epizódy. Ak táto možnost nie je zaškrtnutá, tak sa vždy použije obrázok podcastu.</string>
   <string name="pref_show_remain_time_title">Zobraziť zostávajúci čas</string>

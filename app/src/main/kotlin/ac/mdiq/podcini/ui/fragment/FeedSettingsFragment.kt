@@ -272,7 +272,7 @@ class FeedSettingsFragment : Fragment() {
                     //                    tags
                     Column {
                         var showDialog by remember { mutableStateOf(false) }
-                        if (showDialog) TagSettingDialog(feeds = listOf(feed!!), onDismiss = { showDialog = false })
+                        if (showDialog) TagSettingDialog(feeds_ = listOf(feed!!), onDismiss = { showDialog = false })
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_tag), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))

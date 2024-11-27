@@ -35,6 +35,8 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
+import ac.mdiq.podcini.ui.compose.SkipDialog
+import ac.mdiq.podcini.ui.compose.SkipDirection
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -771,14 +773,36 @@ class VideoplayerActivity : CastEnabledActivity() {
             binding.sbPosition.setOnSeekBarChangeListener(this)
             binding.rewindButton.setOnClickListener { onRewind() }
             binding.rewindButton.setOnLongClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
+                val composeView = ComposeView(requireContext()).apply {
+                    setContent {
+                        val showDialog = remember { mutableStateOf(true) }
+                        CustomTheme(requireContext()) {
+                            SkipDialog(SkipDirection.SKIP_REWIND, onDismissRequest = {
+                                showDialog.value = false
+                                (view as? ViewGroup)?.removeView(this@apply)
+                            }) {}
+                        }
+                    }
+                }
+                (view as? ViewGroup)?.addView(composeView)
                 true
             }
             binding.playButton.setIsVideoScreen(true)
             binding.playButton.setOnClickListener { onPlayPause() }
             binding.fastForwardButton.setOnClickListener { onFastForward() }
             binding.fastForwardButton.setOnLongClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
+                val composeView = ComposeView(requireContext()).apply {
+                    setContent {
+                        val showDialog = remember { mutableStateOf(true) }
+                        CustomTheme(requireContext()) {
+                            SkipDialog(SkipDirection.SKIP_FORWARD, onDismissRequest =  {
+                                showDialog.value = false
+                                (view as? ViewGroup)?.removeView(this@apply)
+                            }) {}
+                        }
+                    }
+                }
+                (view as? ViewGroup)?.addView(composeView)
                 false
             }
             // To suppress touches directly below the slider

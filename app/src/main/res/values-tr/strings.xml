@@ -110,8 +110,8 @@
 
 
   <string name="episode_cleanup_never">Hiçbir zaman</string>
-  <string name="episode_cleanup_except_favorite_removal">Favorilenmemişken</string>
-  <string name="episode_cleanup_queue_removal">Sırada değilse</string>
+  <string name="episode_cleanup_except_favorite">Favorilenmemişken</string>
+  <string name="episode_cleanup_not_in_queue">Sırada değilse</string>
   <string name="episode_cleanup_after_listening">Bittikten sonra</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">Bittikten 1 saat sonra</item>
@@ -366,7 +366,7 @@
   <string name="pref_automatic_download_on_battery_title">Şarj olmuyorken indir</string>
   <string name="pref_automatic_download_on_battery_sum">Pil şarj olmuyorken otomatik indirmeye izin ver</string>
   <string name="pref_episode_cache_title">Bölüm önbelleği</string>
-  <string name="pref_episode_cache_summary">Cihazda önbelleğe alınan indirilmiş bölümlerin toplam sayısı. Bu sayıya ulaşılırsa otomatik indirme askıya alınacaktır.</string>
+
   <string name="pref_episode_cover_title">Bölüm kapağını kullan</string>
   <string name="pref_episode_cover_summary">Mümkün olduğunda listelerde bölüme özel kapağı kullanın. İşaretli değilse, uygulama her zaman Podcast kapak resmini kullanacaktır.</string>
   <string name="pref_show_remain_time_title">Kalan süreyi göster</string>

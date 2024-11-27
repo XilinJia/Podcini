@@ -44,9 +44,7 @@ class PodciniApp : Application() {
         super.onCreate()
         ClientConfig.USER_AGENT = "Podcini/" + BuildConfig.VERSION_NAME
         ClientConfig.applicationCallbacks = ApplicationCallbacksImpl()
-
         Thread.setDefaultUncaughtExceptionHandler(CrashReportWriter())
-
         if (BuildConfig.DEBUG) {
             val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
                 .detectAll()
@@ -56,7 +54,6 @@ class PodciniApp : Application() {
         }
 
         singleton = this
-
         runBlocking {
             withContext(Dispatchers.IO) {
                 ClientConfigurator.initialize(this@PodciniApp)

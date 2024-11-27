@@ -112,8 +112,8 @@
 
 
   <string name="episode_cleanup_never">هرگز</string>
-  <string name="episode_cleanup_except_favorite_removal">وقتی که جزو علاقه‌مندی‌ها نباشد</string>
-  <string name="episode_cleanup_queue_removal">وقتی که در صف نیست</string>
+  <string name="episode_cleanup_except_favorite">وقتی که جزو علاقه‌مندی‌ها نباشد</string>
+  <string name="episode_cleanup_not_in_queue">وقتی که در صف نیست</string>
   <string name="episode_cleanup_after_listening">بعد از تمام شدن</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">۱ ساعت پس از پایان</item>
@@ -367,7 +367,7 @@
   <string name="pref_automatic_download_on_battery_title">بارگیری زمانی که سیستم شارژ نمیشود مجاز باشد</string>
   <string name="pref_automatic_download_on_battery_sum">وقتی باتری شارژ نمی شود ، امکان بارگیری خودکار وجود داشته باشد</string>
   <string name="pref_episode_cache_title">انبارهٔ قسمت</string>
-  <string name="pref_episode_cache_summary">تعداد کل قسمت‌های بار گرفته‌ٔ انبار شده روی افزاره. بارگیری خودکار در صورت رسیدن به این عدد معلّق خواهد شد.</string>
+
   <string name="pref_episode_cover_title">استفاده از جلد قسمت</string>
   <string name="pref_episode_cover_summary">هر زمان که جلد مخصوص قسمت در دسترس بود از آن استفاده کن. در صورت لغو انتخاب ، برنامه همیشه از تصویر جلد پادکست استفاده می کند.</string>
   <string name="pref_show_remain_time_title">نمایش زمان مانده</string>

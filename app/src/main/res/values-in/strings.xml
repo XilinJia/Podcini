@@ -92,8 +92,8 @@
   <string name="feed_auto_download_always">Selalu</string>
   <string name="feed_auto_download_never">Tidak pernah</string>
   <string name="episode_cleanup_never">Tidak pernah</string>
-  <string name="episode_cleanup_except_favorite_removal">Saat tidak difavoritkan</string>
-  <string name="episode_cleanup_queue_removal">Ketika tidak dalam antrian</string>
+  <string name="episode_cleanup_except_favorite">Saat tidak difavoritkan</string>
+  <string name="episode_cleanup_not_in_queue">Ketika tidak dalam antrian</string>
   <string name="episode_cleanup_after_listening">Setelah menyelesaikan</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="other">%d jam setelah menyelesaikan</item>
@@ -299,7 +299,7 @@
   <string name="pref_autodl_wifi_filter_sum">Izinkan unduh otomatis hanya untuk jaringan Wi-Fi yang terpilih.</string>
   <string name="pref_automatic_download_on_battery_title">Unduh saat tidak mengisi daya</string>
   <string name="pref_automatic_download_on_battery_sum">Izinkan unduh otomatis saat baterai tidak mengisi daya</string>
-  <string name="pref_episode_cache_summary">Jumlah unduhan episode yang tercached pada perangkat. Unduhan otomatis akan ditangguhkan saat mencapai angka yang ditetapkan.</string>
+
   <string name="pref_episode_cover_title">Gunakan sampul episode</string>
   <string name="pref_episode_cover_summary">Gunakan sampul spesifik episode dalam daftar jika bisa. Jika tidak dicentang, aplikasi akan tetap menggunakan sampul podcast.</string>
   <string name="pref_show_remain_time_title">Tampilkan waktu yang tersisa</string>

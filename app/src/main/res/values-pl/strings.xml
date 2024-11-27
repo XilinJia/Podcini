@@ -109,8 +109,8 @@
 
 
   <string name="episode_cleanup_never">Nigdy</string>
-  <string name="episode_cleanup_except_favorite_removal">Gdy nie oznaczone jako ulubione</string>
-  <string name="episode_cleanup_queue_removal">Kiedy nie są w kolejce</string>
+  <string name="episode_cleanup_except_favorite">Gdy nie oznaczone jako ulubione</string>
+  <string name="episode_cleanup_not_in_queue">Kiedy nie są w kolejce</string>
   <string name="episode_cleanup_after_listening">Po odtworzeniu</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 godzinę po odtworzeniu</item>
@@ -363,7 +363,7 @@
   <string name="pref_automatic_download_on_battery_title">Pobieraj, gdy nie ładuje</string>
   <string name="pref_automatic_download_on_battery_sum">Zezwól na automatyczne pobieranie, gdy bateria nie jest ładowana.</string>
   <string name="pref_episode_cache_title">Pamięć podręczna odcinków</string>
-  <string name="pref_episode_cache_summary">Całkowita liczba odcinków zapisanych na urządzeniu. Automatyczne pobieranie zostanie przerwane, jeśli zostanie ona osiągnięta.</string>
+
   <string name="pref_episode_cover_title">Użyj okładek odcinków</string>
   <string name="pref_episode_cover_summary">Użyj okładek konkretnych odcinków na listach, kiedy to możliwe. Odznaczenie spowoduje, że aplikacja zawsze będzie używała okładki kanału.</string>
   <string name="pref_show_remain_time_title">Pokaż pozostały czas</string>

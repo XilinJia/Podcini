@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.database
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
@@ -24,8 +25,11 @@ import java.util.*
 object Queues {
     private val TAG: String = Queues::class.simpleName ?: "Anonymous"
 
-    enum class EnqueueLocation {
-        BACK, FRONT, AFTER_CURRENTLY_PLAYING, RANDOM
+    enum class EnqueueLocation(val res: Int) {
+        BACK(R.string.enqueue_location_back),
+        FRONT(R.string.enqueue_location_front),
+        AFTER_CURRENTLY_PLAYING(R.string.enqueue_location_after_current),
+        RANDOM(R.string.enqueue_location_random)
     }
 
     /**

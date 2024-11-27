@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Niciodată</string>
-  <string name="episode_cleanup_except_favorite_removal">Cănd nu este preferată</string>
-  <string name="episode_cleanup_queue_removal">Când nu e în coadă</string>
+  <string name="episode_cleanup_except_favorite">Cănd nu este preferată</string>
+  <string name="episode_cleanup_not_in_queue">Când nu e în coadă</string>
   <string name="episode_cleanup_after_listening">După terminare</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 oră după terminare</item>
@@ -388,7 +388,7 @@
   <string name="pref_automatic_download_on_battery_title">Descarcă când nu se incarcă</string>
   <string name="pref_automatic_download_on_battery_sum">Permite descărcările automate când bateria nu se încarcă</string>
   <string name="pref_episode_cache_title">Cache de episoade</string>
-  <string name="pref_episode_cache_summary">Numărul total de episoade descărcate pe dispozitiv. Dacă acest număr va fii atins atunci descărcările automate vor fii oprite.</string>
+
   <string name="pref_episode_cover_title">Folosește coperta episodului</string>
   <string name="pref_episode_cover_summary">Folosiți coperta specifică episodului în liste când acesta este disponibilă.Dacă opțiunea nu este activată, aplicația va folosi întodeauna coperta podcastului.</string>
   <string name="pref_show_remain_time_title">Arată timpul rămas</string>

@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Aldrig</string>
-  <string name="episode_cleanup_except_favorite_removal">Hvis ikke en favorit</string>
-  <string name="episode_cleanup_queue_removal">Når ikke i kø</string>
+  <string name="episode_cleanup_except_favorite">Hvis ikke en favorit</string>
+  <string name="episode_cleanup_not_in_queue">Når ikke i kø</string>
   <string name="episode_cleanup_after_listening">Efter færdig afspilning</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 time efter afslutning</item>
@@ -383,7 +383,7 @@
   <string name="pref_automatic_download_on_battery_title">Tillad overførsel ved batteridrift</string>
   <string name="pref_automatic_download_on_battery_sum">Tillad automatisk overførsel, når batteriet ikke oplades</string>
   <string name="pref_episode_cache_title">Mellemlager for afsnit</string>
-  <string name="pref_episode_cache_summary">Totalt antal af overførte afsnit gemt på din enhed. Automatisk overførsel stilles i bero, når dette nummer nåes.</string>
+
   <string name="pref_episode_cover_title">Brug afsnitbillede</string>
   <string name="pref_episode_cover_summary">Brug det afsnitspecifikke cover i lister når muligt. Hvis dette slås fra, vil appen altid bruge podcastens coverbillede.</string>
   <string name="pref_show_remain_time_title">Vis resterende tid</string>

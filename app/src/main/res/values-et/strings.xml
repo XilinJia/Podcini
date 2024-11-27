@@ -95,8 +95,8 @@
   <string name="feed_auto_download_always">Alati</string>
   <string name="feed_auto_download_never">Mitte kunagi</string>
   <string name="episode_cleanup_never">Mitte kunagi</string>
-  <string name="episode_cleanup_except_favorite_removal">Kui pole lemmik</string>
-  <string name="episode_cleanup_queue_removal">Kui pole järjekorras</string>
+  <string name="episode_cleanup_except_favorite">Kui pole lemmik</string>
+  <string name="episode_cleanup_not_in_queue">Kui pole järjekorras</string>
   <string name="episode_cleanup_after_listening">Pärast lõpetamist</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 tund pärast lõpetamist</item>
@@ -274,7 +274,7 @@
   <string name="pref_autodl_wifi_filter_sum">Luba automaatne allalaadimine ainult valitud Wifi võrkudes.</string>
   <string name="pref_automatic_download_on_battery_title">Allalaadimine, kui seade ei lae</string>
   <string name="pref_automatic_download_on_battery_sum">Luba automaatne allalaadimine ka siis, kui seade pole laadimas</string>
-  <string name="pref_episode_cache_summary">Seadme puhvrisse allalaaditud saadete koguarv. Automaatne allalaadimine peatub, kui selle numbrini jõutakse.</string>
+
   <string name="pref_episode_cover_summary">Kui võimalik, kasutatakse nimekirjades saate kaanepilti. Kui märkimata, kasutab rakendus alati taskuhäälingu kaanepilti.</string>
   <string name="pref_show_remain_time_summary">Kui märgitud, kuvatakse saate alles jäänud aega. Kui märkimata, näidatakse saadete kogupikkust.</string>
   <string name="pref_theme_title_light">Hele</string>

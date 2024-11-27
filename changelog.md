@@ -1,3 +1,13 @@
+# 6.14.8
+
+* fixed issues in tags setting
+* fixed initial sort order not taking correctly in FeedEpisodes
+* fixed Compose switches not settable in Preferences
+* skip dialog is in Compose and features number input rather than multiple choice
+* made the numbers under rewind and forward buttons in PlayerUI react to changes
+* all preferences are in Compose except some dialogs
+* some class restructuring
+
 # 6.14.7
 
 * corrected some deeplinks in manifest file on OPMLActivity

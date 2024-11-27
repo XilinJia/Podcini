@@ -16,7 +16,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
+import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -278,8 +280,9 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
+fun TagSettingDialog(feeds_: List<Feed>, onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
+        val feeds = realm.query(Feed::class).query("id IN $0", feeds_.map {it.id}).find()
         val suggestions = remember { getTags() }
         val commonTags = remember {
             if (feeds.size == 1) feeds[0].preferences?.tags?.toMutableStateList()?: mutableStateListOf<String>()
@@ -344,13 +347,13 @@ fun TagSettingDialog(feeds: List<Feed>, onDismiss: () -> Unit) {
                     Button(onClick = { onDismiss() }) { Text("Cancel") }
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
-                        if ((tags.toSet() + commonTags.toSet()).isNotEmpty()) for (f in feeds) upsertBlk(f) {
-                            Logd("TagsSettingDialog", "tags: [$tags] commonTags: [$commonTags]")
-//                            if (feeds.size == 1) it.preferences?.tags?.clear()
-//                            else if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
-                            if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
-                            if (tags.isNotEmpty()) it.preferences?.tags?.addAll(tags)
-                            if (text.isNotBlank()) it.preferences?.tags?.add(text)
+                        Logd("TagsSettingDialog", "tags: [${tags.joinToString()}] commonTags: [${commonTags.joinToString()}]")
+                        if ((tags.toSet() + commonTags.toSet()).isNotEmpty() || text.isNotBlank()) {
+                            for (f in feeds) upsertBlk(f) {
+                                if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
+                                if (tags.isNotEmpty()) it.preferences?.tags?.addAll(tags)
+                                if (text.isNotBlank()) it.preferences?.tags?.add(text)
+                            }
                             buildTags()
                         }
                         onDismiss()

@@ -71,8 +71,8 @@
   <string name="feed_auto_download_always">Vedno</string>
   <string name="feed_auto_download_never">Nikoli</string>
   <string name="episode_cleanup_never">Nikoli</string>
-  <string name="episode_cleanup_except_favorite_removal">Ko ni dodan med priljubljene</string>
-  <string name="episode_cleanup_queue_removal">Ko ne čaka v čakalni vrsti</string>
+  <string name="episode_cleanup_except_favorite">Ko ni dodan med priljubljene</string>
+  <string name="episode_cleanup_not_in_queue">Ko ne čaka v čakalni vrsti</string>
   <string name="episode_cleanup_after_listening">Po končanem</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 uro po končanem</item>
@@ -248,7 +248,7 @@
   <string name="pref_autodl_wifi_filter_sum">Dovoli samodejni prenos samo za izbrana omrežja Wi-Fi.</string>
   <string name="pref_automatic_download_on_battery_title">Prenesite, ko se ne polni</string>
   <string name="pref_automatic_download_on_battery_sum">Dovoli samodejni prenos, ko se baterija ne polni</string>
-  <string name="pref_episode_cache_summary">Skupno število prenesenih epizod, shranjenih v predpomnilniku naprave. Samodejni prenos bo prekinjen, če bo dosežena ta številka.</string>
+
   <string name="pref_episode_cover_summary">Uporabite naslovnico za posamezno epizodo na seznamih, kadar je na voljo. Če ta možnost ni izbrana, bo aplikacija vedno uporabljala naslovno sliko podcasta.</string>
   <string name="pref_show_remain_time_summary">Prikaži preostali čas epizod, ko je izbrano. Če ni potrjeno, prikaže skupno trajanje epizod.</string>
   <string name="pref_theme_title_light">Svetlo</string>

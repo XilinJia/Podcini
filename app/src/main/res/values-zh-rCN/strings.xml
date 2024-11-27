@@ -119,8 +119,8 @@
 
 
   <string name="episode_cleanup_never">从不</string>
-  <string name="episode_cleanup_except_favorite_removal">当未收藏时</string>
-  <string name="episode_cleanup_queue_removal">当不在队列中</string>
+  <string name="episode_cleanup_except_favorite">当未收藏时</string>
+  <string name="episode_cleanup_not_in_queue">当不在队列中</string>
   <string name="episode_cleanup_after_listening">结束后</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="other">结束后 %d 小时</item>
@@ -382,7 +382,7 @@
   <string name="pref_automatic_download_on_battery_title">未充电时下载</string>
   <string name="pref_automatic_download_on_battery_sum">未充电时允许自动下载</string>
   <string name="pref_episode_cache_title">节目缓存</string>
-  <string name="pref_episode_cache_summary">缓存在设备上的已下载节目总数 若达到此数目，自动下载将被暂停</string>
+
   <string name="pref_episode_cover_title">使用节目封面</string>
   <string name="pref_episode_cover_summary">勾选后，在列表中使用一期节目特定的封面图。如果不勾选，应用程序将始终使用播客封面图像。</string>
   <string name="pref_show_remain_time_title">显示剩余时间</string>

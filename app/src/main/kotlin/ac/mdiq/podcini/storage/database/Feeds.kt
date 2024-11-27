@@ -66,9 +66,7 @@ object Feeds {
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
         val feedsCopy = getFeedList()
-        for (feed in feedsCopy) {
-            if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
-        }
+        for (feed in feedsCopy) if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
         val newTags = tagsSet - tags.toSet()
         if (newTags.isNotEmpty()) {
             tags.clear()
@@ -160,8 +158,7 @@ object Feeds {
     fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
         val f = realm.query(Feed::class, "id == $feedId").first().find()
         return if (f != null) {
-            if (copy) realm.copyFromRealm(f)
-            else f
+            if (copy) realm.copyFromRealm(f) else f
         } else null
     }
 
@@ -170,9 +167,7 @@ object Feeds {
         if (feed.id != 0L) return getFeed(feed.id, copy)
         val feeds = getFeedList()
         val feedId = feed.identifyingValue
-        for (f in feeds) {
-            if (f.identifyingValue == feedId) return if (copy) realm.copyFromRealm(f) else f
-        }
+        for (f in feeds) if (f.identifyingValue == feedId) return if (copy) realm.copyFromRealm(f) else f
         return null
     }
 
@@ -769,12 +764,7 @@ object Feeds {
         }
         internal fun canonicalizeTitle(title: String?): String {
             if (title == null) return ""
-            return title
-                .trim { it <= ' ' }
-                .replace('“', '"')
-                .replace('”', '"')
-                .replace('„', '"')
-                .replace('—', '-')
+            return title.trim { it <= ' ' }.replace('“', '"').replace('”', '"').replace('„', '"').replace('—', '-')
         }
     }
 }

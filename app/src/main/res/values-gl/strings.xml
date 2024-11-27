@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Nunca</string>
-  <string name="episode_cleanup_except_favorite_removal">Cando non favorito</string>
-  <string name="episode_cleanup_queue_removal">Cando non esté na cola</string>
+  <string name="episode_cleanup_except_favorite">Cando non favorito</string>
+  <string name="episode_cleanup_not_in_queue">Cando non esté na cola</string>
   <string name="episode_cleanup_after_listening">Tras rematar</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hora tras rematar</item>
@@ -382,7 +382,7 @@
   <string name="pref_automatic_download_on_battery_title">Descargar elementos cando non esté cargando</string>
   <string name="pref_automatic_download_on_battery_sum">Permitir a descarga automática cando a batería non está a cargar</string>
   <string name="pref_episode_cache_title">Caché de episodios</string>
-  <string name="pref_episode_cache_summary">O número total de episodios descargados na caché do dispositivo. A descarga automática suspenderase se se alcanza este número.</string>
+
   <string name="pref_episode_cover_title">Usar portada do episodio</string>
   <string name="pref_episode_cover_summary">Usar a capa específica do episodio nas listas cando estivese dispoñible. Sen marcar, a app sempre usará a imaxe de cuberta do podcast.</string>
   <string name="pref_show_remain_time_title">Mostrar tempo restante</string>

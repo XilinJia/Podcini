@@ -1112,11 +1112,11 @@ fun EpisodeSortDialog(initOrder: EpisodeSortOrder, showKeepSorted: Boolean = fal
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             val scrollState = rememberScrollState()
-            var sortIndex by remember { mutableIntStateOf(initOrder.ordinal) }
+            var sortIndex by remember { mutableIntStateOf(initOrder.ordinal/2) }
             var keepSorted by remember { mutableStateOf(false) }
             Column(Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp).verticalScroll(scrollState)) {
                 NonlazyGrid(columns = 2, itemCount = orderList.size) { index ->
-                    var dir by remember { mutableStateOf(true) }
+                    var dir by remember { mutableStateOf(if (sortIndex == index) initOrder.ordinal % 2 == 0 else true) }
                     OutlinedButton(modifier = Modifier.padding(2.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != index) textColor else Color.Green),
                         onClick = {
                             sortIndex = index

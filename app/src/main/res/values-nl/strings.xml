@@ -111,8 +111,8 @@
 
 
   <string name="episode_cleanup_never">Nooit</string>
-  <string name="episode_cleanup_except_favorite_removal">Indien niet favoriet</string>
-  <string name="episode_cleanup_queue_removal">Indien niet in wachtrij</string>
+  <string name="episode_cleanup_except_favorite">Indien niet favoriet</string>
+  <string name="episode_cleanup_not_in_queue">Indien niet in wachtrij</string>
   <string name="episode_cleanup_after_listening">Als aflevering is beluisterd</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 uur na afronden</item>
@@ -344,7 +344,7 @@
   <string name="pref_autodl_wifi_filter_sum">Automatisch downloaden alleen toestaan via gekozen wifi-netwerken.</string>
   <string name="pref_automatic_download_on_battery_title">Downloaden als toestel niet oplaadt</string>
   <string name="pref_automatic_download_on_battery_sum">Sta automatisch downloaden toe wanneer toestel niet oplaadt</string>
-  <string name="pref_episode_cache_summary">Geef hier het maximum aantal in de cache van het toestel te downloaden afleveringen op. Downloaden stopt na dit aantal.</string>
+
   <string name="pref_episode_cover_title">Cover van aflevering gebruiken</string>
   <string name="pref_episode_cover_summary">De aflevering-specifieke omslag in lijsten gebruiken indien beschikbaar. Indien uitgevinkt wordt altijd de podcastomslag afbeelding gebruikt.</string>
   <string name="pref_show_remain_time_summary">Inschakelen om de resterende tijd te tonen. Anders wordt de totale duur van een aflevering getoond.</string>

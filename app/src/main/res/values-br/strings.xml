@@ -99,8 +99,8 @@
   <string name="feed_auto_download_always">Bepred</string>
   <string name="feed_auto_download_never">Morse</string>
   <string name="episode_cleanup_never">Morse</string>
-  <string name="episode_cleanup_except_favorite_removal">Pa n\'emañ ket er sinedoù</string>
-  <string name="episode_cleanup_queue_removal">Pa n\'emañ ket el lost</string>
+  <string name="episode_cleanup_except_favorite">Pa n\'emañ ket er sinedoù</string>
+  <string name="episode_cleanup_not_in_queue">Pa n\'emañ ket el lost</string>
   <string name="episode_cleanup_after_listening">Goude bezañ echuet</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">%d eur goude bezañ selaouet</item>
@@ -308,7 +308,7 @@
   <string name="pref_autodl_wifi_filter_sum">Aotren ar pellgargañ emgefreek war ar rouedadoù Wi-Fi diuzet nemetken.</string>
   <string name="pref_automatic_download_on_battery_title">Pellgargañ pa ne vez ket o kargañ</string>
   <string name="pref_automatic_download_on_battery_sum">Aotren ar pellgargañ emgefreek pa ne vez ket ar benveg o kargañ</string>
-  <string name="pref_episode_cache_summary">Niver hollek a rannoù pellgarget lakaet e krubuilh ar benveg. Diweredekaet e vo ar pellgargañ emgefreek mard eo tizhet an niver-mañ.</string>
+
   <string name="pref_episode_cover_summary">Ober gant golo ar rann e listennoù pa vez dioutañ. Mard eo digevasket e vo graet gant golo ar podskignad.</string>
   <string name="pref_show_remain_time_summary">Diskouez amzer ar rannoù a chom mard eo gweredekaet. Ma n\'eo ket e tiskouez padelezh ar rannoù. </string>
   <string name="pref_theme_title_light">Sklaer</string>

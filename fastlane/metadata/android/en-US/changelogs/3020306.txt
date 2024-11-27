@@ -1,4 +1,4 @@
- Version 6.14.6
+ Version 6.14.7
 
 * corrected some deeplinks in manifest file on OPMLActivity
 * added commentTime in Episode and Feed to record the time of comment/opinion added

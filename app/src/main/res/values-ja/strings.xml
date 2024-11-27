@@ -85,8 +85,8 @@
   <string name="feed_auto_download_always">常に</string>
   <string name="feed_auto_download_never">しない</string>
   <string name="episode_cleanup_never">しない</string>
-  <string name="episode_cleanup_except_favorite_removal">お気に入りされていない</string>
-  <string name="episode_cleanup_queue_removal">キューにない時</string>
+  <string name="episode_cleanup_except_favorite">お気に入りされていない</string>
+  <string name="episode_cleanup_not_in_queue">キューにない時</string>
   <string name="episode_cleanup_after_listening">完了後</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="other">完了後 %d 時間</item>
@@ -261,7 +261,7 @@
   <string name="pref_autodl_wifi_filter_sum">選択したWi-Fiネットワークに対してのみ自動ダウンロードを許可します。</string>
   <string name="pref_automatic_download_on_battery_title">充電時以外にダウンロード</string>
   <string name="pref_automatic_download_on_battery_sum">バッテリーを充電していない時に自動ダウンロードを許可します</string>
-  <string name="pref_episode_cache_summary">デバイスにキャッシュされるダウンロード済エピソードの合計数。この数に達すると自動ダウンロードが中断されます。</string>
+
   <string name="pref_episode_cover_summary">エピソード固有のカバー画像が利用可能な場合は常にリストで使います。チェックを外すと、アプリは常にポッドキャストのカバー画像を使います。</string>
   <string name="pref_show_remain_time_summary">チェックをすると、エピソードの残り時間を表示します。チェックを外すと、エピソードの合計時間を表示します。</string>
   <string name="pref_theme_title_light">ライト</string>

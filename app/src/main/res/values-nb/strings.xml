@@ -105,8 +105,8 @@
 
 
   <string name="episode_cleanup_never">Aldri</string>
-  <string name="episode_cleanup_except_favorite_removal">Hvis ikke favoritt</string>
-  <string name="episode_cleanup_queue_removal">Når ikke i kø</string>
+  <string name="episode_cleanup_except_favorite">Hvis ikke favoritt</string>
+  <string name="episode_cleanup_not_in_queue">Når ikke i kø</string>
   <string name="episode_cleanup_after_listening">Etter fullført avspilling</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 time etter fullført avspilling</item>
@@ -359,7 +359,7 @@
   <string name="pref_automatic_download_on_battery_title">Last ned når enheten ikke lader</string>
   <string name="pref_automatic_download_on_battery_sum">Tillat automatisk nedlasting når enheten ikke står til lading</string>
   <string name="pref_episode_cache_title">Mellomlager for episoder</string>
-  <string name="pref_episode_cache_summary">Totalt antall nedlastede episoder bufret på enheten. Automatisk nedlasting vil bli stoppet hvis dette nummeret er nådd.</string>
+
   <string name="pref_episode_cover_title">Bruk episode-cover</string>
   <string name="pref_episode_cover_summary">Bruk et episode-spesifikt cover hvis det er tilgjengelig. Hvis dette ikke er valgt vil appen alltid bruke podkastens cover-bilde.</string>
   <string name="pref_show_remain_time_title">Vis gjenværende tid</string>

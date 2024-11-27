@@ -115,8 +115,8 @@
 
 
   <string name="episode_cleanup_never">Aldrig</string>
-  <string name="episode_cleanup_except_favorite_removal">När ej favorit</string>
-  <string name="episode_cleanup_queue_removal">Om inte köad</string>
+  <string name="episode_cleanup_except_favorite">När ej favorit</string>
+  <string name="episode_cleanup_not_in_queue">Om inte köad</string>
   <string name="episode_cleanup_after_listening">Efter färdigspelad</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 timma efter klar</item>
@@ -382,7 +382,7 @@
   <string name="pref_automatic_download_on_battery_title">Nedladdning vid batteridrift</string>
   <string name="pref_automatic_download_on_battery_sum">Tillåt automatisk nedladdning när batteriet inte laddas</string>
   <string name="pref_episode_cache_title">Episodcache</string>
-  <string name="pref_episode_cache_summary">Totalt antal nedladdade epidoder som ligger i enhetens cache. Automatisk nedladdning kommer att vänta om detta antal nås.</string>
+
   <string name="pref_episode_cover_title">Använd episodomslag</string>
   <string name="pref_episode_cover_summary">Använd episodspecifika omslag i listan när de är tillgängliga. Om urkryssat kommer appen alltid använda podcastens omslagsbild.</string>
   <string name="pref_show_remain_time_title">Visa återstående tid</string>

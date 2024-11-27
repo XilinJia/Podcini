@@ -118,8 +118,8 @@
 
 
   <string name="episode_cleanup_never">Nunca</string>
-  <string name="episode_cleanup_except_favorite_removal">Se não for favorito</string>
-  <string name="episode_cleanup_queue_removal">Se não estiver na fila</string>
+  <string name="episode_cleanup_except_favorite">Se não for favorito</string>
+  <string name="episode_cleanup_not_in_queue">Se não estiver na fila</string>
   <string name="episode_cleanup_after_listening">Ao terminar</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">1 hora depois de terminar</item>
@@ -389,7 +389,7 @@
   <string name="pref_automatic_download_on_battery_title">Descarregar se não estiver a carregar</string>
   <string name="pref_automatic_download_on_battery_sum">Permitir descarga automática se a bateria não estiver a ser carregada</string>
   <string name="pref_episode_cache_title">Cache de episódios</string>
-  <string name="pref_episode_cache_summary">Número máximo de episódios descarregados para colocar em cache. A descarga automática será suspensa se este número for atingido.</string>
+
   <string name="pref_episode_cover_title">Utilizar imagem do episódio</string>
   <string name="pref_episode_cover_summary">Utilizar imagem do episódio, se disponível. Se desativar esta opção, será utilizada a imagem do podcast.</string>
   <string name="pref_show_remain_time_title">Mostrar tempo restante</string>

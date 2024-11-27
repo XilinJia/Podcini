@@ -110,8 +110,8 @@
 
 
   <string name="episode_cleanup_never">ابدا</string>
-  <string name="episode_cleanup_except_favorite_removal">عند عدم التفضيل</string>
-  <string name="episode_cleanup_queue_removal">إذا لم يكن في لائحة الاستماع</string>
+  <string name="episode_cleanup_except_favorite">عند عدم التفضيل</string>
+  <string name="episode_cleanup_not_in_queue">إذا لم يكن في لائحة الاستماع</string>
   <string name="episode_cleanup_after_listening">بعد الانتهاء</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="zero">%d ساعة بعد الأنتهاء</item>
@@ -390,7 +390,7 @@
   <string name="pref_automatic_download_on_battery_title">التنزيل عند عدم الشحن الجهاز</string>
   <string name="pref_automatic_download_on_battery_sum">السماح بالتنزيل التلقائي عندما لا يتم شحن البطارية</string>
   <string name="pref_episode_cache_title">تخزين الحلقات</string>
-  <string name="pref_episode_cache_summary">العدد الإجمالي للحلقات التي تم تنزيلها والمخزنة مؤقتًا على الجهاز. سيتم تعليق التنزيل التلقائي إذا تم الوصول إلى هذا الرقم.</string>
+
   <string name="pref_episode_cover_title">استخدم صورة غلاف الحلقة</string>
   <string name="pref_episode_cover_summary">استخدم الغلاف المخصص للحلقة في القوائم إن وجد. إذا لم يتم تحديد هذا الاختيار ، فسيستخدم التطبيق صورة غلاف البودكاست.</string>
   <string name="pref_show_remain_time_title">أظهر الوقت المتبقي</string>

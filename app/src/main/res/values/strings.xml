@@ -169,9 +169,10 @@
     <string name="remove_from_current_feed">Remove from current feed</string>
 
 
+    <string name="episode_cleanup_limit_by">Limit by</string>
     <string name="episode_cleanup_never">Never</string>
-    <string name="episode_cleanup_except_favorite_removal">When not favorited</string>
-    <string name="episode_cleanup_queue_removal">When not in queue</string>
+    <string name="episode_cleanup_except_favorite">When not favorited</string>
+    <string name="episode_cleanup_not_in_queue">When not in queue</string>
     <string name="episode_cleanup_after_listening">After finishing</string>
     <plurals name="episode_cleanup_hours_after_listening">
         <item quantity="one">1 hour after finishing</item>
@@ -524,7 +525,7 @@
     <string name="pref_automatic_download_on_battery_title">Download when not charging</string>
     <string name="pref_automatic_download_on_battery_sum">Allow automatic download when the battery is not charging</string>
     <string name="pref_episode_cache_title">Episode cache</string>
-    <string name="pref_episode_cache_summary">Total number of downloaded episodes cached on the device. Automatic download will be suspended if this number is reached.</string>
+    <string name="pref_episode_cache_summary">Total number of downloaded episodes cached on the device (0 means unlimited). Automatic download will be suspended if this number is reached.</string>
     <string name="pref_auto_download_counting_played_title">Counting played</string>
     <string name="pref_auto_download_counting_played_summary">Set if downloaded episodes already played count into the episode cache</string>
     <string name="pref_episode_cover_title">Use episode cover</string>
@@ -742,6 +743,7 @@
     <string name="sleep_timer_enabled_label">Sleep timer enabled</string>
 
     <!-- Synchronisation -->
+    <string name="wifi_sync">Sync with device on Wifi</string>
     <string name="wifi_sync_summary_unchoosen">You can connect two devices on the same wifi network to synchronize your episodes play states</string>
     <string name="synchronization_choose_title">Choose synchronization provider</string>
     <string name="synchronization_summary_unchoosen">You can choose from multiple providers to synchronize your subscriptions and episode play state with</string>

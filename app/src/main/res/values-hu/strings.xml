@@ -98,8 +98,8 @@
   <string name="feed_auto_download_never">Soha</string>
 
   <string name="episode_cleanup_never">Soha</string>
-  <string name="episode_cleanup_except_favorite_removal">Ha nincs felvéve a kedvencek közé</string>
-  <string name="episode_cleanup_queue_removal">Ha nincs sorbaállítva</string>
+  <string name="episode_cleanup_except_favorite">Ha nincs felvéve a kedvencek közé</string>
+  <string name="episode_cleanup_not_in_queue">Ha nincs sorbaállítva</string>
   <string name="episode_cleanup_after_listening">Befejezés után</string>
   <plurals name="episode_cleanup_hours_after_listening">
     <item quantity="one">befejezés után 1 órával</item>
@@ -285,7 +285,7 @@
   <string name="pref_autodl_wifi_filter_sum">Automatikus letöltés engedélyezése csak a kiválasztott Wi-Fi hálózatok esetén.</string>
   <string name="pref_automatic_download_on_battery_title">Letöltés, ha nincs akkumulátortöltés</string>
   <string name="pref_automatic_download_on_battery_sum">Automatikus letöltés engedélyezése, ha az akkumulátor nem töltődik</string>
-  <string name="pref_episode_cache_summary">Az eszközön tárolt letöltött epizódok száma. Az automatikus letöltés felfüggesztésre kerül, ha eléri ezt a számot.</string>
+
   <string name="pref_episode_cover_summary">Epizódspecifikus borító használata, ha lehetséges. Ha nincs bekapcsolva, akkor az alkalmazás mindig a podcast borítóját fogja használni.</string>
   <string name="pref_show_remain_time_summary">Ha be van jelölve, akkor megjeleníti az epizódból hátralévő időt. Ha nincs bejelölve, akkor az epizód hosszát jeleníti meg.</string>
   <string name="pref_theme_title_light">Világos</string>

@@ -235,7 +235,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 ## Screenshots
 
 ### Settings
-<img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/2_setting1.jpg" width="238" />
+<img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/2_setting01.jpg" width="238" /> <img src="./images/2_setting1.jpg" width="238" />
 
 ### Import/Export
 <img src="./images/2_setting2.jpg" width="238" /> <img src="./images/2_setting3.jpg" width="238" />

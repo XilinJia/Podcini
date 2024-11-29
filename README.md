@@ -255,8 +255,8 @@ For more details of the changes, see the [Changelog](changelog.md)
 ### Youtube share, syndicates and media
 <img src="./images/7_youtube_share.jpg" width="238" /> <img src="./images/7_youtube_syndicate.jpg" width="238" /> <img src="./images/7_youtube_shared.jpg" width="238" /> <img src="./images/7_youtube_episode.jpg" width="238" /> 
 
-### Multiple Queues
-<img src="./images/4_queue.jpg" width="238" /> <img src="./images/4_queue1.jpg" width="238" />  
+### Multiple queues and episodes easy access
+<img src="./images/4_queue.jpg" width="238" /> <img src="./images/4_episodes.jpg" width="238" />
 
 ### Usage customization
 <img src="./images/8_speed.jpg" width="238" /> <img src="./images/8_swipe_setting.jpg" width="238" /> <img src="./images/8_swipe_setting1.jpg" width="238" /> <img src="./images/8_swipe_actions.jpg" width="238" /> <img src="./images/8_multi_selection.jpg" width="238" />

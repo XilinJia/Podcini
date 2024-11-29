@@ -204,12 +204,12 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
                             if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            else leftActionState.value.performAction(it, this@FeedEpisodesFragment)
                         },
                         rightSwipeCB = {
                             Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
                             if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            else rightActionState.value.performAction(it, this@FeedEpisodesFragment)
                         },
                     )
                 }
@@ -635,7 +635,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     withContext(Dispatchers.Main) {
                         Logd(TAG, "loadItems subscribe called ${feed?.title}")
                         rating = feed?.rating ?: Rating.UNRATED.code
-                        swipeActions.setFilter(feed?.episodeFilter)
+//                        swipeActions.setFilter(feed?.episodeFilter)
                         refreshHeaderView()
 //                        if (feed != null) {
 //                            adapter.updateItems(episodes, feed)

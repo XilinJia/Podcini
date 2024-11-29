@@ -233,16 +233,16 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() },
                 applicationContext.getString(R.string.download_error_details)))
         }
-        private fun getDownloadLogsIntent(context: Context): PendingIntent {
-            val intent = MainActivityStarter(context).withDownloadLogsOpen().getIntent()
-            return PendingIntent.getActivity(context, R.id.pending_intent_download_service_report, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
-        private fun getDownloadsIntent(context: Context): PendingIntent {
-            val intent = MainActivityStarter(context).withFragmentLoaded("DownloadsFragment").getIntent()
-            return PendingIntent.getActivity(context, R.id.pending_intent_download_service_notification, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
+//        private fun getDownloadLogsIntent(context: Context): PendingIntent {
+//            val intent = MainActivityStarter(context).withDownloadLogsOpen().getIntent()
+//            return PendingIntent.getActivity(context, R.id.pending_intent_download_service_report, intent,
+//                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//        }
+//        private fun getDownloadsIntent(context: Context): PendingIntent {
+//            val intent = MainActivityStarter(context).withFragmentLoaded("DownloadsFragment").getIntent()
+//            return PendingIntent.getActivity(context, R.id.pending_intent_download_service_notification, intent,
+//                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//        }
         private fun sendErrorNotification(title: String) {
 //        TODO: need to get number of subscribers in SharedFlow
 //        if (EventBus.getDefault().hasSubscriberForEvent(FlowEvent.MessageEvent::class.java)) {
@@ -254,7 +254,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .setContentTitle(applicationContext.getString(R.string.download_report_title))
                 .setContentText(applicationContext.getString(R.string.download_error_tap_for_details))
                 .setSmallIcon(R.drawable.ic_notification_sync_error)
-                .setContentIntent(getDownloadLogsIntent(applicationContext))
+//                .setContentIntent(getDownloadLogsIntent(applicationContext))
                 .setAutoCancel(true)
             builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -277,7 +277,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .setContentTitle(applicationContext.getString(R.string.download_notification_title_episodes))
                 .setContentText(contentText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
-                .setContentIntent(getDownloadsIntent(applicationContext))
+//                .setContentIntent(getDownloadsIntent(applicationContext))
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setWhen(0)

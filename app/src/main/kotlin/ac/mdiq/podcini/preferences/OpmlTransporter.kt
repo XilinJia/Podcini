@@ -16,6 +16,10 @@ import android.util.Log
 import android.util.Xml
 import androidx.core.app.ActivityCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.io.input.BOMInputStream
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -164,54 +168,51 @@ class OpmlTransporter {
     }
 
     companion object {
-        fun startImport(context: Context, uri: Uri) {
+        fun startImport(context: Context, uri: Uri, CB: (List<OpmlElement>)->Unit) {
             val TAG = "OpmlTransporter"
-//            CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val opmlFileStream = context.contentResolver.openInputStream(uri)
-                val bomInputStream = BOMInputStream(opmlFileStream)
-                val bom = bomInputStream.bom
-                val charsetName = if (bom == null) "UTF-8" else bom.charsetName
-                val reader: Reader = InputStreamReader(bomInputStream, charsetName)
-                val opmlReader = OpmlReader()
-                val result = opmlReader.readDocument(reader)
-                reader.close()
-//                    withContext(Dispatchers.Main) {
-//                        binding.progressBar.visibility = View.GONE
-                Logd(TAG, "Parsing was successful")
-//                        readElements = result
-//                    }
-            } catch (e: Throwable) {
-//                    withContext(Dispatchers.Main) {
-                Logd(TAG, Log.getStackTraceString(e))
-                val message = if (e.message == null) "" else e.message!!
-                if (message.lowercase().contains("permission")) {
-                    val permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    if (permission != PackageManager.PERMISSION_GRANTED) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val opmlFileStream = context.contentResolver.openInputStream(uri)
+                    val bomInputStream = BOMInputStream(opmlFileStream)
+                    val bom = bomInputStream.bom
+                    val charsetName = if (bom == null) "UTF-8" else bom.charsetName
+                    val reader: Reader = InputStreamReader(bomInputStream, charsetName)
+                    val opmlReader = OpmlReader()
+                    val result = opmlReader.readDocument(reader)
+                    reader.close()
+                    withContext(Dispatchers.Main) { CB(result) }
+                } catch (e: Throwable) {
+                    withContext(Dispatchers.Main) {
+                        Logd(TAG, Log.getStackTraceString(e))
+                        val message = if (e.message == null) "" else e.message!!
+                        if (message.lowercase().contains("permission")) {
+                            val permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+                            if (permission != PackageManager.PERMISSION_GRANTED) {
 //                                requestPermission()
-                        return
-                    }
-                }
-//                        binding.progressBar.visibility = View.GONE
-                val alert = MaterialAlertDialogBuilder(context)
-                alert.setTitle(R.string.error_label)
-                val userReadable = context.getString(R.string.opml_reader_error)
-                val details = e.message
-                val total = """
+                                CB(listOf())
+                                return@withContext
+                            }
+                        }
+                        val alert = MaterialAlertDialogBuilder(context)
+                        alert.setTitle(R.string.error_label)
+                        val userReadable = context.getString(R.string.opml_reader_error)
+                        val details = e.message
+                        val total = """
                     $userReadable
                     
                     $details
                     """.trimIndent()
-                val errorMessage = SpannableString(total)
-                errorMessage.setSpan(ForegroundColorSpan(-0x77777778), userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                alert.setMessage(errorMessage)
-                alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                        val errorMessage = SpannableString(total)
+                        errorMessage.setSpan(ForegroundColorSpan(-0x77777778), userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        alert.setMessage(errorMessage)
+                        alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
 //                            finish()
+                        }
+                        alert.show()
+                        CB(listOf())
+                    }
                 }
-                alert.show()
-//                    }
             }
-//            }
         }
     }
 }

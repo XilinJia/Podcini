@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
@@ -24,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
@@ -37,12 +37,10 @@ import kotlinx.coroutines.withContext
 abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     val TAG = this::class.simpleName ?: "Anonymous"
 
-    @JvmField
-    protected var page: Int = 1
-    private var displayUpArrow = false
-
     var _binding: ComposeFragmentBinding? = null
     protected val binding get() = _binding!!
+
+    private var displayUpArrow = false
 
     protected var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
@@ -52,10 +50,12 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     lateinit var swipeActions: SwipeActions
 
     val episodes = mutableListOf<Episode>()
-    private val vms = mutableStateListOf<EpisodeVM>()
+    protected val vms = mutableStateListOf<EpisodeVM>()
     var showFilterDialog by mutableStateOf(false)
     var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+
+    var actionButtonToPass by mutableStateOf<((Episode) -> EpisodeActionButton)?>(null)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -65,24 +65,17 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
-//        toolbar.setOnLongClickListener {
-//            recyclerView.scrollToPosition(5)
-//            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-//            false
-//        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
-//        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-//        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-
         swipeActions = SwipeActions(this, TAG)
         lifecycle.addObserver(swipeActions)
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
-                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), onDismissRequest = { showFilterDialog = false } ) { onFilterChanged(it) }
+                if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
+                    onDismissRequest = { showFilterDialog = false } ) { onFilterChanged(it) }
                 if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { order, _ -> onSort(order) }
 
                 Column {
@@ -91,23 +84,28 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                         activity as MainActivity, vms = vms,
                         leftSwipeCB = {
                             if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            else leftActionState.value.performAction(it, this@BaseEpisodesFragment)
                         },
                         rightSwipeCB = {
                             if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                            else rightActionState.value.performAction(it, this@BaseEpisodesFragment)
                         },
+                        actionButton_ = actionButtonToPass
                     )
                 }
             }
         }
 
-        swipeActions.setFilter(getFilter())
+//        swipeActions.setFilter(getFilter())
         refreshSwipeTelltale()
         return binding.root
     }
 
     open fun onFilterChanged(filterValues: Set<String>) {}
+
+    open fun filtersDisabled(): MutableSet<EpisodeFilter.EpisodesFilterGroup> {
+        return mutableSetOf()
+    }
 
     open fun onSort(order: EpisodeSortOrder) {}
 
@@ -122,15 +120,8 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         cancelFlowEvents()
     }
 
-//    override fun onPause() {
-//        super.onPause()
-////        recyclerView.saveScrollPosition(getPrefName())
-////        unregisterForContextMenu(recyclerView)
-//    }
-
-    @Deprecated("Deprecated in Java")
-     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) return true
+     override fun onMenuItemClick(item: MenuItem): Boolean {
+//        if (super.onMenuItemClick(item)) return true
         val itemId = item.itemId
         when (itemId) {
             R.id.action_search -> {
@@ -164,7 +155,6 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 //            if (!event.isCompleted(url)) continue
             val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
             if (pos >= 0) {
-//                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
         }
@@ -187,6 +177,9 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
+                    is FlowEvent.HistoryEvent -> onHistoryEvent(event)
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.RatingEvent -> loadItems()
                     else -> {}
                 }
@@ -210,6 +203,12 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         }
     }
 
+    protected open fun onHistoryEvent(event: FlowEvent.HistoryEvent) {}
+
+    protected open fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) { }
+
+    protected open fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {}
+
     private fun refreshSwipeTelltale() {
         leftActionState.value = swipeActions.actions.left[0]
         rightActionState.value = swipeActions.actions.right[0]
@@ -222,14 +221,13 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
             Logd(TAG, "loadItems() called")
             lifecycleScope.launch {
                 try {
-                    val data = withContext(Dispatchers.IO) { Pair(loadData().toMutableList(), loadTotalItemCount()) }
-                    val restoreScrollPosition = episodes.isEmpty()
-                    episodes.clear()
-                    episodes.addAll(data.first)
+                    withContext(Dispatchers.IO) {
+                        episodes.clear()
+                        episodes.addAll(loadData())
+                    }
                     withContext(Dispatchers.Main) {
                         vms.clear()
-                        for (e in data.first) { vms.add(EpisodeVM(e)) }
-//                        if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
+                        for (e in episodes) { vms.add(EpisodeVM(e)) }
                         updateToolbar()
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -239,8 +237,6 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     }
 
     protected abstract fun loadData(): List<Episode>
-
-    protected abstract fun loadTotalItemCount(): Int
 
     open fun getFilter(): EpisodeFilter {
         return EpisodeFilter.unfiltered()
@@ -257,6 +253,5 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
     companion object {
         private const val KEY_UP_ARROW = "up_arrow"
-        const val EPISODES_PER_PAGE: Int = 50
     }
 }

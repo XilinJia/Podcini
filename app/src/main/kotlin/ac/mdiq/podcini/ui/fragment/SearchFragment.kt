@@ -7,7 +7,6 @@ import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.actions.SwipeAction
@@ -117,11 +116,11 @@ class SearchFragment : Fragment() {
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                         leftSwipeCB = {
                             if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(it, this@SearchFragment, swipeActions.filter ?: EpisodeFilter())
+                            else leftActionState.value.performAction(it, this@SearchFragment)
                         },
                         rightSwipeCB = {
                             if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(it, this@SearchFragment, swipeActions.filter ?: EpisodeFilter())
+                            else rightActionState.value.performAction(it, this@SearchFragment)
                         },
                     )
                 }

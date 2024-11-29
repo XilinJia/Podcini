@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
+import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
@@ -10,19 +11,19 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.preferences.OpmlTransporter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
-import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
+import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
@@ -33,8 +34,11 @@ import ac.mdiq.podcini.util.MiscFormatter
 import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
 import android.util.Log
 import android.view.Gravity
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -44,6 +48,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -69,6 +74,7 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import java.text.DecimalFormat
@@ -588,4 +594,59 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
             }
         }
     }
+}
+
+@Composable
+fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.OpmlElement>, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
+    val selectedItems = remember {  mutableStateMapOf<Int, Boolean>() }
+    AlertDialog(onDismissRequest = { onDismissRequest() },
+        title = { Text("Import OPML file") },
+        text = {
+            var isSelectAllChecked by remember { mutableStateOf(false) }
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Select/Deselect All", modifier = Modifier.weight(1f))
+                    Checkbox(checked = isSelectAllChecked, onCheckedChange = { isChecked ->
+                        isSelectAllChecked = isChecked
+                        readElements.forEachIndexed { index, _ -> selectedItems.put(index, isChecked) }
+                    })
+                }
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    itemsIndexed(readElements) { index, item ->
+                        Row(modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = item.text?:"", modifier = Modifier.weight(1f))
+                            Checkbox(checked = selectedItems[index]?: false, onCheckedChange = { checked -> selectedItems.put(index, checked) })
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                Logd("OpmlImportSelectionDialog", "checked: $selectedItems")
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            if (readElements.isNotEmpty()) {
+                                for (i in selectedItems.keys) {
+                                    if (selectedItems[i] != true) continue
+                                    val element = readElements[i]
+                                    val feed = Feed(element.xmlUrl, null, if (element.text != null) element.text else "Unknown podcast")
+                                    feed.episodes.clear()
+                                    updateFeed(context, feed, false)
+                                }
+                                runOnce(context)
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                        Toast.makeText(context, (e.message ?: "Import error"), Toast.LENGTH_LONG).show()
+                    }
+                }
+                onDismissRequest()
+            }) { Text("Confirm") }
+        },
+        dismissButton = { Button(onClick = { onDismissRequest() }) { Text("Dismiss") } }
+    )
 }

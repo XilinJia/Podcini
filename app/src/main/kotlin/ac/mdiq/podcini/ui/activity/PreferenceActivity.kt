@@ -9,6 +9,7 @@ import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
+import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SyncService.Companion.isValidGuid
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
@@ -28,14 +29,13 @@ import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.preferences.*
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.fallbackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
-import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
@@ -45,6 +45,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
+import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.EnqueueLocation
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -52,9 +53,9 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.OpmlImportSelectionDialog
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.navMap
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -77,6 +78,7 @@ import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.util.Patterns
+import android.util.SparseBooleanArray
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -120,8 +122,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
-import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
@@ -146,7 +146,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
-import kotlin.Throws
 import kotlin.math.round
 
 /**
@@ -594,12 +593,12 @@ class PreferenceActivity : AppCompatActivity() {
                                     ActivityCompat.recreate(requireActivity())
                                 })
                             }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                drawerPreferencesDialog(requireContext(), null)
-                            })) {
-                                Text(stringResource(R.string.pref_nav_drawer_items_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_nav_drawer_items_sum), color = textColor)
-                            }
+//                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+//                                drawerPreferencesDialog(requireContext(), null)
+//                            })) {
+//                                Text(stringResource(R.string.pref_nav_drawer_items_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+//                                Text(stringResource(R.string.pref_nav_drawer_items_sum), color = textColor)
+//                            }
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(stringResource(R.string.pref_episode_cover_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -731,44 +730,43 @@ class PreferenceActivity : AppCompatActivity() {
         enum class DefaultPages(val res: Int) {
             SubscriptionsFragment(R.string.subscriptions_label),
             QueuesFragment(R.string.queue_label),
-            AllEpisodesFragment(R.string.episodes_label),
-            DownloadsFragment(R.string.downloads_label),
+            EpisodesFragment(R.string.episodes_label),
+//            DownloadsFragment(R.string.downloads_label),
             PlaybackHistoryFragment(R.string.playback_history_label),
             AddFeedFragment(R.string.add_feed_label),
             StatisticsFragment(R.string.statistics_label),
             remember(R.string.remember_last_page);
         }
 
-        fun drawerPreferencesDialog(context: Context, callback: Runnable?) {
-            val hiddenItems = hiddenDrawerItems.map { it.trim() }.toMutableSet()
-//        val navTitles = context.resources.getStringArray(R.array.nav_drawer_titles)
-            val navTitles = navMap.values.map { context.resources.getString(it.nameRes).trim() }.toTypedArray()
-            val checked = BooleanArray(navMap.size)
-            for (i in navMap.keys.indices) {
-                val tag = navMap.keys.toList()[i]
-                if (!hiddenItems.contains(tag)) checked[i] = true
-            }
-            val builder = MaterialAlertDialogBuilder(context)
-            builder.setTitle(R.string.drawer_preferences)
-            builder.setMultiChoiceItems(navTitles, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
-                if (isChecked) hiddenItems.remove(navMap.keys.toList()[which])
-                else hiddenItems.add((navMap.keys.toList()[which]).trim())
-            }
-            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                hiddenDrawerItems = hiddenItems.toList()
-                if (hiddenItems.contains(defaultPage)) {
-                    for (tag in navMap.keys) {
-                        if (!hiddenItems.contains(tag)) {
-                            defaultPage = tag
-                            break
-                        }
-                    }
-                }
-                callback?.run()
-            }
-            builder.setNegativeButton(R.string.cancel_label, null)
-            builder.create().show()
-        }
+//        fun drawerPreferencesDialog(context: Context, callback: Runnable?) {
+//            val hiddenItems = hiddenDrawerItems.map { it.trim() }.toMutableSet()
+//            val navTitles = navMap.values.map { context.resources.getString(it.nameRes).trim() }.toTypedArray()
+//            val checked = BooleanArray(navMap.size)
+//            for (i in navMap.keys.indices) {
+//                val tag = navMap.keys.toList()[i]
+//                if (!hiddenItems.contains(tag)) checked[i] = true
+//            }
+//            val builder = MaterialAlertDialogBuilder(context)
+//            builder.setTitle(R.string.drawer_preferences)
+//            builder.setMultiChoiceItems(navTitles, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
+//                if (isChecked) hiddenItems.remove(navMap.keys.toList()[which])
+//                else hiddenItems.add((navMap.keys.toList()[which]).trim())
+//            }
+//            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+//                hiddenDrawerItems = hiddenItems.toList()
+//                if (hiddenItems.contains(defaultPage)) {
+//                    for (tag in navMap.keys) {
+//                        if (!hiddenItems.contains(tag)) {
+//                            defaultPage = tag
+//                            break
+//                        }
+//                    }
+//                }
+//                callback?.run()
+//            }
+//            builder.setNegativeButton(R.string.cancel_label, null)
+//            builder.create().show()
+//        }
 
         private fun showFullNotificationButtonsDialog() {
             val context: Context? = activity
@@ -855,10 +853,10 @@ class PreferenceActivity : AppCompatActivity() {
         @Suppress("EnumEntryName")
         private enum class Prefs(val res: Int, val tag: String) {
             prefSwipeQueue(R.string.queue_label, QueuesFragment.TAG),
-            prefSwipeEpisodes(R.string.episodes_label, AllEpisodesFragment.TAG),
-            prefSwipeDownloads(R.string.downloads_label, DownloadsFragment.TAG),
+            prefSwipeEpisodes(R.string.episodes_label, EpisodesFragment.TAG),
+//            prefSwipeDownloads(R.string.downloads_label, DownloadsFragment.TAG),
             prefSwipeFeed(R.string.individual_subscription, FeedEpisodesFragment.TAG),
-            prefSwipeHistory(R.string.playback_history_label, HistoryFragment.TAG)
+//            prefSwipeHistory(R.string.playback_history_label, HistoryFragment.TAG)
         }
     }
 
@@ -1209,32 +1207,145 @@ class PreferenceActivity : AppCompatActivity() {
     }
 
     class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
+        private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            exportWithWriter(OpmlWriter(), uri, ExportTypes.OPML)
+        }
 
-        private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.chooseOpmlExportPathResult(result) }
+        private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            exportWithWriter(HtmlWriter(), uri, ExportTypes.HTML)
+        }
 
-        private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.chooseHtmlExportPathResult(result) }
+        private val chooseFavoritesExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            exportWithWriter(FavoritesWriter(), uri, ExportTypes.FAVORITES)
+        }
 
-        private val chooseFavoritesExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.chooseFavoritesExportPathResult(result) }
+        private val chooseProgressExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            exportWithWriter(EpisodesProgressWriter(), uri, ExportTypes.PROGRESS)
+        }
 
-        private val chooseProgressExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.chooseProgressExportPathResult(result) }
+        private val restoreProgressLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data?.data == null) return@registerForActivityResult
+            val uri = result.data!!.data
+            uri?.let {
+//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+                if (isJsonFile(uri)) {
+                    showProgress = true
+                    lifecycleScope.launch {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
+                                val reader = BufferedReader(InputStreamReader(inputStream))
+                                EpisodeProgressReader.readDocument(reader)
+                                reader.close()
+                            }
+                            withContext(Dispatchers.Main) {
+                                showImportSuccessDialog()
+                                showProgress = false
+                            }
+                        } catch (e: Throwable) { showTransportErrorDialog(e) }
+                    }
+                } else {
+                    val context = requireContext()
+                    val message = context.getString(R.string.import_file_type_toast) + ".json"
+                    showTransportErrorDialog(Throwable(message))
+                }
+            }
+        }
 
-        private val restoreProgressLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.restoreProgressResult(result) }
+        private val restoreDatabaseLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            val uri = result.data!!.data
+            uri?.let {
+//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+                if (isRealmFile(uri)) {
+                    showProgress = true
+                    lifecycleScope.launch {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                DatabaseTransporter.importBackup(uri, requireContext())
+                            }
+                            withContext(Dispatchers.Main) {
+                                showImportSuccessDialog()
+                                showProgress = false
+                            }
+                        } catch (e: Throwable) { showTransportErrorDialog(e) }
+                    }
+                } else {
+                    val context = requireContext()
+                    val message = context.getString(R.string.import_file_type_toast) + ".realm"
+                    showTransportErrorDialog(Throwable(message))
+                }
+            }
+        }
 
-        private val restoreDatabaseLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.restoreDatabaseResult(result) }
+        private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? ->
+            if (uri == null) return@registerForActivityResult
+            showProgress = true
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) { DatabaseTransporter.exportToDocument(uri, requireContext()) }
+                    withContext(Dispatchers.Main) {
+                        showExportSuccessSnackbar(uri, "application/x-sqlite3")
+                        showProgress = false
+                    }
+                } catch (e: Throwable) { showTransportErrorDialog(e) }
+            }
+        }
 
-        private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? -> this.backupDatabaseResult(uri) }
+        private var showOpmlImportSelectionDialog by mutableStateOf(false)
+        private val readElements = mutableStateListOf<OpmlElement>()
 
-        private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) {
-                uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
+        private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri == null) return@registerForActivityResult
+            Logd(TAG, "chooseOpmlImportPathResult: uri: $uri")
+            OpmlTransporter.startImport(requireContext(), uri) {
+                readElements.addAll(it)
+                Logd(TAG, "readElements: ${readElements.size}")
+            }
+//        showImportSuccessDialog()
+            showOpmlImportSelectionDialog = true
+        }
 
-        private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.restorePreferencesResult(result) }
+        private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data?.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            if (isPrefDir(uri)) {
+                showProgress = true
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) { PreferencesTransporter.importBackup(uri, requireContext()) }
+                        withContext(Dispatchers.Main) {
+                            showImportSuccessDialog()
+                            showProgress = false
+                        }
+                    } catch (e: Throwable) { showTransportErrorDialog(e) }
+                }
+            } else {
+                val context = requireContext()
+                val message = context.getString(R.string.import_directory_toast) + "Podcini-Prefs"
+                showTransportErrorDialog(Throwable(message))
+            }
+        }
 
         private val backupPreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
@@ -1243,11 +1354,45 @@ class PreferenceActivity : AppCompatActivity() {
             }
         }
 
-        private val restoreMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.restoreMediaFilesResult(result) }
+        private val restoreMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data?.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            if (isMediaFilesDir(uri)) {
+                showProgress = true
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) { MediaFilesTransporter.importBackup(uri, requireContext()) }
+                        withContext(Dispatchers.Main) {
+                            showImportSuccessDialog()
+                            showProgress = false
+                        }
+                    } catch (e: Throwable) { showTransportErrorDialog(e) }
+                }
+            } else {
+                val context = requireContext()
+                val message = context.getString(R.string.import_directory_toast) + "Podcini-MediaFiles"
+                showTransportErrorDialog(Throwable(message))
+            }
+        }
 
-        private val backupMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                result: ActivityResult -> this.exportMediaFilesResult(result) }
+        private val backupMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode != RESULT_OK || result.data?.data == null) return@registerForActivityResult
+            val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            showProgress = true
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) { MediaFilesTransporter.exportToDocument(uri, requireContext()) }
+                    withContext(Dispatchers.Main) {
+                        showExportSuccessSnackbar(uri, null)
+                        showProgress = false
+                    }
+                } catch (e: Throwable) { showTransportErrorDialog(e) }
+            }
+        }
 
         private var showProgress by mutableStateOf(false)
 
@@ -1273,7 +1418,7 @@ class PreferenceActivity : AppCompatActivity() {
                         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
                             Text(stringResource(R.string.database), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                exportDatabase()
+                                backupDatabaseLauncher.launch(dateStampFilename("PodciniBackup-%s.realm"))
                             })) {
                                 Text(stringResource(R.string.database_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                                 Text(stringResource(R.string.database_export_summary), color = textColor)
@@ -1285,7 +1430,6 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(stringResource(R.string.database_import_summary), color = textColor)
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
-
                             Text(stringResource(R.string.media_files), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
                                 exportMediaFiles()
@@ -1300,7 +1444,6 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(stringResource(R.string.media_files_import_summary), color = textColor)
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
-
                             Text(stringResource(R.string.preferences), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
                                 exportPreferences()
@@ -1315,7 +1458,6 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(stringResource(R.string.preferences_import_summary), color = textColor)
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
-
                             Text(stringResource(R.string.opml), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
                                 openExportPathPicker(ExportTypes.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
@@ -1323,18 +1465,14 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(stringResource(R.string.opml_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                                 Text(stringResource(R.string.opml_export_summary), color = textColor)
                             }
+                            if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                try {
-                                    chooseOpmlImportPathLauncher.launch("*/*")
-                                } catch (e: ActivityNotFoundException) {
-                                    Log.e(TAG, "No activity found. Should never happen...")
-                                }
+                                try { chooseOpmlImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                             })) {
                                 Text(stringResource(R.string.opml_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                                 Text(stringResource(R.string.opml_import_summary), color = textColor)
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
-
                             Text(stringResource(R.string.progress), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
                                 openExportPathPicker(ExportTypes.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter())
@@ -1349,7 +1487,6 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(stringResource(R.string.progress_import_summary), color = textColor)
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
-
                             Text(stringResource(R.string.html), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
                                 openExportPathPicker(ExportTypes.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
@@ -1392,9 +1529,7 @@ class PreferenceActivity : AppCompatActivity() {
                     val worker = DocumentFileExportWorker(exportWriter, context!!, uri)
                     try {
                         val output = worker.exportFile()
-                        withContext(Dispatchers.Main) {
-                            showExportSuccessSnackbar(output.uri, exportType.contentType)
-                        }
+                        withContext(Dispatchers.Main) { showExportSuccessSnackbar(output.uri, exportType.contentType) }
                     } catch (e: Exception) { showTransportErrorDialog(e)
                     } finally { showProgress = false }
                 }
@@ -1449,10 +1584,6 @@ class PreferenceActivity : AppCompatActivity() {
 
             // create and show the alert dialog
             builder.show()
-        }
-
-        private fun exportDatabase() {
-            backupDatabaseLauncher.launch(dateStampFilename("PodciniBackup-%s.realm"))
         }
 
         private fun importDatabase() {
@@ -1519,98 +1650,9 @@ class PreferenceActivity : AppCompatActivity() {
             builder.show()
         }
 
-        private fun chooseProgressExportPathResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            exportWithWriter(EpisodesProgressWriter(), uri, ExportTypes.PROGRESS)
-        }
-
-        private fun chooseOpmlExportPathResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            exportWithWriter(OpmlWriter(), uri, ExportTypes.OPML)
-        }
-
-        private fun chooseHtmlExportPathResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            exportWithWriter(HtmlWriter(), uri, ExportTypes.HTML)
-        }
-
-        private fun chooseFavoritesExportPathResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            exportWithWriter(FavoritesWriter(), uri, ExportTypes.FAVORITES)
-        }
-
-        private fun restoreProgressResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data?.data == null) return
-            val uri = result.data!!.data
-            uri?.let {
-//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
-//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-                if (isJsonFile(uri)) {
-                    showProgress = true
-                    lifecycleScope.launch {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
-                                val reader = BufferedReader(InputStreamReader(inputStream))
-                                EpisodeProgressReader.readDocument(reader)
-                                reader.close()
-                            }
-                            withContext(Dispatchers.Main) {
-                                showImportSuccessDialog()
-                                showProgress = false
-                            }
-                        } catch (e: Throwable) { showTransportErrorDialog(e) }
-                    }
-                } else {
-                    val context = requireContext()
-                    val message = context.getString(R.string.import_file_type_toast) + ".json"
-                    showTransportErrorDialog(Throwable(message))
-                }
-            }
-        }
-
         private fun isJsonFile(uri: Uri): Boolean {
             val fileName = uri.lastPathSegment ?: return false
             return fileName.endsWith(".json", ignoreCase = true)
-        }
-
-        private fun restoreDatabaseResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data == null) return
-            val uri = result.data!!.data
-            uri?.let {
-//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
-//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-                if (isRealmFile(uri)) {
-                    showProgress = true
-                    lifecycleScope.launch {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                DatabaseTransporter.importBackup(uri, requireContext())
-                            }
-                            withContext(Dispatchers.Main) {
-                                showImportSuccessDialog()
-                                showProgress = false
-                            }
-                        } catch (e: Throwable) { showTransportErrorDialog(e) }
-                    }
-                } else {
-                    val context = requireContext()
-                    val message = context.getString(R.string.import_file_type_toast) + ".realm"
-                    showTransportErrorDialog(Throwable(message))
-                }
-            }
         }
 
         private fun isRealmFile(uri: Uri): Boolean {
@@ -1626,101 +1668,6 @@ class PreferenceActivity : AppCompatActivity() {
         private fun isMediaFilesDir(uri: Uri): Boolean {
             val fileName = uri.lastPathSegment ?: return false
             return fileName.contains("Podcini-MediaFiles", ignoreCase = true)
-        }
-
-        private fun restorePreferencesResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data?.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            if (isPrefDir(uri)) {
-                showProgress = true
-                lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            PreferencesTransporter.importBackup(uri, requireContext())
-                        }
-                        withContext(Dispatchers.Main) {
-                            showImportSuccessDialog()
-                            showProgress = false
-                        }
-                    } catch (e: Throwable) { showTransportErrorDialog(e) }
-                }
-            } else {
-                val context = requireContext()
-                val message = context.getString(R.string.import_directory_toast) + "Podcini-Prefs"
-                showTransportErrorDialog(Throwable(message))
-            }
-        }
-
-        private fun restoreMediaFilesResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data?.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            if (isMediaFilesDir(uri)) {
-                showProgress = true
-                lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            MediaFilesTransporter.importBackup(uri, requireContext())
-                        }
-                        withContext(Dispatchers.Main) {
-                            showImportSuccessDialog()
-                            showProgress = false
-                        }
-                    } catch (e: Throwable) { showTransportErrorDialog(e) }
-                }
-            } else {
-                val context = requireContext()
-                val message = context.getString(R.string.import_directory_toast) + "Podcini-MediaFiles"
-                showTransportErrorDialog(Throwable(message))
-            }
-        }
-
-        private fun exportMediaFilesResult(result: ActivityResult) {
-            if (result.resultCode != RESULT_OK || result.data?.data == null) return
-            val uri = result.data!!.data!!
-//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
-//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            showProgress = true
-            lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        MediaFilesTransporter.exportToDocument(uri, requireContext())
-                    }
-                    withContext(Dispatchers.Main) {
-                        showExportSuccessSnackbar(uri, null)
-                        showProgress = false
-                    }
-                } catch (e: Throwable) { showTransportErrorDialog(e) }
-            }
-        }
-
-        private fun backupDatabaseResult(uri: Uri?) {
-            if (uri == null) return
-            showProgress = true
-            lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        DatabaseTransporter.exportToDocument(uri, requireContext())
-                    }
-                    withContext(Dispatchers.Main) {
-                        showExportSuccessSnackbar(uri, "application/x-sqlite3")
-                        showProgress = false
-                    }
-                } catch (e: Throwable) { showTransportErrorDialog(e) }
-            }
-        }
-
-        private fun chooseOpmlImportPathResult(uri: Uri?) {
-            if (uri == null) return
-            Logd(TAG, "chooseOpmlImportPathResult: uri: $uri")
-//        OpmlTransporter.startImport(requireContext(), uri)
-//        showImportSuccessDialog()
-            val intent = Intent(context, OpmlImportActivity::class.java)
-            intent.setData(uri)
-            startActivity(intent)
         }
 
         private fun openExportPathPicker(exportType: ExportTypes, result: ActivityResultLauncher<Intent>, writer: ExportWriter) {
@@ -1745,9 +1692,7 @@ class PreferenceActivity : AppCompatActivity() {
 
         private class BackupDatabase : CreateDocument() {
             override fun createIntent(context: Context, input: String): Intent {
-                return super.createIntent(context, input)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .setType("application/x-sqlite3")
+                return super.createIntent(context, input).addCategory(Intent.CATEGORY_OPENABLE).setType("application/x-sqlite3")
             }
         }
 
@@ -1837,9 +1782,7 @@ class PreferenceActivity : AppCompatActivity() {
                                 }
                             }
                             when {
-//                  for debug version importing release version
                                 BuildConfig.DEBUG && !destName.contains(".debug") -> destName = destName.replace("podcini.R", "podcini.R.debug")
-//                  for release version importing debug version
                                 !BuildConfig.DEBUG && destName.contains(".debug") -> destName = destName.replace(".debug", "")
                             }
                             val destFile = File(sharedPreferencesDir, destName)
@@ -1865,9 +1808,7 @@ class PreferenceActivity : AppCompatActivity() {
                     val mediaDir = context.getExternalFilesDir("media") ?: return
                     val chosenDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Destination directory is not valid")
                     val exportSubDir = chosenDir.createDirectory("Podcini-MediaFiles") ?: throw IOException("Error creating subdirectory Podcini-Prefs")
-                    mediaDir.listFiles()?.forEach { file ->
-                        copyRecursive(context, file, mediaDir, exportSubDir)
-                    }
+                    mediaDir.listFiles()?.forEach { file -> copyRecursive(context, file, mediaDir, exportSubDir) }
                 } catch (e: IOException) {
                     Log.e(TAG, Log.getStackTraceString(e))
                     throw e
@@ -1879,9 +1820,7 @@ class PreferenceActivity : AppCompatActivity() {
                     val dirFiles = srcFile.listFiles()
                     if (!dirFiles.isNullOrEmpty()) {
                         val destDir = destRootDir.findFile(relativePath) ?: destRootDir.createDirectory(relativePath) ?: return
-                        dirFiles.forEach { file ->
-                            copyRecursive(context, file, srcFile, destDir)
-                        }
+                        dirFiles.forEach { file -> copyRecursive(context, file, srcFile, destDir) }
                     }
                 } else {
                     val destFile = destRootDir.createFile("application/octet-stream", relativePath) ?: return
@@ -1907,14 +1846,10 @@ class PreferenceActivity : AppCompatActivity() {
                     feed = nameFeedMap[relativePath] ?: return
                     Logd(TAG, "copyRecursive found feed: ${feed?.title}")
                     nameEpisodeMap.clear()
-                    feed!!.episodes.forEach { e ->
-                        if (!e.title.isNullOrEmpty()) nameEpisodeMap[generateFileName(e.title!!)] = e
-                    }
+                    feed!!.episodes.forEach { e -> if (!e.title.isNullOrEmpty()) nameEpisodeMap[generateFileName(e.title!!)] = e }
                     val destFile = File(destRootDir, relativePath)
                     if (!destFile.exists()) destFile.mkdirs()
-                    srcFile.listFiles().forEach { file ->
-                        copyRecursive(context, file, srcFile, destFile)
-                    }
+                    srcFile.listFiles().forEach { file -> copyRecursive(context, file, srcFile, destFile) }
                 } else {
                     val nameParts = relativePath.split(".")
                     if (nameParts.size < 3) return
@@ -1950,9 +1885,7 @@ class PreferenceActivity : AppCompatActivity() {
             private fun copyStream(inputStream: InputStream, outputStream: OutputStream) {
                 val buffer = ByteArray(1024)
                 var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
-                }
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) outputStream.write(buffer, 0, bytesRead)
             }
             @Throws(IOException::class)
             fun importBackup(uri: Uri, context: Context) {
@@ -1963,12 +1896,8 @@ class PreferenceActivity : AppCompatActivity() {
                     val fileList = exportedDir.listFiles()
                     if (fileList.isNotEmpty()) {
                         val feeds = getFeedList()
-                        feeds.forEach { f ->
-                            if (!f.title.isNullOrEmpty()) nameFeedMap[generateFileName(f.title!!)] = f
-                        }
-                        fileList.forEach { file ->
-                            copyRecursive(context, file, exportedDir, mediaDir)
-                        }
+                        feeds.forEach { f -> if (!f.title.isNullOrEmpty()) nameFeedMap[generateFileName(f.title!!)] = f }
+                        fileList.forEach { file -> copyRecursive(context, file, exportedDir, mediaDir) }
                     }
                 } catch (e: IOException) {
                     Log.e(TAG, Log.getStackTraceString(e))
@@ -2094,7 +2023,7 @@ class PreferenceActivity : AppCompatActivity() {
                 val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
                 val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
-                val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
+                val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.superb.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val comItems = mutableSetOf<Episode>()
                 comItems.addAll(pausedItems)
                 comItems.addAll(readItems)
@@ -2153,7 +2082,7 @@ class PreferenceActivity : AppCompatActivity() {
                 val favTemplate = IOUtils.toString(favTemplateStream, UTF_8)
                 val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
                 val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
-                val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
+                val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.superb.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val favoritesByFeed = buildFeedMap(allFavorites)
                 writer!!.append(templateParts[0])
                 for (feedId in favoritesByFeed.keys) {
@@ -2724,7 +2653,6 @@ class PreferenceActivity : AppCompatActivity() {
     }
 
     class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
-
         var selectedProvider by mutableStateOf(SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey))
         var loggedIn by mutableStateOf(isProviderConnected)
 
@@ -3153,7 +3081,7 @@ class PreferenceActivity : AppCompatActivity() {
                     login.isEnabled = false
                     progressBar.visibility = View.VISIBLE
                     txtvError.visibility = View.GONE
-                    val inputManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    val inputManager = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                     inputManager.hideSoftInputFromWindow(login.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 
                     lifecycleScope.launch {
@@ -3442,7 +3370,7 @@ class PreferenceActivity : AppCompatActivity() {
                                     appPrefs.edit().putBoolean(UserPreferences.Prefs.prefShowDownloadReport.name, it).apply()
                                 })
                             }
-                            if (SynchronizationSettings.isProviderConnected) {
+                            if (isProviderConnected) {
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(stringResource(R.string.notification_channel_sync_error), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)

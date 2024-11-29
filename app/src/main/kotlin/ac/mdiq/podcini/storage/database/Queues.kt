@@ -51,7 +51,7 @@ object Queues {
      */
     var queueKeepSortedOrder: EpisodeSortOrder?
         get() {
-            val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")
+            val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")!!
             return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
         }
         set(sortOrder) {
@@ -61,8 +61,8 @@ object Queues {
 
     var enqueueLocation: EnqueueLocation
         get() {
-            val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)
-            try { return EnqueueLocation.valueOf(valStr!!)
+            val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)!!
+            try { return EnqueueLocation.valueOf(valStr)
             } catch (t: Throwable) {
                 // should never happen but just in case
                 Log.e(TAG, "getEnqueueLocation: invalid value '$valStr' Use default.", t)

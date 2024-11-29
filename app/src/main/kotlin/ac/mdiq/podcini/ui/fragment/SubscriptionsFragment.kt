@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
-import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.DocumentFileExportWorker
 import ac.mdiq.podcini.preferences.ExportTypes
@@ -28,7 +27,10 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import android.app.Activity.RESULT_OK
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -75,7 +77,6 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
@@ -532,9 +533,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (showSpeedDialog) PlaybackSpeedDialog(selected, initSpeed = 1f, maxSpeed = 3f, onDismiss = {showSpeedDialog = false}) { newSpeed ->
             saveFeedPreferences { it: FeedPreferences -> it.playSpeed = newSpeed }
         }
+        var showAutoDownloadSwitchDialog by remember { mutableStateOf(false) }
+        if (showAutoDownloadSwitchDialog) SimpleSwitchDialog(stringResource(R.string.auto_download_settings_label), stringResource(R.string.auto_download_label), onDismissRequest = { showAutoDownloadSwitchDialog = false }) { enabled ->
+            saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
+        }
 
         @Composable
-        fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Feed>, modifier: Modifier = Modifier) {
+        fun EpisodeSpeedDial(selected: SnapshotStateList<Feed>, modifier: Modifier = Modifier) {
             val TAG = "EpisodeSpeedDial ${selected.size}"
             var isExpanded by remember { mutableStateOf(false) }
             val options = listOf<@Composable () -> Unit>(
@@ -558,13 +563,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_download: ${selected.size}")
-                    val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
-                    preferenceSwitchDialog.setOnPreferenceChangedListener( object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-                        override fun preferenceChanged(enabled: Boolean) {
-                            saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
-                        }
-                    })
-                    preferenceSwitchDialog.openDialog()
+                    showAutoDownloadSwitchDialog = true
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
                     Text(stringResource(id = R.string.auto_download_label)) } },
@@ -834,7 +833,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Logd(TAG, "selectedIds: ${selected.size}")
                         }))
                 }
-                EpisodeSpeedDial(activity as MainActivity, selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
+                EpisodeSpeedDial(selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
             }
         }
     }
@@ -1427,33 +1426,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }
             }
-        }
-    }
-
-    class PreferenceSwitchDialog(private var context: Context, private val title: String, private val text: String) {
-        private var onPreferenceChangedListener: OnPreferenceChangedListener? = null
-        interface OnPreferenceChangedListener {
-            fun preferenceChanged(enabled: Boolean)
-        }
-        fun openDialog() {
-            val builder = MaterialAlertDialogBuilder(context)
-            builder.setTitle(title)
-
-            val inflater = LayoutInflater.from(this.context)
-            val layout = inflater.inflate(R.layout.dialog_switch_preference, null, false)
-            val binding = DialogSwitchPreferenceBinding.bind(layout)
-            val switchButton = binding.dialogSwitch
-            switchButton.text = text
-            builder.setView(layout)
-
-            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                onPreferenceChangedListener?.preferenceChanged(switchButton.isChecked)
-            }
-            builder.setNegativeButton(R.string.cancel_label, null)
-            builder.create().show()
-        }
-        fun setOnPreferenceChangedListener(onPreferenceChangedListener: OnPreferenceChangedListener?) {
-            this.onPreferenceChangedListener = onPreferenceChangedListener
         }
     }
 

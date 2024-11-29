@@ -38,25 +38,26 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
          * Converts the string representation to its enum value. If the string value is unknown,
          * the given default value is returned.
          */
-        fun parseWithDefault(value: String?, defaultValue: EpisodeSortOrder): EpisodeSortOrder {
-            return try { valueOf(value!!) } catch (e: IllegalArgumentException) { defaultValue }
+        fun parseWithDefault(value: String, defaultValue: EpisodeSortOrder): EpisodeSortOrder {
+            return try { valueOf(value) } catch (e: IllegalArgumentException) { defaultValue }
         }
 
-        fun fromCodeString(codeStr: String?): EpisodeSortOrder? {
-            if (codeStr.isNullOrEmpty()) return null
+        fun fromCodeString(codeStr: String?): EpisodeSortOrder {
+            if (codeStr.isNullOrEmpty()) return EPISODE_TITLE_A_Z
             val code = codeStr.toInt()
             for (sortOrder in entries) {
                 if (sortOrder.code == code) return sortOrder
             }
-            throw IllegalArgumentException("Unsupported code: $code")
+            return EPISODE_TITLE_A_Z
+//            throw IllegalArgumentException("Unsupported code: $code")
         }
 
-        fun fromCode(code: Int): EpisodeSortOrder? {
-            return enumValues<EpisodeSortOrder>().firstOrNull { it.code == code }
+        fun fromCode(code: Int): EpisodeSortOrder {
+            return enumValues<EpisodeSortOrder>().firstOrNull { it.code == code } ?: EPISODE_TITLE_A_Z
         }
 
-        fun toCodeString(sortOrder: EpisodeSortOrder?): String? {
-            return sortOrder?.code?.toString()
+        fun toCodeString(sortOrder: EpisodeSortOrder): String? {
+            return sortOrder.code.toString()
         }
 
         fun valuesOf(stringValues: Array<String?>): Array<EpisodeSortOrder?> {

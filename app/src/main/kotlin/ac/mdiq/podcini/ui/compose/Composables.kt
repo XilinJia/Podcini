@@ -1,16 +1,22 @@
 package ac.mdiq.podcini.ui.compose
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -163,5 +169,51 @@ fun NonlazyGrid(columns: Int, itemCount: Int, modifier: Modifier = Modifier, con
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SimpleSwitchDialog(title: String, text: String, onDismissRequest: ()->Unit, callback: (Boolean)-> Unit) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    var isChecked by remember { mutableStateOf(false) }
+    AlertDialog(onDismissRequest = { onDismissRequest() },
+        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        text = {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+                Text(text, color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Switch(checked = isChecked, onCheckedChange = { isChecked = it })
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                callback(isChecked)
+                onDismissRequest()
+            }) { Text(text = "OK") }
+        },
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+    )
+}
+
+@Composable
+fun TitleSummaryColumn(titleRes: Int, summaryRes: Int, callback: ()-> Unit) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { callback() })) {
+        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(summaryRes), color = textColor)
+    }
+}
+
+@Composable
+fun TitleSummarySwitchRow(titleRes: Int, summaryRes: Int, prefName: String) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(summaryRes), color = textColor)
+        }
+        var isChecked by remember { mutableStateOf(appPrefs.getBoolean(prefName, false)) }
+        Switch(checked = isChecked, onCheckedChange = {
+            isChecked = it
+            appPrefs.edit().putBoolean(prefName, it).apply() })
     }
 }

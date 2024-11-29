@@ -22,6 +22,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
+import ac.mdiq.podcini.storage.model.FeedPreferences.AudioType
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
@@ -481,6 +482,13 @@ object Feeds {
         return !feed.isLocalFeed || isAutoDeleteLocal
     }
 
+    fun createYTSyndicates() {
+        getYoutubeSyndicate(true, false)
+        getYoutubeSyndicate(false, false)
+        getYoutubeSyndicate(true, true)
+        getYoutubeSyndicate(false, true)
+    }
+
     private fun getYoutubeSyndicate(video: Boolean, music: Boolean): Feed {
         var feedId: Long = if (video) 1 else 2
         if (music) feedId += 2  // music feed takes ids 3 and 4
@@ -492,6 +500,7 @@ object Feeds {
         feed = createSynthetic(feedId, name)
         feed.type = Feed.FeedType.YOUTUBE.name
         feed.hasVideoMedia = video
+        feed.preferences!!.audioTypeSetting = if (music) AudioType.MOVIE else AudioType.SPEECH
         feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
         EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
@@ -509,8 +518,26 @@ object Feeds {
         episode.feedId = feed.id
         episode.media?.id = episode.id
         upsertBlk(episode) {}
-        feed.episodes.add(episode)
-        upsertBlk(feed) {}
+        upsertBlk(feed) {
+            it.episodes.add(episode)
+        }
+        EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
+        return 1
+    }
+
+    fun addToSyndicate(episode: Episode, feed: Feed) : Int {
+        Logd(TAG, "addToYoutubeSyndicate: feed: ${feed.title}")
+        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return 2
+
+        Logd(TAG, "addToSyndicate adding new episode: ${episode.title}")
+        episode.feed = feed
+        episode.id = Feed.newId()
+        episode.feedId = feed.id
+        episode.media?.id = episode.id
+        upsertBlk(episode) {}
+        upsertBlk(feed) {
+            it.episodes.add(episode)
+        }
         EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
         return 1
     }

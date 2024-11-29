@@ -56,6 +56,11 @@ class Episode : RealmObject {
 
     var feedId: Long? = null
 
+    // parent in these refers to the original parent of the content (shared)
+    var parentTitle: String? = null
+
+    var parentURL: String? = null
+
     var podcastIndexChapterUrl: String? = null
 
     var playState: Int

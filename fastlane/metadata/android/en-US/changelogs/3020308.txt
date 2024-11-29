@@ -1,0 +1,15 @@
+ Version 6.15.0
+
+* added a combo Epiosdes fragment with easy access to various filters
+	* merged AllEpisodes, History and Download into Episodes
+	* other easy accesses include: New, Planned (for Soon and Later), Repeats (for Again and Forever), Liked (for Good and Super)
+	* New episodes can be cleared via the manu
+* drawer items customization is disabled in Settings
+* drawer includes 5 most recent feeds
+* rearranged routines in ImportExportPreferences
+* importing OPML file is done within the activity, no longer starts OpmlImportActivity
+* removed OpmlImportActivity
+* getting shared youtube media has a new interface to select feed
+* cleaned up SwipeActions, removed the need for filter
+* more Compose migrations
+* media3 update to 1.5.0

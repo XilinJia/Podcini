@@ -10,15 +10,17 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.net.feed.searcher.*
 import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.isOPMLRestared
 import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.performRestore
+import ac.mdiq.podcini.preferences.OpmlTransporter
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.NonlazyGrid
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
+import ac.mdiq.podcini.ui.compose.OpmlImportSelectionDialog
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.feedCount
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -98,10 +100,46 @@ class OnlineSearchFragment : Fragment() {
     private var numColumns by mutableIntStateOf(4)
     private val searchResult = mutableStateListOf<PodcastSearchResult>()
 
+    private var showOpmlImportSelectionDialog by mutableStateOf(false)
+    private val readElements = mutableStateListOf<OpmlElement>()
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        this.chooseOpmlImportPathResult(uri) }
+        if (uri == null) return@registerForActivityResult
+        OpmlTransporter.startImport(requireContext(), uri) { readElements.addAll(it) }
+        showOpmlImportSelectionDialog = true
+    }
 
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? ->
+        if (uri == null) return@registerForActivityResult
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                val feed = withContext(Dispatchers.IO) {
+//                    addLocalFolder(uri)
+                    requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
+                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
+                    var title = documentFile.name
+                    if (title == null) title = getString(R.string.local_folder)
+
+                    val dirFeed = Feed(Feed.PREFIX_LOCAL_FOLDER + uri.toString(), null, title)
+                    dirFeed.episodes.clear()
+                    dirFeed.sortOrder = EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    val fromDatabase: Feed? = updateFeed(requireContext(), dirFeed, false)
+                    FeedUpdateManager.runOnce(requireContext(), fromDatabase)
+                    fromDatabase
+                }
+                withContext(Dispatchers.Main) {
+                    if (feed != null) {
+                        val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
+                        mainAct?.loadChildFragment(fragment)
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                mainAct?.showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -170,6 +208,7 @@ class OnlineSearchFragment : Fragment() {
             Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
             Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
             Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
+            if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
             Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = {
                 try { chooseOpmlImportPathLauncher.launch("*/*")
                 } catch (e: ActivityNotFoundException) {
@@ -330,48 +369,6 @@ class OnlineSearchFragment : Fragment() {
         Logd(TAG, "onDestroyView")
         _binding = null
         super.onDestroyView()
-    }
-
-    private fun chooseOpmlImportPathResult(uri: Uri?) {
-        if (uri == null) return
-
-        val intent = Intent(context, OpmlImportActivity::class.java)
-        intent.setData(uri)
-        startActivity(intent)
-    }
-
-     private fun addLocalFolderResult(uri: Uri?) {
-        if (uri == null) return
-        val scope = CoroutineScope(Dispatchers.Main)
-        scope.launch {
-            try {
-                val feed = withContext(Dispatchers.IO) { addLocalFolder(uri) }
-                withContext(Dispatchers.Main) {
-                    if (feed != null) {
-                        val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                        mainAct?.loadChildFragment(fragment)
-                    }
-                }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-                mainAct?.showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
-            }
-        }
-    }
-
-     private fun addLocalFolder(uri: Uri): Feed? {
-        requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
-        requireNotNull(documentFile) { "Unable to retrieve document tree" }
-        var title = documentFile.name
-        if (title == null) title = getString(R.string.local_folder)
-
-        val dirFeed = Feed(Feed.PREFIX_LOCAL_FOLDER + uri.toString(), null, title)
-        dirFeed.episodes.clear()
-        dirFeed.sortOrder = EpisodeSortOrder.EPISODE_TITLE_A_Z
-        val fromDatabase: Feed? = updateFeed(requireContext(), dirFeed, false)
-        FeedUpdateManager.runOnce(requireContext(), fromDatabase)
-        return fromDatabase
     }
 
     private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {

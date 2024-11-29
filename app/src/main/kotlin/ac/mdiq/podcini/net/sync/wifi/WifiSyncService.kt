@@ -245,7 +245,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
 //            only push downloaded items
             val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
             val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
-            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
+            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.superb.name), EpisodeSortOrder.DATE_NEW_OLD)
             val comItems = mutableSetOf<Episode>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)

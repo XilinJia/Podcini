@@ -168,9 +168,9 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.addView(spinnerView)
 
         swipeActions = SwipeActions(this, TAG)
-        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
+//        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
         swipeActionsBin = SwipeActions(this, "$TAG.Bin")
-        swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
+//        swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
 
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
@@ -179,11 +179,11 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
                         val leftCB = { episode: Episode ->
                             if (leftActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
-                            else leftActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                            else leftActionStateBin.value.performAction(episode, this@QueuesFragment)
                         }
                         val rightCB = { episode: Episode ->
                             if (rightActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
-                            else rightActionStateBin.value.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                            else rightActionStateBin.value.performAction(episode, this@QueuesFragment)
                         }
                         EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
@@ -200,11 +200,11 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                             val leftCB = { episode: Episode ->
                                 if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                                else leftActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                                else leftActionState.value.performAction(episode, this@QueuesFragment)
                             }
                             val rightCB = { episode: Episode ->
                                 if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                                else rightActionState.value.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                                else rightActionState.value.performAction(episode, this@QueuesFragment)
                             }
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                 isDraggable = dragDropEnabled, dragCB = { iFrom, iTo -> runOnIOScope { moveInQueueSync(iFrom, iTo, true) } },

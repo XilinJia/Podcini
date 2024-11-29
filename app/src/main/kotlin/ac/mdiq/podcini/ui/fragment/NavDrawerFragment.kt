@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
@@ -11,7 +12,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ARGUMENT_FEED_ID
-import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfPlayed
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
@@ -98,8 +98,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
     private fun getRecentPodcasts() {
         var feeds_ = realm.query(Feed::class).sort("lastPlayed", sortOrder = Sort.DESCENDING).find().toMutableList()
-        if (feeds_.size > 3) feeds_ = feeds_.subList(0, 3)
-//        for (f in feeds_) Logd(TAG, "getRecentPodcasts ${f.title}")
+        if (feeds_.size > 5) feeds_ = feeds_.subList(0, 5)
         feeds.clear()
         feeds.addAll(feeds_)
     }
@@ -114,6 +113,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                     (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(nav.iconRes), tint = textColor, contentDescription = nav.tag, modifier = Modifier.padding(start = 10.dp))
+//                    val nametag = if (nav.tag != QueuesFragment.TAG) stringResource(nav.nameRes) else curQueue.name
                     Text(stringResource(nav.nameRes), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
                     Spacer(Modifier.weight(1f))
                     if (nav.count > 0) Text(nav.count.toString(), color = textColor, modifier = Modifier.padding(end = 10.dp))
@@ -219,11 +219,11 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         val navMap: LinkedHashMap<String, NavItem> = linkedMapOf(
             SubscriptionsFragment.TAG to NavItem(SubscriptionsFragment.TAG, R.drawable.ic_subscriptions, R.string.subscriptions_label),
             QueuesFragment.TAG to NavItem(QueuesFragment.TAG, R.drawable.ic_playlist_play, R.string.queue_label),
-            AllEpisodesFragment.TAG to NavItem(AllEpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
-            DownloadsFragment.TAG to NavItem(DownloadsFragment.TAG, R.drawable.ic_download, R.string.downloads_label),
-            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.baseline_work_history_24, R.string.playback_history_label),
+            EpisodesFragment.TAG to NavItem(EpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
+//            AllEpisodesFragment.TAG to NavItem(AllEpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
+//            DownloadsFragment.TAG to NavItem(DownloadsFragment.TAG, R.drawable.ic_download, R.string.downloads_label),
+//            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.baseline_work_history_24, R.string.playback_history_label),
             LogsFragment.TAG to NavItem(LogsFragment.TAG, R.drawable.ic_history, R.string.logs_label),
-//            SubscriptionLogFragment.TAG to NavItem(SubscriptionLogFragment.TAG, R.drawable.ic_subscriptions, R.string.subscriptions_log_label),
             StatisticsFragment.TAG to NavItem(StatisticsFragment.TAG, R.drawable.ic_chart_box, R.string.statistics_label),
             OnlineSearchFragment.TAG to NavItem(OnlineSearchFragment.TAG, R.drawable.ic_add, R.string.add_feed_label)
         )
@@ -251,9 +251,10 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             feedCount = getFeedCount()
             navMap[QueuesFragment.TAG]?.count = realm.query(PlayQueue::class).find().sumOf { it.size()}
             navMap[SubscriptionsFragment.TAG]?.count = feedCount
-            navMap[HistoryFragment.TAG]?.count = getNumberOfPlayed().toInt()
-            navMap[DownloadsFragment.TAG]?.count = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-            navMap[AllEpisodesFragment.TAG]?.count = numItems
+//            navMap[HistoryFragment.TAG]?.count = getNumberOfPlayed().toInt()
+//            navMap[DownloadsFragment.TAG]?.count = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
+//            navMap[AllEpisodesFragment.TAG]?.count = numItems
+            navMap[EpisodesFragment.TAG]?.count = numItems
             navMap[LogsFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt() +
                     realm.query(SubscriptionLog::class).count().find().toInt() +
                     realm.query(DownloadResult::class).count().find().toInt()

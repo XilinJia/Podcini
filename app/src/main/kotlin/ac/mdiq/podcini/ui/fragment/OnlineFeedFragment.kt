@@ -709,7 +709,7 @@ class OnlineFeedFragment : Fragment() {
     }
 
     class RemoteEpisodesFragment : BaseEpisodesFragment() {
-        private val episodeList: MutableList<Episode> = mutableListOf()
+        private var episodeList: MutableList<Episode> = mutableListOf()
 
          override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val root = super.onCreateView(inflater, container, savedInstanceState)
@@ -720,29 +720,21 @@ class OnlineFeedFragment : Fragment() {
             return root
         }
         override fun onDestroyView() {
-            episodeList.clear()
             super.onDestroyView()
         }
         fun setEpisodes(episodeList_: MutableList<Episode>) {
-            episodeList.clear()
-            episodeList.addAll(episodeList_)
+            episodeList = episodeList_
         }
         override fun loadData(): List<Episode> {
-            if (episodeList.isEmpty()) return listOf()
             return episodeList
-        }
-        override fun loadTotalItemCount(): Int {
-            return episodeList.size
         }
         override fun getPrefName(): String {
             return PREF_NAME
         }
         override fun updateToolbar() {
-            binding.toolbar.menu.findItem(R.id.episodes_sort).isVisible = false
-//        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
-            binding.toolbar.menu.findItem(R.id.action_search).isVisible = false
-//            binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
-            binding.toolbar.menu.findItem(R.id.filter_items).isVisible = false
+            toolbar.menu.findItem(R.id.episodes_sort).isVisible = false
+            toolbar.menu.findItem(R.id.action_search).isVisible = false
+            toolbar.menu.findItem(R.id.filter_items).isVisible = false
             infoBarText.value = "${episodes.size} episodes"
         }
          override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -771,11 +763,6 @@ class OnlineFeedFragment : Fragment() {
         private const val PREFS = "OnlineFeedViewFragmentPreferences"
         private const val PREF_LAST_AUTO_DOWNLOAD = "lastAutoDownload"
         private const val KEY_UP_ARROW = "up_arrow"
-
-//        var prefs: SharedPreferences? = null
-//        fun getSharedPrefs(context: Context) {
-//            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-//        }
 
         fun newInstance(feedUrl: String, isShared: Boolean = false): OnlineFeedFragment {
             val fragment = OnlineFeedFragment()

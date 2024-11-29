@@ -7,12 +7,16 @@ import java.io.Serializable
 class EpisodeFilter(vararg properties_: String) : Serializable {
     val properties: HashSet<String> = setOf(*properties_).filter { it.isNotEmpty() }.map {it.trim()}.toHashSet()
 
-    val showQueued: Boolean = properties.contains(States.queued.name)
-    val showNotQueued: Boolean = properties.contains(States.not_queued.name)
+//    val showQueued: Boolean = properties.contains(States.queued.name)
+//    val showNotQueued: Boolean = properties.contains(States.not_queued.name)
     val showDownloaded: Boolean = properties.contains(States.downloaded.name)
     val showNotDownloaded: Boolean = properties.contains(States.not_downloaded.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
+
+    fun add(vararg properties_: String) {
+        properties.addAll(setOf(*properties_).filter { it.isNotEmpty() }.map {it.trim()})
+    }
 
     fun queryString(): String {
         val statements: MutableList<String> = mutableListOf()
@@ -37,7 +41,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         if (properties.contains(States.bad.name)) ratingQuerys.add(" rating == ${Rating.BAD.code} ")
         if (properties.contains(States.neutral.name)) ratingQuerys.add(" rating == ${Rating.OK.code} ")
         if (properties.contains(States.good.name)) ratingQuerys.add(" rating == ${Rating.GOOD.code} ")
-        if (properties.contains(States.favorite.name)) ratingQuerys.add(" rating == ${Rating.SUPER.code} ")
+        if (properties.contains(States.superb.name)) ratingQuerys.add(" rating == ${Rating.SUPER.code} ")
         if (ratingQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + ratingQuerys[0])
             if (ratingQuerys.size > 1) for (r in ratingQuerys.subList(1, ratingQuerys.size)) {
@@ -135,8 +139,8 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         no_media,
         has_comments,
         no_comments,
-        queued,
-        not_queued,
+//        queued,
+//        not_queued,
         downloaded,
         not_downloaded,
         auto_downloadable,
@@ -146,7 +150,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         bad,
         neutral,
         good,
-        favorite,
+        superb,
     }
 
     enum class EpisodesFilterGroup(val nameRes: Int, vararg values_: ItemProperties) {
@@ -155,7 +159,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             ItemProperties(R.string.bad, States.bad.name),
             ItemProperties(R.string.OK, States.neutral.name),
             ItemProperties(R.string.good, States.good.name),
-            ItemProperties(R.string.Super, States.favorite.name),
+            ItemProperties(R.string.Super, States.superb.name),
         ),
         PLAY_STATE(R.string.playstate, ItemProperties(R.string.unspecified, States.unspecified.name),
             ItemProperties(R.string.building, States.building.name),

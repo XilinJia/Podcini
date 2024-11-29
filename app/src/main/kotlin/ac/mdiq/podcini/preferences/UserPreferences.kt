@@ -50,10 +50,12 @@ object UserPreferences {
     val isThemeColorTinted: Boolean
         get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(Prefs.prefTintedColors.name, false)
 
+    // not using this
     var hiddenDrawerItems: List<String>
         get() {
-            val hiddenItems = appPrefs.getString(Prefs.prefHiddenDrawerItems.name, "")
-            return hiddenItems?.split(",") ?: listOf()
+            return listOf()
+//            val hiddenItems = appPrefs.getString(Prefs.prefHiddenDrawerItems.name, "")
+//            return hiddenItems?.split(",") ?: listOf()
         }
         set(items) {
             val str = items.joinToString()

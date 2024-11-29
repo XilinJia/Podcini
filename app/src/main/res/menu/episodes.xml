@@ -6,8 +6,14 @@
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_search"
-        custom:showAsAction="always"
-        android:title="@string/search_label"/>
+        android:title="@string/search_label"
+        custom:showAsAction="always"/>
+
+    <item
+        android:id="@+id/episodes_sort"
+        android:icon="@drawable/arrows_sort"
+        android:title="@string/sort"
+        custom:showAsAction="always" />
 
     <item
         android:id="@+id/filter_items"
@@ -17,19 +23,19 @@
         custom:showAsAction="always"/>
 
     <item
-        android:id="@+id/episodes_sort"
-        android:icon="@drawable/arrows_sort"
-        android:title="@string/sort"
-        custom:showAsAction="ifRoom" />
+        android:id="@+id/clear_history_item"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/clear_history_label"
+        custom:showAsAction="never"/>
 
-<!--    <item-->
-<!--        android:id="@+id/refresh_item"-->
-<!--        android:title="@string/refresh_label"-->
-<!--        android:menuCategory="container"-->
-<!--        custom:showAsAction="never" />-->
+    <item
+        android:id="@+id/reconcile"
+        android:title="@string/reconcile_label"
+        custom:showAsAction="never" />
 
-<!--    <item-->
-<!--        android:id="@+id/switch_queue"-->
-<!--        android:title="@string/switch_queue" />-->
+    <item
+        android:id="@+id/clear_new"
+        android:title="@string/clear_new_label"
+        custom:showAsAction="never" />
 
 </menu>

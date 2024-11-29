@@ -127,6 +127,7 @@
     <string name="new_synth_yt_label">New synthetic Youtube</string>
     <string name="toggle_grid_list">Toggle grid list</string>
     <string name="refreshing_label">Refreshing</string>
+    <string name="clear_new_label">Clear new</string>
     <string name="reconcile_label">Reconcile</string>
     <string name="chapters_label">Chapters</string>
 
@@ -213,6 +214,7 @@
 
 
     <string name="filtered_label">Filtered</string>
+    <string name="progressing_label">Processing</string>
 
     <string name="open_podcast">Open podcast</string>
     <string name="open">Open</string>
@@ -441,6 +443,8 @@
     <string name="import_export_search_keywords">backup, restore</string>
     <string name="appearance">Appearance</string>
     <string name="external_elements">External elements</string>
+    <string name="create_YT_syndicates">Create YT syndicates</string>
+    <string name="add_to_feed">Add to feed</string>
     <string name="interruptions">Interruptions</string>
     <string name="playback_control">Playback control</string>
     <string name="reassign_hardware_buttons">Reassign hardware buttons</string>

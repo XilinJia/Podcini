@@ -35,6 +35,8 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
+import ac.mdiq.podcini.storage.database.Feeds.addToSyndicate
+import ac.mdiq.podcini.storage.database.Feeds.createYTSyndicates
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.NullActionButton
@@ -71,6 +73,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -98,6 +101,7 @@ import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.skydoves.balloon.textForm
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
@@ -341,9 +345,7 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val scrollState = rememberScrollState()
-            Column(modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 var removeChecked by remember { mutableStateOf(false) }
                 var toFeed by remember { mutableStateOf<Feed?>(null) }
                 if (synthetics.isNotEmpty()) {
@@ -455,7 +457,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 
     val showConfirmYoutubeDialog = remember { mutableStateOf(false) }
     val youtubeUrls = remember { mutableListOf<String>() }
-    ConfirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = { showConfirmYoutubeDialog.value = false })
+    ConfirmAddYoutubeEpisode1(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = { showConfirmYoutubeDialog.value = false })
 
     var showChooseRatingDialog by remember { mutableStateOf(false) }
     if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
@@ -581,14 +583,12 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         for (e in selected) {
                             Logd(TAG, "downloadUrl: ${e.media?.downloadUrl}")
                             val url = URL(e.media?.downloadUrl ?: "")
-                            if ((isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url)) {
+                            if ((isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url))
                                 youtubeUrls.add(e.media!!.downloadUrl!!)
-                            } else addToMiscSyndicate(e)
+                            else addToMiscSyndicate(e)
                         }
                         Logd(TAG, "youtubeUrls: ${youtubeUrls.size}")
-                        withContext(Dispatchers.Main) {
-                            showConfirmYoutubeDialog.value = youtubeUrls.isNotEmpty()
-                        }
+                        withContext(Dispatchers.Main) { showConfirmYoutubeDialog.value = youtubeUrls.isNotEmpty() }
                     }
                 }, verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.AddCircle, "Reserve episodes")
@@ -899,32 +899,56 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 }
 
 @Composable
-fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
+fun ConfirmAddYoutubeEpisode1(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
     val TAG = "confirmAddEpisode"
     var showToast by remember { mutableStateOf(false) }
     var toastMassege by remember { mutableStateOf("")}
     if (showToast) CustomToast(message = toastMassege, onDismiss = { showToast = false })
 
     if (showDialog) {
+        val YTSyndMap = remember { mutableStateMapOf<Int, Boolean>() }
+        val synthetics = remember { realm.query(Feed::class).query("id >= 1 && id <= 1000").find().toMutableStateList() }
         Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
-                    var audioOnly by remember { mutableStateOf(false) }
-                    Row(Modifier.fillMaxWidth()) {
-                        Checkbox(checked = audioOnly, onCheckedChange = { audioOnly = it })
-                        Text(text = stringResource(R.string.pref_video_mode_audio_only), style = MaterialTheme.typography.bodyLarge.merge())
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Card(modifier = Modifier.height(350.dp).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                var toFeed by remember { mutableStateOf<Feed?>(null) }
+                var showComfirmButton by remember { mutableStateOf(toFeed != null) }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.add_to_feed), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    if (YTSyndMap.size < 4) {
+                        Button(onClick = {
+                            createYTSyndicates()
+                            synthetics.clear()
+                            synthetics.addAll(realm.query(Feed::class).query("id >= 1 && id <= 1000").find())
+                        }) { Text(stringResource(R.string.create_YT_syndicates)) }
                     }
-                    var showComfirmButton by remember { mutableStateOf(true) }
+                    if (synthetics.isNotEmpty()) {
+                        LazyColumn(modifier = Modifier.weight(1f).padding(start = 10.dp, end = 10.dp), verticalArrangement = Arrangement.Center) {
+                            items(synthetics.size) { index ->
+                                val f = synthetics[index]
+                                if (f.id <= 4) YTSyndMap[f.id.toInt()] = true
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    RadioButton(selected = toFeed == f, onClick = {
+                                        toFeed = f
+                                        showComfirmButton = true
+                                    })
+                                    Text(f.title ?: "No title", color = textColor)
+                                }
+                            }
+                        }
+                    } else Text(text = stringResource(R.string.create_synthetic_first_note), color = textColor)
+                    var showProgress by remember { mutableStateOf(false) }
                     if (showComfirmButton) {
                         Button(onClick = {
                             showComfirmButton = false
+                            showProgress = true
                             CoroutineScope(Dispatchers.IO).launch {
                                 for (url in sharedUrls) {
                                     val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
                                     try {
                                         val info = StreamInfo.getInfo(Vista.getService(0), url)
                                         val episode = episodeFromStreamInfo(info)
-                                        val status = addToYoutubeSyndicate(episode, !audioOnly)
+                                        val status = addToSyndicate(episode, toFeed!!)
                                         if (log != null) upsert(log) {
                                             it.title = episode.title
                                             it.status = status
@@ -932,14 +956,15 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                                     } catch (e: Throwable) {
                                         toastMassege = "Receive share error: ${e.message}"
                                         Log.e(TAG, toastMassege)
-                                        if (log != null) upsert(log) { it.details = e.message?: "error" }
+                                        if (log != null) upsert(log) { it.details = e.message ?: "error" }
                                         withContext(Dispatchers.Main) { showToast = true }
                                     }
                                 }
                                 withContext(Dispatchers.Main) { onDismissRequest() }
                             }
                         }) { Text("Confirm") }
-                    } else CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp, modifier = Modifier.padding(start = 20.dp, end = 20.dp).width(30.dp).height(30.dp))
+                    }
+                    if (showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp, modifier = Modifier.padding(start = 40.dp, end = 40.dp).width(30.dp).height(30.dp))
                 }
             }
         }

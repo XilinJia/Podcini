@@ -456,11 +456,11 @@ class MainActivity : CastEnabledActivity() {
         val fragment: Fragment
         when (tag) {
             QueuesFragment.TAG -> fragment = QueuesFragment()
-            AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
-            DownloadsFragment.TAG -> fragment = DownloadsFragment()
+            EpisodesFragment.TAG -> fragment = EpisodesFragment()
+//            AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
+//            DownloadsFragment.TAG -> fragment = DownloadsFragment()
             LogsFragment.TAG -> fragment = LogsFragment()
-//            SubscriptionLogFragment.TAG -> fragment = SubscriptionLogFragment()
-            HistoryFragment.TAG -> fragment = HistoryFragment()
+//            HistoryFragment.TAG -> fragment = HistoryFragment()
             OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
             StatisticsFragment.TAG -> fragment = StatisticsFragment()
@@ -734,9 +734,9 @@ class MainActivity : CastEnabledActivity() {
             "/deeplink/main" -> {
                 val feature = uri.getQueryParameter("page") ?: return
                 when (feature) {
-                    "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
-                    "HISTORY" -> loadFragment(HistoryFragment.TAG, null)
-                    "EPISODES" -> loadFragment(AllEpisodesFragment.TAG, null)
+//                    "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
+//                    "HISTORY" -> loadFragment(HistoryFragment.TAG, null)
+                    "EPISODES" -> loadFragment(EpisodesFragment.TAG, null)
                     "QUEUE" -> loadFragment(QueuesFragment.TAG, null)
                     "SUBSCRIPTIONS" -> loadFragment(SubscriptionsFragment.TAG, null)
                     "STATISTCS" -> loadFragment(StatisticsFragment.TAG, null)

@@ -13,7 +13,7 @@ import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
 import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.ShareReceiverActivity.Companion.receiveShared
-import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode
+import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode1
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -120,7 +120,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         var showYTMediaConfirmDialog by remember { mutableStateOf(false) }
         var sharedUrl by remember { mutableStateOf("") }
         if (showYTMediaConfirmDialog)
-            ConfirmAddYoutubeEpisode(listOf(sharedUrl), showYTMediaConfirmDialog, onDismissRequest = { showYTMediaConfirmDialog = false })
+            ConfirmAddYoutubeEpisode1(listOf(sharedUrl), showYTMediaConfirmDialog, onDismissRequest = { showYTMediaConfirmDialog = false })
 
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {

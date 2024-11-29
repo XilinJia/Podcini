@@ -100,7 +100,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * An all new way of filtering for both podcasts and episodes with expanded criteria
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * FeedEpisodes has the option to show larger image on the list by changing the "Use wide layout" setting of the feed
-* Episodes list is shown in views of Queues, Downloads, All episodes, FeedEpisodes
+* Episodes view provides easy access to various filters:
+  * AllEpisodes, History and Download
+  * New, Planned (for Soon and Later), Repeats (for Again and Forever), Liked (for Good and Super)
+* Episodes list is shown in views of Episodes, FeedEpisodes, and OnlineEpisodes
 * New and efficient ways of click and long-click operations on both podcast and episode lists:
   * click on title area opens the podcast/episode
   * long-press on title area automatically enters in selection mode
@@ -178,7 +181,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * When subscribing to a Youtube channel, tabs can be chosen to form separate podcasts
 * Playlists and podcasts on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
 * Subscribed channels, playlists/podcasts can be updated as with normal podcasts
-* Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
+* Single media from Youtube or Youtube Music can also be shared from other apps, and added in a chosen synthetic feed
 * All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen or in window modes or in audio only mode in the background
 * Audio and video quality settings in Feed Preferences (Youtube feeds only): Global, Low, Medium, High
 	* these settings take precedence over global situations

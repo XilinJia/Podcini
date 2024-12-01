@@ -92,18 +92,6 @@
             <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
         </service>
 
-        <activity
-            android:name=".ui.activity.PlaybackSpeedDialogActivity"
-            android:noHistory="true"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:theme="@style/Theme.Podcini.Light.Translucent">
-            <intent-filter>
-                <action android:name="ac.mdiq.podcini.intents.PLAYBACK_SPEED" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
         <meta-data android:name="android.webkit.WebView.MetricsOptOut"
             android:value="true"/>
         <meta-data android:name="com.google.android.gms.car.notification.SmallIcon"
@@ -167,28 +155,6 @@
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".ui.activity.WidgetConfigActivity"
-            android:label="@string/widget_settings"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGUR"/>
-            </intent-filter>
-        </activity>
-
-        <receiver
-            android:name=".receiver.PlayerWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-                <action android:name="ac.mdiq.podcini.FORCE_WIDGET_UPDATE"/>
-                <action android:name="ac.mdiq.podcini.STOP_WIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                    android:name="android.appwidget.provider"
-                    android:resource="@xml/player_widget_info"/>
-        </receiver>
 
         <activity
                 android:name=".ui.activity.BugReportActivity"

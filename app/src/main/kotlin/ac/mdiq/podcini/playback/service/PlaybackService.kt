@@ -56,8 +56,6 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
-import ac.mdiq.podcini.ui.widget.WidgetUpdater
-import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
@@ -229,9 +227,6 @@ class PlaybackService : MediaLibraryService() {
                 prevPosition = curPosition
             }
         }
-        override fun requestWidgetState(): WidgetState {
-            return WidgetState(curMedia, status, curPosition, curDuration, curSpeed)
-        }
         override fun onChapterLoaded(media: Playable?) {
             sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
         }
@@ -313,7 +308,6 @@ class PlaybackService : MediaLibraryService() {
             sendLocalBroadcast(applicationContext, ACTION_PLAYER_STATUS_CHANGED)
             bluetoothNotifyChange(newInfo, AVRCP_ACTION_PLAYER_STATUS_CHANGED)
             bluetoothNotifyChange(newInfo, AVRCP_ACTION_META_CHANGED)
-            taskManager.requestWidgetUpdate()
         }
 
         override fun onMediaChanged(reloadUI: Boolean) {
@@ -398,7 +392,6 @@ class PlaybackService : MediaLibraryService() {
         override fun onPlaybackStart(playable: Playable, position: Int) {
             val delayInterval = positionUpdateInterval(playable.getDuration())
             Logd(TAG, "onPlaybackStart position: $position delayInterval: $delayInterval")
-            taskManager.startWidgetUpdater(delayInterval)
 //            if (position != Playable.INVALID_TIME) playable.setPosition(position + (delayInterval/2).toInt())
             if (position != Playable.INVALID_TIME) playable.setPosition(position)
             else skipIntro(playable)
@@ -410,7 +403,6 @@ class PlaybackService : MediaLibraryService() {
             Logd(TAG, "onPlaybackPause $position")
             taskManager.cancelPositionSaver()
             persistCurrentPosition(position == Playable.INVALID_TIME || playable == null, playable, position)
-            taskManager.cancelWidgetUpdater()
             if (playable != null) {
                 if (playable is EpisodeMedia) SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, false)
                 playable.onPlaybackPause(applicationContext)
@@ -1303,7 +1295,7 @@ class PlaybackService : MediaLibraryService() {
 
     /**
      * Manages the background tasks of PlaybackSerivce, i.e.
-     * the sleep timer, the position saver, the widget updater and the queue loader.
+     * the sleep timer, the position saver, and the queue loader.
      *
      * The PlaybackServiceTaskManager(PSTM) uses a callback object (PSTMCallback)
      * to notify the PlaybackService about updates from the running tasks.
@@ -1316,7 +1308,6 @@ class PlaybackService : MediaLibraryService() {
         }
 
         private var positionSaverFuture: ScheduledFuture<*>? = null
-        private var widgetUpdaterFuture: ScheduledFuture<*>? = null
         private var sleepTimerFuture: ScheduledFuture<*>? = null
         private var sleepTimer: SleepTimer? = null
 
@@ -1330,13 +1321,6 @@ class PlaybackService : MediaLibraryService() {
         @get:Synchronized
         val sleepTimerTimeLeft: Long
             get() = if (isSleepTimerActive) sleepTimer!!.getWaitingTime() else 0
-
-        /**
-         * Returns true if the widget updater is currently running.
-         */
-        @get:Synchronized
-        val isWidgetUpdaterActive: Boolean
-            get() = widgetUpdaterFuture != null && !widgetUpdaterFuture!!.isCancelled && !widgetUpdaterFuture!!.isDone
 
         @get:Synchronized
         val isPositionSaverActive: Boolean
@@ -1358,29 +1342,6 @@ class PlaybackService : MediaLibraryService() {
                 positionSaverFuture!!.cancel(false)
                 Logd(TAG, "Cancelled PositionSaver")
             }
-        }
-
-        @Synchronized
-        fun startWidgetUpdater(delayInterval: Long) {
-            if (!isWidgetUpdaterActive && !schedExecutor.isShutdown) {
-                var widgetUpdater = Runnable { this.requestWidgetUpdate() }
-                widgetUpdater = useMainThreadIfNecessary(widgetUpdater)
-//                val delayInterval = positionUpdateInterval(duration)
-//                widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(
-//                    widgetUpdater, WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
-                widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(widgetUpdater, delayInterval, delayInterval, TimeUnit.MILLISECONDS)
-                Logd(TAG, "Started WidgetUpdater")
-            }
-        }
-
-        /**
-         * Retrieves information about the widget state in the calling thread and then displays it in a background thread.
-         */
-        @Synchronized
-        fun requestWidgetUpdate() {
-            val state = callback.requestWidgetState()
-            if (!schedExecutor.isShutdown) schedExecutor.execute { WidgetUpdater.updateWidget(context, state) }
-            else Logd(TAG, "Call to requestWidgetUpdate was ignored.")
         }
 
         /**
@@ -1416,17 +1377,6 @@ class PlaybackService : MediaLibraryService() {
         }
 
         /**
-         * Cancels the widget updater. If the widget updater is not running, nothing will happen.
-         */
-        @Synchronized
-        fun cancelWidgetUpdater() {
-            if (isWidgetUpdaterActive) {
-                widgetUpdaterFuture!!.cancel(false)
-                Logd(TAG, "Cancelled WidgetUpdater")
-            }
-        }
-
-        /**
          * Starts a new thread that loads the chapter marks from a playable object. If another chapter loader is already active,
          * it will be cancelled first.
          * On completion, the callback's onChapterLoaded method will be called.
@@ -1452,7 +1402,6 @@ class PlaybackService : MediaLibraryService() {
         @Synchronized
         fun cancelAllTasks() {
             cancelPositionSaver()
-            cancelWidgetUpdater()
             disableSleepTimer()
 //        chapterLoaderFuture?.dispose()
 //        chapterLoaderFuture = null
@@ -1539,7 +1488,6 @@ class PlaybackService : MediaLibraryService() {
 
         interface PSTMCallback {
             fun positionSaverTick()
-            fun requestWidgetState(): WidgetState
             fun onChapterLoaded(media: Playable?)
         }
 

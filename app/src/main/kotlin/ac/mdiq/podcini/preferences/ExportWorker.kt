@@ -44,7 +44,7 @@ class ExportWorker private constructor(private val exportWriter: ExportWriter, p
                 writer = OutputStreamWriter(FileOutputStream(output), Charset.forName("UTF-8"))
                 val feeds_ = feeds ?: getFeedList()
                 Logd(TAG, "feeds_: ${feeds_.size}")
-                exportWriter.writeDocument(feeds_, writer, context)
+                exportWriter.writeDocument(feeds_, writer!!, context)
                 output // return the output file
             } catch (e: IOException) {
                 Log.e(TAG, "Error during file export", e)
@@ -73,7 +73,7 @@ class DocumentFileExportWorker(private val exportWriter: ExportWriter, private v
                 writer = OutputStreamWriter(outputStream, Charset.forName("UTF-8"))
                 val feeds_ = feeds ?: getFeedList()
                 Logd("DocumentFileExportWorker", "feeds_: ${feeds_.size}")
-                exportWriter.writeDocument(feeds_, writer, context)
+                exportWriter.writeDocument(feeds_, writer!!, context)
                 output
             } catch (e: IOException) { throw e
             } finally {

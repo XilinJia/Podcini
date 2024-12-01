@@ -7,7 +7,7 @@ import java.io.Writer
 
 interface ExportWriter {
     @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-    fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context)
+    fun writeDocument(feeds: List<Feed>, writer: Writer, context: Context)
 
     fun fileExtension(): String?
 }

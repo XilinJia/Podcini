@@ -64,7 +64,7 @@ class OpmlTransporter {
          * Takes a list of feeds and a writer and writes those into an OPML document.
          */
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-        override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
+        override fun writeDocument(feeds: List<Feed>, writer: Writer, context: Context) {
             val xs = Xml.newSerializer()
             xs.setFeature(OpmlSymbols.XML_FEATURE_INDENT_OUTPUT, true)
             xs.setOutput(writer)

@@ -1,3 +1,9 @@
+# 6.15.1
+
+* Consolidated Compose code blocks in PreferenceActivity with function calls
+* removed support for widget
+* some minor cleanups
+
 # 6.15.0
 
 * added a combo Epiosdes fragment with easy access to various filters

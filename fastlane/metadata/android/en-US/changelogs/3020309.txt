@@ -1,0 +1,5 @@
+ Version 6.15.1
+
+* Consolidated Compose code blocks in PreferenceActivity with function calls
+* removed support for widget
+* some minor cleanups

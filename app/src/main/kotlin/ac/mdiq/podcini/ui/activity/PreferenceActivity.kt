@@ -9,7 +9,6 @@ import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
-import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SyncService.Companion.isValidGuid
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
@@ -45,7 +44,6 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
-import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.EnqueueLocation
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -53,8 +51,11 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.IconTitleSummaryActionRow
 import ac.mdiq.podcini.ui.compose.OpmlImportSelectionDialog
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
+import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
+import ac.mdiq.podcini.ui.compose.TitleSummarySwitchPrefRow
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.EventFlow
@@ -78,7 +79,6 @@ import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.util.Patterns
-import android.util.SparseBooleanArray
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -146,6 +146,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.Throws
 import kotlin.math.round
 
 /**
@@ -252,6 +253,7 @@ class PreferenceActivity : AppCompatActivity() {
         s.show()
     }
 
+
     class MainPreferencesFragment : PreferenceFragmentCompat() {
         var copyrightNoticeText by mutableStateOf("")
 
@@ -270,6 +272,31 @@ class PreferenceActivity : AppCompatActivity() {
                 packageHash == 1297601420 -> copyrightNoticeText = "This is a development version of Podcini and not meant for daily use"
             }
 
+            @Composable
+            fun IconTitleSummaryScreenRow(vecRes: Int, titleRes: Int, summaryRes: Int, screen: Screens) {
+                val textColor = MaterialTheme.colorScheme.onSurface
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                    Icon(imageVector = ImageVector.vectorResource(vecRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                    Column(modifier = Modifier.weight(1f).clickable(onClick = {
+                        (activity as PreferenceActivity).openScreen(screen)
+                    })) {
+                        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(stringResource(summaryRes), color = textColor)
+                    }
+                }
+            }
+
+            @Composable
+            fun IconTitleActionRow(vecRes: Int, titleRes: Int, callback: ()-> Unit) {
+                val textColor = MaterialTheme.colorScheme.onSurface
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+                    Icon(imageVector = ImageVector.vectorResource(vecRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                    Column(modifier = Modifier.weight(1f).clickable(onClick = { callback() })) {
+                        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
             return ComposeView(requireContext()).apply {
                 setContent {
                     CustomTheme(requireContext()) {
@@ -282,59 +309,12 @@ class PreferenceActivity : AppCompatActivity() {
                                     Text(copyrightNoticeText, color = textColor)
                                 }
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_appearance), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_user_interface)
-                                })) {
-                                    Text(stringResource(R.string.user_interface_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.user_interface_sum), color = textColor)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_play_24dp), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_playback)
-                                })) {
-                                    Text(stringResource(R.string.playback_pref), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.playback_pref_sum), color = textColor)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_downloads)
-                                })) {
-                                    Text(stringResource(R.string.downloads_pref), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.downloads_pref_sum), color = textColor)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_cloud), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_synchronization)
-                                })) {
-                                    Text(stringResource(R.string.synchronization_pref), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.synchronization_sum), color = textColor)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_storage), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_import_export)
-                                })) {
-                                    Text(stringResource(R.string.import_export_pref), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.import_export_summary), color = textColor)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_notifications), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    (activity as PreferenceActivity).openScreen(Screens.preferences_notifications)
-                                })) {
-                                    Text(stringResource(R.string.notification_pref_fragment), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
+                            IconTitleSummaryScreenRow(R.drawable.ic_appearance, R.string.user_interface_label, R.string.user_interface_sum, Screens.preferences_user_interface)
+                            IconTitleSummaryScreenRow(R.drawable.ic_play_24dp, R.string.playback_pref, R.string.playback_pref_sum, Screens.preferences_playback)
+                            IconTitleSummaryScreenRow(R.drawable.ic_download, R.string.downloads_pref, R.string.downloads_pref_sum, Screens.preferences_downloads)
+                            IconTitleSummaryScreenRow(R.drawable.ic_cloud, R.string.synchronization_pref, R.string.synchronization_sum, Screens.preferences_synchronization)
+                            IconTitleSummaryScreenRow(R.drawable.ic_storage, R.string.import_export_pref, R.string.import_export_summary, Screens.preferences_import_export)
+                            IconTitleActionRow(R.drawable.ic_notifications, R.string.notification_pref_fragment) { (activity as PreferenceActivity).openScreen(Screens.preferences_notifications) }
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -352,46 +332,11 @@ class PreferenceActivity : AppCompatActivity() {
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
                             Text(stringResource(R.string.project_pref), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_questionmark), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-                                })) {
-                                    Text(stringResource(R.string.documentation_support), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chat), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
-                                })) {
-                                    Text(stringResource(R.string.visit_user_forum), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_contribute), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-                                })) {
-                                    Text(stringResource(R.string.pref_contribute), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_bug), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    startActivity(Intent(activity, BugReportActivity::class.java))
-                                })) {
-                                    Text(stringResource(R.string.bug_report_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, AboutFragment()).addToBackStack(getString(R.string.about_pref)).commit()
-                                })) {
-                                    Text(stringResource(R.string.about_pref), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                }
-                            }
+                            IconTitleActionRow(R.drawable.ic_questionmark, R.string.documentation_support) { openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini") }
+                            IconTitleActionRow(R.drawable.ic_chat, R.string.visit_user_forum) { openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions") }
+                            IconTitleActionRow(R.drawable.ic_contribute, R.string.pref_contribute) { openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini") }
+                            IconTitleActionRow(R.drawable.ic_bug, R.string.bug_report_title) { startActivity(Intent(activity, BugReportActivity::class.java)) }
+                            IconTitleActionRow(R.drawable.ic_info, R.string.about_pref) { parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, AboutFragment()).addToBackStack(getString(R.string.about_pref)).commit() }
                         }
                     }
                 }
@@ -422,33 +367,9 @@ class PreferenceActivity : AppCompatActivity() {
                                         Text(String.format("%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH), color = textColor)
                                     }
                                 }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
-                                    Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_questionmark), contentDescription = "", tint = textColor)
-                                    Column(Modifier.padding(start = 10.dp).clickable(onClick = {
-                                        openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/")
-                                    })) {
-                                        Text(stringResource(R.string.online_help), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.online_help_sum), color = textColor)
-                                    }
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
-                                    Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "", tint = textColor)
-                                    Column(Modifier.padding(start = 10.dp).clickable(onClick = {
-                                        openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/blob/main/PrivacyPolicy.md")
-                                    })) {
-                                        Text(stringResource(R.string.privacy_policy), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text("Podcini PrivacyPolicy", color = textColor)
-                                    }
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp)) {
-                                    Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "", tint = textColor)
-                                    Column(Modifier.padding(start = 10.dp).clickable(onClick = {
-                                        parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, LicensesFragment()).addToBackStack(getString(R.string.translators)).commit()
-                                    })) {
-                                        Text(stringResource(R.string.licenses), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.licenses_summary), color = textColor)
-                                    }
-                                }
+                                IconTitleSummaryActionRow(R.drawable.ic_questionmark, R.string.online_help, R.string.online_help_sum) { openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/") }
+                                IconTitleSummaryActionRow(R.drawable.ic_info, R.string.privacy_policy, R.string.privacy_policy) { openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/blob/main/PrivacyPolicy.md") }
+                                IconTitleSummaryActionRow(R.drawable.ic_info, R.string.licenses, R.string.licenses_summary) { parentFragmentManager.beginTransaction().replace(R.id.settingsContainer, LicensesFragment()).addToBackStack(getString(R.string.translators)).commit() }
                             }
                         }
                     }
@@ -593,95 +514,21 @@ class PreferenceActivity : AppCompatActivity() {
                                     ActivityCompat.recreate(requireActivity())
                                 })
                             }
-//                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-//                                drawerPreferencesDialog(requireContext(), null)
-//                            })) {
-//                                Text(stringResource(R.string.pref_nav_drawer_items_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-//                                Text(stringResource(R.string.pref_nav_drawer_items_sum), color = textColor)
-//                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_episode_cover_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_episode_cover_summary), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEpisodeCover.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefEpisodeCover.name, it).apply()
-                                })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_show_remain_time_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_show_remain_time_summary), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.showTimeLeft.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.showTimeLeft.name, it).apply()
-                                })
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_episode_cover_title, R.string.pref_episode_cover_summary, UserPreferences.Prefs.prefEpisodeCover.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_show_remain_time_title, R.string.pref_show_remain_time_summary, UserPreferences.Prefs.showTimeLeft.name)
                             Text(stringResource(R.string.subscriptions_label), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_swipe_refresh_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_swipe_refresh_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefSwipeToRefreshAll.name, it).apply()
-                                })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_feedGridLayout_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_feedGridLayout_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, it).apply()
-                                })
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, UserPreferences.Prefs.prefSwipeToRefreshAll.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_feedGridLayout_title, R.string.pref_feedGridLayout_sum, UserPreferences.Prefs.prefFeedGridLayout.name)
                             Text(stringResource(R.string.external_elements), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
                             if (Build.VERSION.SDK_INT < 26) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(stringResource(R.string.pref_expandNotify_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.pref_expandNotify_sum), color = textColor)
-                                    }
-                                    var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefExpandNotify.name, false)) }
-                                    Switch(checked = isChecked, onCheckedChange = {
-                                        isChecked = it
-                                        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefExpandNotify.name, it).apply()
-                                    })
-                                }
+                                TitleSummarySwitchPrefRow(R.string.pref_expandNotify_title, R.string.pref_expandNotify_sum, UserPreferences.Prefs.prefExpandNotify.name)
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_persistNotify_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_persistNotify_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefPersistNotify.name, it).apply()
-                                })
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                showFullNotificationButtonsDialog()
-                            })) {
-                                Text(stringResource(R.string.pref_full_notification_buttons_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_full_notification_buttons_sum), color = textColor)
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_persistNotify_title, R.string.pref_persistNotify_sum, UserPreferences.Prefs.prefPersistNotify.name)
+                            TitleSummaryActionColumn(R.string.pref_full_notification_buttons_title, R.string.pref_full_notification_buttons_sum) { showFullNotificationButtonsDialog() }
                             Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
                             var showDefaultPageOptions by remember { mutableStateOf(false) }
                             var tempSelectedOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefDefaultPage.name, DefaultPages.SubscriptionsFragment.name)!!) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showDefaultPageOptions = true })) {
-                                Text(stringResource(R.string.pref_default_page), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_default_page_sum), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
                             if (showDefaultPageOptions) {
                                 AlertDialog(onDismissRequest = { showDefaultPageOptions = false },
                                     title = { Text(stringResource(R.string.pref_default_page), style = MaterialTheme.typography.titleLarge) },
@@ -704,23 +551,14 @@ class PreferenceActivity : AppCompatActivity() {
                                     dismissButton = { TextButton(onClick = { showDefaultPageOptions = false }) { Text(text = "Cancel") } }
                                 )
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_back_button_opens_drawer), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_back_button_opens_drawer_summary), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefBackButtonOpensDrawer.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefBackButtonOpensDrawer.name, it).apply()
-                                })
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                (activity as PreferenceActivity).openScreen(Screens.preferences_swipe)
-                            })) {
-                                Text(stringResource(R.string.swipeactions_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.swipeactions_summary), color = textColor)
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)
+                            TitleSummaryActionColumn(R.string.swipeactions_label, R.string.swipeactions_summary) { (activity as PreferenceActivity).openScreen(Screens.preferences_swipe) }
+//                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
+//                                (activity as PreferenceActivity).openScreen(Screens.preferences_swipe)
+//                            })) {
+//                                Text(stringResource(R.string.swipeactions_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+//                                Text(stringResource(R.string.swipeactions_summary), color = textColor)
+//                            }
                         }
                     }
                 }
@@ -737,36 +575,6 @@ class PreferenceActivity : AppCompatActivity() {
             StatisticsFragment(R.string.statistics_label),
             remember(R.string.remember_last_page);
         }
-
-//        fun drawerPreferencesDialog(context: Context, callback: Runnable?) {
-//            val hiddenItems = hiddenDrawerItems.map { it.trim() }.toMutableSet()
-//            val navTitles = navMap.values.map { context.resources.getString(it.nameRes).trim() }.toTypedArray()
-//            val checked = BooleanArray(navMap.size)
-//            for (i in navMap.keys.indices) {
-//                val tag = navMap.keys.toList()[i]
-//                if (!hiddenItems.contains(tag)) checked[i] = true
-//            }
-//            val builder = MaterialAlertDialogBuilder(context)
-//            builder.setTitle(R.string.drawer_preferences)
-//            builder.setMultiChoiceItems(navTitles, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
-//                if (isChecked) hiddenItems.remove(navMap.keys.toList()[which])
-//                else hiddenItems.add((navMap.keys.toList()[which]).trim())
-//            }
-//            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-//                hiddenDrawerItems = hiddenItems.toList()
-//                if (hiddenItems.contains(defaultPage)) {
-//                    for (tag in navMap.keys) {
-//                        if (!hiddenItems.contains(tag)) {
-//                            defaultPage = tag
-//                            break
-//                        }
-//                    }
-//                }
-//                callback?.run()
-//            }
-//            builder.setNegativeButton(R.string.cancel_label, null)
-//            builder.create().show()
-//        }
 
         private fun showFullNotificationButtonsDialog() {
             val context: Context? = activity
@@ -812,11 +620,8 @@ class PreferenceActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.confirm_label, null)
             builder.setNegativeButton(R.string.cancel_label, null)
             val dialog = builder.create()
-
             dialog.show()
-
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-
             positiveButton.setOnClickListener {
                 if (preferredButtons.size != exactItems) {
                     val selectionView = dialog.listView
@@ -891,38 +696,9 @@ class PreferenceActivity : AppCompatActivity() {
                                 })
                             }
                             if (prefUnpauseOnHeadsetReconnect) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(stringResource(R.string.pref_unpauseOnHeadsetReconnect_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.pref_unpauseOnHeadsetReconnect_sum), color = textColor)
-                                    }
-                                    var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, true)) }
-                                    Switch(checked = isChecked, onCheckedChange = {
-                                        isChecked = it
-                                        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, it).apply() })
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(stringResource(R.string.pref_unpauseOnBluetoothReconnect_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.pref_unpauseOnBluetoothReconnect_sum), color = textColor)
-                                    }
-                                    var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, false)) }
-                                    Switch(checked = isChecked, onCheckedChange = {
-                                        isChecked = it
-                                        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, it).apply() })
-                                }
+                                TitleSummarySwitchPrefRow(R.string.pref_unpauseOnHeadsetReconnect_title, R.string.pref_unpauseOnHeadsetReconnect_sum, UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name)
+                                TitleSummarySwitchPrefRow(R.string.pref_unpauseOnBluetoothReconnect_title, R.string.pref_unpauseOnBluetoothReconnect_sum, UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)
                             }
-                            // not used
-//                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-//                                Column(modifier = Modifier.weight(1f)) {
-//                                    Text(stringResource(R.string.pref_pausePlaybackForFocusLoss_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-//                                    Text(stringResource(R.string.pref_pausePlaybackForFocusLoss_sum), color = textColor)
-//                                }
-//                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefPauseForFocusLoss.name, true)) }
-//                                Switch(checked = isChecked, onCheckedChange = {
-//                                    isChecked = it
-//                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefPauseForFocusLoss.name, it).apply() })
-//                            }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
                             Text(stringResource(R.string.playback_control), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
                             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
@@ -974,10 +750,7 @@ class PreferenceActivity : AppCompatActivity() {
                             var showSpeedDialog by remember { mutableStateOf(false) }
                             if (showSpeedDialog) PlaybackSpeedDialog(listOf(), initSpeed = prefPlaybackSpeed, maxSpeed = 3f, isGlobal = true,
                                 onDismiss = { showSpeedDialog = false }) { speed -> UserPreferences.setPlaybackSpeed(speed) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showSpeedDialog = true })) {
-                                Text(stringResource(R.string.playback_speed), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_playback_speed_sum), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.playback_speed, R.string.pref_playback_speed_sum) { showSpeedDialog = true }
                             var showFBSpeedDialog by remember { mutableStateOf(false) }
                             if (showFBSpeedDialog) PlaybackSpeedDialog(listOf(), initSpeed = fallbackSpeed, maxSpeed = 3f, isGlobal = true,
                                 onDismiss = { showFBSpeedDialog = false }) { speed ->
@@ -988,20 +761,8 @@ class PreferenceActivity : AppCompatActivity() {
                                 }
                                 fallbackSpeed = round(100 * speed_) / 100f
                             }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showFBSpeedDialog = true })) {
-                                Text(stringResource(R.string.pref_fallback_speed), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_fallback_speed_sum), color = textColor)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_playback_time_respects_speed_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_playback_time_respects_speed_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefPlaybackTimeRespectsSpeed.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefPlaybackTimeRespectsSpeed.name, it).apply() })
-                            }
+                            TitleSummaryActionColumn(R.string.pref_fallback_speed, R.string.pref_fallback_speed_sum) { showFBSpeedDialog = true }
+                            TitleSummarySwitchPrefRow(R.string.pref_playback_time_respects_speed_title, R.string.pref_playback_time_respects_speed_sum, UserPreferences.Prefs.prefPlaybackTimeRespectsSpeed.name)
                             var showFFSpeedDialog by remember { mutableStateOf(false) }
                             if (showFFSpeedDialog) PlaybackSpeedDialog(listOf(), initSpeed = speedforwardSpeed, maxSpeed = 10f, isGlobal = true,
                                 onDismiss = { showFFSpeedDialog = false }) { speed ->
@@ -1012,52 +773,16 @@ class PreferenceActivity : AppCompatActivity() {
                                 }
                                 speedforwardSpeed = round(10 * speed_) / 10
                             }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showFFSpeedDialog = true })) {
-                                Text(stringResource(R.string.pref_speed_forward), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_speed_forward_sum), color = textColor)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_stream_over_download_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_stream_over_download_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefStreamOverDownload.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefStreamOverDownload.name, it).apply() })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_low_quality_on_mobile_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_low_quality_on_mobile_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefLowQualityOnMobile.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefLowQualityOnMobile.name, it).apply() })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_use_adaptive_progress_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_use_adaptive_progress_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name, it).apply() })
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { VideoModeDialog.showDialog(requireContext()) })) {
-                                Text(stringResource(R.string.pref_playback_video_mode), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_playback_video_mode_sum), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_speed_forward, R.string.pref_speed_forward_sum) { showFFSpeedDialog = true }
+                            TitleSummarySwitchPrefRow(R.string.pref_stream_over_download_title, R.string.pref_stream_over_download_sum, UserPreferences.Prefs.prefStreamOverDownload.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_low_quality_on_mobile_title, R.string.pref_low_quality_on_mobile_sum, UserPreferences.Prefs.prefLowQualityOnMobile.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_use_adaptive_progress_title, R.string.pref_use_adaptive_progress_sum, UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name)
+                            TitleSummaryActionColumn(R.string.pref_playback_video_mode, R.string.pref_playback_video_mode_sum) { VideoModeDialog.showDialog(requireContext()) }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
                             Text(stringResource(R.string.reassign_hardware_buttons), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
                             var showHardwareForwardButtonOptions by remember { mutableStateOf(false) }
                             var tempFFSelectedOption by remember { mutableStateOf(R.string.keycode_media_fast_forward) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showHardwareForwardButtonOptions = true })) {
-                                Text(stringResource(R.string.pref_hardware_forward_button_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_hardware_forward_button_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_hardware_forward_button_title, R.string.pref_hardware_forward_button_summary) { showHardwareForwardButtonOptions = true }
                             if (showHardwareForwardButtonOptions) {
                                 AlertDialog(onDismissRequest = { showHardwareForwardButtonOptions = false },
                                     title = { Text(stringResource(R.string.pref_hardware_forward_button_title), style = MaterialTheme.typography.titleLarge) },
@@ -1083,10 +808,7 @@ class PreferenceActivity : AppCompatActivity() {
                             }
                             var showHardwarePreviousButtonOptions by remember { mutableStateOf(false) }
                             var tempPRSelectedOption by remember { mutableStateOf(R.string.keycode_media_rewind) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showHardwarePreviousButtonOptions = true })) {
-                                Text(stringResource(R.string.pref_hardware_previous_button_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_hardware_previous_button_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_hardware_previous_button_title, R.string.pref_hardware_previous_button_summary) { showHardwarePreviousButtonOptions = true }
                             if (showHardwarePreviousButtonOptions) {
                                 AlertDialog(onDismissRequest = { showHardwarePreviousButtonOptions = false },
                                     title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = MaterialTheme.typography.titleLarge) },
@@ -1112,22 +834,10 @@ class PreferenceActivity : AppCompatActivity() {
                             }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
                             Text(stringResource(R.string.queue_label), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_enqueue_downloaded_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_enqueue_downloaded_summary), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, it).apply() })
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_enqueue_downloaded_title, R.string.pref_enqueue_downloaded_summary, UserPreferences.Prefs.prefEnqueueDownloaded.name)
                             var showEnqueueLocationOptions by remember { mutableStateOf(false) }
                             var tempLocationOption by remember { mutableStateOf(EnqueueLocation.BACK.name) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showEnqueueLocationOptions = true })) {
-                                Text(stringResource(R.string.pref_enqueue_location_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_enqueue_location_sum, tempLocationOption), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_enqueue_location_title, R.string.pref_enqueue_location_sum) { showEnqueueLocationOptions = true }
                             if (showEnqueueLocationOptions) {
                                 AlertDialog(onDismissRequest = { showEnqueueLocationOptions = false },
                                     title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = MaterialTheme.typography.titleLarge) },
@@ -1151,37 +861,9 @@ class PreferenceActivity : AppCompatActivity() {
                                     dismissButton = { TextButton(onClick = { showEnqueueLocationOptions = false }) { Text(text = "Cancel") } }
                                 )
                             }
-
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_followQueue_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_followQueue_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFollowQueue.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFollowQueue.name, it).apply() })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_skip_keeps_episodes_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_skip_keeps_episodes_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, it).apply() })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_mark_played_removes_from_queue_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_mark_played_removes_from_queue_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name, it).apply() })
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_followQueue_title, R.string.pref_followQueue_sum, UserPreferences.Prefs.prefFollowQueue.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_skip_keeps_episodes_title, R.string.pref_skip_keeps_episodes_sum, UserPreferences.Prefs.prefSkipKeepsEpisode.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_mark_played_removes_from_queue_title, R.string.pref_mark_played_removes_from_queue_sum, UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name)
                         }
                     }
                 }
@@ -1417,89 +1099,30 @@ class PreferenceActivity : AppCompatActivity() {
                         val scrollState = rememberScrollState()
                         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
                             Text(stringResource(R.string.database), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                backupDatabaseLauncher.launch(dateStampFilename("PodciniBackup-%s.realm"))
-                            })) {
-                                Text(stringResource(R.string.database_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.database_export_summary), color = textColor)
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                importDatabase()
-                            })) {
-                                Text(stringResource(R.string.database_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.database_import_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.database_export_label, R.string.database_export_summary) { backupDatabaseLauncher.launch(dateStampFilename("PodciniBackup-%s.realm")) }
+                            TitleSummaryActionColumn(R.string.database_import_label, R.string.database_import_summary) { importDatabase() }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                             Text(stringResource(R.string.media_files), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                exportMediaFiles()
-                            })) {
-                                Text(stringResource(R.string.media_files_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.media_files_export_summary), color = textColor)
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                importMediaFiles()
-                            })) {
-                                Text(stringResource(R.string.media_files_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.media_files_import_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.media_files_export_label, R.string.media_files_export_summary) { exportMediaFiles() }
+                            TitleSummaryActionColumn(R.string.media_files_import_label, R.string.media_files_import_summary) { importMediaFiles() }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                             Text(stringResource(R.string.preferences), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                exportPreferences()
-                            })) {
-                                Text(stringResource(R.string.preferences_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.preferences_export_summary), color = textColor)
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                importPreferences()
-                            })) {
-                                Text(stringResource(R.string.preferences_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.preferences_import_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.preferences_export_label, R.string.preferences_export_summary) { exportPreferences() }
+                            TitleSummaryActionColumn(R.string.preferences_import_label, R.string.preferences_import_summary) { importPreferences() }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                             Text(stringResource(R.string.opml), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                openExportPathPicker(ExportTypes.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
-                            })) {
-                                Text(stringResource(R.string.opml_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.opml_export_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.opml_export_label, R.string.opml_export_summary) { openExportPathPicker(ExportTypes.OPML, chooseOpmlExportPathLauncher, OpmlWriter()) }
                             if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                try { chooseOpmlImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
-                            })) {
-                                Text(stringResource(R.string.opml_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.opml_import_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.opml_import_label, R.string.opml_import_summary) {
+                                try { chooseOpmlImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") } }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                             Text(stringResource(R.string.progress), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                openExportPathPicker(ExportTypes.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter())
-                            })) {
-                                Text(stringResource(R.string.progress_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.progress_export_summary), color = textColor)
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                importEpisodeProgress()
-                            })) {
-                                Text(stringResource(R.string.progress_import_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.progress_import_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.progress_export_label, R.string.progress_export_summary) { openExportPathPicker(ExportTypes.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter()) }
+                            TitleSummaryActionColumn(R.string.progress_import_label, R.string.progress_import_summary) { importEpisodeProgress() }
                             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                             Text(stringResource(R.string.html), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                openExportPathPicker(ExportTypes.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
-                            })) {
-                                Text(stringResource(R.string.html_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.html_export_summary), color = textColor)
-                            }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                openExportPathPicker(ExportTypes.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
-                            })) {
-                                Text(stringResource(R.string.favorites_export_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.favorites_export_summary), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.html_export_label, R.string.html_export_summary) { openExportPathPicker(ExportTypes.HTML, chooseHtmlExportPathLauncher, HtmlWriter()) }
+                            TitleSummaryActionColumn(R.string.favorites_export_label, R.string.favorites_export_summary) { openExportPathPicker(ExportTypes.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter()) }
                         }
                     }
                 }
@@ -1547,7 +1170,6 @@ class PreferenceActivity : AppCompatActivity() {
             val builder = MaterialAlertDialogBuilder(requireActivity())
             builder.setTitle(R.string.preferences_import_label)
             builder.setMessage(R.string.preferences_import_warning)
-
             // add a button
             builder.setNegativeButton(R.string.no, null)
             builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
@@ -1556,8 +1178,6 @@ class PreferenceActivity : AppCompatActivity() {
                 intent.addCategory(Intent.CATEGORY_DEFAULT)
                 restorePreferencesLauncher.launch(intent)
             }
-
-            // create and show the alert dialog
             builder.show()
         }
 
@@ -1572,8 +1192,6 @@ class PreferenceActivity : AppCompatActivity() {
             val builder = MaterialAlertDialogBuilder(requireActivity())
             builder.setTitle(R.string.media_files_import_label)
             builder.setMessage(R.string.media_files_import_notice)
-
-            // add a button
             builder.setNegativeButton(R.string.no, null)
             builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
@@ -1581,18 +1199,13 @@ class PreferenceActivity : AppCompatActivity() {
                 intent.addCategory(Intent.CATEGORY_DEFAULT)
                 restoreMediaFilesLauncher.launch(intent)
             }
-
-            // create and show the alert dialog
             builder.show()
         }
 
         private fun importDatabase() {
-            // setup the alert builder
             val builder = MaterialAlertDialogBuilder(requireActivity())
             builder.setTitle(R.string.realm_database_import_label)
             builder.setMessage(R.string.database_import_warning)
-
-            // add a button
             builder.setNegativeButton(R.string.no, null)
             builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -1602,8 +1215,6 @@ class PreferenceActivity : AppCompatActivity() {
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
                 restoreDatabaseLauncher.launch(intent)
             }
-
-            // create and show the alert dialog
             builder.show()
         }
 
@@ -1632,12 +1243,9 @@ class PreferenceActivity : AppCompatActivity() {
         }
 
         private fun importEpisodeProgress() {
-            // setup the alert builder
             val builder = MaterialAlertDialogBuilder(requireActivity())
             builder.setTitle(R.string.progress_import_label)
             builder.setMessage(R.string.progress_import_warning)
-
-            // add a button
             builder.setNegativeButton(R.string.no, null)
             builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -1646,7 +1254,6 @@ class PreferenceActivity : AppCompatActivity() {
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
                 restoreProgressLauncher.launch(intent)
             }
-            // create and show the alert dialog
             builder.show()
         }
 
@@ -1672,7 +1279,6 @@ class PreferenceActivity : AppCompatActivity() {
 
         private fun openExportPathPicker(exportType: ExportTypes, result: ActivityResultLauncher<Intent>, writer: ExportWriter) {
             val title = dateStampFilename(exportType.outputNameTemplate)
-
             val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
                 .setType(exportType.contentType)
@@ -1703,9 +1309,7 @@ class PreferenceActivity : AppCompatActivity() {
                 try {
                     val chosenDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Destination directory is not valid")
                     val exportSubDir = chosenDir.createDirectory("Podcini-Prefs") ?: throw IOException("Error creating subdirectory Podcini-Prefs")
-                    val sharedPreferencesDir = context.applicationContext.filesDir.parentFile?.listFiles { file ->
-                        file.name.startsWith("shared_prefs")
-                    }?.firstOrNull()
+                    val sharedPreferencesDir = context.applicationContext.filesDir.parentFile?.listFiles { file -> file.name.startsWith("shared_prefs") }?.firstOrNull()
                     if (sharedPreferencesDir != null) {
                         sharedPreferencesDir.listFiles()!!.forEach { file ->
                             val destFile = exportSubDir.createFile("text/xml", file.name)
@@ -1744,23 +1348,15 @@ class PreferenceActivity : AppCompatActivity() {
             private fun copyStream(inputStream: InputStream, outputStream: OutputStream) {
                 val buffer = ByteArray(1024)
                 var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
-                }
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) outputStream.write(buffer, 0, bytesRead)
             }
             @Throws(IOException::class)
             fun importBackup(uri: Uri, context: Context) {
                 try {
                     val exportedDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Backup directory is not valid")
-                    val sharedPreferencesDir = context.applicationContext.filesDir.parentFile?.listFiles { file ->
-                        file.name.startsWith("shared_prefs")
-                    }?.firstOrNull()
-                    if (sharedPreferencesDir != null) {
-                        sharedPreferencesDir.listFiles()?.forEach { file ->
-//                    val prefName = file.name.substring(0, file.name.lastIndexOf('.'))
-                            file.delete()
-                        }
-                    } else Log.e("Error", "shared_prefs directory not found")
+                    val sharedPreferencesDir = context.applicationContext.filesDir.parentFile?.listFiles { file -> file.name.startsWith("shared_prefs") }?.firstOrNull()
+                    if (sharedPreferencesDir != null) sharedPreferencesDir.listFiles()?.forEach { file -> file.delete() }
+                    else Log.e("Error", "shared_prefs directory not found")
                     val files = exportedDir.listFiles()
                     var hasPodciniRPrefs = false
                     for (file in files) {
@@ -1772,7 +1368,6 @@ class PreferenceActivity : AppCompatActivity() {
                     for (file in files) {
                         if (file?.isFile == true && file.name?.endsWith(".xml") == true) {
                             var destName = file.name!!
-//                    contains info on existing widgets, no need to import
                             if (destName.contains("PlayerWidgetPrefs")) continue
 //                  for importing from Podcini version 5 and below
                             if (!hasPodciniRPrefs) {
@@ -1973,7 +1568,6 @@ class PreferenceActivity : AppCompatActivity() {
             }
         }
 
-        /** Reads OPML documents.  */
         object EpisodeProgressReader {
             private const val TAG = "EpisodeProgressReader"
 
@@ -2015,10 +1609,9 @@ class PreferenceActivity : AppCompatActivity() {
             }
         }
 
-        /** Writes saved favorites to file.  */
         class EpisodesProgressWriter : ExportWriter {
             @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-            override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
+            override fun writeDocument(feeds: List<Feed>, writer: Writer, context: Context) {
                 Logd(TAG, "Starting to write document")
                 val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
                 val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
@@ -2053,7 +1646,7 @@ class PreferenceActivity : AppCompatActivity() {
                                 list.put(obj)
                             }
                         }
-                        writer?.write(list.toString())
+                        writer.write(list.toString())
                     } catch (e: Exception) {
                         e.printStackTrace()
                         throw SyncServiceException(e)
@@ -2069,10 +1662,9 @@ class PreferenceActivity : AppCompatActivity() {
             }
         }
 
-        /** Writes saved favorites to file.  */
         class FavoritesWriter : ExportWriter {
             @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-            override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
+            override fun writeDocument(feeds: List<Feed>, writer: Writer, context: Context) {
                 Logd(TAG, "Starting to write document")
                 val templateStream = context.assets.open("html-export-template.html")
                 var template = IOUtils.toString(templateStream, UTF_8)
@@ -2084,11 +1676,12 @@ class PreferenceActivity : AppCompatActivity() {
                 val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
                 val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.superb.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val favoritesByFeed = buildFeedMap(allFavorites)
-                writer!!.append(templateParts[0])
+                writer.append(templateParts[0])
                 for (feedId in favoritesByFeed.keys) {
                     val favorites: List<Episode> = favoritesByFeed[feedId]!!
+                    if (favorites[0].feed == null) continue
                     writer.append("<li><div>\n")
-                    writeFeed(writer, favorites[0].feed, feedTemplate)
+                    writeFeed(writer, favorites[0].feed!!, feedTemplate)
                     writer.append("<ul>\n")
                     for (item in favorites) writeFavoriteItem(writer, item, favTemplate)
                     writer.append("</ul></div></li>\n")
@@ -2114,23 +1707,23 @@ class PreferenceActivity : AppCompatActivity() {
                 return feedMap
             }
             @Throws(IOException::class)
-            private fun writeFeed(writer: Writer?, feed: Feed?, feedTemplate: String) {
+            private fun writeFeed(writer: Writer, feed: Feed, feedTemplate: String) {
                 val feedInfo = feedTemplate
-                    .replace("{FEED_IMG}", feed!!.imageUrl!!)
-                    .replace("{FEED_TITLE}", feed.title!!)
-                    .replace("{FEED_LINK}", feed.link!!)
-                    .replace("{FEED_WEBSITE}", feed.downloadUrl!!)
-                writer!!.append(feedInfo)
+                    .replace("{FEED_IMG}", feed.imageUrl?:"")
+                    .replace("{FEED_TITLE}", feed.title?:" No title")
+                    .replace("{FEED_LINK}", feed.link?: "")
+                    .replace("{FEED_WEBSITE}", feed.downloadUrl?:"")
+                writer.append(feedInfo)
             }
             @Throws(IOException::class)
-            private fun writeFavoriteItem(writer: Writer?, item: Episode, favoriteTemplate: String) {
+            private fun writeFavoriteItem(writer: Writer, item: Episode, favoriteTemplate: String) {
                 var favItem = favoriteTemplate.replace("{FAV_TITLE}", item.title!!.trim { it <= ' ' })
                 favItem = if (item.link != null) favItem.replace("{FAV_WEBSITE}", item.link!!)
                 else favItem.replace("{FAV_WEBSITE}", "")
                 favItem =
                     if (item.media != null && item.media!!.downloadUrl != null) favItem.replace("{FAV_MEDIA}", item.media!!.downloadUrl!!)
                     else favItem.replace("{FAV_MEDIA}", "")
-                writer!!.append(favItem)
+                writer.append(favItem)
             }
             override fun fileExtension(): String {
                 return "html"
@@ -2149,13 +1742,13 @@ class PreferenceActivity : AppCompatActivity() {
              * Takes a list of feeds and a writer and writes those into an HTML document.
              */
             @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
-            override fun writeDocument(feeds: List<Feed>, writer: Writer?, context: Context) {
+            override fun writeDocument(feeds: List<Feed>, writer: Writer, context: Context) {
                 Logd(TAG, "Starting to write document")
                 val templateStream = context.assets.open("html-export-template.html")
                 var template = IOUtils.toString(templateStream, "UTF-8")
                 template = template.replace("\\{TITLE\\}".toRegex(), "Subscriptions")
                 val templateParts = template.split("\\{FEEDS\\}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                writer!!.append(templateParts[0])
+                writer.append(templateParts[0])
                 for (feed in feeds) {
                     writer.append("<li><div><img src=\"")
                     writer.append(feed.imageUrl)
@@ -2222,22 +1815,8 @@ class PreferenceActivity : AppCompatActivity() {
                                 }
                                 Text(stringResource(R.string.feed_refresh_sum), color = textColor)
                             }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                (activity as PreferenceActivity).openScreen(Screens.preferences_autodownload)
-                            })) {
-                                Text(stringResource(R.string.pref_automatic_download_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_automatic_download_sum), color = textColor)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_auto_delete_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_auto_delete_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefAutoDelete.name, false)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefAutoDelete.name, it).apply() })
-                            }
+                            TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) { (activity as PreferenceActivity).openScreen(Screens.preferences_autodownload) }
+                            TitleSummarySwitchPrefRow(R.string.pref_auto_delete_title, R.string.pref_auto_delete_sum, UserPreferences.Prefs.prefAutoDelete.name)
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(stringResource(R.string.pref_auto_local_delete_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -2260,34 +1839,13 @@ class PreferenceActivity : AppCompatActivity() {
                                     }
                                 })
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_keeps_important_episodes_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_keeps_important_episodes_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, it).apply() })
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.pref_delete_removes_from_queue_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_delete_removes_from_queue_sum), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefDeleteRemovesFromQueue.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefDeleteRemovesFromQueue.name, it).apply() })
-                            }
+                            TitleSummarySwitchPrefRow(R.string.pref_keeps_important_episodes_title, R.string.pref_keeps_important_episodes_sum, UserPreferences.Prefs.prefFavoriteKeepsEpisode.name)
+                            TitleSummarySwitchPrefRow(R.string.pref_delete_removes_from_queue_title, R.string.pref_delete_removes_from_queue_sum, UserPreferences.Prefs.prefDeleteRemovesFromQueue.name)
                             Text(stringResource(R.string.download_pref_details), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 10.dp))
                             var showMeteredNetworkOptions by remember { mutableStateOf(false) }
                             var tempSelectedOptions by remember { mutableStateOf(appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, setOf("images"))!!) }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showMeteredNetworkOptions = true })) {
-                                Text(stringResource(R.string.pref_metered_network_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_mobileUpdate_sum), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_metered_network_title, R.string.pref_mobileUpdate_sum) { showMeteredNetworkOptions = true }
                             if (showMeteredNetworkOptions) {
                                 AlertDialog(onDismissRequest = { showMeteredNetworkOptions = false },
                                     title = { Text(stringResource(R.string.pref_metered_network_title), style = MaterialTheme.typography.titleLarge) },
@@ -2318,12 +1876,7 @@ class PreferenceActivity : AppCompatActivity() {
                                     dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(text = "Cancel") } }
                                 )
                             }
-                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-                                ProxyDialog(requireContext()).show()
-                            })) {
-                                Text(stringResource(R.string.pref_proxy_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.pref_proxy_sum), color = textColor)
-                            }
+                            TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) { ProxyDialog(requireContext()).show() }
                         }
                     }
                 }
@@ -2596,10 +2149,7 @@ class PreferenceActivity : AppCompatActivity() {
                                     Text(stringResource(R.string.pref_episode_cache_summary), color = textColor)
                                 }
                                 var showCleanupOptions by remember { mutableStateOf(false) }
-                                Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { showCleanupOptions = true })) {
-                                    Text(stringResource(R.string.pref_episode_cleanup_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.pref_episode_cleanup_summary), color = textColor)
-                                }
+                                TitleSummaryActionColumn(R.string.pref_episode_cleanup_title, R.string.pref_episode_cleanup_summary) { showCleanupOptions = true }
                                 if (showCleanupOptions) {
                                     var tempCleanupOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
                                     var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
@@ -2632,18 +2182,7 @@ class PreferenceActivity : AppCompatActivity() {
                                         dismissButton = { TextButton(onClick = { showCleanupOptions = false }) { Text(text = "Cancel") } }
                                     )
                                 }
-
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                    var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDownloadOnBattery.name, true)) }
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(stringResource(R.string.pref_automatic_download_on_battery_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.pref_automatic_download_on_battery_sum), color = textColor)
-                                    }
-                                    Switch(checked = isChecked, onCheckedChange = {
-                                        isChecked = it
-                                        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefEnableAutoDownloadOnBattery.name, it).apply()
-                                    })
-                                }
+                                TitleSummarySwitchPrefRow(R.string.pref_automatic_download_on_battery_title, R.string.pref_automatic_download_on_battery_sum, UserPreferences.Prefs.prefEnableAutoDownloadOnBattery.name)
                             }
                         }
                     }
@@ -2667,15 +2206,7 @@ class PreferenceActivity : AppCompatActivity() {
                         val textColor = MaterialTheme.colorScheme.onSurface
                         val scrollState = rememberScrollState()
                         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                Icon(imageVector = ImageVector.vectorResource(R.drawable.wifi_sync), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    WifiAuthenticationFragment().show(childFragmentManager, WifiAuthenticationFragment.TAG)
-                                })) {
-                                    Text(stringResource(R.string.wifi_sync), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.wifi_sync_summary_unchoosen), color = textColor)
-                                }
-                            }
+                            IconTitleSummaryActionRow(R.drawable.wifi_sync, R.string.wifi_sync, R.string.wifi_sync_summary_unchoosen) { WifiAuthenticationFragment().show(childFragmentManager, WifiAuthenticationFragment.TAG) }
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                                 var titleRes by remember { mutableStateOf(0) }
                                 var summaryRes by remember { mutableIntStateOf(R.string.synchronization_summary_unchoosen) }
@@ -2694,55 +2225,27 @@ class PreferenceActivity : AppCompatActivity() {
                                     onClick = { chooseProviderAndLogin() }
                                 }
                                 Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
-                                Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                    onClick?.invoke()
-                                })) {
-                                    Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(summaryRes), color = textColor)
-                                }
+                                TitleSummaryActionColumn(titleRes, summaryRes) { onClick?.invoke() }
                             }
                             if (isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                        val dialog: AuthenticationDialog = object : AuthenticationDialog(requireContext(), R.string.pref_gpodnet_setlogin_information_title,
-                                            false, SynchronizationCredentials.username, null) {
-                                            override fun onConfirmed(username: String, password: String) {
-                                                SynchronizationCredentials.password = password
-                                            }
+                                TitleSummaryActionColumn(R.string.pref_gpodnet_setlogin_information_title, R.string.pref_gpodnet_setlogin_information_sum) {
+                                    val dialog: AuthenticationDialog = object : AuthenticationDialog(requireContext(), R.string.pref_gpodnet_setlogin_information_title,
+                                        false, SynchronizationCredentials.username, null) {
+                                        override fun onConfirmed(username: String, password: String) {
+                                            SynchronizationCredentials.password = password
                                         }
-                                        dialog.show()
-                                    })) {
-                                        Text(stringResource(R.string.pref_gpodnet_setlogin_information_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.pref_gpodnet_setlogin_information_sum), color = textColor)
                                     }
+                                    dialog.show()
                                 }
                             }
                             if (loggedIn) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                        SyncService.syncImmediately(requireActivity().applicationContext)
-                                    })) {
-                                        Text(stringResource(R.string.synchronization_sync_changes_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.synchronization_sync_summary), color = textColor)
-                                    }
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                        SyncService.fullSync(requireContext())
-                                    })) {
-                                        Text(stringResource(R.string.synchronization_full_sync_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.synchronization_force_sync_summary), color = textColor)
-                                    }
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f).clickable(onClick = {
-                                        SynchronizationCredentials.clear(requireContext())
-                                        Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
-                                        setSelectedSyncProvider(null)
-                                        loggedIn = isProviderConnected
-                                    })) {
-                                        Text(stringResource(R.string.synchronization_logout), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    }
+                                TitleSummaryActionColumn(R.string.synchronization_sync_changes_title, R.string.synchronization_sync_summary) { SyncService.syncImmediately(requireActivity().applicationContext) }
+                                TitleSummaryActionColumn(R.string.synchronization_full_sync_title, R.string.synchronization_force_sync_summary) { SyncService.fullSync(requireContext()) }
+                                TitleSummaryActionColumn(R.string.synchronization_logout, 0) {
+                                    SynchronizationCredentials.clear(requireContext())
+                                    Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
+                                    setSelectedSyncProvider(null)
+                                    loggedIn = isProviderConnected
                                 }
                             }
                         }
@@ -2783,56 +2286,10 @@ class PreferenceActivity : AppCompatActivity() {
         fun syncStatusChanged(event: FlowEvent.SyncServiceEvent) {
             if (!isProviderConnected && !wifiSyncEnabledKey) return
             loggedIn = isProviderConnected
-//        updateScreen()
             if (event.messageResId == R.string.sync_status_error || event.messageResId == R.string.sync_status_success)
                 updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful, SynchronizationSettings.lastSyncAttempt)
             else (activity as PreferenceActivity).supportActionBar!!.setSubtitle(event.messageResId)
         }
-
-//    private fun updateScreen() {
-//        val preferenceInstantSync = findPreference<Preference>(Prefs.preference_instant_sync.name)
-//        preferenceInstantSync!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-//            WifiAuthenticationFragment().show(childFragmentManager, WifiAuthenticationFragment.TAG)
-//            true
-//        }
-//
-//        val loggedIn = isProviderConnected
-//        val preferenceHeader = findPreference<Preference>(Prefs.preference_synchronization_description.name)
-//        if (loggedIn) {
-//            val selectedProvider = SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey)
-//            preferenceHeader!!.title = ""
-//            if (selectedProvider != null) {
-//                preferenceHeader.setSummary(selectedProvider.summaryResource)
-//                preferenceHeader.setIcon(selectedProvider.iconResource)
-//            }
-//            preferenceHeader.onPreferenceClickListener = null
-//        } else {
-//            preferenceHeader!!.setTitle(R.string.synchronization_choose_title)
-//            preferenceHeader.setSummary(R.string.synchronization_summary_unchoosen)
-//            preferenceHeader.setIcon(R.drawable.ic_cloud)
-//            preferenceHeader.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-//                chooseProviderAndLogin()
-//                true
-//            }
-//        }
-//
-//        val gpodnetSetLoginPreference = findPreference<Preference>(Prefs.pref_gpodnet_setlogin_information.name)
-//        gpodnetSetLoginPreference!!.isVisible = isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)
-//        gpodnetSetLoginPreference.isEnabled = loggedIn
-//        findPreference<Preference>(Prefs.pref_synchronization_sync.name)!!.isVisible = loggedIn
-//        findPreference<Preference>(Prefs.pref_synchronization_force_full_sync.name)!!.isVisible = loggedIn
-//        findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.isVisible = loggedIn
-//        if (loggedIn) {
-//            val summary = getString(R.string.synchronization_login_status,
-//                SynchronizationCredentials.username, SynchronizationCredentials.hosturl)
-//            val formattedSummary = HtmlCompat.fromHtml(summary, HtmlCompat.FROM_HTML_MODE_LEGACY)
-//            findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.summary = formattedSummary
-//            updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful, SynchronizationSettings.lastSyncAttempt)
-//        } else {
-//            findPreference<Preference>(Prefs.pref_synchronization_logout.name)?.summary = ""
-//            (activity as PreferenceActivity).supportActionBar?.setSubtitle("")
-//        }
-//    }
 
         private fun chooseProviderAndLogin() {
             val builder = MaterialAlertDialogBuilder(requireContext())
@@ -2870,12 +2327,9 @@ class PreferenceActivity : AppCompatActivity() {
 
             builder.setAdapter(adapter) { _: DialogInterface?, which: Int ->
                 when (providers[which]) {
-                    SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(childFragmentManager,
-                        GpodderAuthenticationFragment.TAG)
-                    SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudAuthenticationFragment().show(childFragmentManager,
-                        NextcloudAuthenticationFragment.TAG)
+                    SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(childFragmentManager, GpodderAuthenticationFragment.TAG)
+                    SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudAuthenticationFragment().show(childFragmentManager, NextcloudAuthenticationFragment.TAG)
                 }
-//            updateScreen()
                 loggedIn = isProviderConnected
             }
 
@@ -2896,9 +2350,6 @@ class PreferenceActivity : AppCompatActivity() {
             (activity as PreferenceActivity).supportActionBar!!.subtitle = status
         }
 
-        /**
-         * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
-         */
         abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean, usernameInitialValue: String?, passwordInitialValue: String?)
             : MaterialAlertDialogBuilder(context) {
 
@@ -2932,7 +2383,6 @@ class PreferenceActivity : AppCompatActivity() {
             }
 
             protected open fun onCancelled() {}
-
             protected abstract fun onConfirmed(username: String, password: String)
         }
 
@@ -2983,7 +2433,6 @@ class PreferenceActivity : AppCompatActivity() {
             override fun onResume() {
                 super.onResume()
                 nextcloudLoginFlow?.onResume()
-
                 if (shouldDismiss) dismiss()
             }
             override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
@@ -3331,9 +2780,7 @@ class PreferenceActivity : AppCompatActivity() {
                         Toast.makeText(requireContext(), R.string.sync_status_success, Toast.LENGTH_LONG).show()
                         dialog?.dismiss()
                     }
-                    R.string.sync_status_in_progress -> {
-                        binding!!.progressBar.progress = event.message.toInt()
-                    }
+                    R.string.sync_status_in_progress -> binding!!.progressBar.progress = event.message.toInt()
                     else -> {
                         Logd(TAG, "Sync result unknow ${event.messageResId}")
 //                Toast.makeText(context, "Sync result unknow ${event.messageResId}", Toast.LENGTH_LONG).show()
@@ -3359,30 +2806,9 @@ class PreferenceActivity : AppCompatActivity() {
                         val scrollState = rememberScrollState()
                         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
                             Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.notification_channel_download_error), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.notification_channel_download_error_description), color = textColor)
-                                }
-                                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefShowDownloadReport.name, true)) }
-                                Switch(checked = isChecked, onCheckedChange = {
-                                    isChecked = it
-                                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefShowDownloadReport.name, it).apply()
-                                })
-                            }
-                            if (isProviderConnected) {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(stringResource(R.string.notification_channel_sync_error), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                        Text(stringResource(R.string.notification_channel_sync_error_description), color = textColor)
-                                    }
-                                    var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.pref_gpodnet_notifications.name, true)) }
-                                    Switch(checked = isChecked, onCheckedChange = {
-                                        isChecked = it
-                                        appPrefs.edit().putBoolean(UserPreferences.Prefs.pref_gpodnet_notifications.name, it).apply()
-                                    })
-                                }
-                            }
+                            TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, UserPreferences.Prefs.prefShowDownloadReport.name)
+                            if (isProviderConnected)
+                                TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, UserPreferences.Prefs.pref_gpodnet_notifications.name)
                         }
                     }
                 }

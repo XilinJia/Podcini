@@ -27,7 +27,6 @@ import kotlinx.coroutines.launch
  * Communicates with the playback service. GUI classes should use this class to
  * control playback instead of communicating with the PlaybackService directly.
  */
-
 abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
 
     private var mediaInfoLoaded = false
@@ -150,8 +149,7 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
         when (MediaPlayerBase.status) {
             PlayerStatus.PLAYING -> updatePlayButton(false)
             PlayerStatus.PREPARING -> updatePlayButton(!PlaybackService.isStartWhenPrepared)
-            PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED ->
-                updatePlayButton(true)
+            PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED -> updatePlayButton(true)
             else -> {}
         }
     }

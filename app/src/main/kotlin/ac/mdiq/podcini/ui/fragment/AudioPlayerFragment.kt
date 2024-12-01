@@ -223,9 +223,8 @@ class AudioPlayerFragment : Fragment() {
                 if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
             }
             val imgLoc_ = remember(currentMedia) { imgLoc }
-            AsyncImage(model = ImageRequest.Builder(context).data(imgLoc_)
+            AsyncImage(contentDescription = "imgvCover", model = ImageRequest.Builder(context).data(imgLoc_)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                contentDescription = "imgvCover",
                 modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
                     .clickable(onClick = {
                         Logd(TAG, "playerUiFragment icon was clicked")
@@ -249,10 +248,7 @@ class AudioPlayerFragment : Fragment() {
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SpeedometerWithArc(speed = curPlaybackSpeed*100, maxSpeed = 300f, trackColor = textColor,
-                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
-                        showSpeedDialog = true
-//                    VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
-                }))
+                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = { showSpeedDialog = true }))
 //                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor, contentDescription = "speed",
 //                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
 //                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
@@ -264,8 +260,7 @@ class AudioPlayerFragment : Fragment() {
                 var showSkipDialog by remember { mutableStateOf(false) }
                 var rewindSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())) }
                 if (showSkipDialog) SkipDialog(SkipDirection.SKIP_REWIND, onDismissRequest = { showSkipDialog = false }) { rewindSecs = it.toString() }
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor,
-                    contentDescription = "rewind",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor, contentDescription = "rewind",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
                         onClick = { playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000) },
                         onLongClick = { showSkipDialog = true }))
@@ -273,31 +268,29 @@ class AudioPlayerFragment : Fragment() {
             }
             Spacer(Modifier.weight(0.1f))
             Icon(imageVector = ImageVector.vectorResource(playButRes), tint = textColor, contentDescription = "play",
-                modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(onClick = {
-                    if (controller == null) return@combinedClickable
-                    if (curMedia != null) {
-                        val media = curMedia!!
-                        setIsShowPlay(!isShowPlay)
-                        if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
-                                (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
-                            playPause()
-                            requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
-                        } else playPause()
-                    }
-                }, onLongClick = {
-//                    if (controller != null && status == PlayerStatus.PLAYING) {
-                    if (status == PlayerStatus.PLAYING) {
-                        val fallbackSpeed = UserPreferences.fallbackSpeed
-                        if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
-                    }
-                }))
+                modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(
+                    onClick = {
+                        if (controller == null) return@combinedClickable
+                        if (curMedia != null) {
+                            val media = curMedia!!
+                            setIsShowPlay(!isShowPlay)
+                            if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
+                                    (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
+                                playPause()
+                                requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
+                            } else playPause()
+                        } },
+                    onLongClick = {
+                        if (status == PlayerStatus.PLAYING) {
+                            val fallbackSpeed = UserPreferences.fallbackSpeed
+                            if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
+                        } }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 var showSkipDialog by remember { mutableStateOf(false) }
                 var fastForwardSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())) }
                 if (showSkipDialog) SkipDialog(SkipDirection.SKIP_FORWARD, onDismissRequest = {showSkipDialog = false }) { fastForwardSecs = it.toString()}
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor,
-                    contentDescription = "forward",
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor, contentDescription = "forward",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
                         onClick = { playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000) },
                         onLongClick = { showSkipDialog = true }))
@@ -313,17 +306,14 @@ class AudioPlayerFragment : Fragment() {
                     } else playbackService?.mPlayer?.setPlaybackParams(playbackService!!.normalSpeed, isSkipSilence)
                     playbackService!!.isSpeedForward = !playbackService!!.isSpeedForward
                 }
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_skip_48dp), tint = textColor,
-                    contentDescription = "rewind",
-                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(onClick = {
-//                        if (controller != null && status == PlayerStatus.PLAYING) {
-                        if (status == PlayerStatus.PLAYING) {
-                            val speedForward = UserPreferences.speedforwardSpeed
-                            if (speedForward > 0.1f) speedForward(speedForward)
-                        }
-                    }, onLongClick = {
-                        activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
-                    }))
+                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_skip_48dp), tint = textColor, contentDescription = "rewind",
+                    modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
+                        onClick = {
+                            if (status == PlayerStatus.PLAYING) {
+                                val speedForward = UserPreferences.speedforwardSpeed
+                                if (speedForward > 0.1f) speedForward(speedForward)
+                            } },
+                        onLongClick = { activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT)) }))
                 if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))
@@ -382,9 +372,6 @@ class AudioPlayerFragment : Fragment() {
                                             Logd(TAG, "row clicked: $item $selectedOption")
                                             if (item != selectedOption) {
                                                 onOptionSelected(item)
-//                                                currentItem = upsertBlk(currentItem!!) {
-//                                                    it.media?.volumeAdaptionSetting = item
-//                                                }
                                                 if (currentMedia is EpisodeMedia) {
                                                     (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
                                                     currentMedia = currentItem!!.media
@@ -454,20 +441,14 @@ class AudioPlayerFragment : Fragment() {
                 }
             })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_volume_adaption), tint = textColor, contentDescription = "Volume adaptation", modifier = Modifier.clickable {
-                if (currentItem != null) {
-                    showVolumeDialog = true
-                }
+                if (currentItem != null) showVolumeDialog = true
             })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
                 val notes = if (showHomeText) readerhtml else feedItem?.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
-                    val intent = ShareCompat.IntentBuilder(context)
-                        .setType("text/plain")
-                        .setText(shareText)
-                        .setChooserTitle(R.string.share_notes_label)
-                        .createChooserIntent()
+                    val intent = ShareCompat.IntentBuilder(context).setType("text/plain").setText(shareText).setChooserTitle(R.string.share_notes_label).createChooserIntent()
                     context.startActivity(intent)
                 }
             })
@@ -479,9 +460,7 @@ class AudioPlayerFragment : Fragment() {
     @Composable
     fun DetailUI(modifier: Modifier) {
         var showChooseRatingDialog by remember { mutableStateOf(false) }
-        if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) {
-            showChooseRatingDialog = false
-        }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) { showChooseRatingDialog = false }
         var showChaptersDialog by remember { mutableStateOf(false) }
         if (showChaptersDialog) ChaptersDialog(media = currentMedia!!, onDismissRequest = {showChaptersDialog = false})
 
@@ -491,9 +470,8 @@ class AudioPlayerFragment : Fragment() {
             fun copyText(text: String): Boolean {
                 val clipboardManager: ClipboardManager? = ContextCompat.getSystemService(requireContext(), ClipboardManager::class.java)
                 clipboardManager?.setPrimaryClip(ClipData.newPlainText("Podcini", text))
-                if (Build.VERSION.SDK_INT <= 32) {
+                if (Build.VERSION.SDK_INT <= 32)
                     (requireActivity() as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
-                }
                 return true
             }
             Text(txtvPodcastTitle, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.headlineSmall,
@@ -547,10 +525,7 @@ class AudioPlayerFragment : Fragment() {
                         postDelayed({ }, 50)
                     }
                 }
-            }, update = { webView ->
-//                Logd(TAG, "AndroidView update: $cleanedNotes")
-                webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
-            })
+            }, update = { webView -> webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank") })
             if (displayedChapterIndex >= 0) {
                 Row(modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
@@ -567,8 +542,7 @@ class AudioPlayerFragment : Fragment() {
                 }
             }
             AsyncImage(model = imgLocLarge, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
-                modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp, top = 10.dp).clickable(onClick = {
-                }))
+                modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp, top = 10.dp).clickable(onClick = {}))
         }
     }
 
@@ -628,10 +602,8 @@ class AudioPlayerFragment : Fragment() {
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
         if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
-//            (activity as MainActivity).bottomSheet.setLocked(true)
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
-//        else (activity as MainActivity).bottomSheet.setLocked(false)
         prevMedia = media
     }
 
@@ -694,36 +666,18 @@ class AudioPlayerFragment : Fragment() {
                     val article = readability4J.parse()
                     readerhtml = article.contentWithDocumentsCharsetOrUtf8
                     if (!readerhtml.isNullOrEmpty()) {
-                        currentItem = upsertBlk(currentItem!!) {
-                            it.setTranscriptIfLonger(readerhtml)
-                        }
+                        currentItem = upsertBlk(currentItem!!) { it.setTranscriptIfLonger(readerhtml) }
                         homeText = currentItem!!.transcript
-//                        persistEpisode(currentItem)
                     }
                 }
                 if (!homeText.isNullOrEmpty()) {
-//                    val shownotesCleaner = ShownotesCleaner(requireContext())
                     cleanedNotes = shownotesCleaner?.processShownotes(homeText!!, 0)
-                    withContext(Dispatchers.Main) {
-//                            shownoteView.loadDataWithBaseURL("https://127.0.0.1",
-//                                cleanedNotes ?: "No notes",
-//                                "text/html",
-//                                "UTF-8",
-//                                null)
-                    }
+//                    withContext(Dispatchers.Main) {}
                 } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             } else {
-//                val shownotesCleaner = ShownotesCleaner(requireContext())
                 cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentMedia?.getDuration() ?: 0)
-                if (!cleanedNotes.isNullOrEmpty()) {
-                    withContext(Dispatchers.Main) {
-//                            shownoteView.loadDataWithBaseURL("https://127.0.0.1",
-//                                cleanedNotes ?: "No notes",
-//                                "text/html",
-//                                "UTF-8",
-//                                null)
-                    }
-                } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
+                if (cleanedNotes.isNullOrEmpty())
+                    withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             }
         }
     }
@@ -782,8 +736,6 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "Saving preferences")
         val editor = prefs.edit() ?: return
         if (curMedia != null) {
-//            Logd(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
-//            editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)
             editor.putString(PREF_PLAYABLE_ID, curMedia!!.getIdentifier().toString())
         } else {
             Logd(TAG, "savePreferences was called while media or webview was null")
@@ -799,7 +751,6 @@ class AudioPlayerFragment : Fragment() {
 //        if (isCollapsed) {
             isCollapsed = false
             if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
-//            showPlayer1 = false
 //            if (currentMedia != null) updateUi(currentMedia!!)
             setIsShowPlay(isShowPlay)
             updateDetails()
@@ -809,7 +760,6 @@ class AudioPlayerFragment : Fragment() {
     fun onCollaped() {
         Logd(TAG, "onCollaped()")
         isCollapsed = true
-//        showPlayer1 = true
 //        if (currentMedia != null) updateUi(currentMedia!!)
         setIsShowPlay(isShowPlay)
     }
@@ -882,7 +832,6 @@ class AudioPlayerFragment : Fragment() {
     private fun createHandler(): ServiceStatusHandler {
         return object : ServiceStatusHandler(requireActivity()) {
             override fun updatePlayButton(showPlay: Boolean) {
-//                isShowPlay = showPlay
                 setIsShowPlay(showPlay)
             }
             override fun loadMediaInfo() {
@@ -890,17 +839,11 @@ class AudioPlayerFragment : Fragment() {
 //                if (!isCollapsed) updateDetails()
             }
             override fun onPlaybackEnd() {
-//                isShowPlay = true
                 setIsShowPlay(true)
                 (activity as MainActivity).setPlayerVisible(false)
             }
         }
     }
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        retainInstance = true
-//    }
 
     override fun onResume() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
@@ -1016,10 +959,7 @@ class AudioPlayerFragment : Fragment() {
     }
 
     private fun onRatingEvent(event: FlowEvent.RatingEvent) {
-        if (curEpisode?.id == event.episode.id) {
-            rating = event.rating
-//            EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
-        }
+        if (curEpisode?.id == event.episode.id) rating = event.rating
     }
 
 //    fun scrollToTop() {

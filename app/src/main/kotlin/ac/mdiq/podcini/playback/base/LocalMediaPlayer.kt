@@ -46,9 +46,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.Throws
 
-/**
- * Manages the MediaPlayer object of the PlaybackService.
- */
 class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPlayerBase(context, callback) {
 
     @Volatile
@@ -84,14 +81,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         }
 
     private val videoWidth: Int
-        get() {
-            return exoPlayer?.videoFormat?.width ?: 0
-        }
+        get() = exoPlayer?.videoFormat?.width ?: 0
 
     private val videoHeight: Int
-        get() {
-            return exoPlayer?.videoFormat?.height ?: 0
-        }
+        get() = exoPlayer?.videoFormat?.height ?: 0
 
     init {
         if (httpDataSourceFactory == null) {
@@ -136,15 +129,6 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         audioErrorListener = null
         bufferingUpdateListener = null
     }
-
-//    private fun setAudioStreamType(i: Int) {
-//        val a = exoPlayer!!.audioAttributes
-//        val b = AudioAttributes.Builder()
-//        b.setContentType(i)
-//        b.setFlags(a.flags)
-//        b.setUsage(a.usage)
-//        exoPlayer?.setAudioAttributes(b.build(), true)
-//    }
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing

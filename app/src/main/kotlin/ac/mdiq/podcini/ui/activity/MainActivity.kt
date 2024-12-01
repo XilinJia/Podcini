@@ -18,7 +18,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
 import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
-import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -187,7 +186,6 @@ class MainActivity : CastEnabledActivity() {
             SwipeActions.getSharedPrefs(this@MainActivity)
             buildTags()
             monitorFeeds()
-            PlayerWidget.getSharedPrefs(this@MainActivity)
         }
 
         if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))

@@ -1,7 +1,5 @@
 package ac.mdiq.podcini.ui.compose
 
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -12,11 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -195,16 +194,28 @@ fun SimpleSwitchDialog(title: String, text: String, onDismissRequest: ()->Unit, 
 }
 
 @Composable
-fun TitleSummaryColumn(titleRes: Int, summaryRes: Int, callback: ()-> Unit) {
+fun IconTitleSummaryActionRow(vecRes: Int, titleRes: Int, summaryRes: Int, callback: ()-> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { callback() })) {
-        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text(stringResource(summaryRes), color = textColor)
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
+        Icon(imageVector = ImageVector.vectorResource(vecRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
+        Column(modifier = Modifier.weight(1f).clickable(onClick = { callback() })) {
+            Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(summaryRes), color = textColor)
+        }
     }
 }
 
 @Composable
-fun TitleSummarySwitchRow(titleRes: Int, summaryRes: Int, prefName: String) {
+fun TitleSummaryActionColumn(titleRes: Int, summaryRes: Int, callback: ()-> Unit) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { callback() })) {
+        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        if (summaryRes != 0) Text(stringResource(summaryRes), color = textColor)
+    }
+}
+
+@Composable
+fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String) {
     val textColor = MaterialTheme.colorScheme.onSurface
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
         Column(modifier = Modifier.weight(1f)) {
@@ -217,3 +228,4 @@ fun TitleSummarySwitchRow(titleRes: Int, summaryRes: Int, prefName: String) {
             appPrefs.edit().putBoolean(prefName, it).apply() })
     }
 }
+

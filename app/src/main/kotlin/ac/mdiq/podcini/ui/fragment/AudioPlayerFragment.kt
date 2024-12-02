@@ -49,6 +49,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter
+import ac.mdiq.podcini.util.MiscFormatter.formatLargeInteger
 import android.app.Activity
 import android.content.*
 import android.os.Build
@@ -249,10 +250,6 @@ class AudioPlayerFragment : Fragment() {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SpeedometerWithArc(speed = curPlaybackSpeed*100, maxSpeed = 300f, trackColor = textColor,
                     modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = { showSpeedDialog = true }))
-//                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), tint = textColor, contentDescription = "speed",
-//                    modifier = Modifier.width(43.dp).height(43.dp).clickable(onClick = {
-//                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
-//                    }))
                 Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))
@@ -336,6 +333,9 @@ class AudioPlayerFragment : Fragment() {
             })
         Row {
             Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.weight(1f))
+            val bitrate = (curMedia as? EpisodeMedia)?.bitrate ?: 0
+            if (bitrate > 0) Text(formatLargeInteger(bitrate) + "bits", color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
             showTimeLeft = UserPreferences.shouldShowRemainingTime()
             Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {

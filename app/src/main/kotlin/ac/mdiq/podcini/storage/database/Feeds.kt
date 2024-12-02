@@ -500,29 +500,11 @@ object Feeds {
         feed = createSynthetic(feedId, name)
         feed.type = Feed.FeedType.YOUTUBE.name
         feed.hasVideoMedia = video
-        feed.preferences!!.audioTypeSetting = if (music) AudioType.MOVIE else AudioType.SPEECH
+        feed.preferences!!.audioTypeSetting = if (music) AudioType.MUSIC else AudioType.SPEECH
         feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
         EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
         return feed
-    }
-
-    fun addToYoutubeSyndicate(episode: Episode, video: Boolean) : Int {
-        val feed = getYoutubeSyndicate(video, episode.media?.downloadUrl?.contains("music") == true)
-        Logd(TAG, "addToYoutubeSyndicate: feed: ${feed.title}")
-        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return 2
-
-        Logd(TAG, "addToYoutubeSyndicate adding new episode: ${episode.title}")
-        episode.feed = feed
-        episode.id = Feed.newId()
-        episode.feedId = feed.id
-        episode.media?.id = episode.id
-        upsertBlk(episode) {}
-        upsertBlk(feed) {
-            it.episodes.add(episode)
-        }
-        EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
-        return 1
     }
 
     fun addToSyndicate(episode: Episode, feed: Feed) : Int {

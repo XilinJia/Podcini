@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.ShareLog
-import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode1
+import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
@@ -52,7 +52,7 @@ class ShareReceiverActivity : AppCompatActivity() {
             setContent {
                 val showDialog = remember { mutableStateOf(true) }
                 CustomTheme(this) {
-                    ConfirmAddYoutubeEpisode1(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
+                    ConfirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
                         showDialog.value = false
                         finish()
                     })

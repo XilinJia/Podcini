@@ -26,6 +26,7 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
+import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getLastNavFragmentArg
 import ac.mdiq.podcini.ui.fragment.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
@@ -222,12 +223,9 @@ class MainActivity : CastEnabledActivity() {
             if (UserPreferences.DEFAULT_PAGE_REMEMBER != defaultPage) loadFragment(defaultPage, null)
             else {
                 val lastFragment = NavDrawerFragment.getLastNavFragment()
-                if (NavDrawerFragment.navMap.keys.contains(lastFragment)) loadFragment(lastFragment, null)
-                else {
-                    // it's not a number, this happens if we removed a label from the NAV_DRAWER_TAGS  give them a nice default...
-                    try { loadFeedFragmentById(lastFragment.toInt().toLong(), null) }
-                    catch (e: NumberFormatException) { loadFragment(SubscriptionsFragment.TAG, null) }
-                }
+                Logd(TAG, "lastFragment: $lastFragment")
+                if (NavDrawerFragment.navMap.keys.contains(lastFragment) || lastFragment == FeedEpisodesFragment.TAG) loadFragment(lastFragment, null)
+                else loadFragment(SubscriptionsFragment.TAG, null)
             }
         }
 
@@ -437,8 +435,7 @@ class MainActivity : CastEnabledActivity() {
         val params = mainView.layoutParams as MarginLayoutParams
         val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
         Logd(TAG, "externalPlayerHeight: $externalPlayerHeight ${navigationBarInsets.bottom}")
-        params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right,
-            navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
+        params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
         audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
@@ -451,23 +448,23 @@ class MainActivity : CastEnabledActivity() {
         var tag = tag
         var args = args
         Logd(TAG, "loadFragment(tag: $tag, args: $args)")
-        val fragment: Fragment
-        when (tag) {
-            QueuesFragment.TAG -> fragment = QueuesFragment()
-            EpisodesFragment.TAG -> fragment = EpisodesFragment()
-//            AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
-//            DownloadsFragment.TAG -> fragment = DownloadsFragment()
-            LogsFragment.TAG -> fragment = LogsFragment()
-//            HistoryFragment.TAG -> fragment = HistoryFragment()
-            OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
-            SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
-            StatisticsFragment.TAG -> fragment = StatisticsFragment()
-            FeedEpisodesFragment.TAG -> fragment = FeedEpisodesFragment()
+        val fragment: Fragment = when (tag) {
+            QueuesFragment.TAG -> QueuesFragment()
+            EpisodesFragment.TAG -> EpisodesFragment()
+            LogsFragment.TAG -> LogsFragment()
+            OnlineSearchFragment.TAG -> OnlineSearchFragment()
+            SubscriptionsFragment.TAG -> SubscriptionsFragment()
+            StatisticsFragment.TAG -> StatisticsFragment()
+            FeedEpisodesFragment.TAG -> {
+                if (args == null) {
+                    val feedId = getLastNavFragmentArg().toLongOrNull()
+                    if (feedId != null) FeedEpisodesFragment.newInstance(feedId) else SubscriptionsFragment()
+                } else FeedEpisodesFragment()
+            }
             else -> {
-                // default to subscriptions screen
-                fragment = SubscriptionsFragment()
                 tag = SubscriptionsFragment.TAG
                 args = null
+                SubscriptionsFragment()
             }
         }
         if (args != null) fragment.arguments = args
@@ -478,16 +475,14 @@ class MainActivity : CastEnabledActivity() {
     fun loadFeedFragmentById(feedId: Long, args: Bundle?) {
         val fragment: Fragment = FeedEpisodesFragment.newInstance(feedId)
         if (args != null) fragment.arguments = args
-        NavDrawerFragment.saveLastNavFragment(feedId.toString())
+        NavDrawerFragment.saveLastNavFragment(FeedEpisodesFragment.TAG, feedId.toString())
         loadFragment(fragment)
     }
 
     private fun loadFragment(fragment: Fragment) {
         val fragmentManager = supportFragmentManager
         // clear back stack
-        for (i in 0 until fragmentManager.backStackEntryCount) {
-            fragmentManager.popBackStack()
-        }
+        for (i in 0 until fragmentManager.backStackEntryCount) fragmentManager.popBackStack()
         val t = fragmentManager.beginTransaction()
         t.replace(R.id.main_view, fragment, MAIN_FRAGMENT_TAG)
         fragmentManager.popBackStack()
@@ -609,10 +604,6 @@ class MainActivity : CastEnabledActivity() {
         }
     }
 
-    fun openDrawer() {
-        drawerLayout?.openDrawer(navDrawer)
-    }
-
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
     private fun cancelFlowEvents() {
@@ -635,12 +626,7 @@ class MainActivity : CastEnabledActivity() {
             }
         }
         if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
-            EventFlow.stickyEvents.collectLatest { event ->
-                Logd(TAG, "Received sticky event: ${event.TAG}")
-//                when (event) {
-//                    else -> {}
-//                }
-            }
+            EventFlow.stickyEvents.collectLatest { event -> Logd(TAG, "Received sticky event: ${event.TAG}") }
         }
     }
 
@@ -651,9 +637,11 @@ class MainActivity : CastEnabledActivity() {
             intent.hasExtra(Extras.fragment_feed_id.name) -> {
                 val feedId = intent.getLongExtra(Extras.fragment_feed_id.name, 0)
                 val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
+                Logd(TAG, "handleNavIntent: feedId: $feedId")
                 if (feedId > 0) {
                     val startedFromShare = intent.getBooleanExtra(Extras.started_from_share.name, false)
                     val addToBackStack = intent.getBooleanExtra(Extras.add_to_back_stack.name, false)
+                    Logd(TAG, "handleNavIntent: startedFromShare: $startedFromShare addToBackStack: $addToBackStack")
                     if (startedFromShare || addToBackStack) loadChildFragment(FeedEpisodesFragment.newInstance(feedId))
                     else loadFeedFragmentById(feedId, args)
                 }
@@ -704,7 +692,6 @@ class MainActivity : CastEnabledActivity() {
             s = Snackbar.make(mainView, text, duration)
             if (audioPlayerView.visibility == View.VISIBLE) s.anchorView = audioPlayerView
         } else s = Snackbar.make(binding.root, text, duration)
-
         s.show()
         return s
     }
@@ -715,14 +702,11 @@ class MainActivity : CastEnabledActivity() {
 
     /**
      * Handles the deep link incoming via App Actions.
-     * Performs an in-app search or opens the relevant feature of the app
-     * depending on the query.
-     *
+     * Performs an in-app search or opens the relevant feature of the app depending on the query
      * @param uri incoming deep link
      */
     private fun handleDeeplink(uri: Uri?) {
         if (uri?.path == null) return
-
         Logd(TAG, "Handling deeplink: $uri")
         when (uri.path) {
             "/deeplink/search" -> {
@@ -732,8 +716,6 @@ class MainActivity : CastEnabledActivity() {
             "/deeplink/main" -> {
                 val feature = uri.getQueryParameter("page") ?: return
                 when (feature) {
-//                    "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
-//                    "HISTORY" -> loadFragment(HistoryFragment.TAG, null)
                     "EPISODES" -> loadFragment(EpisodesFragment.TAG, null)
                     "QUEUE" -> loadFragment(QueuesFragment.TAG, null)
                     "SUBSCRIPTIONS" -> loadFragment(SubscriptionsFragment.TAG, null)

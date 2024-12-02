@@ -74,7 +74,7 @@ object MiscFormatter {
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
     }
 
-    fun formatNumber(n: Int): String {
+    fun formatLargeInteger(n: Int): String {
         return when {
             n < 1000 -> n.toString()
             n < 1_000_000 -> String.format(Locale.getDefault(), "%.2fK", n / 1000.0)

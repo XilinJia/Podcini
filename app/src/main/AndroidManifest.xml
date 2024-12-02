@@ -225,11 +225,11 @@
 
         </activity>
 
-        <activity android:name=".ui.activity.SelectSubscriptionActivity"
-            android:label="@string/shortcut_subscription_label"
-            android:icon="@drawable/ic_subscriptions_shortcut"
-            android:theme="@style/Theme.Podcini.Dark.Translucent"
-            android:exported="true">
+        <activity android:name=".ui.activity.SubscriptionShortcutActivity"
+                  android:label="@string/shortcut_subscription_label"
+                  android:icon="@drawable/ic_launcher_foreground"
+                  android:theme="@style/Theme.Podcini.Dark.Translucent"
+                  android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
             </intent-filter>

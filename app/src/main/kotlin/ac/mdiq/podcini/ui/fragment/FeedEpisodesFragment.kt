@@ -125,23 +125,17 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        NavDrawerFragment.saveLastNavFragment(TAG, feedID.toString())
 
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
         updateToolbar()
 
         swipeActions = SwipeActions(this, TAG)
-        fun filterClick() {
-            if (enableFilter && feed != null) {
-                showFilterDialog = true
-//                val dialog = FeedEpisodeFilterDialog(feed)
-//                dialog.filter = feed!!.episodeFilter
-//                dialog.show(childFragmentManager, null)
-            }
-        }
+
         fun filterLongClick() {
             if (feed != null) {
                 enableFilter = !enableFilter
-                waitForLoading()
+                while (loadItemsRunning) Thread.sleep(50)
                 loadItemsRunning = true
                 val etmp = mutableListOf<Episode>()
                 if (enableFilter) {
@@ -153,8 +147,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     filterButtonColor.value = Color.Red
                     etmp.addAll(feed!!.episodes)
                 }
-                val sortOrder = fromCode(feed?.preferences?.sortOrderCode ?: 0)
-                if (sortOrder != null) getPermutor(sortOrder).reorder(etmp)
+                getPermutor(fromCode(feed?.preferences?.sortOrderCode ?: 0)).reorder(etmp)
                 episodes.clear()
                 episodes.addAll(etmp)
                 ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
@@ -198,7 +191,9 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }
                 Column {
-                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
+                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {
+                        if (enableFilter && feed != null) showFilterDialog = true
+                    }, filterLongClickCB = {filterLongClick()})
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
                     EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
@@ -218,29 +213,12 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-
-//        val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(requireContext(), binding.toolbar, binding.collapsingToolbar) {
-//            override fun doTint(themedContext: Context) {
-//                binding.toolbar.menu.findItem(R.id.refresh_feed).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_refresh))
-//                binding.toolbar.menu.findItem(R.id.action_search).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_search))
-//            }
-//        }
-//        iconTintManager.updateTint()
-//        binding.appBar.addOnOffsetChangedListener(iconTintManager)
-
-//        binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-//        binding.swipeRefresh.setProgressViewEndTarget(false, 0)
-//        binding.swipeRefresh.setOnRefreshListener {
-//            FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
-//        }
-
         return binding.root
     }
 
     override fun onStart() {
         Logd(TAG, "onStart() called")
         super.onStart()
-//        adapter.refreshFragPosCallback = ::refreshPosCallback
         loadFeed()
         procFlowEvents()
     }
@@ -262,41 +240,30 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             rating = feed!!.rating
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
-            val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
-            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
-                error = painterResource(R.drawable.teaser),
-                modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
-                    .constrainAs(bgImage) {
+            val (bgImage, bgColor, controlRow, imgvCover) = createRefs()
+            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds, error = painterResource(R.drawable.teaser),
+                modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp).constrainAs(bgImage) {
                     bottom.linkTo(parent.bottom)
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                })
-            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f))
-                .constrainAs(bgColor) {
-                    bottom.linkTo(parent.bottom)
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                })
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
-                .constrainAs(controlRow) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    width = Dimension.fillToConstraints
-                }, verticalAlignment = Alignment.CenterVertically) {
+                    end.linkTo(parent.end) })
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)).constrainAs(bgColor) {
+                bottom.linkTo(parent.bottom)
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end) })
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).constrainAs(controlRow) {
+                bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+                width = Dimension.fillToConstraints
+            }) {
                 Spacer(modifier = Modifier.weight(0.7f))
                 val ratingIconRes = Rating.fromCode(rating).res
                 Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
-                        showChooseRatingDialog = true
-                    }))
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = { showChooseRatingDialog = true }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), tint = textColor, contentDescription = "butSort",
-                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
-                        showSortDialog = true
-//                        SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
-                    }))
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = { showSortDialog = true }))
                 Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
@@ -311,16 +278,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Spacer(modifier = Modifier.weight(0.4f))
                 Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.End, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
             }
-//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
-//                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
-//                    bottom.linkTo(parent.bottom)
-//                    start.linkTo(parent.start)
-//                })
-//            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
-//                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
-//                    bottom.linkTo(parent.bottom)
-//                    end.linkTo(parent.end)
-//                })
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).constrainAs(imgvCover) {
                 top.linkTo(parent.top)
                 start.linkTo(parent.start)
@@ -381,14 +338,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onDestroyView()
     }
 
-//    
-//    private fun refreshPosCallback(pos: Int, episode: Episode) {
-//        Logd(TAG, "FeedEpisode refreshPosCallback: $pos ${episode.title}")
-////        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
-//        redoFilter()
-////        adapter.notifyDataSetChanged()
-//    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
         super.onSaveInstanceState(outState)
@@ -441,14 +390,12 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 (activity as MainActivity).loadChildFragment(qFrag)
                 (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             }
-//            R.id.init_tts -> initTTS()
             else -> return false
         }
         return true
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-//        Logd(TAG, "onPlayEvent ${event.episode.title}")
         if (feed != null) {
             val pos: Int = ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
@@ -467,7 +414,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val pos: Int = ueMap[url] ?: -1
             if (pos >= 0) {
                 Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].media?.downloaded} ${episodes[pos].title}")
-//                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
         }
@@ -517,12 +463,9 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
-//        nextPageLoader.setLoadingState(event.isRunning)
-//        if (!event.isRunning) nextPageLoader.root.visibility = View.GONE
         infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
         if (!event.isRunning) loadFeed()
-//        binding.swipeRefresh.isRefreshing = event.isRunning
     }
 
     private fun refreshSwipeTelltale() {
@@ -530,52 +473,18 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         rightActionState.value = swipeActions.actions.right[0]
     }
 
-     private fun refreshHeaderView() {
-        setupHeaderView()
+    private fun refreshHeaderView() {
         if (feed == null) {
             Log.e(TAG, "Unable to refresh header view")
             return
         }
-//        loadFeedImage()
-//        if (feed!!.lastUpdateFailed) binding.header.txtvFailure.visibility = View.VISIBLE
-//        else binding.header.txtvFailure.visibility = View.GONE
-
+        if (!headerCreated) headerCreated = true
         infoTextFiltered = ""
         if (!feed?.preferences?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter
             if (filter.properties.isNotEmpty()) infoTextFiltered = this.getString(R.string.filtered_label)
         }
         infoBarText.value = "$infoTextFiltered $infoTextUpdate"
-    }
-
-     private fun setupHeaderView() {
-        if (feed == null || headerCreated) return
-
-//        binding.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
-//        binding.header.imgvCover.setOnClickListener { showFeedInfo() }
-
-//        binding.header.txtvFailure.setOnClickListener { showErrorDetails() }
-        headerCreated = true
-    }
-
-//    private fun showErrorDetails() {
-//        lifecycleScope.launch {
-//            val downloadResult = withContext(Dispatchers.IO) {
-//                val feedDownloadLog: List<DownloadResult> = getFeedDownloadLog(feedID)
-//                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) null else feedDownloadLog[0]
-//            }
-//            withContext(Dispatchers.Main) {
-//                if (downloadResult != null) DownloadLogDetailsDialog(requireContext(), downloadResult).show()
-//                else DownloadLogFragment().show(childFragmentManager, null)
-//            }
-//        }.invokeOnCompletion { throwable ->
-//            throwable?.printStackTrace()
-//        }
-//    }
-
-    private var loadItemsRunning = false
-    private fun waitForLoading() {
-        while (loadItemsRunning) Thread.sleep(50)
     }
 
     private fun isFilteredOut(episode: Episode): Boolean {
@@ -591,7 +500,8 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         return false
     }
-    
+
+    private var loadItemsRunning = false
     private fun loadFeed() {
         if (!loadItemsRunning) {
             loadItemsRunning = true
@@ -635,12 +545,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     withContext(Dispatchers.Main) {
                         Logd(TAG, "loadItems subscribe called ${feed?.title}")
                         rating = feed?.rating ?: Rating.UNRATED.code
-//                        swipeActions.setFilter(feed?.episodeFilter)
                         refreshHeaderView()
-//                        if (feed != null) {
-//                            adapter.updateItems(episodes, feed)
-//                            binding.header.counts.text = episodes.size.toString()
-//                        }
                         updateToolbar()
                     }
                 } catch (e: Throwable) {
@@ -676,7 +581,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     companion object {
         val TAG = FeedEpisodesFragment::class.simpleName ?: "Anonymous"
-
         const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
         private const val KEY_UP_ARROW = "up_arrow"
 

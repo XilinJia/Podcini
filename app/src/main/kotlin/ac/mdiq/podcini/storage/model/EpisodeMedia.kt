@@ -94,9 +94,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     @Ignore
     var audioUrl = ""
 
-    /* Used for loading item when restoring from parcel. */
-//    var episodeId: Long = 0
-//        private set
+    @Ignore
+    var bitrate: Int = 0
 
     constructor() {}
 

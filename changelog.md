@@ -1,3 +1,10 @@
+# 6.15.2
+
+* FeedEpisodes is remembered as last opened page and can be opened if default page set to "Remember"
+* revamped SubscriptionShortcut activity in Compose to create proper shortcuts on home screen of the phone
+* feed shortcut on home screen opens the feed (with FeedEpisodes) in Podcini
+* when playing a youtube audio, bitrate is shown in PlayerUI
+
 # 6.15.1
 
 * Consolidated Compose code blocks in PreferenceActivity with function calls

@@ -144,6 +144,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                     }
                 }
                 val audioStream = audioStreamsList[audioIndex]
+                media.bitrate = audioStream.bitrate
                 Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
 
                 media.audioUrl = audioStream.content

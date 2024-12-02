@@ -150,8 +150,7 @@ import kotlin.Throws
 import kotlin.math.round
 
 /**
- * PreferenceActivity for API 11+. In order to change the behavior of the preference UI, see
- * PreferenceController.
+ * PreferenceActivity for API 11+. In order to change the behavior of the preference UI, see PreferenceController.
  */
 class PreferenceActivity : AppCompatActivity() {
     private var _binding: SettingsActivityBinding? = null
@@ -426,7 +425,6 @@ class PreferenceActivity : AppCompatActivity() {
                         }
                     }
                 }
-
                 private fun showLicenseText(licenseTextFile: String) {
                     try {
                         val reader = BufferedReader(InputStreamReader(requireContext().assets.open(licenseTextFile), "UTF-8"))
@@ -436,12 +434,10 @@ class PreferenceActivity : AppCompatActivity() {
                         MaterialAlertDialogBuilder(requireContext()).setMessage(licenseText).show()
                     } catch (e: IOException) { e.printStackTrace() }
                 }
-
                 override fun onStart() {
                     super.onStart()
                     (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.licenses)
                 }
-
                 private class LicenseItem(val title: String, val subtitle: String, val licenseUrl: String, val licenseTextFile: String)
             }
         }
@@ -553,12 +549,6 @@ class PreferenceActivity : AppCompatActivity() {
                             }
                             TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)
                             TitleSummaryActionColumn(R.string.swipeactions_label, R.string.swipeactions_summary) { (activity as PreferenceActivity).openScreen(Screens.preferences_swipe) }
-//                            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = {
-//                                (activity as PreferenceActivity).openScreen(Screens.preferences_swipe)
-//                            })) {
-//                                Text(stringResource(R.string.swipeactions_label), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-//                                Text(stringResource(R.string.swipeactions_summary), color = textColor)
-//                            }
                         }
                     }
                 }
@@ -569,8 +559,6 @@ class PreferenceActivity : AppCompatActivity() {
             SubscriptionsFragment(R.string.subscriptions_label),
             QueuesFragment(R.string.queue_label),
             EpisodesFragment(R.string.episodes_label),
-//            DownloadsFragment(R.string.downloads_label),
-            PlaybackHistoryFragment(R.string.playback_history_label),
             AddFeedFragment(R.string.add_feed_label),
             StatisticsFragment(R.string.statistics_label),
             remember(R.string.remember_last_page);

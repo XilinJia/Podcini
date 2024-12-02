@@ -19,7 +19,6 @@ import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
-import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
@@ -48,7 +47,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
-import ac.mdiq.podcini.util.MiscFormatter.formatNumber
+import ac.mdiq.podcini.util.MiscFormatter.formatLargeInteger
 import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
@@ -101,7 +100,6 @@ import androidx.documentfile.provider.DocumentFile
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.skydoves.balloon.textForm
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
@@ -457,7 +455,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 
     val showConfirmYoutubeDialog = remember { mutableStateOf(false) }
     val youtubeUrls = remember { mutableListOf<String>() }
-    ConfirmAddYoutubeEpisode1(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = { showConfirmYoutubeDialog.value = false })
+    ConfirmAddYoutubeEpisode(youtubeUrls, showConfirmYoutubeDialog.value, onDismissRequest = { showConfirmYoutubeDialog.value = false })
 
     var showChooseRatingDialog by remember { mutableStateOf(false) }
     if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
@@ -664,7 +662,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) +
                             " · " + getDurationStringLong(vm.durationState) +
                             (if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else "") +
-                            (if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "")
+                            (if (vm.viewCount > 0) " · " + formatLargeInteger(vm.viewCount) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
@@ -684,7 +682,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) + (if (vm.viewCount > 0) " · " + formatNumber(vm.viewCount) else "")
+                    val dateSizeText = formatDateTimeFlex(vm.episode.getPubDate()) + (if (vm.viewCount > 0) " · " + formatLargeInteger(vm.viewCount) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (vm.viewCount > 0)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_people_alt_24), tint = textColor, contentDescription = "people", modifier = Modifier.width(16.dp).height(16.dp))
@@ -899,7 +897,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
 }
 
 @Composable
-fun ConfirmAddYoutubeEpisode1(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
+fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDismissRequest: () -> Unit) {
     val TAG = "confirmAddEpisode"
     var showToast by remember { mutableStateOf(false) }
     var toastMassege by remember { mutableStateOf("")}

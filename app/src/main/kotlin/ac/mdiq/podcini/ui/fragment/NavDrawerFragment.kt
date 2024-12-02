@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
@@ -135,7 +134,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 }
             }
             Spacer(Modifier.weight(1f))
-            Text("Currently launching on Google Play, please kindly support with closed testing. Thank you!", color = MaterialTheme.colorScheme.tertiary,
+            Text("Currently launching on Google Play, early testers will become pre-IPO members. Click for details", color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.clickable(onClick = {
                 openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions/120")
             }))
@@ -197,6 +196,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
         @VisibleForTesting
         const val PREF_LAST_FRAGMENT_TAG: String = "prefLastFragmentTag"
+        const val PREF_LAST_FRAGMENT_ARG: String = "prefLastFragmentArg"
 
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
@@ -220,26 +220,24 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             SubscriptionsFragment.TAG to NavItem(SubscriptionsFragment.TAG, R.drawable.ic_subscriptions, R.string.subscriptions_label),
             QueuesFragment.TAG to NavItem(QueuesFragment.TAG, R.drawable.ic_playlist_play, R.string.queue_label),
             EpisodesFragment.TAG to NavItem(EpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
-//            AllEpisodesFragment.TAG to NavItem(AllEpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
-//            DownloadsFragment.TAG to NavItem(DownloadsFragment.TAG, R.drawable.ic_download, R.string.downloads_label),
-//            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.baseline_work_history_24, R.string.playback_history_label),
             LogsFragment.TAG to NavItem(LogsFragment.TAG, R.drawable.ic_history, R.string.logs_label),
             StatisticsFragment.TAG to NavItem(StatisticsFragment.TAG, R.drawable.ic_chart_box, R.string.statistics_label),
             OnlineSearchFragment.TAG to NavItem(OnlineSearchFragment.TAG, R.drawable.ic_add, R.string.add_feed_label)
         )
 
-        fun saveLastNavFragment(tag: String?) {
+        fun saveLastNavFragment(tag: String?, arg: String? = null) {
             Logd(TAG, "saveLastNavFragment(tag: $tag)")
             val edit: SharedPreferences.Editor? = prefs?.edit()
-            if (tag != null) edit?.putString(PREF_LAST_FRAGMENT_TAG, tag)
+            if (tag != null) {
+                edit?.putString(PREF_LAST_FRAGMENT_TAG, tag)
+                if (arg != null) edit?.putString(PREF_LAST_FRAGMENT_ARG, arg)
+            }
             else edit?.remove(PREF_LAST_FRAGMENT_TAG)
             edit?.apply()
         }
 
-        fun getLastNavFragment(): String {
-            val lastFragment: String = prefs?.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG)?:""
-            return lastFragment
-        }
+        fun getLastNavFragment(): String = prefs?.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG) ?: ""
+        fun getLastNavFragmentArg(): String = prefs?.getString(PREF_LAST_FRAGMENT_ARG, "0") ?: ""
 
         /**
          * Returns data necessary for displaying the navigation drawer. This includes
@@ -251,9 +249,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             feedCount = getFeedCount()
             navMap[QueuesFragment.TAG]?.count = realm.query(PlayQueue::class).find().sumOf { it.size()}
             navMap[SubscriptionsFragment.TAG]?.count = feedCount
-//            navMap[HistoryFragment.TAG]?.count = getNumberOfPlayed().toInt()
-//            navMap[DownloadsFragment.TAG]?.count = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-//            navMap[AllEpisodesFragment.TAG]?.count = numItems
             navMap[EpisodesFragment.TAG]?.count = numItems
             navMap[LogsFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt() +
                     realm.query(SubscriptionLog::class).count().find().toInt() +

@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="video_mode_options">
-        <item>@string/pref_video_mode_small_window</item>
-        <item>@string/pref_video_mode_full_screen</item>
-        <item>@string/pref_video_mode_audio_only</item>
-    </string-array>
-    <string-array name="video_mode_options_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="full_notification_buttons_options">
         <item>@string/skip_episode_label</item>
         <item>@string/next_chapter</item>

@@ -616,7 +616,7 @@ fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.Op
                     itemsIndexed(readElements) { index, item ->
                         Row(modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(text = item.text?:"", modifier = Modifier.weight(1f))
-                            Checkbox(checked = selectedItems[index]?: false, onCheckedChange = { checked -> selectedItems.put(index, checked) })
+                            Checkbox(checked = selectedItems[index] == true, onCheckedChange = { checked -> selectedItems.put(index, checked) })
                         }
                     }
                 }
@@ -649,4 +649,30 @@ fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.Op
         },
         dismissButton = { Button(onClick = { onDismissRequest() }) { Text("Dismiss") } }
     )
+}
+
+@Composable
+fun VideoModeDialog(onDismissRequest: () -> Unit, callback: (VideoMode) -> Unit) {
+    var selectedOption by remember { mutableStateOf(VideoMode.NONE.name) }
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column {
+                    VideoMode.entries.forEach { mode ->
+                        val text = mode.tag
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = (text == selectedOption), onCheckedChange = {
+                                if (text != selectedOption) {
+                                    selectedOption = text
+                                    callback(mode)
+                                    onDismissRequest()
+                                }
+                            })
+                            Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

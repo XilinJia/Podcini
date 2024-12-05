@@ -41,7 +41,7 @@ import kotlin.math.min
 object Episodes {
     private val TAG: String = Episodes::class.simpleName ?: "Anonymous"
 
-    private val smartMarkAsPlayedPercent: Int = 95
+    private const val smartMarkAsPlayedPercent: Int = 95
 
     val prefRemoveFromQueueMarkedPlayed by lazy { appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true) }
     val prefDeleteRemovesFromQueue by lazy { appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false) }
@@ -229,7 +229,7 @@ object Episodes {
                 if (it.playState == PlayState.PLAYED.code) it.playState = PlayState.UNPLAYED.code
                 else it.playState = PlayState.PLAYED.code
             }
-            if (resetMediaPosition) it.media?.setPosition(0)
+            if (resetMediaPosition || it.playState == PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.media?.setPosition(0)
         }
         Logd(TAG, "setPlayStateSync played0: ${result.playState}")
         if (removeFromQueue && played == PlayState.PLAYED.code && prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(result)

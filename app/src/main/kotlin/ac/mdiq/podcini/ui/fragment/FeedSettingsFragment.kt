@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedsettingsBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
-import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -15,10 +14,7 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDownloadPolicy
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
-import ac.mdiq.podcini.ui.compose.Spinner
-import ac.mdiq.podcini.ui.compose.TagSettingDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.Logd
 import android.content.Intent
 import android.net.Uri
@@ -150,13 +146,14 @@ class FeedSettingsFragment : Fragment() {
                         //                    video mode
                         Column {
                             Row(Modifier.fillMaxWidth()) {
-                                val showDialog = remember { mutableStateOf(false) }
-                                if (showDialog.value) VideoModeDialog(onDismissRequest = { showDialog.value = false })
+                                var showDialog by remember { mutableStateOf(false) }
+                                if (showDialog) VideoModeDialog(onDismissRequest = { showDialog = false }) { mode ->
+                                    feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode }
+                                    getVideoModePolicy()
+                                }
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.feed_video_mode_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                    modifier = Modifier.clickable(onClick = { showDialog.value = true })
-                                )
+                                Text(text = stringResource(R.string.feed_video_mode_label), style = MaterialTheme.typography.titleLarge, color = textColor, modifier = Modifier.clickable(onClick = { showDialog = true }))
                             }
                             Text(text = stringResource(videoModeSummaryResId), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
@@ -448,41 +445,33 @@ class FeedSettingsFragment : Fragment() {
             }
         }
     }
-    @Composable
-    fun VideoModeDialog(onDismissRequest: () -> Unit) {
-        val (selectedOption, onOptionSelected) = remember { mutableStateOf(videoMode) }
-        Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column {
-                        videoModeTags.forEach { text ->
-                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(checked = (text == selectedOption),
-                                    onCheckedChange = {
-                                        Logd(TAG, "row clicked: $text $selectedOption")
-                                        if (text != selectedOption) {
-                                            onOptionSelected(text)
-                                            val mode_ = when (text) {
-                                                VideoMode.NONE.tag -> VideoMode.NONE
-                                                VideoMode.WINDOW_VIEW.tag -> VideoMode.WINDOW_VIEW
-                                                VideoMode.FULL_SCREEN_VIEW.tag -> VideoMode.FULL_SCREEN_VIEW
-                                                VideoMode.AUDIO_ONLY.tag -> VideoMode.AUDIO_ONLY
-                                                else -> VideoMode.NONE
-                                            }
-                                            feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode_ }
-                                            getVideoModePolicy()
-                                            onDismissRequest()
-                                        }
-                                    }
-                                )
-                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    @Composable
+//    fun VideoModeDialog(onDismissRequest: () -> Unit) {
+//        var selectedOption by remember { mutableStateOf(videoMode) }
+//        Dialog(onDismissRequest = { onDismissRequest() }) {
+//            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+//                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+//                    Column {
+//                        VideoMode.entries.forEach { mode ->
+//                            val text = mode.tag
+//                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+//                                Checkbox(checked = (text == selectedOption), onCheckedChange = {
+//                                    Logd(TAG, "row clicked: $text $selectedOption")
+//                                    if (text != selectedOption) {
+//                                        selectedOption = text
+//                                        feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode }
+//                                        getVideoModePolicy()
+//                                        onDismissRequest()
+//                                    }
+//                                })
+//                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private fun getAutoDeletePolicy() {
         when (feed?.preferences!!.autoDeleteAction) {

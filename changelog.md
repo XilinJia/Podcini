@@ -1,3 +1,29 @@
+# 6.15.3
+
+* setting play state menu is reversed (Ignored on top, Unplayed at bottom)
+* when setting an episode state to Played or Ignored, the played position is reset to 0
+* in Import/Export settings, there is a new Combo Import/Export
+	* it handles Preferences, Database, and Media files combined or selectively
+	* all are saved to "Podcini-Backups-(date)" directory under the directory you pick
+	* on import, Media files have to be done after the DB is imported (the option is disabled when importing DB is selected)
+	* individual import/export functions for Preferences, Database, and Media files are removed
+	* if in case one wants to import previously exported Preferences, Database, or Media files, 
+		* manually create a directory named "Podcini-Backups"
+		* copy the previous .realm file into the above directory
+		* copy the previous directories "Podcini-Prefs" and/or "Podcini-MediaFiles" into the above directory
+		* no need to copy all three, only the ones you need
+		* then do the combo import
+* import/export of OPML, Progress, and HTML stay as individual operations
+	* Note, progress import/export was useful when migrating from Podcini 5 as the DB can not be imported into Podcini.R, it's not needed when you can import a DB
+	* I'm not sure how useful are the HTML exports
+* navigations in PreferenceActivity are performed in Compose
+* VideoMode dialog is in Compose
+* removed the need for versions catalogue for gradle
+
+# 6.15.2.1
+
+* same as previous release, only to change signing key on Google Play
+
 # 6.15.2
 
 * FeedEpisodes is remembered as last opened page and can be opened if default page set to "Remember"

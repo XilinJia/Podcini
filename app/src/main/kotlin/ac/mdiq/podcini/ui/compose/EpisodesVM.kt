@@ -236,7 +236,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                for (state in PlayState.entries) {
+                for (state in PlayState.entries.reversed()) {
                     if (state.userSet) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)
                             .clickable {

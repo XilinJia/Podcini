@@ -223,10 +223,19 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Security and reliability
 
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
-* Settings/Preferences can now be exported and imported
+* there are three sets of loggings: episodes downloaded, contents shared to Podcini, and contents removed from Podcini (either feeds or individual episodes in synthetic feeds) 
+* in Import/Export settings, there is a new Combo Import/Export
+	* it handles Preferences, Database, and Media files combined or selectively
+	* all are saved to "Podcini-Backups-(date)" directory under the directory you pick
+	* on import, Media files have to be done after the DB is imported (the option is disabled when importing DB is selected)
+	* individual import/export functions for Preferences, Database, and Media files are removed
+	* if in case one wants to import previously exported Preferences, Database, or Media files, 
+		* manually create a directory named "Podcini-Backups"
+		* copy the previous .realm file into the above directory
+		* copy the previous directories "Podcini-Prefs" and/or "Podcini-MediaFiles" into the above directory
+		* no need to copy all three, only the ones you need
+		* then do the combo import
 * Play history/progress can be separately exported/imported as Json files
-* there is logging for every content shared to Podcini, which can be reviewed and repaired if error
-* Downloaded media files can be exported/imported
 * Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
 * Podcasts can be selectively exported from Subscriptions view
 * There is a setting to disable/enable auto backup of OPML files to Google
@@ -239,10 +248,9 @@ For more details of the changes, see the [Changelog](changelog.md)
 ## Screenshots
 
 ### Settings
-<img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/2_setting01.jpg" width="238" /> <img src="./images/2_setting1.jpg" width="238" />
+<img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/2_setting01.jpg" width="238" /> 
 
-### Import/Export
-<img src="./images/2_setting2.jpg" width="238" /> <img src="./images/2_setting3.jpg" width="238" />
+<img src="./images/2_setting1.jpg" width="238" /> <img src="./images/2_setting2.jpg" width="238" /> 
 
 ### Subscriptions
 <img src="./images/3_subscriptions2.jpg" width="238" /> <img src="./images/3_subscriptions1.jpg" width="238" /> <img src="./images/3_subscriptions0.jpg" width="238" />

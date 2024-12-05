@@ -12,7 +12,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.PlayState
-import ac.mdiq.podcini.ui.activity.PreferenceActivity.AutoDownloadPreferencesFragment.EpisodeCleanupOptions
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.EpisodeCleanupOptions
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log

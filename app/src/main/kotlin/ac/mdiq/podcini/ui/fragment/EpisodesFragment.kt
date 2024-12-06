@@ -15,16 +15,15 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
+import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.EpisodeVM
 import ac.mdiq.podcini.ui.compose.SpinnerExternalSet
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -32,11 +31,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
@@ -54,6 +51,8 @@ class EpisodesFragment : BaseEpisodesFragment() {
 
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
+
+    private val showClearHistoryDialog = mutableStateOf(false)
 
     private var episodesSortOrder: EpisodeSortOrder
         get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(UserPreferences.Prefs.prefEpisodesSort.name, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
@@ -97,6 +96,10 @@ class EpisodesFragment : BaseEpisodesFragment() {
         return root
     }
 
+    @Composable
+    override fun OpenDialog() {
+        ComfirmDialog(titleRes = R.string.clear_history_label, message = stringResource(R.string.clear_playback_history_msg), showDialog = showClearHistoryDialog) { clearHistory() }
+    }
     /**
      * Loads the playback history from the database. A FeedItem is in the playback history if playback of the correpsonding episode
      * has been played ot completed at least once.
@@ -179,15 +182,16 @@ class EpisodesFragment : BaseEpisodesFragment() {
                 } else showFilterDialog = true
             }
             R.id.episodes_sort -> showSortDialog = true
-            R.id.clear_history_item -> {
-                val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_history_label, R.string.clear_playback_history_msg) {
-                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                        dialog.dismiss()
-                        clearHistory()
-                    }
-                }
-                conDialog.createNewDialog().show()
-            }
+            R.id.clear_history_item -> showClearHistoryDialog.value = true
+//                {
+//                val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_history_label, R.string.clear_playback_history_msg) {
+//                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
+//                        dialog.dismiss()
+//                        clearHistory()
+//                    }
+//                }
+//                conDialog.createNewDialog().show()
+//            }
             R.id.reconcile -> reconcile()
             R.id.clear_new -> clearNew()
             else -> return false

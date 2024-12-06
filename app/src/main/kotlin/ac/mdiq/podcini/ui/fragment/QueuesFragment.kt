@@ -29,7 +29,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -60,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -123,6 +123,8 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
+    private val showClearQueueDialog = mutableStateOf(false)
+
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,6 +176,8 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
+                ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = showClearQueueDialog) { clearQueue() }
+
                 if (showBin) {
                     Column {
                         InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
@@ -501,16 +505,17 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             R.id.rename_queue -> renameQueue()
             R.id.add_queue -> addQueue()
-            R.id.clear_queue -> {
-                // make sure the user really wants to clear the queue
-                val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_queue_label, R.string.clear_queue_confirmation_msg) {
-                     override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                        dialog.dismiss()
-                        clearQueue()
-                    }
-                }
-                conDialog.createNewDialog().show()
-            }
+            R.id.clear_queue -> showClearQueueDialog.value = true
+//                {
+//                // make sure the user really wants to clear the queue
+//                val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_queue_label, R.string.clear_queue_confirmation_msg) {
+//                     override fun onConfirmButtonPressed(dialog: DialogInterface) {
+//                        dialog.dismiss()
+//                        clearQueue()
+//                    }
+//                }
+//                conDialog.createNewDialog().show()
+//            }
             R.id.clear_bin -> {
                 curQueue = upsertBlk(curQueue) {
                     it.idsBinList.clear()

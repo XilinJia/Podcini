@@ -1,0 +1,5 @@
+ Version 6.15.4
+
+* fixed issue of export dialog not closing
+* fixed progress dialog not showing up in Import/Export preferences
+* converted some confirmation dialogs to Compose

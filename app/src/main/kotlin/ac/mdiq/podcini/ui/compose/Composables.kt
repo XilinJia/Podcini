@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.util.Logd
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -228,5 +229,26 @@ fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String) 
         Switch(checked = isChecked, onCheckedChange = {
             isChecked = it
             appPrefs.edit().putBoolean(prefName, it).apply() })
+    }
+}
+
+@Composable
+fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boolean>, cancellable: Boolean = true, onConfirm: () -> Unit) {
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { if (titleRes != 0) Text(stringResource(titleRes)) },
+            text = {
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier.verticalScroll(scrollState)) { Text(message) }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onConfirm()
+                    showDialog.value = false
+                }) { Text("Confirm") }
+            },
+            dismissButton = { if (cancellable) TextButton(onClick = { showDialog.value = false }) { Text("Cancel") } }
+        )
     }
 }

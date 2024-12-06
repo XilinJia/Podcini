@@ -27,11 +27,8 @@ object MediaPlayerErrorDialog {
             genericMessage.length, errorMessage.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
         errorDialog.setMessage(errorMessage)
-        errorDialog.setPositiveButton("OK"
-        ) { _: DialogInterface?, _: Int ->
-            if (activity is MainActivity) {
-                activity.bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
+        errorDialog.setPositiveButton("OK") { _: DialogInterface?, _: Int ->
+            if (activity is MainActivity) activity.bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
         errorDialog.create().show()
     }

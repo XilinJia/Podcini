@@ -10,12 +10,11 @@ import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
 import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.format.DateFormat
@@ -72,6 +71,8 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val selectedTabIndex = mutableIntStateOf(0)
     lateinit var statsResult: StatisticsResult
 
+    private val showResetDialog = mutableStateOf(false)
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
@@ -84,6 +85,19 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         (activity as MainActivity).setupToolbarToggle(toolbar, false)
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
+                ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = showResetDialog) {
+                    prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
+                    lifecycleScope.launch {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                val mediaAll = realm.query(EpisodeMedia::class).find()
+                                for (m in mediaAll) update(m) { m.playedDuration = 0 }
+                            }
+                            statisticsState++
+                        } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
+                    }
+                }
+
                 val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
                 Column {
                     TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
@@ -385,7 +399,8 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
      override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.statistics_reset -> {
-                confirmResetStatistics()
+                showResetDialog.value = true
+//                confirmResetStatistics()
                 return true
             }
             R.id.statistics_filter -> {
@@ -414,29 +429,25 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-     private fun confirmResetStatistics() {
-        val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
-            R.string.statistics_reset_data, R.string.statistics_reset_data_msg) {
-            override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                dialog.dismiss()
-                prefs.edit()
-                    ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-                    ?.putLong(PREF_FILTER_FROM, 0)
-                    ?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)
-                    ?.apply()
-                lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            val mediaAll = realm.query(EpisodeMedia::class).find()
-                            for (m in mediaAll) update(m) { m.playedDuration = 0 }
-                        }
-                        statisticsState++
-                    } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
-                }
-            }
-        }
-        conDialog.createNewDialog().show()
-    }
+//     private fun confirmResetStatistics() {
+//        val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
+//            R.string.statistics_reset_data, R.string.statistics_reset_data_msg) {
+//            override fun onConfirmButtonPressed(dialog: DialogInterface) {
+//                dialog.dismiss()
+//                prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
+//                lifecycleScope.launch {
+//                    try {
+//                        withContext(Dispatchers.IO) {
+//                            val mediaAll = realm.query(EpisodeMedia::class).find()
+//                            for (m in mediaAll) update(m) { m.playedDuration = 0 }
+//                        }
+//                        statisticsState++
+//                    } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
+//                }
+//            }
+//        }
+//        conDialog.createNewDialog().show()
+//    }
 
     class LineChartData(val values: MutableList<Float>) {
         val sum: Float

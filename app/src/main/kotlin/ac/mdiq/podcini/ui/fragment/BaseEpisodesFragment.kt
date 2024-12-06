@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                 if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
                     onDismissRequest = { showFilterDialog = false } ) { onFilterChanged(it) }
                 if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { order, _ -> onSort(order) }
+                OpenDialog()
 
                 Column {
                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
@@ -100,6 +102,9 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         refreshSwipeTelltale()
         return binding.root
     }
+
+    @Composable
+    open fun OpenDialog() {}
 
     open fun onFilterChanged(filterValues: Set<String>) {}
 

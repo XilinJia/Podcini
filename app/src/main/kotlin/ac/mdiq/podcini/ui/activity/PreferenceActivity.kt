@@ -394,17 +394,20 @@ class PreferenceActivity : AppCompatActivity() {
                 }
             }.invokeOnCompletion { throwable -> if (throwable!= null) Toast.makeText(this@PreferenceActivity, throwable.message, Toast.LENGTH_LONG).show() }
         }
-        fun showLicenseText(licenseTextFile: String) {
-            try {
-                val reader = BufferedReader(InputStreamReader(assets.open(licenseTextFile), "UTF-8"))
-                val licenseText = StringBuilder()
-                var line = ""
-                while ((reader.readLine()?.also { line = it }) != null) licenseText.append(line).append("\n")
-                MaterialAlertDialogBuilder(this@PreferenceActivity).setMessage(licenseText).show()
-            } catch (e: IOException) { e.printStackTrace() }
-        }
+//        fun showLicenseText(licenseTextFile: String) {
+//            try {
+//                val reader = BufferedReader(InputStreamReader(assets.open(licenseTextFile), "UTF-8"))
+//                val licenseText = StringBuilder()
+//                var line = ""
+//                while ((reader.readLine()?.also { line = it }) != null) licenseText.append(line).append("\n")
+//                MaterialAlertDialogBuilder(this@PreferenceActivity).setMessage(licenseText).show()
+//            } catch (e: IOException) { e.printStackTrace() }
+//        }
         val lazyListState = rememberLazyListState()
         val textColor = MaterialTheme.colorScheme.onSurface
+        val showLicense = remember { mutableStateOf(false) }
+        var licenseText by remember { mutableStateOf("") }
+        ComfirmDialog(titleRes = 0, message = licenseText, showLicense) {}
         var showDialog by remember { mutableStateOf(false) }
         var curLicenseIndex by remember { mutableIntStateOf(-1) }
         if (showDialog) Dialog(onDismissRequest = { showDialog = false }) {
@@ -414,7 +417,18 @@ class PreferenceActivity : AppCompatActivity() {
                     Row {
                         Button(onClick = { openInBrowser(this@PreferenceActivity, licenses[curLicenseIndex].licenseUrl) }) { Text("View website") }
                         Spacer(Modifier.weight(1f))
-                        Button(onClick = { showLicenseText(licenses[curLicenseIndex].licenseTextFile) }) { Text("View license") }
+                        Button(onClick = {
+                            try {
+                                val reader = BufferedReader(InputStreamReader(assets.open(licenses[curLicenseIndex].licenseTextFile), "UTF-8"))
+                                val sb = StringBuilder()
+                                var line = ""
+                                while ((reader.readLine()?.also { line = it }) != null) sb.append(line).append("\n")
+                                licenseText = sb.toString()
+                                showLicense.value = true
+//                                MaterialAlertDialogBuilder(this@PreferenceActivity).setMessage(licenseText).show()
+                            } catch (e: IOException) { e.printStackTrace() }
+//                            showLicenseText(licenses[curLicenseIndex].licenseTextFile)
+                        }) { Text("View license") }
                     }
                 }
             }
@@ -464,10 +478,10 @@ class PreferenceActivity : AppCompatActivity() {
                 if (!isValid) preferredButtons.removeAt(i)
             }
             for (i in checked.indices) if (preferredButtons.contains(buttonIDs[i])) checked[i] = true
+
             val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
             builder.setTitle(title)
-            builder.setMultiChoiceItems(allButtonNames,
-                checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
+            builder.setMultiChoiceItems(allButtonNames, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
                 checked[which] = isChecked
                 if (isChecked) preferredButtons.add(buttonIDs[which])
                 else preferredButtons.remove(buttonIDs[which])
@@ -1265,7 +1279,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
         }
 
-        var showProgress by mutableStateOf(false)
+        var showProgress by remember { mutableStateOf(false) }
         fun isJsonFile(uri: Uri): Boolean {
             val fileName = uri.lastPathSegment ?: return false
             return fileName.endsWith(".json", ignoreCase = true)
@@ -1278,30 +1292,21 @@ class PreferenceActivity : AppCompatActivity() {
             val fileName = uri.lastPathSegment ?: return false
             return fileName.contains(backupDirName, ignoreCase = true)
         }
-        fun showImportSuccessDialog() {
-            val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            builder.setTitle(R.string.successful_import_label)
-            builder.setMessage(R.string.import_ok)
-            builder.setCancelable(false)
-            builder.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> forceRestart() }
-            builder.show()
-        }
         fun showExportSuccessSnackbar(uri: Uri?, mimeType: String?) {
             Snackbar.make(findViewById(android.R.id.content), R.string.export_success_title, Snackbar.LENGTH_LONG)
                 .setAction(R.string.share_label) { IntentBuilder(this@PreferenceActivity).setType(mimeType).addStream(uri!!).setChooserTitle(R.string.share_label).startChooser() }
                 .show()
         }
-        fun showTransportErrorDialog(error: Throwable) {
-            showProgress = false
-            val alert = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            alert.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
-            alert.setTitle(R.string.import_export_error_label)
-            alert.setMessage(error.message)
-            alert.show()
-        }
         fun dateStampFilename(fname: String): String {
             return String.format(fname, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
         }
+        val showImporSuccessDialog = remember { mutableStateOf(false) }
+        ComfirmDialog(titleRes = R.string.successful_import_label, message = stringResource(R.string.import_ok), showDialog = showImporSuccessDialog, cancellable = false) { forceRestart() }
+
+        val showImporErrortDialog = remember { mutableStateOf(false) }
+        var importErrorMessage by remember { mutableStateOf("") }
+        ComfirmDialog(titleRes = R.string.import_export_error_label, message = importErrorMessage, showDialog = showImporErrortDialog) {}
+
         fun exportWithWriter(exportWriter: ExportWriter, uri: Uri?, exportType: ExportTypes) {
             val context: Context? = this@PreferenceActivity
             showProgress = true
@@ -1313,7 +1318,10 @@ class PreferenceActivity : AppCompatActivity() {
                             val fileUri = FileProvider.getUriForFile(context!!.applicationContext, context.getString(R.string.provider_authority), output!!)
                             showExportSuccessSnackbar(fileUri, exportType.contentType)
                         }
-                    } catch (e: Exception) { showTransportErrorDialog(e)
+                    } catch (e: Exception) {
+                        showProgress = false
+                        importErrorMessage = e.message?:"Reason unknown"
+                        showImporErrortDialog.value = true
                     } finally { showProgress = false }
                 }
             } else {
@@ -1322,7 +1330,10 @@ class PreferenceActivity : AppCompatActivity() {
                     try {
                         val output = worker.exportFile()
                         withContext(Dispatchers.Main) { showExportSuccessSnackbar(output.uri, exportType.contentType) }
-                    } catch (e: Exception) { showTransportErrorDialog(e)
+                    } catch (e: Exception) {
+                        showProgress = false
+                        importErrorMessage = e.message?:"Reason unknown"
+                        showImporErrortDialog.value = true
                     } finally { showProgress = false }
                 }
             }
@@ -1363,19 +1374,26 @@ class PreferenceActivity : AppCompatActivity() {
                                 reader.close()
                             }
                             withContext(Dispatchers.Main) {
-                                showImportSuccessDialog()
+                                showImporSuccessDialog.value = true
+//                                showImportSuccessDialog()
                                 showProgress = false
                             }
-                        } catch (e: Throwable) { showTransportErrorDialog(e) }
+                        } catch (e: Throwable) {
+                            showProgress = false
+                            importErrorMessage = e.message?:"Reason unknown"
+                            showImporErrortDialog.value = true
+                        }
                     }
                 } else {
                     val message = getString(R.string.import_file_type_toast) + ".json"
-                    showTransportErrorDialog(Throwable(message))
+                    showProgress = false
+                    importErrorMessage = message
+                    showImporErrortDialog.value = true
                 }
             }
         }
-        var showOpmlImportSelectionDialog by mutableStateOf(false)
-        val readElements = mutableStateListOf<OpmlElement>()
+        var showOpmlImportSelectionDialog by remember { mutableStateOf(false) }
+        val readElements = remember { mutableStateListOf<OpmlElement>() }
         val chooseOpmlImportPathLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri == null) return@rememberLauncherForActivityResult
             Logd(TAG, "chooseOpmlImportPathResult: uri: $uri")
@@ -1430,10 +1448,15 @@ class PreferenceActivity : AppCompatActivity() {
                                     }
                                 }
                                 withContext(Dispatchers.Main) {
-                                    showImportSuccessDialog()
+                                    showImporSuccessDialog.value = true
+//                                    showImportSuccessDialog()
                                     showProgress = false
                                 }
-                            } catch (e: Throwable) { showTransportErrorDialog(e) }
+                            } catch (e: Throwable) {
+                                showProgress = false
+                                importErrorMessage = e.message?:"Reason unknown"
+                                showImporErrortDialog.value = true
+                            }
                         }
                         showComboImportDialog = false
                     }) { Text(text = "OK") }
@@ -1471,11 +1494,9 @@ class PreferenceActivity : AppCompatActivity() {
                                     if (realmFile != null) DatabaseTransporter().exportToDocument(realmFile.uri, this@PreferenceActivity)
                                 }
                             }
-                            withContext(Dispatchers.Main) {
-                                showComboExportDialog = false
-                                showProgress = false
-                            }
+                            withContext(Dispatchers.Main) { showProgress = false }
                         }
+                        showComboExportDialog = false
                     }) { Text(text = "OK") }
                 },
                 dismissButton = { TextButton(onClick = { showComboExportDialog = false }) { Text(text = "Cancel") } }
@@ -1486,7 +1507,6 @@ class PreferenceActivity : AppCompatActivity() {
             if (result.resultCode != RESULT_OK || result.data?.data == null) return@rememberLauncherForActivityResult
             val uri = result.data!!.data!!
             if (isComboDir(uri)) {
-                showProgress = true
                 val rootFile = DocumentFile.fromTreeUri(this@PreferenceActivity, uri)
                 if (rootFile != null && rootFile.isDirectory) {
                     comboDic.clear()
@@ -1502,7 +1522,9 @@ class PreferenceActivity : AppCompatActivity() {
                 showComboImportDialog = true
             } else {
                 val message = getString(R.string.import_directory_toast) + backupDirName
-                showTransportErrorDialog(Throwable(message))
+                showProgress = false
+                importErrorMessage = message
+                showImporErrortDialog.value = true
             }
         }
         val backupComboLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -1526,43 +1548,12 @@ class PreferenceActivity : AppCompatActivity() {
             backupComboLauncher.launch(intent)
         }
 
-        fun launchImportCombosDialog() {
-            val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            builder.setTitle(R.string.combos_import_label)
-            builder.setMessage(R.string.combos_import_warning)
-            // add a button
-            builder.setNegativeButton(R.string.no, null)
-            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                intent.addCategory(Intent.CATEGORY_DEFAULT)
-                restoreComboLauncher.launch(intent)
-            }
-            builder.show()
-        }
-
-        fun importEpisodeProgress() {
-            val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            builder.setTitle(R.string.progress_import_label)
-            builder.setMessage(R.string.progress_import_warning)
-            builder.setNegativeButton(R.string.no, null)
-            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                intent.setType("*/*")
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                restoreProgressLauncher.launch(intent)
-            }
-            builder.show()
-        }
-
         fun openExportPathPicker(exportType: ExportTypes, result: ActivityResultLauncher<Intent>, writer: ExportWriter) {
             val title = dateStampFilename(exportType.outputNameTemplate)
             val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE)
                 .setType(exportType.contentType)
                 .putExtra(Intent.EXTRA_TITLE, title)
-
             try {
                 result.launch(intentPickAction)
                 return
@@ -1574,9 +1565,9 @@ class PreferenceActivity : AppCompatActivity() {
         val textColor = MaterialTheme.colorScheme.onSurface
         if (showProgress) {
             Dialog(onDismissRequest = { showProgress = false }) {
-                Surface(modifier = Modifier.size(200.dp), shape = RoundedCornerShape(8.dp)) {
+                Surface(modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)) {
                     Box(contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp))
+                        CircularProgressIndicator(progress = {0.7f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.TopCenter))
                         Text("Loading...", color = textColor, modifier = Modifier.align(Alignment.BottomCenter))
                     }
                 }
@@ -1586,7 +1577,14 @@ class PreferenceActivity : AppCompatActivity() {
         supportActionBar?.setTitle(R.string.import_export_pref)
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
             TitleSummaryActionColumn(R.string.combo_export_label, R.string.combo_export_summary) { launchExportCombos() }
-            TitleSummaryActionColumn(R.string.combo_import_label, R.string.combo_import_summary) { launchImportCombosDialog() }
+            val showComboImportDialog = remember { mutableStateOf(false) }
+            ComfirmDialog(titleRes = R.string.combo_import_label, message = stringResource(R.string.combo_import_warning), showDialog = showComboImportDialog) {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                intent.addCategory(Intent.CATEGORY_DEFAULT)
+                restoreComboLauncher.launch(intent)
+            }
+            TitleSummaryActionColumn(R.string.combo_import_label, R.string.combo_import_summary) { showComboImportDialog.value = true }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp, bottom = 10.dp))
             TitleSummaryActionColumn(R.string.opml_export_label, R.string.opml_export_summary) { openExportPathPicker(ExportTypes.OPML, chooseOpmlExportPathLauncher, OpmlWriter()) }
             if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
@@ -1594,7 +1592,15 @@ class PreferenceActivity : AppCompatActivity() {
                 try { chooseOpmlImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") } }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp, bottom = 10.dp))
             TitleSummaryActionColumn(R.string.progress_export_label, R.string.progress_export_summary) { openExportPathPicker(ExportTypes.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter()) }
-            TitleSummaryActionColumn(R.string.progress_import_label, R.string.progress_import_summary) { importEpisodeProgress() }
+            val showProgressImportDialog = remember { mutableStateOf(false) }
+            ComfirmDialog(titleRes = R.string.progress_import_label, message = stringResource(R.string.progress_import_warning), showDialog = showProgressImportDialog) {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                intent.setType("*/*")
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                restoreProgressLauncher.launch(intent)
+            }
+            TitleSummaryActionColumn(R.string.progress_import_label, R.string.progress_import_summary) { showProgressImportDialog.value = true }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp, bottom = 10.dp))
             TitleSummaryActionColumn(R.string.html_export_label, R.string.html_export_summary) { openExportPathPicker(ExportTypes.HTML, chooseHtmlExportPathLauncher, HtmlWriter()) }
             TitleSummaryActionColumn(R.string.favorites_export_label, R.string.favorites_export_summary) { openExportPathPicker(ExportTypes.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter()) }
@@ -2456,8 +2462,8 @@ class PreferenceActivity : AppCompatActivity() {
         }
 
         val selectedSyncProviderKey: String = SynchronizationSettings.selectedSyncProviderKey?:""
-        var selectedProvider by mutableStateOf(SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey))
-        var loggedIn by mutableStateOf(isProviderConnected)
+        var selectedProvider by remember { mutableStateOf(SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey)) }
+        var loggedIn by remember { mutableStateOf(isProviderConnected) }
 
         fun updateLastSyncReport(successful: Boolean, lastTime: Long) {
             val status = String.format("%1\$s (%2\$s)", getString(if (successful) R.string.gpodnetsync_pref_report_successful else R.string.gpodnetsync_pref_report_failed),

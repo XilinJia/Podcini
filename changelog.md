@@ -1,3 +1,9 @@
+# 6.15.4
+
+* fixed issue of export dialog not closing
+* fixed progress dialog not showing up in Import/Export preferences
+* converted some confirmation dialogs to Compose
+
 # 6.15.3
 
 * setting play state menu is reversed (Ignored on top, Unplayed at bottom)

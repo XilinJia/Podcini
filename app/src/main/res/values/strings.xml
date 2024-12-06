@@ -697,8 +697,7 @@
     <string name="html_export_label">HTML export</string>
     <string name="media_files_export_label">Media files export</string>
     <string name="media_files_import_label">Media files import</string>
-    <string name="combos_import_label">Combos import</string>
-    <string name="combos_import_warning">Importing any of the chosen items will replace those in your current storage. If confirmed, choose a previously exported directory with name containing \"Podcini-Backups\"</string>
+    <string name="combo_import_warning">Importing any of the chosen items will replace those in your current storage. If confirmed, choose a previously exported directory with name containing \"Podcini-Backups\"</string>
     <string name="preferences_export_label">Preferences export</string>
     <string name="preferences_import_label">Preferences import</string>
     <string name="preferences_import_warning">Importing preferences will replace all of your current preferences. If confirmed, choose a previously exported directory with name containing \"Podcini-Prefs\"</string>

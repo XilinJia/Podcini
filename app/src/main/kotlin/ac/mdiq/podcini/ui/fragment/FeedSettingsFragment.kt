@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FeedsettingsBinding
+import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
@@ -25,9 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -53,8 +51,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.fragment.app.Fragment
 
 class FeedSettingsFragment : Fragment() {
-    private var _binding: FeedsettingsBinding? = null
+    private var _binding: ComposeFragmentBinding? = null
     private val binding get() = _binding!!
+
     private var feed: Feed? = null
     private var autoDeleteSummaryResId by mutableIntStateOf(R.string.global_default)
     private var curPrefQueue by mutableStateOf(feed?.preferences?.queueTextExt ?: "Default")
@@ -78,24 +77,26 @@ class FeedSettingsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FeedsettingsBinding.inflate(inflater)
+        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
 
         val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
+        toolbar.title = getString(R.string.feed_settings_label)
 
         getVideoModePolicy()
         getAutoDeletePolicy()
 
-        binding.composeView.setContent {
+        binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 val textColor = MaterialTheme.colorScheme.onSurface
-                Column(modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp).verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.rounded_responsive_layout_24), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.use_wide_layout), style = MaterialTheme.typography.titleLarge, color = textColor)
+                            Text(text = stringResource(R.string.use_wide_layout), style = CustomTextStyles.titleCustom, color = textColor)
                             Spacer(modifier = Modifier.weight(1f))
                             var checked by remember { mutableStateOf(feed?.preferences?.useWideLayout == true) }
                             Switch(checked = checked, modifier = Modifier.height(24.dp),
@@ -113,7 +114,7 @@ class FeedSettingsFragment : Fragment() {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge, color = textColor)
+                                Text(text = stringResource(R.string.keep_updated), style = CustomTextStyles.titleCustom, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
                                 var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated == true) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
@@ -133,7 +134,7 @@ class FeedSettingsFragment : Fragment() {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.pref_feed_audio_type), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.pref_feed_audio_type), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     selectedOption = feed!!.preferences?.audioTypeSetting?.tag ?: FeedPreferences.AudioType.SPEECH.tag
                                     showDialog = true
@@ -147,13 +148,13 @@ class FeedSettingsFragment : Fragment() {
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 var showDialog by remember { mutableStateOf(false) }
-                                if (showDialog) VideoModeDialog(onDismissRequest = { showDialog = false }) { mode ->
+                                if (showDialog) VideoModeDialog(initMode = feed?.preferences?.videoModePolicy, onDismissRequest = { showDialog = false }) { mode ->
                                     feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode }
                                     getVideoModePolicy()
                                 }
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.feed_video_mode_label), style = MaterialTheme.typography.titleLarge, color = textColor, modifier = Modifier.clickable(onClick = { showDialog = true }))
+                                Text(text = stringResource(R.string.feed_video_mode_label), style = CustomTextStyles.titleCustom, color = textColor, modifier = Modifier.clickable(onClick = { showDialog = true }))
                             }
                             Text(text = stringResource(videoModeSummaryResId), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
@@ -164,7 +165,7 @@ class FeedSettingsFragment : Fragment() {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_stream), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.pref_stream_over_download_title), style = MaterialTheme.typography.titleLarge, color = textColor)
+                                Text(text = stringResource(R.string.pref_stream_over_download_title), style = CustomTextStyles.titleCustom, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
                                 var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload == true) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
@@ -186,7 +187,7 @@ class FeedSettingsFragment : Fragment() {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.pref_feed_audio_quality), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                Text(text = stringResource(R.string.pref_feed_audio_quality), style = CustomTextStyles.titleCustom, color = textColor,
                                     modifier = Modifier.clickable(onClick = {
                                         selectedOption = feed!!.preferences?.audioQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag
                                         showDialog = true
@@ -204,7 +205,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Icon(ImageVector.vectorResource(id = R.drawable.ic_videocam), "", tint = textColor)
                                     Spacer(modifier = Modifier.width(20.dp))
-                                    Text(text = stringResource(R.string.pref_feed_video_quality), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                    Text(text = stringResource(R.string.pref_feed_video_quality), style = CustomTextStyles.titleCustom, color = textColor,
                                         modifier = Modifier.clickable(onClick = {
                                             selectedOption = feed!!.preferences?.videoQualitySetting?.tag ?: FeedPreferences.AVQuality.GLOBAL.tag
                                             showDialog = true
@@ -224,7 +225,7 @@ class FeedSettingsFragment : Fragment() {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.pref_feed_associated_queue), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.pref_feed_associated_queue), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     selectedOption = feed?.preferences?.queueText ?: "Default"
                                     showDialog = true
@@ -239,7 +240,7 @@ class FeedSettingsFragment : Fragment() {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = androidx.media3.session.R.drawable.media3_icon_queue_add), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.audo_add_new_queue), style = MaterialTheme.typography.titleLarge, color = textColor)
+                                Text(text = stringResource(R.string.audo_add_new_queue), style = CustomTextStyles.titleCustom, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
                                 var checked by remember { mutableStateOf(feed?.preferences?.autoAddNewToQueue != false) }
                                 Switch(checked = checked, modifier = Modifier.height(24.dp),
@@ -260,7 +261,7 @@ class FeedSettingsFragment : Fragment() {
                                 if (showDialog.value) AutoDeleteDialog(onDismissRequest = { showDialog.value = false })
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.auto_delete_label), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                Text(text = stringResource(R.string.auto_delete_label), style = CustomTextStyles.titleCustom, color = textColor,
                                     modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                             }
                             Text(text = stringResource(autoDeleteSummaryResId), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -273,7 +274,7 @@ class FeedSettingsFragment : Fragment() {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_tag), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.feed_tags_label), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.feed_tags_label), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = { showDialog = true }))
                         }
                         Text(text = stringResource(R.string.feed_tags_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -288,7 +289,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.playback_speed), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.playback_speed), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                         }
                         Text(text = stringResource(R.string.pref_feed_playback_speed_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -300,7 +301,7 @@ class FeedSettingsFragment : Fragment() {
                             if (showDialog.value) AutoSkipDialog(onDismiss = { showDialog.value = false })
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_skip_24dp), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.pref_feed_skip), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.pref_feed_skip), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                         }
                         Text(text = stringResource(R.string.pref_feed_skip_sum), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -312,7 +313,7 @@ class FeedSettingsFragment : Fragment() {
                             if (showDialog.value) VolumeAdaptionDialog(onDismissRequest = { showDialog.value = false })
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_volume_adaption), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.feed_volume_adapdation), style = MaterialTheme.typography.titleLarge, color = textColor,
+                            Text(text = stringResource(R.string.feed_volume_adapdation), style = CustomTextStyles.titleCustom, color = textColor,
                                 modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                         }
                         Text(text = stringResource(R.string.feed_volume_adaptation_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
@@ -325,90 +326,91 @@ class FeedSettingsFragment : Fragment() {
                                 if (showDialog.value) AuthenticationDialog(onDismiss = { showDialog.value = false })
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_key), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
-                                Text(text = stringResource(R.string.authentication_label), style = MaterialTheme.typography.titleLarge, color = textColor,
+                                Text(text = stringResource(R.string.authentication_label), style = CustomTextStyles.titleCustom, color = textColor,
                                     modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                             }
                             Text(text = stringResource(R.string.authentication_descr), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
                     }
+                    var autoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload == true) }
                     if (isEnableAutodownload && feed?.type != Feed.FeedType.YOUTUBE.name) {
                         //                    auto download
-                        var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload == true) }
                         Column {
                             Row(Modifier.fillMaxWidth()) {
-                                Text(text = stringResource(R.string.auto_download_label), style = MaterialTheme.typography.titleLarge, color = textColor)
+                                Text(text = stringResource(R.string.auto_download_label), style = CustomTextStyles.titleCustom, color = textColor)
                                 Spacer(modifier = Modifier.weight(1f))
-                                Switch(checked = audoDownloadChecked, modifier = Modifier.height(24.dp),
+                                Switch(checked = autoDownloadChecked, modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
-                                        audoDownloadChecked = it
-                                        feed = upsertBlk(feed!!) { f -> f.preferences?.autoDownload = audoDownloadChecked }
+                                        autoDownloadChecked = it
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.autoDownload = autoDownloadChecked }
                                     })
                             }
                             if (!isEnableAutodownload)
                                 Text(text = stringResource(R.string.auto_download_disabled_globally), style = MaterialTheme.typography.bodyMedium, color = textColor)
                         }
-                        if (audoDownloadChecked) {
-                            //                    auto download policy
-                            Column (modifier = Modifier.padding(start = 20.dp)){
-                                Row(Modifier.fillMaxWidth()) {
-                                    val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) AutoDownloadPolicyDialog(onDismissRequest = { showDialog.value = false })
-                                    Text(text = stringResource(R.string.feed_auto_download_policy), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = { showDialog.value = true }))
-                                }
-                            }
-                            //                    episode cache
-                            Column (modifier = Modifier.padding(start = 20.dp)) {
-                                Row(Modifier.fillMaxWidth()) {
-                                    val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) SetEpisodesCacheDialog(onDismiss = { showDialog.value = false })
-                                    Text(text = stringResource(R.string.pref_episode_cache_title), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = { showDialog.value = true }))
-                                }
-                                Text(text = stringResource(R.string.pref_episode_cache_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
-                            }
-                            //                    counting played
-                            Column (modifier = Modifier.padding(start = 20.dp)) {
-                                Row(Modifier.fillMaxWidth()) {
-                                    Text(text = stringResource(R.string.pref_auto_download_counting_played_title), style = MaterialTheme.typography.titleLarge, color = textColor)
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    var checked by remember { mutableStateOf(feed?.preferences?.countingPlayed != false) }
-                                    Switch(checked = checked, modifier = Modifier.height(24.dp),
-                                        onCheckedChange = {
-                                            checked = it
-                                            feed = upsertBlk(feed!!) { f -> f.preferences?.countingPlayed = checked }
-                                        }
-                                    )
-                                }
-                                Text(text = stringResource(R.string.pref_auto_download_counting_played_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
-                            }
-                            //                    inclusive filter
-                            Column (modifier = Modifier.padding(start = 20.dp)) {
-                                Row(Modifier.fillMaxWidth()) {
-                                    val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.INCLUDE, onDismiss = { showDialog.value = false }) { filter ->
-                                        feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
-                                    }
-                                    Text(text = stringResource(R.string.episode_inclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = { showDialog.value = true })
-                                    )
-                                }
-                                Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
-                            }
-                            //                    exclusive filter
-                            Column (modifier = Modifier.padding(start = 20.dp)) {
-                                Row(Modifier.fillMaxWidth()) {
-                                    val showDialog = remember { mutableStateOf(false) }
-                                    if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.EXCLUDE, onDismiss = { showDialog.value = false }) { filter ->
-                                        feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
-                                    }
-                                    Text(text = stringResource(R.string.episode_exclusive_filters_label), style = MaterialTheme.typography.titleLarge, color = textColor,
-                                        modifier = Modifier.clickable(onClick = { showDialog.value = true })
-                                    )
-                                }
-                                Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                    }
+                    if (autoDownloadChecked) {
+                        //                    auto download policy
+                        Column (modifier = Modifier.padding(start = 20.dp)){
+                            Row(Modifier.fillMaxWidth()) {
+                                val showDialog = remember { mutableStateOf(false) }
+                                if (showDialog.value) AutoDownloadPolicyDialog(onDismissRequest = { showDialog.value = false })
+                                Text(text = stringResource(R.string.feed_auto_download_policy), style = CustomTextStyles.titleCustom, color = textColor,
+                                    modifier = Modifier.clickable(onClick = { showDialog.value = true }))
                             }
                         }
+                        //                    episode cache
+                        Column (modifier = Modifier.padding(start = 20.dp)) {
+                            Row(Modifier.fillMaxWidth()) {
+                                val showDialog = remember { mutableStateOf(false) }
+                                if (showDialog.value) SetEpisodesCacheDialog(onDismiss = { showDialog.value = false })
+                                Text(text = stringResource(R.string.pref_episode_cache_title), style = CustomTextStyles.titleCustom, color = textColor,
+                                    modifier = Modifier.clickable(onClick = { showDialog.value = true }))
+                            }
+                            Text(text = stringResource(R.string.pref_episode_cache_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+                        //                    counting played
+                        Column (modifier = Modifier.padding(start = 20.dp)) {
+                            Row(Modifier.fillMaxWidth()) {
+                                Text(text = stringResource(R.string.pref_auto_download_counting_played_title), style = CustomTextStyles.titleCustom, color = textColor)
+                                Spacer(modifier = Modifier.weight(1f))
+                                var checked by remember { mutableStateOf(feed?.preferences?.countingPlayed != false) }
+                                Switch(checked = checked, modifier = Modifier.height(24.dp),
+                                    onCheckedChange = {
+                                        checked = it
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.countingPlayed = checked }
+                                    }
+                                )
+                            }
+                            Text(text = stringResource(R.string.pref_auto_download_counting_played_summary), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+                        //                    inclusive filter
+                        Column (modifier = Modifier.padding(start = 20.dp)) {
+                            Row(Modifier.fillMaxWidth()) {
+                                val showDialog = remember { mutableStateOf(false) }
+                                if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.INCLUDE, onDismiss = { showDialog.value = false }) { filter ->
+                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
+                                }
+                                Text(text = stringResource(R.string.episode_inclusive_filters_label), style = CustomTextStyles.titleCustom, color = textColor,
+                                    modifier = Modifier.clickable(onClick = { showDialog.value = true })
+                                )
+                            }
+                            Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+                        //                    exclusive filter
+                        Column (modifier = Modifier.padding(start = 20.dp)) {
+                            Row(Modifier.fillMaxWidth()) {
+                                val showDialog = remember { mutableStateOf(false) }
+                                if (showDialog.value) AutoDownloadFilterDialog(feed?.preferences!!.autoDownloadFilter!!, ADLIncExc.EXCLUDE, onDismiss = { showDialog.value = false }) { filter ->
+                                    feed = upsertBlk(feed!!) { it.preferences?.autoDownloadFilter = filter }
+                                }
+                                Text(text = stringResource(R.string.episode_exclusive_filters_label), style = CustomTextStyles.titleCustom, color = textColor,
+                                    modifier = Modifier.clickable(onClick = { showDialog.value = true })
+                                )
+                            }
+                            Text(text = stringResource(R.string.episode_filters_description), style = MaterialTheme.typography.bodyMedium, color = textColor)
+                        }
+
                     }
                 }
             }
@@ -445,34 +447,6 @@ class FeedSettingsFragment : Fragment() {
             }
         }
     }
-//    @Composable
-//    fun VideoModeDialog(onDismissRequest: () -> Unit) {
-//        var selectedOption by remember { mutableStateOf(videoMode) }
-//        Dialog(onDismissRequest = { onDismissRequest() }) {
-//            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-//                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-//                    Column {
-//                        VideoMode.entries.forEach { mode ->
-//                            val text = mode.tag
-//                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-//                                Checkbox(checked = (text == selectedOption), onCheckedChange = {
-//                                    Logd(TAG, "row clicked: $text $selectedOption")
-//                                    if (text != selectedOption) {
-//                                        selectedOption = text
-//                                        feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode }
-//                                        getVideoModePolicy()
-//                                        onDismissRequest()
-//                                    }
-//                                })
-//                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     private fun getAutoDeletePolicy() {
         when (feed?.preferences!!.autoDeleteAction) {
             AutoDeleteAction.GLOBAL -> {

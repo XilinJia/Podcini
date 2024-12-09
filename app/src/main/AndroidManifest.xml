@@ -164,8 +164,6 @@
                     android:value="ac.mdiq.podcini.ui.activity.PreferenceActivity"/>
         </activity>
 
-        <!--            android:screenOrientation="sensorLandscape"-->
-
         <activity
             android:name=".ui.activity.VideoplayerActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"

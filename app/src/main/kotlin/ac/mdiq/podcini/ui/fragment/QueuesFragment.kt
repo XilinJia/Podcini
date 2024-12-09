@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
 import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
@@ -35,12 +34,10 @@ import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.CheckBox
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -72,7 +69,6 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -124,6 +120,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
 
     private val showClearQueueDialog = mutableStateOf(false)
+    private var shouldShowLockWarningDiwload by mutableStateOf(false)
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
@@ -177,6 +174,7 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         binding.mainView.setContent {
             CustomTheme(requireContext()) {
                 ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = showClearQueueDialog) { clearQueue() }
+                if (shouldShowLockWarningDiwload) ShowLockWarning { shouldShowLockWarningDiwload = false }
 
                 if (showBin) {
                     Column {
@@ -616,27 +614,51 @@ class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        val isLocked: Boolean = isQueueLocked
         if (isQueueLocked) setQueueLock(false)
         else {
-            val shouldShowLockWarning: Boolean = prefs.getBoolean(PREF_SHOW_LOCK_WARNING, true)
-            if (!shouldShowLockWarning) setQueueLock(true)
+            val shouldShowLockWarning = mutableStateOf(prefs.getBoolean(PREF_SHOW_LOCK_WARNING, true))
+            if (!shouldShowLockWarning.value) setQueueLock(true)
             else {
-                val builder = MaterialAlertDialogBuilder(requireContext())
-                builder.setTitle(R.string.lock_queue)
-                builder.setMessage(R.string.queue_lock_warning)
-                val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
-                val binding_ = CheckboxDoNotShowAgainBinding.bind(view)
-                val checkDoNotShowAgain: CheckBox = binding_.checkboxDoNotShowAgain
-                builder.setView(view)
-                builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
-                    prefs.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
-                    setQueueLock(true)
-                }
-                builder.setNegativeButton(R.string.cancel_label, null)
-                builder.show()
+                shouldShowLockWarningDiwload = true
+//                val builder = MaterialAlertDialogBuilder(requireContext())
+//                builder.setTitle(R.string.lock_queue)
+//                builder.setMessage(R.string.queue_lock_warning)
+//                val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
+//                val binding_ = CheckboxDoNotShowAgainBinding.bind(view)
+//                val checkDoNotShowAgain: CheckBox = binding_.checkboxDoNotShowAgain
+//                builder.setView(view)
+//                builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
+//                    prefs.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
+//                    setQueueLock(true)
+//                }
+//                builder.setNegativeButton(R.string.cancel_label, null)
+//                builder.show()
             }
         }
     }
 
-     private fun setQueueLock(locked: Boolean) {
+    @Composable
+    private fun ShowLockWarning(onDismiss: () -> Unit) {
+        var dontAskAgain by remember { mutableStateOf(false) }
+        AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.lock_queue)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.queue_lock_warning))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = dontAskAgain, onCheckedChange = { dontAskAgain = it })
+                        Text(stringResource(R.string.checkbox_do_not_show_again))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    prefs.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !dontAskAgain).apply()
+                    onDismiss()
+                }) { Text(stringResource(R.string.lock_queue)) }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        )
+    }
+
+    private fun setQueueLock(locked: Boolean) {
         isQueueLocked = locked
         appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)

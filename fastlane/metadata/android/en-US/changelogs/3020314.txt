@@ -1,0 +1,9 @@
+ Version 6.15.5
+
+* added note "Media files can only be imported after the DB" on combo import dialog
+* fixed VideoMode dialog not being initialized and selection not shown
+* revamped video player in Compose
+	* switching between full screen and window modes only needs rotating the phone
+* reduced heading font size from 28 to 24, and title font size from 22 to 18
+* some dialogs are converted to Compose
+* removed some unused layout files

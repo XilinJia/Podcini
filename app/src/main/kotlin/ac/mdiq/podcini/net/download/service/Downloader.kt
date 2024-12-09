@@ -10,9 +10,6 @@ import java.util.*
 import java.util.concurrent.Callable
 import kotlin.concurrent.Volatile
 
-/**
- * Downloads files
- */
 abstract class Downloader(val downloadRequest: DownloadRequest) : Callable<Downloader> {
     @Volatile
     var isFinished: Boolean = false

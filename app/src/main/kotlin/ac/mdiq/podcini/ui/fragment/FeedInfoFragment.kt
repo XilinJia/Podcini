@@ -17,6 +17,7 @@ import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
 import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
@@ -237,7 +238,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             Text(HtmlToPlainText.getPlainText(feed.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
-                color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary, style = CustomTextStyles.titleCustom,
                 modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
 

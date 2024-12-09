@@ -7,6 +7,8 @@ import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curIndexInQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.storage.database.Episodes
@@ -655,6 +657,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 //            }
             exoPlayer = ExoPlayer.Builder(context, defaultRenderersFactory)
                 .setTrackSelector(trackSelector!!)
+                .setSeekBackIncrementMs(rewindSecs * 1000L)
+                .setSeekForwardIncrementMs(fastForwardSecs * 1000L)
                 .setLoadControl(loadControl.build())
                 .build()
 

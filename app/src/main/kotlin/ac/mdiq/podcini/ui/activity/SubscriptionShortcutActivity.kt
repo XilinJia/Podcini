@@ -49,7 +49,7 @@ class SubscriptionShortcutActivity : AppCompatActivity() {
                 Card(modifier = Modifier.padding(vertical = 30.dp, horizontal = 16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     val textColor = MaterialTheme.colorScheme.onSurface
                     Column {
-                        Text(stringResource(R.string.shortcut_select_subscription), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 5.dp))
+                        Text(stringResource(R.string.shortcut_select_subscription), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 5.dp))
                         var checkedIndex by remember { mutableIntStateOf(-1) }
                         val lazyListState = rememberLazyListState()
                         LazyColumn(state = lazyListState, modifier = Modifier.weight(1f).fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp),

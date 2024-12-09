@@ -63,8 +63,6 @@
     <string name="tts_not_available">TTS engine not available</string>
     <string name="episode_has_no_content">Episode has not content</string>
 
-    <string name="dont_ask_again">Don\'t ask again</string>
-
     <string name="unrestricted_background_permission_text">In order to successfully play a list of episodes in the background, Podcini needs Permission for Unrestricted Background Activity. Note on some brands, there are sustomized settings for this, please ensure to set them accordingly.</string>
 
     <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
@@ -139,6 +137,7 @@
     <string name="episodes_suffix">\u0020episodes</string>
     <string name="close_label">Close</string>
     <string name="retry_label">Retry</string>
+
     <string name="auto_download_label">Include in auto downloads</string>
     <string name="auto_delete_label">Auto delete episode</string>
     <string name="feed_volume_adapdation">Volume adaptation</string>
@@ -604,6 +603,7 @@
     <string name="pref_skip_silence_title">Skip silence in audio</string>
     <string name="behavior">Behavior</string>
     <string name="pref_select_properties">Select properties</string>
+    <string name="pref_import_media_files_later">Media files can only be imported after importing the database.</string>
     <string name="pref_default_page">Default page</string>
     <string name="pref_default_page_sum">Screen that is opened when starting Podcini</string>
     <string name="pref_back_button_opens_drawer">Back button opens drawer</string>

@@ -20,11 +20,15 @@ import androidx.core.content.ContextCompat
 
 private const val TAG = "AppTheme"
 
-val Typography = Typography(
+val CustomTypography = Typography(
     displayLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold, fontSize = 30.sp),
-    bodyLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 16.sp)
+    bodyLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 16.sp),
     // Add other text styles as needed
 )
+
+object CustomTextStyles {
+    val titleCustom = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium)
+}
 
 val Shapes = Shapes(small = RoundedCornerShape(4.dp), medium = RoundedCornerShape(4.dp), large = RoundedCornerShape(0.dp))
 
@@ -47,5 +51,5 @@ fun CustomTheme(context: Context, content: @Composable () -> Unit) {
         ThemePreference.BLACK -> DarkColors.copy(surface = Color(0xFF000000))
         ThemePreference.SYSTEM -> if (isSystemInDarkTheme()) DarkColors else LightColors
     }
-    MaterialTheme(colorScheme = colors, typography = Typography, shapes = Shapes, content = content)
+    MaterialTheme(colorScheme = colors, typography = CustomTypography, shapes = Shapes, content = content)
 }

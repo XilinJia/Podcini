@@ -429,26 +429,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-//     private fun confirmResetStatistics() {
-//        val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
-//            R.string.statistics_reset_data, R.string.statistics_reset_data_msg) {
-//            override fun onConfirmButtonPressed(dialog: DialogInterface) {
-//                dialog.dismiss()
-//                prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
-//                lifecycleScope.launch {
-//                    try {
-//                        withContext(Dispatchers.IO) {
-//                            val mediaAll = realm.query(EpisodeMedia::class).find()
-//                            for (m in mediaAll) update(m) { m.playedDuration = 0 }
-//                        }
-//                        statisticsState++
-//                    } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
-//                }
-//            }
-//        }
-//        conDialog.createNewDialog().show()
-//    }
-
     class LineChartData(val values: MutableList<Float>) {
         val sum: Float
 

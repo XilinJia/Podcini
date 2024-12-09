@@ -30,7 +30,7 @@ fun SkipDialog(direction: SkipDirection, onDismissRequest: ()->Unit, callBack: (
     val titleRes = if (direction == SkipDirection.SKIP_FORWARD) R.string.pref_fast_forward else R.string.pref_rewind
     var interval by remember { mutableStateOf((if (direction == SkipDirection.SKIP_FORWARD) UserPreferences.fastForwardSecs else UserPreferences.rewindSecs).toString()) }
     AlertDialog(onDismissRequest = { onDismissRequest() },
-        title = { Text(stringResource(titleRes), style = MaterialTheme.typography.titleLarge) },
+        title = { Text(stringResource(titleRes), style = CustomTextStyles.titleCustom) },
         text = {
             TextField(value = interval,  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number), label = { Text("seconds") }, singleLine = true,
                 onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) interval = it }) },

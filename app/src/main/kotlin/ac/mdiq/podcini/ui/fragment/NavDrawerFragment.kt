@@ -9,6 +9,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ARGUMENT_FEED_ID
 import ac.mdiq.podcini.ui.utils.ThemeUtils
@@ -113,7 +114,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(nav.iconRes), tint = textColor, contentDescription = nav.tag, modifier = Modifier.padding(start = 10.dp))
 //                    val nametag = if (nav.tag != QueuesFragment.TAG) stringResource(nav.nameRes) else curQueue.name
-                    Text(stringResource(nav.nameRes), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
+                    Text(stringResource(nav.nameRes), color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(start = 20.dp))
                     Spacer(Modifier.weight(1f))
                     if (nav.count > 0) Text(nav.count.toString(), color = textColor, modifier = Modifier.padding(end = 10.dp))
                 }
@@ -143,7 +144,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 startActivity(Intent(activity, PreferenceActivity::class.java))
             }) {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings), tint = textColor, contentDescription = "settings", modifier = Modifier.padding(start = 10.dp))
-                Text(stringResource(R.string.settings_label), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
+                Text(stringResource(R.string.settings_label), color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(start = 20.dp))
             }
         }
     }

@@ -20,6 +20,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
 import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.feedLogsMap
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -29,7 +30,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -40,7 +40,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
-import androidx.collection.ArrayMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -66,10 +65,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import java.io.File
-import java.io.IOException
 import java.util.*
 
 /**
@@ -462,7 +457,7 @@ class OnlineFeedFragment : Fragment() {
                         val ratingRes = remember { fromCode(sLog.rating).res }
                         if (commentTextState.text.isNotEmpty()) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp)) {
-                                Text(stringResource(R.string.my_opinion_label), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.my_opinion_label), color = MaterialTheme.colorScheme.primary, style = CustomTextStyles.titleCustom)
                                 Icon(imageVector = ImageVector.vectorResource(ratingRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.padding(start = 5.dp))
                             }
                             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium,
@@ -588,51 +583,6 @@ class OnlineFeedFragment : Fragment() {
 //        builder.show()
 //    }
 
-    /**
-     *
-     * @return true if a FeedDiscoveryDialog is shown, false otherwise (e.g., due to no feed found).
-     */
-//    private fun showFeedDiscoveryDialog(feedFile: File, baseUrl: String): Boolean {
-//        val fd = FeedDiscoverer()
-//        val urlsMap: Map<String, String>
-//        try {
-//            urlsMap = fd.findLinks(feedFile, baseUrl)
-//            if (urlsMap.isEmpty()) return false
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//            return false
-//        }
-//
-//        if (isRemoving || isPaused) return false
-//        val titles: MutableList<String?> = ArrayList()
-//        val urls: List<String> = ArrayList(urlsMap.keys)
-//        for (url in urls) {
-//            titles.add(urlsMap[url])
-//        }
-//        if (urls.size == 1) {
-//            // Skip dialog and display the item directly
-//            feeds = getFeedList()
-//            subscribe.startFeedBuilding(urls[0]) {feed, map -> showFeedInformation(feed, map) }
-//            return true
-//        }
-//        val adapter = ArrayAdapter(requireContext(), R.layout.ellipsize_start_listitem, R.id.txtvTitle, titles)
-//        val onClickListener = DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
-//            val selectedUrl = urls[which]
-//            dialog.dismiss()
-//            feeds = getFeedList()
-//            subscribe.startFeedBuilding(selectedUrl) {feed, map -> showFeedInformation(feed, map) }
-//        }
-//        val ab = MaterialAlertDialogBuilder(requireContext())
-//            .setTitle(R.string.feeds_label)
-//            .setCancelable(true)
-//            .setOnCancelListener { _: DialogInterface? ->/*                finish() */ }
-//            .setAdapter(adapter, onClickListener)
-//        requireActivity().runOnUiThread {
-//            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
-//            dialog = ab.show()
-//        }
-//        return true
-//    }
 
     private fun showNoPodcastFoundError() {
         requireActivity().runOnUiThread {
@@ -642,69 +592,6 @@ class OnlineFeedFragment : Fragment() {
                 .setMessage(R.string.null_value_podcast_error)
                 .setOnDismissListener {}
                 .show()
-        }
-    }
-
-//    private inner class FeedViewAuthenticationDialog(context: Context, titleRes: Int, private val feedUrl: String) :
-//        AuthenticationDialog(context, titleRes, true, username, password) {
-//        override fun onConfirmed(username: String, password: String) {
-//            this@OnlineFeedFragment.username = username
-//            this@OnlineFeedFragment.password = password
-//            feeds = getFeedList()
-//            subscribe.startFeedBuilding(feedUrl) {feed, map -> showFeedInformation(feed, map) }
-//        }
-//    }
-
-    /**
-     * Finds RSS/Atom URLs in a HTML document using the auto-discovery techniques described here:
-     * http://www.rssboard.org/rss-autodiscovery
-     * http://blog.whatwg.org/feed-autodiscovery
-     */
-    class FeedDiscoverer {
-        /**
-         * Discovers links to RSS and Atom feeds in the given File which must be a HTML document.
-         * @return A map which contains the feed URLs as keys and titles as values (the feed URL is also used as a title if
-         * a title cannot be found).
-         */
-        @Throws(IOException::class)
-        fun findLinks(inVal: File, baseUrl: String): Map<String, String> {
-            return findLinks(Jsoup.parse(inVal), baseUrl)
-        }
-        /**
-         * Discovers links to RSS and Atom feeds in the given File which must be a HTML document.
-         * @return A map which contains the feed URLs as keys and titles as values (the feed URL is also used as a title if
-         * a title cannot be found).
-         */
-        fun findLinks(inVal: String, baseUrl: String): Map<String, String> {
-            return findLinks(Jsoup.parse(inVal), baseUrl)
-        }
-        private fun findLinks(document: Document, baseUrl: String): Map<String, String> {
-            val res: MutableMap<String, String> = ArrayMap()
-            val links = document.head().getElementsByTag("link")
-            for (link in links) {
-                val rel = link.attr("rel")
-                val href = link.attr("href")
-                if (href.isNotEmpty() && (rel == "alternate" || rel == "feed")) {
-                    val type = link.attr("type")
-                    if (type == MIME_RSS || type == MIME_ATOM) {
-                        val title = link.attr("title")
-                        val processedUrl = processURL(baseUrl, href)
-                        if (processedUrl != null) res[processedUrl] = title.ifEmpty { href }
-                    }
-                }
-            }
-            return res
-        }
-        private fun processURL(baseUrl: String, strUrl: String): String? {
-            val uri = Uri.parse(strUrl)
-            if (uri.isRelative) {
-                val res = Uri.parse(baseUrl).buildUpon().path(strUrl).build()
-                return res?.toString()
-            } else return strUrl
-        }
-        companion object {
-            private const val MIME_RSS = "application/rss+xml"
-            private const val MIME_ATOM = "application/atom+xml"
         }
     }
 

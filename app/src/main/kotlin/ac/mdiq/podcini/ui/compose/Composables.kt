@@ -1,15 +1,10 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,7 +127,7 @@ fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldVa
         Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Add comment", color = textColor, style = MaterialTheme.typography.titleLarge)
+                Text(text = "Add comment", color = textColor, style = CustomTextStyles.titleCustom)
                 Spacer(modifier = Modifier.height(16.dp))
                 BasicTextField(value = textState, onValueChange = { onTextChange(it) }, textStyle = TextStyle(fontSize = 16.sp, color = textColor),
                     modifier = Modifier.fillMaxWidth().height(300.dp).padding(10.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
@@ -179,10 +173,10 @@ fun SimpleSwitchDialog(title: String, text: String, onDismissRequest: ()->Unit, 
     val textColor = MaterialTheme.colorScheme.onSurface
     var isChecked by remember { mutableStateOf(false) }
     AlertDialog(onDismissRequest = { onDismissRequest() },
-        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        title = { Text(title, style = CustomTextStyles.titleCustom) },
         text = {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
-                Text(text, color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(text, color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Switch(checked = isChecked, onCheckedChange = { isChecked = it })
             }
         },
@@ -202,8 +196,8 @@ fun IconTitleSummaryActionRow(vecRes: Int, titleRes: Int, summaryRes: Int, callb
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
         Icon(imageVector = ImageVector.vectorResource(vecRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
         Column(modifier = Modifier.weight(1f).clickable(onClick = { callback() })) {
-            Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(stringResource(summaryRes), color = textColor)
+            Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+            Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -212,8 +206,8 @@ fun IconTitleSummaryActionRow(vecRes: Int, titleRes: Int, summaryRes: Int, callb
 fun TitleSummaryActionColumn(titleRes: Int, summaryRes: Int, callback: ()-> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp).clickable(onClick = { callback() })) {
-        Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        if (summaryRes != 0) Text(stringResource(summaryRes), color = textColor)
+        Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+        if (summaryRes != 0) Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -222,8 +216,8 @@ fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String) 
     val textColor = MaterialTheme.colorScheme.onSurface
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(stringResource(summaryRes), color = textColor)
+            Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+            Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
         }
         var isChecked by remember { mutableStateOf(appPrefs.getBoolean(prefName, false)) }
         Switch(checked = isChecked, onCheckedChange = {

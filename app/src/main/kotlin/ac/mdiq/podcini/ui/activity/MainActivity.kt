@@ -273,7 +273,7 @@ class MainActivity : CastEnabledActivity() {
                     Text(stringResource(R.string.unrestricted_background_permission_text))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = dontAskAgain, onCheckedChange = { dontAskAgain = it })
-                        Text(stringResource(R.string.dont_ask_again))
+                        Text(stringResource(R.string.checkbox_do_not_show_again))
                     }
                 }
             },

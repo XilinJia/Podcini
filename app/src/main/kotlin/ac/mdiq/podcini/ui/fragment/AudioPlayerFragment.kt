@@ -38,6 +38,7 @@ import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
 import ac.mdiq.podcini.ui.compose.SkipDialog
@@ -494,7 +495,7 @@ class AudioPlayerFragment : Fragment() {
                 Text(episodeDate, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.weight(0.6f))
             }
-            Text(titleText, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
+            Text(titleText, textAlign = TextAlign.Center, color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
                 .combinedClickable(onClick = {}, onLongClick = { copyText(currentItem?.title?:"") }))
 //            fun restoreFromPreference(): Boolean {
 //                if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false

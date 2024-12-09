@@ -27,6 +27,7 @@ import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.*
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
@@ -39,6 +40,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.speedforwardSpeed
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
@@ -284,8 +286,8 @@ class PreferenceActivity : AppCompatActivity() {
                 Column(modifier = Modifier.weight(1f).clickable(onClick = {
                     navController.navigate(screen)
                 })) {
-                    Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(stringResource(summaryRes), color = textColor)
+                    Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+                    Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -296,7 +298,7 @@ class PreferenceActivity : AppCompatActivity() {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                 Icon(imageVector = ImageVector.vectorResource(vecRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
                 Column(modifier = Modifier.weight(1f).clickable(onClick = { callback() })) {
-                    Text(stringResource(titleRes), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -320,8 +322,8 @@ class PreferenceActivity : AppCompatActivity() {
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.pref_backup_on_google_sum), color = textColor)
+                    Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_backup_on_google_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
                 }
                 var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLBackup.name, true)) }
                 Switch(checked = isChecked, onCheckedChange = {
@@ -334,7 +336,7 @@ class PreferenceActivity : AppCompatActivity() {
                 })
             }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
-            Text(stringResource(R.string.project_pref), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.project_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             IconTitleActionRow(R.drawable.ic_questionmark, R.string.documentation_support) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini") }
             IconTitleActionRow(R.drawable.ic_chat, R.string.visit_user_forum) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/discussions") }
             IconTitleActionRow(R.drawable.ic_contribute, R.string.pref_contribute) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini") }
@@ -363,7 +365,7 @@ class PreferenceActivity : AppCompatActivity() {
 //                    scope.launch { snackbarHostState.showSnackbar(getString(R.string.copied_to_clipboard), duration = SnackbarDuration.Short) }
                     if (Build.VERSION.SDK_INT <= 32) Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
                 })) {
-                    Text(stringResource(R.string.podcini_version), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.podcini_version), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(String.format("%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH), color = textColor)
                 }
             }
@@ -413,7 +415,7 @@ class PreferenceActivity : AppCompatActivity() {
         if (showDialog) Dialog(onDismissRequest = { showDialog = false }) {
             Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text(licenses[curLicenseIndex].title, color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(licenses[curLicenseIndex].title, color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Row {
                         Button(onClick = { openInBrowser(this@PreferenceActivity, licenses[curLicenseIndex].licenseUrl) }) { Text("View website") }
                         Spacer(Modifier.weight(1f))
@@ -439,7 +441,7 @@ class PreferenceActivity : AppCompatActivity() {
                     curLicenseIndex = index
                     showDialog = true
                 })) {
-                    Text(item.title, color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(item.title, color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(item.subtitle, color = textColor, style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -506,7 +508,7 @@ class PreferenceActivity : AppCompatActivity() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-            Text(stringResource(R.string.appearance), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.appearance), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 var checkIndex by remember { mutableIntStateOf(
                     when(UserPreferences.theme) {
@@ -540,7 +542,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_black_theme_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_black_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_black_theme_message), color = textColor)
                 }
                 var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefThemeBlack.name, false)) }
@@ -552,7 +554,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_tinted_theme_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_tinted_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_tinted_theme_message), color = textColor)
                 }
                 var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefTintedColors.name, false)) }
@@ -564,22 +566,22 @@ class PreferenceActivity : AppCompatActivity() {
             }
             TitleSummarySwitchPrefRow(R.string.pref_episode_cover_title, R.string.pref_episode_cover_summary, UserPreferences.Prefs.prefEpisodeCover.name)
             TitleSummarySwitchPrefRow(R.string.pref_show_remain_time_title, R.string.pref_show_remain_time_summary, UserPreferences.Prefs.showTimeLeft.name)
-            Text(stringResource(R.string.subscriptions_label), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.subscriptions_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, UserPreferences.Prefs.prefSwipeToRefreshAll.name)
             TitleSummarySwitchPrefRow(R.string.pref_feedGridLayout_title, R.string.pref_feedGridLayout_sum, UserPreferences.Prefs.prefFeedGridLayout.name)
-            Text(stringResource(R.string.external_elements), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.external_elements), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             if (Build.VERSION.SDK_INT < 26) {
                 TitleSummarySwitchPrefRow(R.string.pref_expandNotify_title, R.string.pref_expandNotify_sum, UserPreferences.Prefs.prefExpandNotify.name)
             }
             TitleSummarySwitchPrefRow(R.string.pref_persistNotify_title, R.string.pref_persistNotify_sum, UserPreferences.Prefs.prefPersistNotify.name)
             TitleSummaryActionColumn(R.string.pref_full_notification_buttons_title, R.string.pref_full_notification_buttons_sum) { showFullNotificationButtonsDialog() }
-            Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showDefaultPageOptions by remember { mutableStateOf(false) }
             var tempSelectedOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefDefaultPage.name, DefaultPages.SubscriptionsFragment.name)!!) }
             TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
             if (showDefaultPageOptions) {
                 AlertDialog(onDismissRequest = { showDefaultPageOptions = false },
-                    title = { Text(stringResource(R.string.pref_default_page), style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.pref_default_page), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {
                             DefaultPages.entries.forEach { option ->
@@ -622,7 +624,7 @@ class PreferenceActivity : AppCompatActivity() {
             for (e in SwipePrefs.entries) {
                 val showDialog = remember { mutableStateOf(false) }
                 if (showDialog.value) SwipeActionsDialog(e.tag, onDismissRequest = { showDialog.value = false }) {}
-                Text(stringResource(e.res), color = textColor, style = MaterialTheme.typography.headlineMedium,
+                Text(stringResource(e.res), color = textColor, style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 10.dp).clickable(onClick = { showDialog.value = true }))
             }
         }
@@ -641,11 +643,11 @@ class PreferenceActivity : AppCompatActivity() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-            Text(stringResource(R.string.interruptions), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.interruptions), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             var prefUnpauseOnHeadsetReconnect by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true)) }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_pauseOnHeadsetDisconnect_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_pauseOnHeadsetDisconnect_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_pauseOnDisconnect_sum), color = textColor)
                 }
                 Switch(checked = prefUnpauseOnHeadsetReconnect, onCheckedChange = {
@@ -658,10 +660,10 @@ class PreferenceActivity : AppCompatActivity() {
                 TitleSummarySwitchPrefRow(R.string.pref_unpauseOnBluetoothReconnect_title, R.string.pref_unpauseOnBluetoothReconnect_sum, UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)
             }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
-            Text(stringResource(R.string.playback_control), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.playback_control), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.pref_fast_forward), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.pref_fast_forward), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     var interval by remember { mutableStateOf(fastForwardSecs.toString()) }
                     var showIcon by remember { mutableStateOf(false) }
                     TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("seconds") },
@@ -684,7 +686,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.pref_rewind), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.pref_rewind), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     var interval by remember { mutableStateOf(rewindSecs.toString()) }
                     var showIcon by remember { mutableStateOf(false) }
                     TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("seconds") },
@@ -736,16 +738,16 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummarySwitchPrefRow(R.string.pref_low_quality_on_mobile_title, R.string.pref_low_quality_on_mobile_sum, UserPreferences.Prefs.prefLowQualityOnMobile.name)
             TitleSummarySwitchPrefRow(R.string.pref_use_adaptive_progress_title, R.string.pref_use_adaptive_progress_sum, UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name)
             var showVideoModeDialog by remember { mutableStateOf(false) }
-            if (showVideoModeDialog) VideoModeDialog(onDismissRequest = { showVideoModeDialog = false }) { mode -> setVideoMode(mode.code) }
+            if (showVideoModeDialog) VideoModeDialog(initMode =  VideoMode.fromCode(videoPlayMode), onDismissRequest = { showVideoModeDialog = false }) { mode -> setVideoMode(mode.code) }
             TitleSummaryActionColumn(R.string.pref_playback_video_mode, R.string.pref_playback_video_mode_sum) { showVideoModeDialog = true }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
-            Text(stringResource(R.string.reassign_hardware_buttons), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.reassign_hardware_buttons), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showHardwareForwardButtonOptions by remember { mutableStateOf(false) }
             var tempFFSelectedOption by remember { mutableStateOf(R.string.keycode_media_fast_forward) }
             TitleSummaryActionColumn(R.string.pref_hardware_forward_button_title, R.string.pref_hardware_forward_button_summary) { showHardwareForwardButtonOptions = true }
             if (showHardwareForwardButtonOptions) {
                 AlertDialog(onDismissRequest = { showHardwareForwardButtonOptions = false },
-                    title = { Text(stringResource(R.string.pref_hardware_forward_button_title), style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.pref_hardware_forward_button_title), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {
                             PrefHardwareForwardButton.entries.forEach { option ->
@@ -770,7 +772,7 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummaryActionColumn(R.string.pref_hardware_previous_button_title, R.string.pref_hardware_previous_button_summary) { showHardwarePreviousButtonOptions = true }
             if (showHardwarePreviousButtonOptions) {
                 AlertDialog(onDismissRequest = { showHardwarePreviousButtonOptions = false },
-                    title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {
                             PrefHardwareForwardButton.entries.forEach { option ->
@@ -791,14 +793,14 @@ class PreferenceActivity : AppCompatActivity() {
                 )
             }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
-            Text(stringResource(R.string.queue_label), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
+            Text(stringResource(R.string.queue_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             TitleSummarySwitchPrefRow(R.string.pref_enqueue_downloaded_title, R.string.pref_enqueue_downloaded_summary, UserPreferences.Prefs.prefEnqueueDownloaded.name)
             var showEnqueueLocationOptions by remember { mutableStateOf(false) }
             var tempLocationOption by remember { mutableStateOf(EnqueueLocation.BACK.name) }
             TitleSummaryActionColumn(R.string.pref_enqueue_location_title, R.string.pref_enqueue_location_sum) { showEnqueueLocationOptions = true }
             if (showEnqueueLocationOptions) {
                 AlertDialog(onDismissRequest = { showEnqueueLocationOptions = false },
-                    title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {
                             EnqueueLocation.entries.forEach { option ->
@@ -1410,7 +1412,7 @@ class PreferenceActivity : AppCompatActivity() {
         var showComboImportDialog by remember { mutableStateOf(false) }
         if (showComboImportDialog) {
             AlertDialog(onDismissRequest = { showComboImportDialog = false },
-                title = { Text(stringResource(R.string.pref_select_properties), style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.pref_select_properties), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {
                         comboDic.keys.forEach { option ->
@@ -1423,6 +1425,7 @@ class PreferenceActivity : AppCompatActivity() {
                             }
                         }
                     }
+                    if (comboDic["Media files"] != null && comboDic["Database"] == true) Text(stringResource(R.string.pref_import_media_files_later), modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodySmall)
                 },
                 confirmButton = {
                     TextButton(onClick = {
@@ -1449,7 +1452,6 @@ class PreferenceActivity : AppCompatActivity() {
                                 }
                                 withContext(Dispatchers.Main) {
                                     showImporSuccessDialog.value = true
-//                                    showImportSuccessDialog()
                                     showProgress = false
                                 }
                             } catch (e: Throwable) {
@@ -1467,7 +1469,7 @@ class PreferenceActivity : AppCompatActivity() {
         var showComboExportDialog by remember { mutableStateOf(false) }
         if (showComboExportDialog) {
             AlertDialog(onDismissRequest = { showComboExportDialog = false },
-                title = { Text(stringResource(R.string.pref_select_properties), style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.pref_select_properties), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {
                         comboDic.keys.forEach { option ->
@@ -1839,10 +1841,10 @@ class PreferenceActivity : AppCompatActivity() {
         val scrollState = rememberScrollState()
         supportActionBar!!.setTitle(R.string.downloads_pref)
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-            Text(stringResource(R.string.automation), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.automation), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.feed_refresh_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.feed_refresh_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!) }
                     var showIcon by remember { mutableStateOf(false) }
                     TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("(hours)") },
@@ -1872,7 +1874,7 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummarySwitchPrefRow(R.string.pref_auto_delete_title, R.string.pref_auto_delete_sum, UserPreferences.Prefs.prefAutoDelete.name)
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_auto_local_delete_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_auto_local_delete_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_auto_local_delete_sum), color = textColor)
                 }
                 var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefAutoDeleteLocal.name, false)) }
@@ -1894,14 +1896,14 @@ class PreferenceActivity : AppCompatActivity() {
             }
             TitleSummarySwitchPrefRow(R.string.pref_keeps_important_episodes_title, R.string.pref_keeps_important_episodes_sum, UserPreferences.Prefs.prefFavoriteKeepsEpisode.name)
             TitleSummarySwitchPrefRow(R.string.pref_delete_removes_from_queue_title, R.string.pref_delete_removes_from_queue_sum, UserPreferences.Prefs.prefDeleteRemovesFromQueue.name)
-            Text(stringResource(R.string.download_pref_details), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold,
+            Text(stringResource(R.string.download_pref_details), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 10.dp))
             var showMeteredNetworkOptions by remember { mutableStateOf(false) }
             var tempSelectedOptions by remember { mutableStateOf(appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, setOf("images"))!!) }
             TitleSummaryActionColumn(R.string.pref_metered_network_title, R.string.pref_mobileUpdate_sum) { showMeteredNetworkOptions = true }
             if (showMeteredNetworkOptions) {
                 AlertDialog(onDismissRequest = { showMeteredNetworkOptions = false },
-                    title = { Text(stringResource(R.string.pref_metered_network_title), style = MaterialTheme.typography.titleLarge) },
+                    title = { Text(stringResource(R.string.pref_metered_network_title), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {
                             MobileUpdateOptions.entries.forEach { option ->
@@ -1949,7 +1951,7 @@ class PreferenceActivity : AppCompatActivity() {
             var isEnabled by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, false)) }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.pref_automatic_download_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.pref_automatic_download_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_automatic_download_sum), color = textColor)
                 }
                 Switch(checked = isEnabled, onCheckedChange = {
@@ -1960,7 +1962,7 @@ class PreferenceActivity : AppCompatActivity() {
             if (isEnabled) {
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.pref_episode_cache_title), color = textColor, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.pref_episode_cache_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCacheSize.name, "25")!!) }
                         var showIcon by remember { mutableStateOf(false) }
                         TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("integer") },
@@ -1989,7 +1991,7 @@ class PreferenceActivity : AppCompatActivity() {
                     var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
                     if ((interval.toIntOrNull() ?: -1) > 0) tempCleanupOption = EpisodeCleanupOptions.LimitBy.num.toString()
                     AlertDialog(onDismissRequest = { showCleanupOptions = false },
-                        title = { Text(stringResource(R.string.pref_episode_cleanup_title), style = MaterialTheme.typography.titleLarge) },
+                        title = { Text(stringResource(R.string.pref_episode_cleanup_title), style = CustomTextStyles.titleCustom) },
                         text = {
                             Column {
                                 EpisodeCleanupOptions.entries.forEach { option ->
@@ -2588,7 +2590,7 @@ class PreferenceActivity : AppCompatActivity() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-            Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, UserPreferences.Prefs.prefShowDownloadReport.name)
             if (isProviderConnected)
                 TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, UserPreferences.Prefs.pref_gpodnet_notifications.name)

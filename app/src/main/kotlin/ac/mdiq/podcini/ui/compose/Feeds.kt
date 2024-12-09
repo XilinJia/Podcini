@@ -652,15 +652,15 @@ fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.Op
 }
 
 @Composable
-fun VideoModeDialog(onDismissRequest: () -> Unit, callback: (VideoMode) -> Unit) {
-    var selectedOption by remember { mutableStateOf(VideoMode.NONE.name) }
+fun VideoModeDialog(initMode: VideoMode?, onDismissRequest: () -> Unit, callback: (VideoMode) -> Unit) {
+    var selectedOption by remember { mutableStateOf(initMode?.tag ?: VideoMode.NONE.tag) }
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column {
                     VideoMode.entries.forEach { mode ->
-                        val text = mode.tag
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            val text = remember { mode.tag }
                             Checkbox(checked = (text == selectedOption), onCheckedChange = {
                                 if (text != selectedOption) {
                                     selectedOption = text

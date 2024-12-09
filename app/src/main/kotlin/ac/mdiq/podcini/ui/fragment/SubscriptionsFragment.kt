@@ -486,7 +486,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
                             Spacer(modifier = Modifier.width(20.dp))
-                            Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge)
+                            Text(text = stringResource(R.string.keep_updated), style = CustomTextStyles.titleCustom)
                             Spacer(modifier = Modifier.weight(1f))
                             var checked by remember { mutableStateOf(false) }
                             Switch(checked = checked, onCheckedChange = {

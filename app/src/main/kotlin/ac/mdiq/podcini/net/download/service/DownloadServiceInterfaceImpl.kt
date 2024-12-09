@@ -263,12 +263,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         private fun generateProgressNotification(): Notification {
             val bigTextB = StringBuilder()
             var progressCopy: Map<String, Int>
-            synchronized(notificationProgress) {
-                progressCopy = HashMap(notificationProgress)
-            }
-            for ((key, value) in progressCopy) {
-                bigTextB.append(String.format(Locale.getDefault(), "%s (%d%%)\n", key, value))
-            }
+            synchronized(notificationProgress) { progressCopy = HashMap(notificationProgress) }
+            for ((key, value) in progressCopy) bigTextB.append(String.format(Locale.getDefault(), "%s (%d%%)\n", key, value))
             val bigText = bigTextB.toString().trim { it <= ' ' }
             val contentText = if (progressCopy.size == 1) bigText
             else applicationContext.resources.getQuantityString(R.plurals.downloads_left, progressCopy.size, progressCopy.size)
@@ -350,23 +346,19 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 return constraints.build()
             }
 
-        
         private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
             Logd(TAG, "starting getRequest")
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
-            if (enqueueDownloadedEpisodes()) {
+            if (appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)) {
                 if (item.feed?.preferences?.queue != null)
                     runBlocking { Queues.addToQueueSync(item, item.feed?.preferences?.queue) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
             workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
             return workRequest
-        }
-        private fun enqueueDownloadedEpisodes(): Boolean {
-            return appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
         }
     }
 }

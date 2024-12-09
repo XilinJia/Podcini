@@ -88,8 +88,6 @@ object AutoDownloads {
     }
 
     class FeedBasedAutoDLAlgorithm : AutoDownloadAlgorithm() {
-
-        
         override fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>?): Runnable {
             return Runnable {
                 // true if we should auto download based on network status

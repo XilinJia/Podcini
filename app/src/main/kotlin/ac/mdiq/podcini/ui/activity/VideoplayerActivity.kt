@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
 import ac.mdiq.podcini.playback.base.LocalMediaPlayer
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -23,11 +24,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.compose.ChaptersDialog
-import ac.mdiq.podcini.ui.compose.CustomTextStyles
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
-import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
@@ -56,9 +53,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -79,11 +80,18 @@ class VideoplayerActivity : CastEnabledActivity() {
     private var _binding: VideoplayerActivityBinding? = null
     private val binding get() = _binding!!
     var switchToAudioOnly = false
+
     private var cleanedNotes by mutableStateOf<String?>(null)
     private var feedTitle by mutableStateOf("")
     private var episodeTitle by mutableStateOf("")
     private var showAcrionBar by mutableStateOf(false)
     var landscape by mutableStateOf(false)
+
+    var showChapterDialog by mutableStateOf(false)
+    var showAudioControlDialog by mutableStateOf(false)
+    var showSpeedDialog by mutableStateOf(false)
+    val showErrorDialog = mutableStateOf(false)
+    var errorMessage by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_Podcini_VideoPlayer)
@@ -118,14 +126,19 @@ class VideoplayerActivity : CastEnabledActivity() {
         setForVideoMode()
 
         binding.mainView.setContent {
-            CustomTheme(this) {
+            MaterialTheme(colorScheme = darkColorScheme(), typography = CustomTypography, shapes = Shapes) {
+                if (showChapterDialog) ChaptersDialog(curMedia!!, onDismissRequest = { showChapterDialog = false })
+                if (showAudioControlDialog) PlaybackControlsDialog(onDismiss = { showAudioControlDialog = false })
+                if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = { showSpeedDialog = false })
+                MediaPlayerErrorDialog(this, errorMessage, showErrorDialog)
+
                 if (landscape) Box(modifier = Modifier.fillMaxSize()) { VideoPlayer() }
                 else {
                     val textColor = MaterialTheme.colorScheme.onSurface
                     Column(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.fillMaxWidth().aspectRatio(16 / 9f)) { VideoPlayer() }
-                        Text(curMedia?.getFeedTitle()?:"", color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(horizontal = 10.dp))
                         Text(curMedia?.getEpisodeTitle()?:"", color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(horizontal = 10.dp))
+                        Text(curMedia?.getFeedTitle()?:"", color = textColor, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
                         MediaDetails()
                     }
                 }
@@ -203,7 +216,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     @Composable
     fun MediaDetails() {
         val textColor = MaterialTheme.colorScheme.onSurface
-        if (cleanedNotes == null) loadMediaInfo()
+        LaunchedEffect(curMediaId) { loadMediaInfo() }
         AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
             ShownotesWebView(context).apply {
                 setTimecodeSelectedListener { time: Int -> seekTo(time) }
@@ -211,7 +224,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                     postDelayed({ }, 50)
                 }
             }
-        }, update = { webView -> webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank") })
+        }, update = { webView -> webView.loadDataWithBaseURL("https://127.0.0.1", if (cleanedNotes.isNullOrBlank()) "No notes" else cleanedNotes!!, "text/html", "utf-8", "about:blank") })
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -318,7 +331,11 @@ class VideoplayerActivity : CastEnabledActivity() {
                 when (event) {
                     is FlowEvent.SleepTimerUpdatedEvent -> if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
                     is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()
-                    is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(this@VideoplayerActivity, event)
+                    is FlowEvent.PlayerErrorEvent -> {
+                        showErrorDialog.value = true
+                        errorMessage = event.message
+//                        MediaPlayerErrorDialog.show(this@VideoplayerActivity, event)
+                    }
                     is FlowEvent.MessageEvent -> onEventMainThread(event)
                     else -> {}
                 }
@@ -346,7 +363,6 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
-
         val media = curMedia
         val isEpisodeMedia = (media is EpisodeMedia)
 
@@ -395,19 +411,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 return true
             }
             R.id.player_show_chapters -> {
-                val composeView = ComposeView(this).apply {
-                    setContent {
-                        val showDialog = remember { mutableStateOf(true) }
-                        CustomTheme(this@VideoplayerActivity) {
-                            ChaptersDialog(curMedia!!, onDismissRequest = {
-                                showDialog.value = false
-                                (binding.root as? ViewGroup)?.removeView(this@apply)
-                            })
-                        }
-                    }
-                }
-                (binding.root as? ViewGroup)?.addView(composeView)
-//                ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
+                showChapterDialog = true
                 return true
             }
             else -> {
@@ -416,20 +420,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 when {
                     item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item ->
                         SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
-                    item.itemId == R.id.audio_controls -> {
-//                        val dialog = PlaybackControlsDialog.newInstance()
-//                        dialog.show(supportFragmentManager, "playback_controls")
-                        val composeView = ComposeView(this).apply {
-                            setContent {
-                                var showAudioControlDialog by remember { mutableStateOf(true) }
-                                if (showAudioControlDialog) PlaybackControlsDialog(onDismiss = {
-                                        showAudioControlDialog = false
-                                        (parent as? ViewGroup)?.removeView(this)
-                                    })
-                            }
-                        }
-                        (window.decorView as? ViewGroup)?.addView(composeView)
-                    }
+                    item.itemId == R.id.audio_controls -> showAudioControlDialog = true
                     item.itemId == R.id.open_feed_item && feedItem != null -> {
                         val intent = MainActivity.getIntentToOpenFeed(this, feedItem.feedId!!)
                         startActivity(intent)
@@ -442,20 +433,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                         val shareDialog = ShareDialog.newInstance(feedItem)
                         shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
                     }
-                    item.itemId == R.id.playback_speed -> {
-                        val composeView = ComposeView(this).apply {
-                            setContent {
-                                var showSpeedDialog by remember { mutableStateOf(true) }
-                                if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f,
-                                    onDismiss = {
-                                        showSpeedDialog = false
-                                        (parent as? ViewGroup)?.removeView(this)
-                                    })
-                            }
-                        }
-                        (window.decorView as? ViewGroup)?.addView(composeView)
-//                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true))?.show(supportFragmentManager, null)
-                    }
+                    item.itemId == R.id.playback_speed -> showSpeedDialog = true
                     else -> return false
                 }
                 return true

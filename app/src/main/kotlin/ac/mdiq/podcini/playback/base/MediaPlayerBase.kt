@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.playback.base
 
-//import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted

@@ -55,23 +55,11 @@
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
-        name="Android-Iconics"
-        author="Mike Penz and Peter Gulko"
-        website="https://github.com/mikepenz/Android-Iconics"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
         name="jsoup"
         author="Jonathan Hedley"
         website="https://jsoup.org/"
         license="MIT"
         licenseText="LICENSE_JSOUP.txt" />
-<!--    <library-->
-<!--        name="Lightweight-Stream-API"-->
-<!--        author="Victor Melnik"-->
-<!--        website="https://github.com/aNNiMON/Lightweight-Stream-API"-->
-<!--        license="Apache 2.0"-->
-<!--        licenseText="LICENSE_APACHE-2.0.txt" />-->
     <library
         name="Material Components for Android"
         author="Google"
@@ -84,12 +72,6 @@
         website="https://github.com/google/material-design-icons"
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
-        name="Material Design Icons"
-        author="Templarian"
-        website="https://github.com/Templarian/MaterialDesign"
-        license="Pictogrammers Free License"
-        licenseText="LICENSE_PICTOGRAMMERS.txt" />
     <library
         name="OkHttp"
         author="Square"
@@ -114,10 +96,4 @@
         website="https://github.com/ByteHamster/SearchPreference"
         license="MIT"
         licenseText="LICENSE_SEARCHPREFERENCE.txt" />
-<!--    <library-->
-<!--        name="Triangle Label View"-->
-<!--        author="Shota Saito"-->
-<!--        website="https://github.com/shts/TriangleLabelView"-->
-<!--        license="Apache 2.0"-->
-<!--        licenseText="LICENSE_TRIANGLE_LABEL_VIEW.txt" />-->
 </libraries>

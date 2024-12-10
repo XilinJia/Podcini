@@ -66,9 +66,7 @@ object UserPreferences {
         get() {
             val buttons = appPrefs.getString(Prefs.prefFullNotificationButtons.name, "${NOTIFICATION_BUTTON.SKIP.ordinal},${NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal}")?.split(",") ?: listOf()
             val notificationButtons: MutableList<Int> = ArrayList()
-            for (button in buttons) {
-                notificationButtons.add(button.toInt())
-            }
+            for (button in buttons) notificationButtons.add(button.toInt())
             return notificationButtons
         }
         set(items) {

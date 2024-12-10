@@ -144,9 +144,6 @@ class ShownotesCleaner(context: Context) {
         private const val CSS_COLOR = "(?<=(\\s|;|^))color\\s*:([^;])*;"
         private const val CSS_COMMENT = "/\\*.*?\\*/"
 
-        /**
-         * Returns true if the given link is a timecode link.
-         */
         fun isTimecodeLink(link: String?): Boolean {
             return link != null && link.matches(TIMECODE_LINK_REGEX.pattern().toRegex())
         }

@@ -1,3 +1,11 @@
+# 6.15.6
+
+* further tuned video player
+* made loading of detailed info more efficient in both video and audio player
+* EpisodeHome view is in Compose, has added ability to show hidden text in transcripts (by tapping the eye-glasses on action bar)
+* some more components are in Compose
+* removed dependency iconics
+
 # 6.15.5
 
 * added note "Media files can only be imported after the DB" on combo import dialog

@@ -6,6 +6,7 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -40,6 +41,7 @@ import ac.mdiq.podcini.ui.compose.ChaptersDialog
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
 import ac.mdiq.podcini.ui.compose.SkipDialog
 import ac.mdiq.podcini.ui.compose.SkipDirection
@@ -143,7 +145,6 @@ class AudioPlayerFragment : Fragment() {
     private var shownotesCleaner: ShownotesCleaner? = null
 
     private var cleanedNotes by mutableStateOf<String?>(null)
-    private var isLoading = false
     private var homeText: String? = null
     private var showHomeText = false
     private var readerhtml: String? = null
@@ -152,6 +153,9 @@ class AudioPlayerFragment : Fragment() {
 //    private var chapterControlVisible by mutableStateOf(false)
     private var hasNextChapter by mutableStateOf(true)
     var rating by mutableStateOf(currentItem?.rating ?: Rating.UNRATED.code)
+
+    val showErrorDialog = mutableStateOf(false)
+    var errorMessage by mutableStateOf("")
 
     private var displayedChapterIndex by mutableIntStateOf(-1)
     private val currentChapter: Chapter?
@@ -167,10 +171,14 @@ class AudioPlayerFragment : Fragment() {
         controller!!.init()
         onCollaped()
 
+        if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
+
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
                     if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = {showSpeedDialog = false})
+                    LaunchedEffect(key1 = curMediaId) { updateDetails() }
+                    MediaPlayerErrorDialog(activity as Activity, errorMessage, showErrorDialog)
                     Box(modifier = Modifier.fillMaxWidth().then(if (isCollapsed) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
                         PlayerUI(Modifier.align(if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
                         if (!isCollapsed) {
@@ -186,7 +194,6 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "curMedia: ${curMedia?.getIdentifier()}")
         (activity as MainActivity).setPlayerVisible(curMedia != null)
         if (curMedia != null) updateUi(curMedia!!)
-//        if (curMedia is EpisodeMedia) setIsShowPlay(isCurrentlyPlaying(curMedia as EpisodeMedia))
         return composeView
     }
 
@@ -224,8 +231,7 @@ class AudioPlayerFragment : Fragment() {
                 if (curMedia == null) return
                 if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
             }
-            val imgLoc_ = remember(currentMedia) { imgLoc }
-            AsyncImage(contentDescription = "imgvCover", model = ImageRequest.Builder(context).data(imgLoc_)
+            AsyncImage(contentDescription = "imgvCover", model = ImageRequest.Builder(context).data(imgLoc)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                 modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
                     .clickable(onClick = {
@@ -365,27 +371,25 @@ class AudioPlayerFragment : Fragment() {
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            VolumeAdaptionSetting.entries.forEach { item ->
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(checked = (item == selectedOption),
-                                        onCheckedChange = { _ ->
-                                            Logd(TAG, "row clicked: $item $selectedOption")
-                                            if (item != selectedOption) {
-                                                onOptionSelected(item)
-                                                if (currentMedia is EpisodeMedia) {
-                                                    (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
-                                                    currentMedia = currentItem!!.media
-                                                    curMedia = currentMedia
-                                                    playbackService?.mPlayer?.pause(false, reinit = true)
-                                                    playbackService?.mPlayer?.resume()
-                                                }
-                                                onDismissRequest()
+                        VolumeAdaptionSetting.entries.forEach { item ->
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = (item == selectedOption),
+                                    onCheckedChange = { _ ->
+                                        Logd(TAG, "row clicked: $item $selectedOption")
+                                        if (item != selectedOption) {
+                                            onOptionSelected(item)
+                                            if (currentMedia is EpisodeMedia) {
+                                                (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
+                                                currentMedia = currentItem!!.media
+                                                curMedia = currentMedia
+                                                playbackService?.mPlayer?.pause(false, reinit = true)
+                                                playbackService?.mPlayer?.resume()
                                             }
+                                            onDismissRequest()
                                         }
-                                    )
-                                    Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-                                }
+                                    }
+                                )
+                                Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -526,18 +530,15 @@ class AudioPlayerFragment : Fragment() {
                         postDelayed({ }, 50)
                     }
                 }
-            }, update = { webView -> webView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank") })
+            }, update = { webView -> webView.loadDataWithBaseURL("https://127.0.0.1", if (cleanedNotes.isNullOrBlank()) "No notes" else cleanedNotes!!, "text/html", "utf-8", "about:blank") })
             if (displayedChapterIndex >= 0) {
                 Row(modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chapter_prev), tint = textColor, contentDescription = "prev_chapter",
                         modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToPrevChapter() }))
                     Text("Ch " + displayedChapterIndex.toString() + ": " + currentChapter?.title,
-                        color = textColor, style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).padding(start = 10.dp, end = 10.dp)
-//                        .clickable(onClick = { ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG) }))
-                        .clickable(onClick = { showChaptersDialog = true }))
+                        color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f).padding(start = 10.dp, end = 10.dp).clickable(onClick = { showChaptersDialog = true }))
                     if (hasNextChapter) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chapter_next), tint = textColor, contentDescription = "next_chapter",
                         modifier = Modifier.width(36.dp).height(36.dp).clickable(onClick = { seekToNextChapter() }))
                 }
@@ -601,7 +602,6 @@ class AudioPlayerFragment : Fragment() {
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
-        if (prevMedia?.getIdentifier() != media.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
         if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
@@ -609,10 +609,8 @@ class AudioPlayerFragment : Fragment() {
     }
 
     private fun updateDetails() {
-//        if (isLoading) return
         lifecycleScope.launch {
-            Logd(TAG, "in updateDetails")
-            isLoading = true
+            Logd(TAG, "in updateDetails curMedia: ${curMedia is EpisodeMedia}")
             withContext(Dispatchers.IO) {
                 currentMedia = curMedia
                 if (currentMedia != null && currentMedia is EpisodeMedia) {
@@ -624,33 +622,28 @@ class AudioPlayerFragment : Fragment() {
                 if (currentItem != null) {
                     if (rating == Rating.UNRATED.code || prevItem?.identifyingValue != currentItem!!.identifyingValue) rating = currentItem!!.rating
                     currentMedia = currentItem!!.media
-                    if (prevItem?.identifyingValue != currentItem!!.identifyingValue) cleanedNotes = null
-                    Logd(TAG, "updateInfo ${cleanedNotes == null} ${prevItem?.identifyingValue} ${currentItem!!.identifyingValue}")
-                    if (cleanedNotes == null) {
-                        val url = currentItem!!.media?.downloadUrl
-                        if (url?.contains("youtube.com") == true && currentItem!!.description?.startsWith("Short:") == true) {
-                            Logd(TAG, "getting extended description: ${currentItem!!.title}")
-                            try {
-                                val info = currentItem!!.streamInfo
-                                if (info?.description?.content != null) {
-                                    currentItem = upsert(currentItem!!) { it.description = info.description?.content }
-                                    cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.getDuration()?:0)
-                                } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
-                            } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
-                        } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
-                    }
+                    Logd(TAG, "updateDetails updateInfo ${cleanedNotes == null} ${prevItem?.identifyingValue} ${currentItem!!.identifyingValue}")
+                    val url = currentItem!!.media?.downloadUrl
+                    if (url?.contains("youtube.com") == true && currentItem!!.description?.startsWith("Short:") == true) {
+                        Logd(TAG, "getting extended description: ${currentItem!!.title}")
+                        try {
+                            val info = currentItem!!.streamInfo
+                            if (info?.description?.content != null) {
+                                currentItem = upsert(currentItem!!) { it.description = info.description?.content }
+                                cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.getDuration()?:0)
+                            } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
+                        } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
+                    } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
                     prevItem = currentItem
                 }
+                Logd(TAG, "updateDetails cleanedNotes: ${cleanedNotes?.length}")
             }
             withContext(Dispatchers.Main) {
                 Logd(TAG, "subscribe: ${currentMedia?.getEpisodeTitle()}")
                 displayMediaInfo(currentMedia!!)
-//                (activity as MainActivity).setPlayerVisible(curMedia != null)
-                //                    shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
                 Logd(TAG, "Webview loaded")
             }
         }.invokeOnCompletion { throwable ->
-            isLoading = false
             if (throwable != null) Log.e(TAG, Log.getStackTraceString(throwable))
         }
     }
@@ -749,19 +742,14 @@ class AudioPlayerFragment : Fragment() {
     fun onExpanded() {
         Logd(TAG, "onExpanded()")
 //        the function can also be called from MainActivity when a select menu pops up and closes
-//        if (isCollapsed) {
-            isCollapsed = false
-            if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
-//            if (currentMedia != null) updateUi(currentMedia!!)
-            setIsShowPlay(isShowPlay)
-            updateDetails()
-//        }
+        isCollapsed = false
+        if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(requireContext())
+        setIsShowPlay(isShowPlay)
     }
 
     fun onCollaped() {
         Logd(TAG, "onCollaped()")
         isCollapsed = true
-//        if (currentMedia != null) updateUi(currentMedia!!)
         setIsShowPlay(isShowPlay)
     }
 
@@ -776,12 +764,6 @@ class AudioPlayerFragment : Fragment() {
         }
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    fun onUnreadItemsUpdate(event: UnreadItemsUpdateEvent?) {
-//        if (controller == null) return
-//        updatePosition(PlaybackPositionEvent(position, duration))
-//    }
-
     private var loadItemsRunning = false
     fun loadMediaInfo() {
         Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.getIdentifier()}")
@@ -793,11 +775,10 @@ class AudioPlayerFragment : Fragment() {
         if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
         if (!loadItemsRunning) {
             loadItemsRunning = true
-//            if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
             val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
             if (curMedia?.getIdentifier() != currentMedia?.getIdentifier()) updateUi(curMedia!!)
+            if (prevMedia?.getIdentifier() != currentMedia?.getIdentifier()) imgLoc = ImageResourceUtils.getEpisodeListImageLocation(currentMedia!!)
             if (!isCollapsed && curMediaChanged) {
-                updateDetails()
                 Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()}")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -836,8 +817,8 @@ class AudioPlayerFragment : Fragment() {
                 setIsShowPlay(showPlay)
             }
             override fun loadMediaInfo() {
+                Logd(TAG, "createHandler loadMediaInfo")
                 this@AudioPlayerFragment.loadMediaInfo()
-//                if (!isCollapsed) updateDetails()
             }
             override fun onPlaybackEnd() {
                 setIsShowPlay(true)
@@ -948,7 +929,10 @@ class AudioPlayerFragment : Fragment() {
                     }
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.RatingEvent -> onRatingEvent(event)
-                    is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
+                    is FlowEvent.PlayerErrorEvent -> {
+                        showErrorDialog.value = true
+                        errorMessage = event.message
+                    }
 //                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) sleepTimerActive = isSleepTimerActive()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)

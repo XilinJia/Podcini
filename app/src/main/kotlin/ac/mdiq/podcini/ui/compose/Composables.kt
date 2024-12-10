@@ -1,6 +1,20 @@
 package ac.mdiq.podcini.ui.compose
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.IntentUtils
+import ac.mdiq.podcini.util.Logd
+import android.app.Activity
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,8 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -243,6 +259,32 @@ fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boole
                 }) { Text("Confirm") }
             },
             dismissButton = { if (cancellable) TextButton(onClick = { showDialog.value = false }) { Text("Cancel") } }
+        )
+    }
+}
+
+@Composable
+fun MediaPlayerErrorDialog(activity: Activity, message: String, showDialog: MutableState<Boolean>) {
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(stringResource(R.string.error_label)) },
+            text = {
+                val genericMessage: String = activity.getString(R.string.playback_error_generic)
+                val errorMessage = SpannableString("""
+                                    $genericMessage
+                                    
+                                    $message
+                                    """.trimIndent())
+                errorMessage.setSpan(ForegroundColorSpan(-0x77777778), genericMessage.length, errorMessage.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                Text(errorMessage.toString())
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (activity is MainActivity) activity.bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                    showDialog.value = false
+                }) { Text("Confirm") }
+            },
         )
     }
 }

@@ -244,6 +244,7 @@
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Delete episode media</string>
 
+    <string name="show_hidden">Show hidden</string>
     <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>

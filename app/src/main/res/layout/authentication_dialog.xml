@@ -42,11 +42,11 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.mikepenz.iconics.view.IconicsTextView
+        <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/showPasswordButton"
-                android:text="{faw_eye}"
+                android:text="Show"
                 android:padding="8dp"
                 android:textColor="?android:attr/textColorPrimary"
                 android:background="?attr/selectableItemBackgroundBorderless"

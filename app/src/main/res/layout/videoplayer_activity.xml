@@ -10,14 +10,6 @@
               android:fitsSystemWindows="true"
               android:windowActionBarOverlay="true">
 
-<!--    <androidx.fragment.app.FragmentContainerView-->
-<!--        android:id="@+id/main_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:foreground="?android:windowContentOverlay"-->
-<!--        tools:background="@android:color/holo_red_dark"-->
-<!--        android:windowActionBarOverlay="true"/>-->
-
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/mainView"
         android:layout_width="match_parent"

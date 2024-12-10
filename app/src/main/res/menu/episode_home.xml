@@ -11,6 +11,13 @@
     </item>
 
     <item
+        android:id="@+id/showHidden"
+        android:icon="@drawable/outline_eyeglasses_24"
+        android:title="@string/show_hidden"
+        custom:showAsAction="always">
+    </item>
+
+    <item
         android:id="@+id/switchJS"
         android:icon="@drawable/javascript_icon_245402"
         android:title="@string/javasript_label"

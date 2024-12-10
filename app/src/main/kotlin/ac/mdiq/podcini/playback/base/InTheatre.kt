@@ -11,6 +11,9 @@ import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_OTHER
 import ac.mdiq.podcini.util.Logd
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,8 +32,6 @@ object InTheatre {
                 value != null -> {
                     field = unmanaged(value)
                     if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = unmanaged(field!!.media!!)
-//                    field = value
-//                    if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = field!!.media!!
                 }
                 else -> {
                     field = null
@@ -44,17 +45,22 @@ object InTheatre {
             when {
                 value is EpisodeMedia -> {
                     field = unmanaged(value)
+                    curMediaId = value.id
                     if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
-//                    field = value
-//                    if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = value.episode!!
                 }
                 value == null -> {
                     field = null
+                    curMediaId = -1L
                     if (curEpisode != null) curEpisode = null
                 }
-                else -> field = value
+                else -> {
+                    field = value
+                    curMediaId = 0L
+                }
             }
         }
+
+    var curMediaId by mutableLongStateOf(-1L)
 
     var curState: CurrentState      // managed
 

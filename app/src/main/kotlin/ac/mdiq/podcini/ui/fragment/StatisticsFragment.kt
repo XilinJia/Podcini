@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.update
@@ -21,25 +20,29 @@ import android.text.format.DateFormat
 import android.text.format.Formatter
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
@@ -47,7 +50,6 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,16 +60,11 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+class StatisticsFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var toolbar: MaterialToolbar
 
     private var includeMarkedAsPlayed by mutableStateOf(false)
     private var statisticsState by mutableIntStateOf(0)
-
     private val selectedTabIndex = mutableIntStateOf(0)
     lateinit var statsResult: StatisticsResult
 
@@ -75,47 +72,84 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        setHasOptionsMenu(true)
-        _binding = ComposeFragmentBinding.inflate(inflater)
-        toolbar = binding.toolbar
-        toolbar.title = getString(R.string.statistics_label)
-        toolbar.setOnMenuItemClickListener(this)
-        toolbar.inflateMenu(R.menu.statistics)
-        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        (activity as MainActivity).setupToolbarToggle(toolbar, false)
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = showResetDialog) {
-                    prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
-                    lifecycleScope.launch {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                val mediaAll = realm.query(EpisodeMedia::class).find()
-                                for (m in mediaAll) update(m) { m.playedDuration = 0 }
-                            }
-                            statisticsState++
-                        } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
-                    }
-                }
+//        setHasOptionsMenu(true)
 
-                val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
-                Column {
-                    TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
-                        Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
-                    }) {
-                        tabTitles.forEachIndexed { index, titleRes ->
-                            Tab(text = { Text(stringResource(titleRes)) }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = showResetDialog) {
+                        prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
+                        lifecycleScope.launch {
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    val mediaAll = realm.query(EpisodeMedia::class).find()
+                                    for (m in mediaAll) update(m) { m.playedDuration = 0 }
+                                }
+                                statisticsState++
+                            } catch (error: Throwable) {
+                                Log.e(TAG, Log.getStackTraceString(error))
+                            }
                         }
                     }
-                    when (selectedTabIndex.value) {
-                        0 -> PlayedTime()
-                        1 -> MonthlyStats()
-                        2 -> DownloadStats()
+
+                    val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
+                                Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
+                            }) {
+                                tabTitles.forEachIndexed { index, titleRes ->
+                                    Tab(text = { Text(stringResource(titleRes)) }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
+                                }
+                            }
+                            when (selectedTabIndex.value) {
+                                0 -> PlayedTime()
+                                1 -> MonthlyStats()
+                                2 -> DownloadStats()
+                            }
+                        }
                     }
                 }
             }
         }
-        return binding.root
+        return composeView
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text(stringResource(R.string.statistics_label)) },
+            navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } },
+            actions = {
+                if (selectedTabIndex.value == 0) IconButton(onClick = {
+                    val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
+                        override fun initParams() {
+                            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+                            timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
+                            timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
+                        }
+                        override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
+                            prefs.edit()
+                                ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
+                                ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
+                                ?.putLong(PREF_FILTER_TO, timeFilterTo)
+                                ?.apply()
+                            includeMarkedAsPlayed = includeMarkedAsPlayed_
+                            statisticsState++
+                        }
+                    }
+                    dialog.show()
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    if (selectedTabIndex.value == 0 || selectedTabIndex.value == 1) DropdownMenuItem(text = { Text(stringResource(R.string.statistics_reset_data)) }, onClick = {
+                        showResetDialog.value = true
+                        expanded = false
+                    })
+                }
+            }
+        )
     }
 
     @Composable
@@ -158,7 +192,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     min(timeFilterTo.toDouble(), System.currentTimeMillis().toDouble()).toLong())
             } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
         }
-        refreshToolbarState()
         if (statisticsState >= 0) loadStatistics()
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -276,8 +309,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
             }
         }
-
-        refreshToolbarState()
         if (statisticsState >= 0) loadMonthlyStatistics()
         Column {
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp)) { BarChart() }
@@ -302,8 +333,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             downloadChartData = LineChartData(dataValues)
         }
-
-        refreshToolbarState()
         loadDownloadStatistics()
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(R.string.total_size_downloaded_podcasts), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 20.dp, bottom = 10.dp))
@@ -369,63 +398,6 @@ class StatisticsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }
             }
-        }
-    }
-
-    override fun onDestroyView() {
-        Logd(TAG, "onDestroyView")
-        _binding = null
-        toolbar.setOnMenuItemClickListener(null)
-        super.onDestroyView()
-    }
-
-    private fun refreshToolbarState() {
-        when (selectedTabIndex.value) {
-            0 -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = true
-                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = true
-            }
-            1 -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = true
-                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = false
-            }
-            else -> {
-                toolbar.menu?.findItem(R.id.statistics_reset)?.isVisible = false
-                toolbar.menu?.findItem(R.id.statistics_filter)?.isVisible = false
-            }
-        }
-    }
-
-     override fun onMenuItemClick(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.statistics_reset -> {
-                showResetDialog.value = true
-//                confirmResetStatistics()
-                return true
-            }
-            R.id.statistics_filter -> {
-                val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
-                    override fun initParams() {
-//                        prefs = prefs
-                        includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-                        timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
-                        timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
-                    }
-                    override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
-                        prefs.edit()
-                            ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
-                            ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
-                            ?.putLong(PREF_FILTER_TO, timeFilterTo)
-                            ?.apply()
-//                        EventFlow.postEvent(FlowEvent.StatisticsEvent())
-                        includeMarkedAsPlayed = includeMarkedAsPlayed_
-                        statisticsState++
-                    }
-                }
-                dialog.show()
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
         }
     }
 

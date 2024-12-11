@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
@@ -13,6 +12,7 @@ import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
 import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.ShareReceiverActivity.Companion.receiveShared
+import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.ConfirmAddYoutubeEpisode
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
@@ -27,10 +27,11 @@ import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,17 +41,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,37 +65,68 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-
+class LogsFragment : Fragment() {
     private val shareLogs = mutableStateListOf<ShareLog>()
     private val subscriptionLogs = mutableStateListOf<SubscriptionLog>()
     private val downloadLogs = mutableStateListOf<DownloadResult>()
+    private var title by mutableStateOf("")
 
     private var displayUpArrow = false
 
+    private var showDeleteConfirmDialog = mutableStateOf(false)
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = ComposeFragmentBinding.inflate(inflater)
-        binding.toolbar.inflateMenu(R.menu.logs)
-        binding.toolbar.setOnMenuItemClickListener(this)
-
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                when {
-                    downloadLogs.isNotEmpty() -> DownloadLogView()
-                    shareLogs.isNotEmpty() -> SharedLogView()
-                    subscriptionLogs.isNotEmpty() -> SubscriptionLogView()
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            ComfirmDialog(R.string.confirm_delete_logs_label, stringResource(R.string.confirm_delete_logs_message), showDeleteConfirmDialog) {
+                                runOnIOScope {
+                                    when {
+                                        shareLogs.isNotEmpty() -> {
+                                            realm.write {
+                                                val items = query(ShareLog::class).find()
+                                                delete(items)
+                                            }
+                                            shareLogs.clear()
+                                            loadShareLog()
+                                        }
+                                        subscriptionLogs.isNotEmpty() -> {
+                                            realm.write {
+                                                val items = query(SubscriptionLog::class).find()
+                                                delete(items)
+                                            }
+                                            subscriptionLogs.clear()
+                                            loadSubscriptionLog()
+                                        }
+                                        downloadLogs.isNotEmpty() -> {
+                                            realm.write {
+                                                val items = query(DownloadResult::class).find()
+                                                delete(items)
+                                            }
+                                            downloadLogs.clear()
+                                            loadDownloadLog()
+                                        }
+                                    }
+                                }
+                            }
+                            when {
+                                downloadLogs.isNotEmpty() -> DownloadLogView()
+                                shareLogs.isNotEmpty() -> SharedLogView()
+                                subscriptionLogs.isNotEmpty() -> SubscriptionLogView()
+                            }
+                        }
+                    }
                 }
             }
         }
         loadDownloadLog()
-        return binding.root
+        return composeView
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -104,7 +136,6 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        _binding = null
         clearAllLogs()
         super.onDestroyView()
     }
@@ -119,8 +150,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         var showYTMediaConfirmDialog by remember { mutableStateOf(false) }
         var sharedUrl by remember { mutableStateOf("") }
-        if (showYTMediaConfirmDialog)
-            ConfirmAddYoutubeEpisode(listOf(sharedUrl), showYTMediaConfirmDialog, onDismissRequest = { showYTMediaConfirmDialog = false })
+        ConfirmAddYoutubeEpisode(listOf(sharedUrl), showYTMediaConfirmDialog, onDismissRequest = { showYTMediaConfirmDialog = false })
 
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -165,7 +195,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Text(formatDateTimeFlex(Date(log.id)), color = textColor)
                             Spacer(Modifier.weight(1f))
                             var showAction by remember { mutableStateOf(log.status < ShareLog.Status.SUCCESS.ordinal) }
-                            if (true || showAction) {
+                            if (showAction) {
                                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), tint = textColor, contentDescription = null,
                                     modifier = Modifier.width(25.dp).height(25.dp).clickable {
                                     })
@@ -227,13 +257,8 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val lazyListState = rememberLazyListState()
         val showDialog = remember { mutableStateOf(false) }
         val dialogParam = remember { mutableStateOf(DownloadResult()) }
-        if (showDialog.value) {
-            DownlaodDetailDialog(
-                status = dialogParam.value,
-                showDialog = showDialog.value,
-                onDismissRequest = { showDialog.value = false },
-            )
-        }
+        DownlaodDetailDialog(status = dialogParam.value, showDialog = showDialog.value, onDismissRequest = { showDialog.value = false })
+
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(downloadLogs) { position, status ->
@@ -299,52 +324,38 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.clear_logs_item).isVisible = shareLogs.isNotEmpty()
-    }
-
     private fun clearAllLogs() {
         subscriptionLogs.clear()
         shareLogs.clear()
         downloadLogs.clear()
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        when {
-            super.onOptionsItemSelected(item) -> return true
-            item.itemId == R.id.show_shared_logs -> {
-                clearAllLogs()
-                loadShareLog()
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        TopAppBar(title = { Text(title) },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            },
+            actions = {
+                if (title != "Downloads log") IconButton(onClick = {
+                    clearAllLogs()
+                    loadDownloadLog()
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "download") }
+                if (title != "Shares log") IconButton(onClick = {
+                    clearAllLogs()
+                    loadShareLog()
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "share") }
+                if (title != "Subscriptions log") IconButton(onClick = {
+                    clearAllLogs()
+                    loadSubscriptionLog()
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_subscriptions), contentDescription = "subscriptions") }
+                IconButton(onClick = { showDeleteConfirmDialog.value = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), contentDescription = "clear history") }
             }
-            item.itemId == R.id.show_subscription_logs -> {
-                clearAllLogs()
-                loadSubscriptionLog()
-            }
-            item.itemId == R.id.show_download_logs -> {
-                clearAllLogs()
-                loadDownloadLog()
-            }
-            item.itemId == R.id.clear_logs_item -> {
-                runOnIOScope {
-                    if (shareLogs.isNotEmpty()) {
-                        realm.write {
-                            val dlog = query(ShareLog::class).find()
-                            delete(dlog)
-                        }
-                        loadShareLog()
-                    } else if (subscriptionLogs.isNotEmpty()) {
-                        realm.write {
-                            val dlog = query(SubscriptionLog::class).find()
-                            delete(dlog)
-                        }
-                        loadSubscriptionLog()
-                    }
-                }
-            }
-            else -> return false
-        }
-        return true
+        )
     }
 
     private fun loadShareLog() {
@@ -356,6 +367,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 withContext(Dispatchers.Main) {
                     shareLogs.addAll(result)
+                    title = "Shares log"
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
@@ -370,6 +382,7 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 withContext(Dispatchers.Main) {
                     subscriptionLogs.addAll(result)
+                    title = "Subscriptions log"
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
@@ -382,14 +395,14 @@ class LogsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Logd(TAG, "getDownloadLog() called")
                     val dlog = realm.query(DownloadResult::class).find().toMutableList()
                     dlog.sortWith(DownloadResultComparator())
-                    realm.copyFromRealm(dlog)
+//                    realm.copyFromRealm(dlog)
+                    dlog
                 }
                 withContext(Dispatchers.Main) {
                     downloadLogs.addAll(result)
+                    title = "Downloads log"
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
     }
 

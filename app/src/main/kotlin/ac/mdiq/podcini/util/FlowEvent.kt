@@ -141,8 +141,6 @@ sealed class FlowEvent {
 
 //    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
 
-//    data class FeedsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
-
 //    data class SkipIntroEndingChangedEvent(val skipIntro: Int, val skipEnding: Int, val feedId: Long) : FlowEvent()
 
 //  handled together in FeedPrefsChangeEvent

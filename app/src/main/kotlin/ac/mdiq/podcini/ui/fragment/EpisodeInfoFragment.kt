@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
@@ -38,26 +37,31 @@ import android.speech.tts.TextToSpeech
 import android.text.TextUtils
 import android.text.format.Formatter.formatShortFileSize
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -68,12 +72,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
@@ -89,11 +90,9 @@ import okhttp3.Request.Builder
 import java.io.File
 import java.util.*
 
-class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-
+class EpisodeInfoFragment : Fragment() {
     private var homeFragment: EpisodeHomeFragment? = null
+    private lateinit var shownotesCleaner: ShownotesCleaner
 
     private var itemLoaded = false
     private var episode: Episode? = null    // managed
@@ -110,38 +109,19 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     var isPlayed by mutableIntStateOf(episode?.playState ?: PlayState.UNSPECIFIED.code)
 
     private var webviewData by mutableStateOf("")
-
-    private lateinit var shownotesCleaner: ShownotesCleaner
-    private lateinit var toolbar: MaterialToolbar
-
     private var showHomeScreen by mutableStateOf(false)
-
     private var actionButton1 by mutableStateOf<EpisodeActionButton?>(null)
     private var actionButton2 by mutableStateOf<EpisodeActionButton?>(null)
 
-    
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-
-        _binding = ComposeFragmentBinding.inflate(inflater, container, false)
         Logd(TAG, "fragment onCreateView")
 
-        toolbar = binding.toolbar
-        toolbar.title = ""
-        toolbar.inflateMenu(R.menu.episode_info)
-        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        toolbar.setOnMenuItemClickListener(this)
-
-        binding.mainView.setContent{
-            CustomTheme(requireContext()) {
-                MainView()
-            }
-        }
-
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
         shownotesCleaner = ShownotesCleaner(requireContext())
-        onFragmentLoaded()
+        updateAppearance()
         load()
-        return binding.root
+        return composeView
     }
 
     @Composable
@@ -161,9 +141,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             })
 
         var showChooseRatingDialog by remember { mutableStateOf(false) }
-        if (showChooseRatingDialog) ChooseRatingDialog(listOf(episode!!)) {
-            showChooseRatingDialog = false
-        }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(episode!!)) { showChooseRatingDialog = false }
 
         var showChaptersDialog by remember { mutableStateOf(false) }
         if (showChaptersDialog && episode?.media != null) ChaptersDialog(media = episode!!.media!!, onDismissRequest = {showChaptersDialog = false})
@@ -171,94 +149,128 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         var showPlayStateDialog by remember { mutableStateOf(false) }
         if (showPlayStateDialog) PlayStateDialog(listOf(episode!!)) { showPlayStateDialog = false }
 
-        Column {
-            Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
-                AsyncImage(model = imgLoc, contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
-                Column(modifier = Modifier.padding(start = 10.dp)) {
-                    Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().clickable { openPodcast() })
-                    Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.fillMaxWidth(), maxLines = 5, overflow = TextOverflow.Ellipsis)
-                    Text("$txtvPublished · $txtvDuration · $txtvSize", color = textColor, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-            Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.weight(0.4f))
-                val playedIconRes = PlayState.fromCode(isPlayed).res
-                Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showPlayStateDialog = true }))
-                if (episode?.media != null && !inQueue) {
-                    Spacer(modifier = Modifier.weight(0.2f))
-                    val inQueueIconRes = R.drawable.ic_playlist_remove
-                    Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
-                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { addToQueue(episode!!) }))
-                }
-                Spacer(modifier = Modifier.weight(0.2f))
-                Logd(TAG, "ratingIconRes rating: $rating")
-                val ratingIconRes = Rating.fromCode(rating).res
-                Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showChooseRatingDialog = true }))
-                Spacer(modifier = Modifier.weight(0.2f))
-                if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
-                    modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
-                        when {
-                            actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
-                                    && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
-                                showOnDemandConfigBalloon(true)
-                                return@clickable
-                            }
-                            actionButton1 == null -> return@clickable  // Not loaded yet
-                            else -> actionButton1?.onClick(requireContext())
-                        }
-                    }))
-                Spacer(modifier = Modifier.weight(0.2f))
-                if (!episode?.link.isNullOrEmpty()) Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_home_work_24), tint = textColor, contentDescription = "homeButton",
-                    modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
-                        showHomeScreen = true
-                        if (!episode?.link.isNullOrEmpty()) {
-                            homeFragment = EpisodeHomeFragment.newInstance(episode!!)
-                            (activity as MainActivity).loadChildFragment(homeFragment!!)
-                        } else Toast.makeText(context, "Episode link is not valid ${episode?.link}", Toast.LENGTH_LONG).show()
-                    }))
-                Spacer(modifier = Modifier.weight(0.2f))
-                Box(modifier = Modifier.width(40.dp).height(40.dp).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
-                    Icon(imageVector = ImageVector.vectorResource(actionButton2?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
-                        when {
-                            actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
-                                    && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
-                                showOnDemandConfigBalloon(false)
-                                return@clickable
-                            }
-                            actionButton2 == null -> return@clickable  // Not loaded yet
-                            else -> actionButton2?.onClick(requireContext())
-                        }
-                    })
-//                        if (cond) CircularProgressIndicator(progress = 0.01f * dlPercent, strokeWidth = 4.dp, color = textColor)
-                }
-                Spacer(modifier = Modifier.weight(0.4f))
-            }
-            if (!hasMedia) Text("noMediaLabel", color = textColor, style = MaterialTheme.typography.bodyMedium)
-            val scrollState = rememberScrollState()
-            Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
-                    ShownotesWebView(context).apply {
-                        setTimecodeSelectedListener { time: Int -> seekTo(time) }
-                        setPageFinishedListener {
-                            // Restoring the scroll position might not always work
-                            postDelayed({ }, 50)
-                        }
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
+                    AsyncImage(model = imgLoc, contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().clickable { openPodcast() })
+                        Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.fillMaxWidth(), maxLines = 5, overflow = TextOverflow.Ellipsis)
+                        Text("$txtvPublished · $txtvDuration · $txtvSize", color = textColor, style = MaterialTheme.typography.bodyMedium)
                     }
-                }, update = {
-                    it.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
-                })
-                if (!episode?.chapters.isNullOrEmpty()) Text(stringResource(id = R.string.chapters_label), color = textColor, style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable(onClick = { showChaptersDialog = true }))
-                Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
-                    color = MaterialTheme.colorScheme.primary, style = CustomTextStyles.titleCustom,
-                    modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
-                Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
-                Text(itemLink, color = textColor, style = MaterialTheme.typography.bodySmall)
+                }
+                Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.weight(0.4f))
+                    val playedIconRes = PlayState.fromCode(isPlayed).res
+                    Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
+                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showPlayStateDialog = true }))
+                    if (episode?.media != null && !inQueue) {
+                        Spacer(modifier = Modifier.weight(0.2f))
+                        val inQueueIconRes = R.drawable.ic_playlist_remove
+                        Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { addToQueue(episode!!) }))
+                    }
+                    Spacer(modifier = Modifier.weight(0.2f))
+                    Logd(TAG, "ratingIconRes rating: $rating")
+                    val ratingIconRes = Rating.fromCode(rating).res
+                    Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showChooseRatingDialog = true }))
+                    Spacer(modifier = Modifier.weight(0.2f))
+                    if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.getDrawable() ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
+                        modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
+                            when {
+                                actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
+                                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
+                                    showOnDemandConfigBalloon(true)
+                                    return@clickable
+                                }
+                                actionButton1 == null -> return@clickable  // Not loaded yet
+                                else -> actionButton1?.onClick(requireContext())
+                            }
+                        }))
+                    Spacer(modifier = Modifier.weight(0.2f))
+                    Box(modifier = Modifier.width(40.dp).height(40.dp).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
+                        Icon(imageVector = ImageVector.vectorResource(actionButton2?.getDrawable() ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
+                            when {
+                                actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
+                                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
+                                    showOnDemandConfigBalloon(false)
+                                    return@clickable
+                                }
+                                actionButton2 == null -> return@clickable  // Not loaded yet
+                                else -> actionButton2?.onClick(requireContext())
+                            }
+                        })
+                    }
+                    Spacer(modifier = Modifier.weight(0.4f))
+                }
+                if (!hasMedia) Text("noMediaLabel", color = textColor, style = MaterialTheme.typography.bodyMedium)
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
+                    AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
+                        ShownotesWebView(context).apply {
+                            setTimecodeSelectedListener { time: Int -> seekTo(time) }
+                            setPageFinishedListener {
+                                // Restoring the scroll position might not always work
+                                postDelayed({ }, 50)
+                            }
+                        }
+                    }, update = {
+                        it.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
+                    })
+                    if (!episode?.chapters.isNullOrEmpty()) Text(stringResource(id = R.string.chapters_label), color = textColor, style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable(onClick = { showChaptersDialog = true }))
+                    Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
+                        color = MaterialTheme.colorScheme.primary, style = CustomTextStyles.titleCustom,
+                        modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
+                    Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
+                    Text(itemLink, color = textColor, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text("") },
+            navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
+            actions = {
+                if (!episode?.link.isNullOrEmpty()) IconButton(onClick = {
+                    showHomeScreen = true
+                    homeFragment = EpisodeHomeFragment.newInstance(episode!!)
+                    (activity as MainActivity).loadChildFragment(homeFragment!!)
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_home_work_24), contentDescription = "home") }
+                IconButton(onClick = {
+                    val url = episode?.getLinkWithFallback()
+                    if (url != null) IntentUtils.openInBrowser(requireContext(), url)
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    if (episode != null) DropdownMenuItem(text = { Text(stringResource(R.string.share_notes_label)) }, onClick = {
+                        val notes = episode!!.description
+                        if (!notes.isNullOrEmpty()) {
+                            val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                            val context = requireContext()
+                            val intent = ShareCompat.IntentBuilder(context)
+                                .setType("text/plain")
+                                .setText(shareText)
+                                .setChooserTitle(R.string.share_notes_label)
+                                .createChooserIntent()
+                            context.startActivity(intent)
+                        }
+                        expanded = false
+                    })
+                    if (episode != null) DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
+                        val shareDialog: ShareDialog = ShareDialog.newInstance(episode!!)
+                        shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+                        expanded = false
+                    })
+                }
+            }
+        )
     }
 
     override fun onStart() {
@@ -307,77 +319,16 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
     }
 
-    override fun onMenuItemClick(menuItem: MenuItem): Boolean {
-        when (menuItem.itemId) {
-            R.id.share_notes -> {
-                if (episode == null) return false
-                val notes = episode!!.description
-                if (!notes.isNullOrEmpty()) {
-//                    val shareText = if (Build.VERSION.SDK_INT >= 24) HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-//                    else HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-                    val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-                    val context = requireContext()
-                    val intent = ShareCompat.IntentBuilder(context)
-                        .setType("text/plain")
-                        .setText(shareText)
-                        .setChooserTitle(R.string.share_notes_label)
-                        .createChooserIntent()
-                    context.startActivity(intent)
-                }
-                return true
-            }
-            R.id.visit_website_item -> {
-                val url = episode?.getLinkWithFallback()
-                if (url != null) IntentUtils.openInBrowser(requireContext(), url)
-                return true
-            }
-            R.id.share_item -> {
-                if (episode != null) {
-                    val shareDialog: ShareDialog = ShareDialog.newInstance(episode!!)
-                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
-                }
-                return true
-            }
-            else -> {
-                return true
-//                if (episode == null) return false
-//                return EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, episode!!)
-            }
-        }
-    }
-
-    
     override fun onResume() {
         super.onResume()
-        if (itemLoaded) {
-//            binding.progbarLoading.visibility = View.GONE
-            updateAppearance()
-        }
+        if (itemLoaded) updateAppearance()
     }
 
      override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         episode = null
-//        webvDescription.clearHistory()
-//        webvDescription.clearCache(true)
-//        webvDescription.clearView()
-//        webvDescription.destroy()
-        _binding = null
         super.onDestroyView()
     }
-
-    private fun onFragmentLoaded() {
-//        if (!itemLoaded)
-//            webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
-//        if (item?.link != null) binding.webView.loadUrl(item!!.link!!)
-        updateAppearance()
-    }
-
-//    private fun prepareMenu() {
-//        if (episode!!.media != null) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast)
-//        // these are already available via button1 and button2
-//        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
-//    }
 
     private fun updateAppearance() {
         if (episode == null) {
@@ -420,10 +371,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             hasMedia = false
         } else {
             hasMedia = true
-            if (media.getDuration() > 0) {
-                txtvDuration = DurationConverter.getDurationStringLong(media.getDuration())
-//                binding.txtvDuration.setContentDescription(DurationConverter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
-            }
+            if (media.getDuration() > 0) txtvDuration = DurationConverter.getDurationStringLong(media.getDuration())
             if (episode != null) {
                 actionButton1 = when {
 //                        media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
@@ -491,6 +439,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
+        if (episode == null) return
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
@@ -521,7 +470,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private var loadItemsRunning = false
-    
     private fun load() {
         Logd(TAG, "load() called")
         if (!loadItemsRunning) {
@@ -553,7 +501,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             inQueue = curQueue.contains(episode!!)
                             isPlayed = episode!!.playState
                         }
-                        onFragmentLoaded()
+                        updateAppearance()
                         itemLoaded = true
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -567,91 +515,146 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     class EpisodeHomeFragment : Fragment() {
-        private var _binding: ComposeFragmentBinding? = null
-        private val binding get() = _binding!!
-
         private var startIndex = 0
         private var ttsSpeed = 1.0f
-
-        private lateinit var toolbar: MaterialToolbar
 
         private var readerText: String? = null
         private var cleanedNotes by mutableStateOf<String?>(null)
         private var readerhtml: String? = null
         private var readMode by mutableStateOf(true)
 
-        private var ttsPlaying = false
+        private var ttsPlaying by mutableStateOf(false)
         private var jsEnabled by mutableStateOf(false)
         private var webUrl by mutableStateOf("")
 
-        private var tts: TextToSpeech? = null
-        private var ttsReady = false
+        private var tts by mutableStateOf<TextToSpeech?>(null)
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
-            _binding = ComposeFragmentBinding.inflate(inflater, container, false)
             Logd(TAG, "fragment onCreateView")
-            toolbar = binding.toolbar
-            toolbar.title = ""
-            toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-            toolbar.addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-            binding.mainView.setContent{
-                CustomTheme(requireContext()) {
-                    HomeView()
-                }
-            }
+            val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { HomeView() } } }
 
             if (!episode?.link.isNullOrEmpty()) prepareContent()
             else {
                 Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
                 parentFragmentManager.popBackStack()
             }
-            if (episode != null) toolbar.invalidateMenu()
-            return binding.root
+            return composeView
         }
 
         @Composable
         fun HomeView() {
-            if (readMode)
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
-                    WebView(context).apply {
-                        settings.javaScriptEnabled = jsEnabled
-                        settings.domStorageEnabled = true
-                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
-                                if (isEmpty) Logd(TAG, "content is empty")
-                                view?.evaluateJavascript("document.querySelectorAll('[hidden]').forEach(el => el.removeAttribute('hidden'));", null)
+            fun Color.toHex(): String {
+                val red = (red * 255).toInt().toString(16).padStart(2, '0')
+                val green = (green * 255).toInt().toString(16).padStart(2, '0')
+                val blue = (blue * 255).toInt().toString(16).padStart(2, '0')
+                return "#$red$green$blue"
+            }
+            Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                if (readMode) {
+                    val backgroundColor = MaterialTheme.colorScheme.background.toHex()
+                    val textColor = MaterialTheme.colorScheme.onBackground.toHex()
+                    val primaryColor = MaterialTheme.colorScheme.primary.toHex()
+                    AndroidView(modifier = Modifier.padding(innerPadding).fillMaxSize(), factory = { context ->
+                        WebView(context).apply {
+                            settings.javaScriptEnabled = jsEnabled
+                            settings.domStorageEnabled = true
+                            settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
+                                    if (isEmpty) Logd(TAG, "content is empty")
+                                    view?.evaluateJavascript("document.querySelectorAll('[hidden]').forEach(el => el.removeAttribute('hidden'));", null)
+                                }
                             }
                         }
-                    }
-                }, update = { webView ->
-                    webView.settings.javaScriptEnabled = jsEnabled
-                    val htmlContent = """
+                    }, update = { webView ->
+                        webView.settings.javaScriptEnabled = jsEnabled
+                        val htmlContent = """
                             <html>
+                                <style>
+                                    body {
+                                        background-color: $backgroundColor;
+                                        color: $textColor;
+                                    }
+                                    a {
+                                        color: ${primaryColor};
+                                    }
+                                </style>
                                 <body>${cleanedNotes ?: "No notes"}</body>
                             </html>
                         """.trimIndent()
-                    webView.loadDataWithBaseURL("about:blank", htmlContent, "text/html", "utf-8", null) })
-            else
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                    WebView(it).apply {
-                        settings.javaScriptEnabled = jsEnabled
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
-                                if (isEmpty) Logd(TAG, "content is empty")
+                        webView.loadDataWithBaseURL("about:blank", htmlContent, "text/html", "utf-8", null)
+                    })
+                } else
+                    AndroidView(modifier = Modifier.padding(innerPadding).fillMaxSize(), factory = {
+                        WebView(it).apply {
+                            settings.javaScriptEnabled = jsEnabled
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
+                                    if (isEmpty) Logd(TAG, "content is empty")
+                                }
                             }
+                            settings.loadWithOverviewMode = true
+                            settings.useWideViewPort = true
+                            settings.setSupportZoom(true)
                         }
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
-                        settings.setSupportZoom(true)}
-                }, update = {
-                    it.settings.javaScriptEnabled = jsEnabled
-                    it.loadUrl(webUrl)
-                })
+                    }, update = {
+                        it.settings.javaScriptEnabled = jsEnabled
+                        it.loadUrl(webUrl)
+                    })
+            }
+        }
+
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+        fun MyTopAppBar() {
+            var expanded by remember { mutableStateOf(false) }
+            TopAppBar(title = { Text("") },
+                navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
+                actions = {
+                    if (readMode && tts != null) {
+                        val iconRes = if (ttsPlaying) R.drawable.ic_pause else R.drawable.ic_play_24dp
+                        IconButton(onClick = {
+                            if (tts!!.isSpeaking) tts?.stop()
+                            if (!ttsPlaying) {
+                                ttsPlaying = true
+                                if (!readerText.isNullOrEmpty()) {
+                                    ttsSpeed = episode?.feed?.preferences?.playSpeed ?: 1.0f
+                                    tts?.setSpeechRate(ttsSpeed)
+                                    while (startIndex < readerText!!.length) {
+                                        val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)
+                                        val chunk = readerText!!.substring(startIndex, endIndex)
+                                        tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
+                                        startIndex += MAX_CHUNK_LENGTH
+                                    }
+                                }
+                            } else ttsPlaying = false
+                        }) { Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "home") }
+                    }
+                    var showJSIconRes = if (readMode) R.drawable.outline_eyeglasses_24 else R.drawable.javascript_icon_245402
+                    IconButton(onClick = { jsEnabled = !jsEnabled }) { Icon(imageVector = ImageVector.vectorResource(showJSIconRes), contentDescription = "JS") }
+                    var homeIconRes = if (readMode) R.drawable.baseline_home_24 else R.drawable.outline_home_24
+                    IconButton(onClick = {
+                        readMode = !readMode
+                        jsEnabled = false
+                        prepareContent()
+                    }) { Icon(imageVector = ImageVector.vectorResource(homeIconRes), contentDescription = "switch home") }
+                    IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        if (readMode && !readerhtml.isNullOrEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.share_notes_label)) }, onClick = {
+                            val notes = readerhtml!!
+                            val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                            val context = requireContext()
+                            val intent = ShareCompat.IntentBuilder(context).setType("text/plain").setText(shareText).setChooserTitle(R.string.share_notes_label).createChooserIntent()
+                            context.startActivity(intent)
+                            expanded = false
+                        })
+                    }
+                }
+            )
         }
 
         private fun prepareContent() {
@@ -680,27 +683,22 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         if (!cleanedNotes.isNullOrEmpty()) {
                             val file = File(context?.filesDir, "test_content.html")
                             file.writeText(cleanedNotes ?: "No content")
-                            if (!ttsReady) {
-        //                            initializeTTS(requireContext())
-                                if (tts == null) {
-                                    tts = TextToSpeech(context) { status: Int ->
-                                        if (status == TextToSpeech.SUCCESS) {
-                                            if (episode?.feed?.language != null) {
-                                                val result = tts?.setLanguage(Locale(episode!!.feed!!.language!!))
-                                                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                                                    Log.w(TAG, "TTS language not supported ${episode?.feed?.language}")
-                                                    requireActivity().runOnUiThread {
-                                                        Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${episode?.feed?.language}", Toast.LENGTH_LONG).show()
-                                                    }
+                            if (tts == null) {
+                                tts = TextToSpeech(context) { status: Int ->
+                                    if (status == TextToSpeech.SUCCESS) {
+                                        if (episode?.feed?.language != null) {
+                                            val result = tts?.setLanguage(Locale(episode!!.feed!!.language!!))
+                                            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                                                Log.w(TAG, "TTS language not supported ${episode?.feed?.language}")
+                                                requireActivity().runOnUiThread {
+                                                    Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${episode?.feed?.language}", Toast.LENGTH_LONG).show()
                                                 }
                                             }
-                                            ttsReady = true
-        //                    semaphore.release()
-                                            Logd(TAG, "TTS init success")
-                                        } else {
-                                            Log.w(TAG, "TTS init failed")
-                                            requireActivity().runOnUiThread { Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
                                         }
+                                        Logd(TAG, "TTS init success")
+                                    } else {
+                                        Log.w(TAG, "TTS init failed")
+                                        requireActivity().runOnUiThread { Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
                                     }
                                 }
                             }
@@ -719,84 +717,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
         }
 
-        private val menuProvider = object: MenuProvider {
-            override fun onPrepareMenu(menu: Menu) {
-//            super.onPrepareMenu(menu)
-                Logd(TAG, "onPrepareMenu called")
-                val textSpeech = menu.findItem(R.id.text_speech)
-                textSpeech?.isVisible = readMode && tts != null
-                if (textSpeech?.isVisible == true && ttsPlaying)
-                    textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
-
-                menu.findItem(R.id.showHidden)?.isVisible = readMode
-                menu.findItem(R.id.share_notes)?.isVisible = readMode
-                menu.findItem(R.id.switchJS)?.isVisible = !readMode
-                val btn = menu.findItem(R.id.switch_home)
-                if (readMode) btn?.setIcon(R.drawable.baseline_home_24)
-                else btn?.setIcon(R.drawable.outline_home_24)
-            }
-
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.episode_home, menu)
-                onPrepareMenu(menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                when (menuItem.itemId) {
-                    R.id.switch_home -> {
-                        readMode = !readMode
-                        jsEnabled = false
-                        prepareContent()
-                        if (episode != null) toolbar.invalidateMenu()
-                    }
-                    R.id.showHidden, R.id.switchJS -> jsEnabled = !jsEnabled
-                    R.id.text_speech -> {
-                        Logd(TAG, "text_speech selected: $readerText")
-                        if (tts != null) {
-                            if (tts!!.isSpeaking) tts?.stop()
-                            if (!ttsPlaying) {
-                                ttsPlaying = true
-                                if (!readerText.isNullOrEmpty()) {
-                                    ttsSpeed = episode?.feed?.preferences?.playSpeed ?: 1.0f
-                                    tts?.setSpeechRate(ttsSpeed)
-                                    while (startIndex < readerText!!.length) {
-                                        val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)
-                                        val chunk = readerText!!.substring(startIndex, endIndex)
-                                        tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
-                                        startIndex += MAX_CHUNK_LENGTH
-                                    }
-                                }
-                            } else ttsPlaying = false
-                            if (episode != null) toolbar.invalidateMenu()
-                        } else Toast.makeText(context, R.string.tts_not_available, Toast.LENGTH_LONG).show()
-                    }
-                    R.id.share_notes -> {
-                        val notes = readerhtml
-                        if (!notes.isNullOrEmpty()) {
-                            val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-                            val context = requireContext()
-                            val intent = ShareCompat.IntentBuilder(context)
-                                .setType("text/plain")
-                                .setText(shareText)
-                                .setChooserTitle(R.string.share_notes_label)
-                                .createChooserIntent()
-                            context.startActivity(intent)
-                        }
-                    }
-                    else -> return episode != null
-                }
-                return true
-            }
-        }
-
-        override fun onResume() {
-            super.onResume()
-            if (episode != null) toolbar.invalidateMenu()
-        }
-
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
-            _binding = null
             tts?.stop()
             tts?.shutdown()
             tts = null

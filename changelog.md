@@ -1,3 +1,9 @@
+# 6.15.7
+
+* re-worked action bar and menu in various fragments in Jetpack Compose
+* in Logs fragment, deleting logs now shows a confirmation dialog
+* fixed theme issue in EpisodeHome
+
 # 6.15.6
 
 * tuned video and audio players

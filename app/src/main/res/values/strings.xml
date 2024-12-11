@@ -226,6 +226,9 @@
     <string name="edit_tags">Edit tags</string>
     <string name="add_tag">Add tag</string>
 
+    <string name="confirm_delete_logs_label">Confirm delete logs here</string>
+    <string name="confirm_delete_logs_message">This will delete all the logs seen here from the database and can not be undone. Are you sure?</string>
+
     <string name="confirm_mobile_feed_refresh_dialog_message">Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway\?</string>
     <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Your VPN app pretends to be a mobile network (metered connection). Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway\? If you want this problem to be fixed, contact the creators of your VPN app.</string>
 
@@ -254,7 +257,6 @@
     <string name="choose_tab">Choose a tab in the channel</string>
 
     <string name="set_play_state_label">Set played state</string>
-
 
     <string name="play_this_to_seek_position">To jump to positions, you need to play the episode</string>
 

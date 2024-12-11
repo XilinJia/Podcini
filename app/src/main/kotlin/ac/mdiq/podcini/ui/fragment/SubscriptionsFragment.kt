@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.DocumentFileExportWorker
 import ac.mdiq.podcini.preferences.ExportTypes
@@ -34,10 +33,12 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,7 +50,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -58,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -76,7 +81,6 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
@@ -85,13 +89,8 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+class SubscriptionsFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences("SubscriptionsFragmentPrefs", Context.MODE_PRIVATE) }
-
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-
-    private lateinit var toolbar: MaterialToolbar
 
     private val tags: MutableList<String> = mutableListOf()
     private val queueIds: MutableList<Long> = mutableListOf()
@@ -132,7 +131,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var infoTextUpdate = ""
 
     //    TODO: currently not used
-    private var displayedFolder: String = ""
+    private var displayedFolder by mutableStateOf("")
     private var displayUpArrow = false
 
     private var txtvInformation by mutableStateOf("")
@@ -171,24 +170,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = ComposeFragmentBinding.inflate(inflater)
-
         Logd(TAG, "fragment onCreateView")
-        toolbar = binding.toolbar
-        toolbar.setOnMenuItemClickListener(this)
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-
         getSortingPrefs()
-
-        (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
-        toolbar.inflateMenu(R.menu.subscriptions)
-        toolbar.title = getString(R.string.subscriptions_label)
-
-        if (arguments != null) {
-            displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
-            toolbar.title = displayedFolder
-        }
+        if (arguments != null) displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
         resetTags()
 
         val queues = realm.query(PlayQueue::class).find()
@@ -196,32 +182,36 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val spinnerTexts: MutableList<String> = mutableListOf("Any queue", "No queue")
         spinnerTexts.addAll(queues.map { it.name })
 
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
-                if (showSortDialog) SortDialog {showSortDialog = false}
-                if (showNewSynthetic) RenameOrCreateSyntheticFeed {showNewSynthetic = false}
-                Column {
-                    InforBar()
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
-                        Spinner(items = spinnerTexts, selectedIndex = queueFilterIndex) { index: Int ->
-                            queueFilterIndex = index
-                            loadSubscriptions()
-                        }
-                        Spacer(Modifier.weight(1f))
-                        Spinner(items = tags, selectedIndex = tagFilterIndex) { index: Int ->
-                            tagFilterIndex = index
-                            loadSubscriptions()
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    if (showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { showFilterDialog = false }
+                    if (showSortDialog) SortDialog { showSortDialog = false }
+                    if (showNewSynthetic) RenameOrCreateSyntheticFeed { showNewSynthetic = false }
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            InforBar()
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
+                                Spinner(items = spinnerTexts, selectedIndex = queueFilterIndex) { index: Int ->
+                                    queueFilterIndex = index
+                                    loadSubscriptions()
+                                }
+                                Spacer(Modifier.weight(1f))
+                                Spinner(items = tags, selectedIndex = tagFilterIndex) { index: Int ->
+                                    tagFilterIndex = index
+                                    loadSubscriptions()
+                                }
+                            }
+                            if (noSubscription) Text(stringResource(R.string.no_subscriptions_label))
+                            else LazyList()
                         }
                     }
-                    if (noSubscription) Text(stringResource(R.string.no_subscriptions_label))
-                    else LazyList()
                 }
             }
         }
         feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
         loadSubscriptions()
-        return binding.root
+        return composeView
     }
 
     override fun onStart() {
@@ -239,7 +229,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         feedListFiltered.clear()
-        _binding = null
         super.onDestroyView()
     }
 
@@ -292,7 +281,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent -> loadSubscriptions()
-//                    is FlowEvent.FeedsFilterEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
                     is FlowEvent.FeedPrefsChangeEvent -> loadSubscriptions()
@@ -308,7 +296,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Logd(TAG, "FeedUpdateRunningEvent: ${event.isRunning}")
                         infoTextUpdate = if (event.isRunning) " " + getString(R.string.refreshing_label) else ""
                         txtvInformation = (infoTextFiltered + infoTextUpdate)
-//                        if (swipeToRefresh) binding.swipeRefresh.isRefreshing = event.isRunning
                         if (!event.isRunning && event.id != prevFeedUpdatingEvent?.id) loadSubscriptions()
                         prevFeedUpdatingEvent = event
                     }
@@ -318,18 +305,42 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        val itemId = item.itemId
-        when (itemId) {
-            R.id.subscriptions_filter -> showFilterDialog = true
-            R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            R.id.subscriptions_sort -> showSortDialog = true
-            R.id.new_synth -> showNewSynthetic = true
-            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext(), fullUpdate = true)
-            R.id.toggle_grid_list -> useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
-            else -> return false
-        }
-        return true
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text( if (displayedFolder.isNotEmpty()) displayedFolder else stringResource(R.string.subscriptions_label)) },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            },
+            actions = {
+                IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
+                IconButton(onClick = { showFilterDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
+                IconButton(onClick = { showSortDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "sort") }
+//                IconButton(onClick = {
+//                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "statistics") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.new_synth_label)) }, onClick = {
+                        showNewSynthetic = true
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.refresh_label)) }, onClick = {
+                        FeedUpdateManager.runOnceOrAsk(requireContext(), fullUpdate = true)
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.toggle_grid_list)) }, onClick = {
+                        useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
+                        expanded = false
+                    })
+                }
+            }
+        )
     }
 
     private var loadItemsRunning = false
@@ -341,7 +352,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 try {
                     withContext(Dispatchers.IO) {
                         resetTags()
-//                        feedList = filterAndSort()
                         feedList = doSort(false)
                     }
                     withContext(Dispatchers.Main) {
@@ -414,18 +424,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Column {
-                            FeedAutoDeleteOptions.forEach { text ->
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(selected = (text == selectedOption), onClick = {
-                                    if (text != selectedOption) {
-                                        val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
-                                        saveFeedPreferences { it: FeedPreferences -> it.autoDeleteAction = autoDeleteAction }
-                                        onDismissRequest()
-                                    }
-                                })) {
-                                    RadioButton(selected = (text == selectedOption), onClick = { })
-                                    Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
+                        FeedAutoDeleteOptions.forEach { text ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(selected = (text == selectedOption), onClick = {
+                                if (text != selectedOption) {
+                                    val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
+                                    saveFeedPreferences { it: FeedPreferences -> it.autoDeleteAction = autoDeleteAction }
+                                    onDismissRequest()
                                 }
+                            })) {
+                                RadioButton(selected = (text == selectedOption), onClick = { })
+                                Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                             }
                         }
                     }
@@ -1279,7 +1287,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             feedsFilter = StringUtils.join(newFilterValues, ",")
             Logd(TAG, "onFilterChanged: $feedsFilter")
             loadSubscriptions()
-//            EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
         }
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider

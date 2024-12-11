@@ -46,11 +46,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -79,13 +83,9 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.Throws
 
 class OnlineSearchFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
-
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
 
     private var mainAct: MainActivity? = null
     private var displayUpArrow = false
@@ -143,12 +143,10 @@ class OnlineSearchFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        _binding = ComposeFragmentBinding.inflate(inflater)
         mainAct = activity as? MainActivity
         Logd(TAG, "fragment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        mainAct?.setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         val displayMetrics: DisplayMetrics = requireContext().resources.displayMetrics
         val screenWidthDp: Float = displayMetrics.widthPixels / displayMetrics.density
@@ -157,10 +155,9 @@ class OnlineSearchFragment : Fragment() {
         // Fill with dummy elements to have a fixed height and
         // prevent the UI elements below from jumping on slow connections
         for (i in 0 until NUM_SUGGESTIONS) searchResult.add(PodcastSearchResult.dummy())
-        binding.mainView.setContent { CustomTheme(requireContext()) { MainView() } }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
 
         loadToplist()
-
         if (isOPMLRestared && feedCount == 0) {
             AlertDialog.Builder(requireContext())
                 .setTitle(R.string.restore_subscriptions_label)
@@ -173,50 +170,66 @@ class OnlineSearchFragment : Fragment() {
                 .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
                 .show()
         }
-        return binding.root
+        return composeView
     }
 
     @Composable
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
-        Column(Modifier.fillMaxSize().padding(horizontal = 10.dp).verticalScroll(scrollState)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                var queryText by remember { mutableStateOf("") }
-                fun performSearch() {
-                    if (queryText.matches("http[s]?://.*".toRegex())) addUrl(queryText)
-                    else mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 10.dp).verticalScroll(scrollState)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    var queryText by remember { mutableStateOf("") }
+                    fun performSearch() {
+                        if (queryText.matches("http[s]?://.*".toRegex())) addUrl(queryText)
+                        else mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
+                    }
+                    TextField(value = queryText, onValueChange = { queryText = it }, label = { Text(stringResource(R.string.search_podcast_hint)) },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { performSearch() }), modifier = Modifier.weight(1f))
+                    Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), tint = textColor, contentDescription = "right_action_icon",
+                        modifier = Modifier.width(40.dp).height(40.dp).padding(start = 5.dp).clickable(onClick = { performSearch() }))
                 }
-                TextField(value = queryText, onValueChange = { queryText = it }, label = { Text(stringResource(R.string.search_podcast_hint)) },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { performSearch() }), modifier = Modifier.weight(1f))
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), tint = textColor, contentDescription = "right_action_icon",
-                    modifier = Modifier.width(40.dp).height(40.dp).padding(start = 5.dp).clickable(onClick = { performSearch() }))
+                QuickDiscoveryView()
+                Text(stringResource(R.string.advanced), color = textColor, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.add_podcast_by_url), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { showAddViaUrlDialog() }))
+                Text(stringResource(R.string.add_local_folder), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 4.dp).clickable(onClick = {
+                    try {
+                        addLocalFolderLauncher.launch(null)
+                    } catch (e: ActivityNotFoundException) {
+                        e.printStackTrace()
+                        mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                    }
+                }))
+                Text(stringResource(R.string.search_vistaguide_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_itunes_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
+                if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
+                Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = {
+                    try {
+                        chooseOpmlImportPathLauncher.launch("*/*")
+                    } catch (e: ActivityNotFoundException) {
+                        e.printStackTrace()
+                        mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                    }
+                }))
             }
-            QuickDiscoveryView()
-            Text(stringResource(R.string.advanced), color = textColor, fontWeight = FontWeight.Bold)
-            Text(stringResource(R.string.add_podcast_by_url), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { showAddViaUrlDialog() }))
-            Text(stringResource(R.string.add_local_folder), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 4.dp).clickable(onClick = {
-                try { addLocalFolderLauncher.launch(null)
-                } catch (e: ActivityNotFoundException) {
-                    e.printStackTrace()
-                    mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
-                }
-            }))
-            Text(stringResource(R.string.search_vistaguide_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_itunes_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
-            Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
-            if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
-            Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = {
-                try { chooseOpmlImportPathLauncher.launch("*/*")
-                } catch (e: ActivityNotFoundException) {
-                    e.printStackTrace()
-                    mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
-                }
-            }))
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        TopAppBar(title = { Text("") },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            }
+        )
     }
 
     override fun onStart() {
@@ -364,13 +377,7 @@ class OnlineSearchFragment : Fragment() {
         super.onCreate(savedInstanceState)
         retainInstance = true
     }
-
-    override fun onDestroyView() {
-        Logd(TAG, "onDestroyView")
-        _binding = null
-        super.onDestroyView()
-    }
-
+    
     private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {
         override fun createIntent(context: Context, input: Uri?): Intent {
             return super.createIntent(context, input).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -496,7 +503,7 @@ class OnlineSearchFragment : Fragment() {
 
             toolbar = binding.toolbar
             toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-            toolbar.inflateMenu(R.menu.countries_menu)
+            toolbar.inflateMenu(R.menu.discovery)
             val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
             discoverHideItem.isChecked = hidden
             toolbar.setOnMenuItemClickListener(this)

@@ -403,7 +403,7 @@ class MainActivity : CastEnabledActivity() {
         _binding = null
 //        realm.close()
         bottomSheet.removeBottomSheetCallback(bottomSheetCallback)
-        drawerLayout?.removeDrawerListener(drawerToggle!!)
+        if (drawerToggle != null) drawerLayout?.removeDrawerListener(drawerToggle!!)
         MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }
@@ -602,6 +602,10 @@ class MainActivity : CastEnabledActivity() {
                 } else loadFragment(toPage, null)
             }
         }
+    }
+
+    fun openDrawer() {
+        drawerLayout?.openDrawer(navDrawer)
     }
 
     private var eventSink: Job?     = null

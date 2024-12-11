@@ -43,15 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.Throws
 import kotlin.math.max
 
-/*
-* An inconvenience of an implementation like this is that some members and methods that once were
-* private are now protected, allowing for access from classes of the same package, namely
-* PlaybackService. A workaround would be to move this to a dedicated package.
-*/
-/**
- * Abstract class that allows for different implementations of the PlaybackServiceMediaPlayer for local
- * and remote (cast devices) playback.
- */
 abstract class MediaPlayerBase protected constructor(protected val context: Context, protected val callback: MediaPlayerCallback) {
 
     @Volatile

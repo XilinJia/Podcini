@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
@@ -16,11 +15,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
-import ac.mdiq.podcini.ui.compose.CustomTextStyles
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.LargeTextEditingDialog
-import ac.mdiq.podcini.ui.compose.RemoveFeedDialog
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.fragment.StatisticsFragment.Companion.FeedStatisticsDialog
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
@@ -34,27 +29,26 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -68,7 +62,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
@@ -78,56 +71,42 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-
-class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-
+class FeedInfoFragment : Fragment() {
     private lateinit var feed: Feed
-    private lateinit var toolbar: MaterialToolbar
 
+    private var isCallable by mutableStateOf(false)
     private var showRemoveFeedDialog by mutableStateOf(false)
     private var txtvAuthor by mutableStateOf("")
     var txtvUrl by mutableStateOf<String?>(null)
     var rating by mutableStateOf(Rating.UNRATED.code)
 
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
-        uri: Uri? -> this.addLocalFolderResult(uri)
-    }
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
-        toolbar = binding.toolbar
-        toolbar.title = ""
-        toolbar.inflateMenu(R.menu.feedinfo)
-        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        toolbar.setOnMenuItemClickListener(this)
-        refreshToolbarState()
 
         txtvAuthor = feed.author ?: ""
         txtvUrl = feed.downloadUrl
+        isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed.link)))
 
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = {showRemoveFeedDialog = false}) {
-                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-                    // Make sure fragment is hidden before actually starting to delete
-                    requireActivity().supportFragmentManager.executePendingTransactions()
-                }
-                Column {
-                    HeaderUI()
-                    DetailUI()
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = { showRemoveFeedDialog = false }) {
+                        (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                        // Make sure fragment is hidden before actually starting to delete
+                        requireActivity().supportFragmentManager.executePendingTransactions()
+                    }
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            HeaderUI()
+                            DetailUI()
+                        }
+                    }
                 }
             }
         }
-
-//        imgvBackground = binding.imgvBackground
-        // https://github.com/bumptech/glide/issues/529
-//        binding.imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
-
-        showFeed()
-        return binding.root
+        return composeView
     }
 
     override fun onStart() {
@@ -151,7 +130,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             setFeed(feed)
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
-            val (bgImage, bgColor, controlRow, image1, image2, imgvCover, taColumn) = createRefs()
+            val (bgImage, bgColor, controlRow, imgvCover) = createRefs()
             AsyncImage(model = feed.imageUrl ?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
                 error = painterResource(R.drawable.teaser),
                 modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
@@ -197,12 +176,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 width = Dimension.fillToConstraints
             }) {
                 AsyncImage(model = feed.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
-                    modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp).clickable(onClick = {
-//                    if (feed != null) {
-//                        val fragment = FeedInfoFragment.newInstance(feed)
-//                        (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-//                    }
-                    }))
+                    modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp))
                 Column(Modifier.padding(top = 10.dp)) {
                     Text(feed.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Text(text = txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -303,63 +277,61 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 ////        binding.infoContainer.setPadding(horizontalSpacing, binding.infoContainer.paddingTop, horizontalSpacing, binding.infoContainer.paddingBottom)
 //    }
 
-    private fun showFeed() {
-        Logd(TAG, "Language: ${feed.language} Author: ${feed.author}")
-        Logd(TAG, "URL: ${feed.downloadUrl}")
-//        TODO: need to generate blurred image for background
-        refreshToolbarState()
-    }
-
     fun setFeed(feed_: Feed) {
-//        feed = feed_
         feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
         rating = feed.rating
     }
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        _binding = null
         feed = Feed()
         super.onDestroyView()
     }
 
-    private fun refreshToolbarState() {
-        toolbar.menu?.findItem(R.id.reconnect_local_folder)?.isVisible = feed.isLocalFeed
-        toolbar.menu?.findItem(R.id.share_item)?.isVisible = !feed.isLocalFeed
-        toolbar.menu?.findItem(R.id.visit_website_item)?.isVisible = feed.link != null && IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed.link)))
-        toolbar.menu?.findItem(R.id.edit_feed_url_item)?.isVisible = !feed.isLocalFeed
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.visit_website_item -> if (feed.link != null) IntentUtils.openInBrowser(requireContext(), feed.link!!)
-            R.id.share_item -> ShareUtils.shareFeedLinkNew(requireContext(), feed)
-            R.id.reconnect_local_folder -> {
-                val alert = MaterialAlertDialogBuilder(requireContext())
-                alert.setMessage(R.string.reconnect_local_folder_warning)
-                alert.setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
-                    try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text("") },
+            navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
+            actions = {
+                if (feed.link != null && isCallable) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), feed.link!!)
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
+                if (!feed.isLocalFeed) IconButton(onClick = {
+                    ShareUtils.shareFeedLinkNew(requireContext(), feed)
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "web") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    if (feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.reconnect_local_folder)) }, onClick = {
+                        val alert = MaterialAlertDialogBuilder(requireContext())
+                        alert.setMessage(R.string.reconnect_local_folder_warning)
+                        alert.setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
+                            try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+                        }
+                        alert.setNegativeButton(string.cancel, null)
+                        alert.show()
+                        expanded = false
+                    })
+                    if (!feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {
+                        object : EditUrlSettingsDialog(activity as Activity, feed) {
+                            override fun setUrl(url: String?) {
+                                feed.downloadUrl = url
+                                txtvUrl = feed.downloadUrl
+                            }
+                        }.show()
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.remove_feed_label)) }, onClick = {
+                        showRemoveFeedDialog = true
+                        expanded = false
+                    })
                 }
-                alert.setNegativeButton(string.cancel, null)
-                alert.show()
             }
-            R.id.edit_feed_url_item -> {
-                object : EditUrlSettingsDialog(activity as Activity, feed) {
-                    override fun setUrl(url: String?) {
-                        feed.downloadUrl = url
-                        txtvUrl = feed.downloadUrl
-                    }
-                }.show()
-            }
-            R.id.remove_feed -> showRemoveFeedDialog = true
-            else -> return false
-        }
-        return true
+        )
     }
 
-     private fun addLocalFolderResult(uri: Uri?) {
+    private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
-//        reconnectLocalFolder(uri)
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -369,35 +341,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
                     updateFeed(requireContext(), feed, true)
                 }
-                withContext(Dispatchers.Main) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
-                }
-            } catch (e: Throwable) {
-                withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) }
-            }
+                withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) }
+            } catch (e: Throwable) { withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) } }
         }
     }
-
-//     private fun reconnectLocalFolder(uri: Uri) {
-//        lifecycleScope.launch {
-//            try {
-//                withContext(Dispatchers.IO) {
-//                    requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-//                    val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
-//                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
-//                    feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
-//                    updateFeed(requireContext(), feed, true)
-//                }
-//                withContext(Dispatchers.Main) {
-//                    (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
-//                }
-//            } catch (e: Throwable) {
-//                withContext(Dispatchers.Main) {
-//                    (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
-//                }
-//            }
-//        }
-//    }
 
     private var eventSink: Job? = null
     private fun cancelFlowEvents() {
@@ -425,7 +372,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    
     abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
         val TAG = this::class.simpleName ?: "Anonymous"
         private val activityRef = WeakReference(activity)

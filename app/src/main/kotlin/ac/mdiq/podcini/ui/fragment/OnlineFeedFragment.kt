@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
@@ -41,15 +40,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -76,9 +78,6 @@ import java.util.*
  */
 class OnlineFeedFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
-
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
 
     private var displayUpArrow = false
 
@@ -120,22 +119,22 @@ class OnlineFeedFragment : Fragment() {
 
     private var dialog: Dialog? = null
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = ComposeFragmentBinding.inflate(layoutInflater)
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
         isShared = requireArguments().getBoolean("isShared")
         Logd(TAG, "feedUrl: $feedUrl")
         feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
 
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                if (showYTChannelDialog) feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = {showYTChannelDialog = false}) {feed, map ->  handleFeed(feed, map)}
-                MainView()
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    if (showYTChannelDialog) feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = { showYTChannelDialog = false }) { feed, map -> handleFeed(feed, map) }
+                    MainView()
+                }
             }
         }
         if (feedUrl.isEmpty()) {
@@ -152,7 +151,19 @@ class OnlineFeedFragment : Fragment() {
             }
             lookupUrlAndBuild(feedUrl)
         }
-        return binding.root
+        return composeView
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        TopAppBar(title = { Text(text = "") },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            }
+        )
     }
 
     override fun onStart() {
@@ -170,7 +181,6 @@ class OnlineFeedFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        _binding = null
         feeds = null
         super.onDestroy()
     }
@@ -313,11 +323,10 @@ class OnlineFeedFragment : Fragment() {
      */
      private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
         showProgress = false
-//        binding.feedDisplayContainer.visibility = View.VISIBLE
         showFeedDisplay = true
         if (isFeedFoundBySearch) {
             val resId = R.string.no_feed_url_podcast_found_by_search
-            Snackbar.make(binding.root, resId, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(requireView(), resId, Snackbar.LENGTH_LONG).show()
         }
 
 //        if (alternateFeedUrls.isEmpty()) binding.alternateUrlsSpinner.visibility = View.GONE
@@ -354,33 +363,22 @@ class OnlineFeedFragment : Fragment() {
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val feedLogsMap_ = feedLogsMap!!
-        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-            val (progressBar, main) = createRefs()
-            if (showProgress) CircularProgressIndicator(progress = { 0.6f },
-                strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
-            else Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp).constrainAs(main) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                start.linkTo(parent.start)
-            }) {
-                if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp).background(MaterialTheme.colorScheme.surface)) {
-                    val (backgroundImage, coverImage, taColumn, buttons, closeButton) = createRefs()
-//                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), contentDescription = "background",
-//                        Modifier.fillMaxWidth().height(120.dp).constrainAs(backgroundImage) {
-//                            top.linkTo(parent.top)
-//                            bottom.linkTo(parent.bottom)
-//                            start.linkTo(parent.start)
-//                        })
-                    AsyncImage(model = feed?.imageUrl?:"", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            if (showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 10.dp, modifier = Modifier.padding(innerPadding).size(50.dp))
+            else Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(start = 10.dp, end = 10.dp)) {
+                if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(100.dp).background(MaterialTheme.colorScheme.surface)) {
+                    val (coverImage, taColumn, buttons) = createRefs()
+                    AsyncImage(model = feed?.imageUrl ?: "", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
                         modifier = Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
-                        }.clickable(onClick = {}))
+                        })
                     Column(Modifier.constrainAs(taColumn) {
                         top.linkTo(coverImage.top)
-                        start.linkTo(coverImage.end) }) {
-                        Text(feed?.title?:"No title", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        start.linkTo(coverImage.end)
+                    }) {
+                        Text(feed?.title ?: "No title", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Row(Modifier.constrainAs(buttons) {
                         start.linkTo(coverImage.end)
@@ -394,11 +392,9 @@ class OnlineFeedFragment : Fragment() {
                                     val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
                                     if (log != null) upsertBlk(log) { it.status = ShareLog.Status.EXISTING.ordinal }
                                 }
-                                val feed = getFeedByTitleAndAuthor(feed?.eigenTitle?:"", feed?.author?:"")
-                                if (feed != null ) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
-//                                (activity as MainActivity).loadFeedFragmentById(feedId, null)
-                            }
-                            else {
+                                val feed = getFeedByTitleAndAuthor(feed?.eigenTitle ?: "", feed?.author ?: "")
+                                if (feed != null) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                            } else {
                                 enableSubscribe = false
                                 enableEpisodes = false
                                 CoroutineScope(Dispatchers.IO).launch {
@@ -419,11 +415,6 @@ class OnlineFeedFragment : Fragment() {
                         if (enableEpisodes && feed != null) Button(onClick = { showEpisodes(feed!!.episodes) }) { Text(stringResource(R.string.episodes_label)) }
                         Spacer(modifier = Modifier.weight(0.2f))
                     }
-//                    if (false) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
-//                        .constrainAs(closeButton) {
-//                            top.linkTo(parent.top)
-//                            end.linkTo(parent.end)
-//                        })
                 }
                 Column {
 //                    alternate_urls_spinner
@@ -436,11 +427,11 @@ class OnlineFeedFragment : Fragment() {
                     }
                 }
                 val scrollState = rememberScrollState()
-                var numEpisodes by remember { mutableIntStateOf(feed?.episodes?.size?:0) }
+                var numEpisodes by remember { mutableIntStateOf(feed?.episodes?.size ?: 0) }
                 LaunchedEffect(Unit) {
                     while (true) {
                         delay(1000)
-                        numEpisodes = feed?.episodes?.size?:0
+                        numEpisodes = feed?.episodes?.size ?: 0
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
@@ -449,7 +440,7 @@ class OnlineFeedFragment : Fragment() {
                     Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
                     Text(HtmlToPlainText.getPlainText(feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
-                    val sLog = remember {feedLogsMap_[feed?.downloadUrl?:""] }
+                    val sLog = remember { feedLogsMap_[feed?.downloadUrl ?: ""] }
                     if (sLog != null) {
                         val commentTextState by remember { mutableStateOf(TextFieldValue(sLog.comment)) }
                         val context = LocalContext.current
@@ -467,9 +458,9 @@ class OnlineFeedFragment : Fragment() {
                         }
                     }
                     Text(feed?.mostRecentItem?.title ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text("${feed?.language?:""} ${feed?.type ?: ""} ${feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(feed?.link?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(feed?.downloadUrl?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text("${feed?.language ?: ""} ${feed?.type ?: ""} ${feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(feed?.link ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(feed?.downloadUrl ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
                 }
             }
         }

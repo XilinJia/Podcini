@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -10,12 +9,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
@@ -28,17 +23,21 @@ import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,9 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,15 +61,11 @@ import coil.compose.AsyncImage
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import org.apache.commons.lang3.StringUtils
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
-class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
+class FeedEpisodesFragment : Fragment() {
 
     private lateinit var swipeActions: SwipeActions
 
@@ -78,7 +75,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
-    private var displayUpArrow = false
+    private var displayUpArrow by mutableStateOf(false)
     private var headerCreated = false
     private var feedID: Long = 0
     private var feed by mutableStateOf<Feed?>(null)
@@ -95,7 +92,7 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var showRemoveFeedDialog by mutableStateOf(false)
     private var showFilterDialog by mutableStateOf(false)
-    private var showNewSynthetic by mutableStateOf(false)
+    private var showRenameDialog by mutableStateOf(false)
      var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
     var layoutMode by mutableIntStateOf(0)
@@ -112,23 +109,11 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = ComposeFragmentBinding.inflate(inflater)
 
         sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-        binding.toolbar.inflateMenu(R.menu.feed_episodes)
-        binding.toolbar.setOnMenuItemClickListener(this)
-//        binding.toolbar.setOnLongClickListener {
-//            binding.recyclerView.scrollToPosition(5)
-//            binding.recyclerView.post { binding.recyclerView.smoothScrollToPosition(0) }
-//            binding.appBar.setExpanded(true)
-//            false
-//        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         NavDrawerFragment.saveLastNavFragment(TAG, feedID.toString())
-
-        (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
-        updateToolbar()
 
         swipeActions = SwipeActions(this, TAG)
 
@@ -141,7 +126,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (enableFilter) {
                     filterButtonColor.value = Color.White
                     val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
-//                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
                     etmp.addAll(episodes_)
                 } else {
                     filterButtonColor.value = Color.Red
@@ -158,62 +142,68 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
         }
         layoutMode = if (feed?.preferences?.useWideLayout == true) 1 else 0
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = {showRemoveFeedDialog = false}) {
-                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-                    // Make sure fragment is hidden before actually starting to delete
-                    requireActivity().supportFragmentManager.executePendingTransactions()
-                }
-                if (showFilterDialog) EpisodesFilterDialog(filter = feed!!.episodeFilter,
+
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = { showRemoveFeedDialog = false }) {
+                        (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                        // Make sure fragment is hidden before actually starting to delete
+                        requireActivity().supportFragmentManager.executePendingTransactions()
+                    }
+                    if (showFilterDialog) EpisodesFilterDialog(filter = feed!!.episodeFilter,
 //                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
-                    onDismissRequest = { showFilterDialog = false } ) { filterValues ->
-                    if (feed != null) {
-                        Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
-                        runOnIOScope {
-                            val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
-                            if (feed_ != null) {
-                                feed = upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+                        onDismissRequest = { showFilterDialog = false }) { filterValues ->
+                        if (feed != null) {
+                            Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
+                            runOnIOScope {
+                                val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
+                                if (feed_ != null) {
+                                    feed = upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
 //                                loadFeed()
+                                }
                             }
                         }
                     }
-                }
-                if (showNewSynthetic) RenameOrCreateSyntheticFeed(feed) {showNewSynthetic = false}
-                if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = {showSortDialog = false}) { sortOrder_, _ ->
-                    if (feed != null) {
-                        Logd(TAG, "persist Episode SortOrder_")
-                        sortOrder = sortOrder_
-                        runOnIOScope {
-                            val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
-                            if (feed_ != null) feed = upsert(feed_) { it.sortOrder = sortOrder_ }
+                    if (showRenameDialog) RenameOrCreateSyntheticFeed(feed) { showRenameDialog = false }
+                    if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { sortOrder_, _ ->
+                        if (feed != null) {
+                            Logd(TAG, "persist Episode SortOrder_")
+                            sortOrder = sortOrder_
+                            runOnIOScope {
+                                val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
+                                if (feed_ != null) feed = upsert(feed_) { it.sortOrder = sortOrder_ }
+                            }
                         }
                     }
-                }
-                Column {
-                    FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {
-                        if (enableFilter && feed != null) showFilterDialog = true
-                    }, filterLongClickCB = {filterLongClick()})
-                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
-                    EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
-                        refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
-                        leftSwipeCB = {
-                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(it, this@FeedEpisodesFragment)
-                        },
-                        rightSwipeCB = {
-                            Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
-                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(it, this@FeedEpisodesFragment)
-                        },
-                    )
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {
+                                if (enableFilter && feed != null) showFilterDialog = true
+                            }, filterLongClickCB = { filterLongClick() })
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            EpisodeLazyColumn(
+                                activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
+                                refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
+                                leftSwipeCB = {
+                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else leftActionState.value.performAction(it, this@FeedEpisodesFragment)
+                                },
+                                rightSwipeCB = {
+                                    Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
+                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else rightActionState.value.performAction(it, this@FeedEpisodesFragment)
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
 
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-        return binding.root
+        return composeView
     }
 
     override fun onStart() {
@@ -318,10 +308,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        binding.toolbar.setOnMenuItemClickListener(null)
-        binding.toolbar.setOnLongClickListener(null)
-        _binding = null
-
         ioScope.cancel()
 
         feed = null
@@ -343,15 +329,6 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onSaveInstanceState(outState)
     }
 
-    private fun updateToolbar() {
-        if (feed == null) return
-
-        binding.toolbar.menu.findItem(R.id.visit_website_item).isVisible = feed!!.link != null
-        binding.toolbar.menu.findItem(R.id.refresh_complete_item).isVisible = feed!!.isPaged
-        if (StringUtils.isBlank(feed!!.link)) binding.toolbar.menu.findItem(R.id.visit_website_item).isVisible = false
-        if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_feed).isVisible = false
-    }
-
 //    override fun onConfigurationChanged(newConfig: Configuration) {
 //        super.onConfigurationChanged(newConfig)
 //        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
@@ -359,40 +336,65 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 ////            horizontalSpacing, binding.header.headerContainer.paddingBottom)
 //    }
 
-     override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (feed == null) {
-            (activity as MainActivity).showSnackbarAbovePlayer(R.string.please_wait_for_data, Toast.LENGTH_LONG)
-            return true
-        }
-        when (item.itemId) {
-            R.id.visit_website_item -> if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
-            R.id.share_feed -> ShareUtils.shareFeedLinkNew(requireContext(), feed!!)
-            R.id.refresh_feed -> FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
-            R.id.refresh_complete_item -> {
-                Thread {
-                    try {
-                        if (feed != null) {
-                            val feed_ = upsertBlk(feed!!) {
-                                it.nextPageLink = it.downloadUrl
-                                it.pageNr = 0
-                            }
-                            FeedUpdateManager.runOnce(requireContext(), feed_)
-                        }
-                    } catch (e: ExecutionException) { throw RuntimeException(e)
-                    } catch (e: InterruptedException) { throw RuntimeException(e) }
-                }.start()
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text("") },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            },
+            actions = {
+                IconButton(onClick = {
+                    val qFrag = QueuesFragment()
+                    (activity as MainActivity).loadChildFragment(qFrag)
+                    (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "web") }
+                if (feed != null) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "web") }
+                if (!feed?.link.isNullOrBlank()) IconButton(onClick = {
+                    IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
+                if (feed != null) {
+                    IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.refresh_label)) }, onClick = {
+                            FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
+                            expanded = false
+                        })
+                        if (feed?.isPaged == true) DropdownMenuItem(text = { Text(stringResource(R.string.load_complete_feed)) }, onClick = {
+                            Thread {
+                                try {
+                                    if (feed != null) {
+                                        val feed_ = upsertBlk(feed!!) {
+                                            it.nextPageLink = it.downloadUrl
+                                            it.pageNr = 0
+                                        }
+                                        FeedUpdateManager.runOnce(requireContext(), feed_)
+                                    }
+                                } catch (e: ExecutionException) { throw RuntimeException(e)
+                                } catch (e: InterruptedException) { throw RuntimeException(e) }
+                            }.start()
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
+                            ShareUtils.shareFeedLinkNew(requireContext(), feed!!)
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.rename_feed_label)) }, onClick = {
+                            showRenameDialog = true
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.remove_feed_label)) }, onClick = {
+                            showRemoveFeedDialog = true
+                            expanded = false
+                        })
+                    }
+                }
             }
-            R.id.rename_feed -> showNewSynthetic = true
-            R.id.remove_feed -> showRemoveFeedDialog = true
-            R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
-            R.id.open_queue -> {
-                val qFrag = QueuesFragment()
-                (activity as MainActivity).loadChildFragment(qFrag)
-                (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-            else -> return false
-        }
-        return true
+        )
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
@@ -456,8 +458,8 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         if (eventKeySink == null) eventKeySink = lifecycleScope.launch {
             EventFlow.keyEvents.collectLatest { event ->
-                Logd(TAG, "Received key event: $event")
-                onKeyUp(event)
+                Logd(TAG, "Received key event: $event, ignored")
+//                onKeyUp(event)
             }
         }
     }
@@ -518,8 +520,8 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
                                 etmp.addAll(episodes_)
                             } else etmp.addAll(feed_.episodes)
-                            val sortOrder = feed_.sortOrder
-                            if (sortOrder != null) getPermutor(sortOrder).reorder(etmp)
+                            sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
+                            getPermutor(sortOrder).reorder(etmp)
                             episodes.clear()
                             episodes.addAll(etmp)
                             ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
@@ -536,7 +538,16 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         break
                                     }
                                 }
-                                if (hasNonMediaItems) initTTS()
+                                if (hasNonMediaItems) {
+                                    ioScope.launch {
+                                        withContext(Dispatchers.IO) {
+                                            if (!ttsReady) {
+                                                initializeTTS(requireContext())
+                                                semaphore.acquire()
+                                            }
+                                        }
+                                    }
+                                }
                                 onInit = false
                             }
                         }
@@ -546,12 +557,10 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Logd(TAG, "loadItems subscribe called ${feed?.title}")
                         rating = feed?.rating ?: Rating.UNRATED.code
                         refreshHeaderView()
-                        updateToolbar()
                     }
                 } catch (e: Throwable) {
                     feed = null
                     refreshHeaderView()
-                    updateToolbar()
                     Log.e(TAG, Log.getStackTraceString(e))
                 } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e))
                 } finally { loadItemsRunning = false }
@@ -559,25 +568,14 @@ class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun initTTS() {
-        ioScope.launch {
-            withContext(Dispatchers.IO) {
-                if (!ttsReady) {
-                    initializeTTS(requireContext())
-                    semaphore.acquire()
-                }
-            }
-        }
-    }
-
-    private fun onKeyUp(event: KeyEvent) {
-        if (!isAdded || !isVisible || !isMenuVisible) return
-        when (event.keyCode) {
-//            KeyEvent.KEYCODE_T -> binding.recyclerView.smoothScrollToPosition(0)
-//            KeyEvent.KEYCODE_B -> binding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
-            else -> {}
-        }
-    }
+//    private fun onKeyUp(event: KeyEvent) {
+//        if (!isAdded || !isVisible) return
+//        when (event.keyCode) {
+////            KeyEvent.KEYCODE_T -> binding.recyclerView.smoothScrollToPosition(0)
+////            KeyEvent.KEYCODE_B -> binding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+//            else -> {}
+//        }
+//    }
 
     companion object {
         val TAG = FeedEpisodesFragment::class.simpleName ?: "Anonymous"

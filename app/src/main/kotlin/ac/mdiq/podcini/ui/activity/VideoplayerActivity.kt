@@ -358,7 +358,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         // TODO: consider enable this
 //        requestCastButton(menu)
         val inflater = menuInflater
-        inflater.inflate(R.menu.mediaplayer, menu)
+        inflater.inflate(R.menu.videoplayer, menu)
         return true
     }
 

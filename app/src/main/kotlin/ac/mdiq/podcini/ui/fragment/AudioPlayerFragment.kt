@@ -640,7 +640,7 @@ class AudioPlayerFragment : Fragment() {
             }
             withContext(Dispatchers.Main) {
                 Logd(TAG, "subscribe: ${currentMedia?.getEpisodeTitle()}")
-                displayMediaInfo(currentMedia!!)
+                if (currentMedia != null) displayMediaInfo(currentMedia!!)
                 Logd(TAG, "Webview loaded")
             }
         }.invokeOnCompletion { throwable ->

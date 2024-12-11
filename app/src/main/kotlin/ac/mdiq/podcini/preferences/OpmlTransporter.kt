@@ -58,7 +58,6 @@ class OpmlTransporter {
         const val XML_FEATURE_INDENT_OUTPUT: String = "http://xmlpull.org/v1/doc/features.html#indent-output"
     }
 
-    /** Writes OPML documents.  */
     class OpmlWriter : ExportWriter {
         /**
          * Takes a list of feeds and a writer and writes those into an OPML document.
@@ -89,7 +88,7 @@ class OpmlTransporter {
                 xs.attribute(null, OpmlSymbols.TEXT, feed.title)
                 xs.attribute(null, OpmlSymbols.TITLE, feed.title)
                 if (feed.type != null) xs.attribute(null, OpmlSymbols.TYPE, feed.type)
-                xs.attribute(null, OpmlSymbols.XMLURL, feed.downloadUrl)
+                if (feed.downloadUrl != null) xs.attribute(null, OpmlSymbols.XMLURL, feed.downloadUrl)
                 if (feed.link != null) xs.attribute(null, OpmlSymbols.HTMLURL, feed.link)
                 xs.endTag(null, OpmlSymbols.OUTLINE)
             }
@@ -110,7 +109,6 @@ class OpmlTransporter {
         }
     }
 
-    /** Reads OPML documents.  */
     class OpmlReader {
         // ATTRIBUTES
         private var isInOpml = false

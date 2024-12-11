@@ -26,7 +26,7 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020315
+        versionCode 3020316
         versionName "6.15.6"
 
         applicationId "ac.mdiq.podcini.R"

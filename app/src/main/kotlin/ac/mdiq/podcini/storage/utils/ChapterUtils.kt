@@ -34,7 +34,6 @@ object ChapterUtils {
     fun getCurrentChapterIndex(media: Playable?, position: Int): Int {
         val chapters = media?.getChapters()
         if (chapters.isNullOrEmpty()) return -1
-
         for (i in chapters.indices) if (chapters[i].start > position) return i - 1
         return chapters.size - 1
     }
@@ -43,7 +42,6 @@ object ChapterUtils {
     fun loadChapters(playable: Playable, context: Context, forceRefresh: Boolean) {
         // Already loaded
         if (playable.chaptersLoaded() && !forceRefresh) return
-
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
         if (playable is EpisodeMedia) {
@@ -53,7 +51,6 @@ object ChapterUtils {
                 if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
             }
         }
-
         val chaptersFromMediaFile = loadChaptersFromMediaFile(playable, context)
         val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
         val chapters = merge(chaptersMergePhase1, chaptersFromPodcastIndex)
@@ -85,10 +82,8 @@ object ChapterUtils {
     private fun openStream(playable: Playable, context: Context): CountingInputStream {
         if (playable.localFileAvailable()) {
             if (playable.getLocalMediaUrl() == null) throw IOException("No local url")
-
             val source = File(playable.getLocalMediaUrl() ?: "")
             if (!source.exists()) throw IOException("Local file does not exist")
-
             return CountingInputStream(BufferedInputStream(FileInputStream(source)))
         } else {
             val streamurl = playable.getStreamUrl()
@@ -107,11 +102,9 @@ object ChapterUtils {
 
     fun loadChaptersFromUrl(url: String, forceRefresh: Boolean): List<Chapter> {
         if (forceRefresh) return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
-
         val cachedChapters = loadChaptersFromUrl(url, CacheControl.FORCE_CACHE)
         // Some publishers use one dummy chapter before actual chapters are available
         if (cachedChapters.size <= 1) return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
-
         return cachedChapters
     }
 
@@ -121,7 +114,6 @@ object ChapterUtils {
             val request: Request = Builder().url(url).cacheControl(cacheControl).build()
             response = getHttpClient().newCall(request).execute()
             if (response.isSuccessful && response.body != null) return parse(response.body!!.string())
-
         } catch (e: IOException) { e.printStackTrace()
         } finally { response?.close() }
         return listOf()
@@ -164,9 +156,7 @@ object ChapterUtils {
 
     private fun chaptersValid(chapters: List<Chapter>): Boolean {
         if (chapters.isEmpty()) return false
-        for (c in chapters) {
-            if (c.start < 0) return false
-        }
+        for (c in chapters) if (c.start < 0) return false
         return true
     }
 

@@ -1,6 +1,6 @@
  Version 6.15.6
 
-* further tuned video player
+* tuned video and audio players
 * made loading of detailed info more efficient in both video and audio player
 * fixed null pointer issue when writing OPML file
 * EpisodeHome view is in Compose, has added ability to show hidden text in transcripts (by tapping the eye-glasses on action bar)

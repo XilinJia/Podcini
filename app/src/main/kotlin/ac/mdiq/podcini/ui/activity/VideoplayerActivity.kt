@@ -131,6 +131,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 if (showAudioControlDialog) PlaybackControlsDialog(onDismiss = { showAudioControlDialog = false })
                 if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = { showSpeedDialog = false })
                 MediaPlayerErrorDialog(this, errorMessage, showErrorDialog)
+                LaunchedEffect(curMediaId) { cleanedNotes = null }
 
                 if (landscape) Box(modifier = Modifier.fillMaxSize()) { VideoPlayer() }
                 else {
@@ -215,8 +216,8 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     @Composable
     fun MediaDetails() {
-        val textColor = MaterialTheme.colorScheme.onSurface
-        LaunchedEffect(curMediaId) { loadMediaInfo() }
+//        val textColor = MaterialTheme.colorScheme.onSurface
+        if (cleanedNotes == null) loadMediaInfo()
         AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
             ShownotesWebView(context).apply {
                 setTimecodeSelectedListener { time: Int -> seekTo(time) }

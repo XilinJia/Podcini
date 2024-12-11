@@ -185,47 +185,18 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Spacer(modifier = Modifier.weight(0.4f))
                 val playedIconRes = PlayState.fromCode(isPlayed).res
                 Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp)
-                    .clickable(onClick = {
-                        showPlayStateDialog = true
-//                        if (isPlayed) {
-//                            setPlayState(PlayState.UNPLAYED.code, false, episode!!)
-//                            if (isProviderConnected && episode?.feed?.isLocalFeed != true && episode?.media != null) {
-//                                val actionNew: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.NEW).currentTimestamp().build()
-//                                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionNew)
-//                            }
-//                        } else {
-//                            setPlayState(PlayState.PLAYED.code, true, episode!!)
-//                            if (episode?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
-//                                val media: EpisodeMedia? = episode?.media
-//                                // not all items have media, Gpodder only cares about those that do
-//                                if (isProviderConnected && media != null) {
-//                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.PLAY)
-//                                        .currentTimestamp()
-//                                        .started(media.getDuration() / 1000)
-//                                        .position(media.getDuration() / 1000)
-//                                        .total(media.getDuration() / 1000)
-//                                        .build()
-//                                    SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionPlay)
-//                                }
-//                            }
-//                        }
-                }))
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showPlayStateDialog = true }))
                 if (episode?.media != null && !inQueue) {
                     Spacer(modifier = Modifier.weight(0.2f))
                     val inQueueIconRes = R.drawable.ic_playlist_remove
                     Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
-                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
-                            addToQueue(episode!!)
-                        }))
+                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { addToQueue(episode!!) }))
                 }
                 Spacer(modifier = Modifier.weight(0.2f))
                 Logd(TAG, "ratingIconRes rating: $rating")
                 val ratingIconRes = Rating.fromCode(rating).res
                 Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = {
-                    showChooseRatingDialog = true
-                }))
+                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showChooseRatingDialog = true }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
                     modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
@@ -777,16 +748,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         jsEnabled = false
                         prepareContent()
                         if (episode != null) toolbar.invalidateMenu()
-                        return true
                     }
-                    R.id.showHidden -> {
-                        jsEnabled = !jsEnabled
-                        return true
-                    }
-                    R.id.switchJS -> {
-                        jsEnabled = !jsEnabled
-                        return true
-                    }
+                    R.id.showHidden, R.id.switchJS -> jsEnabled = !jsEnabled
                     R.id.text_speech -> {
                         Logd(TAG, "text_speech selected: $readerText")
                         if (tts != null) {
@@ -806,7 +769,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             } else ttsPlaying = false
                             if (episode != null) toolbar.invalidateMenu()
                         } else Toast.makeText(context, R.string.tts_not_available, Toast.LENGTH_LONG).show()
-                        return true
                     }
                     R.id.share_notes -> {
                         val notes = readerhtml
@@ -820,10 +782,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 .createChooserIntent()
                             context.startActivity(intent)
                         }
-                        return true
                     }
                     else -> return episode != null
                 }
+                return true
             }
         }
 

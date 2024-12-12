@@ -27,7 +27,7 @@
         <item name="android:splitMotionEvents">false</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:windowContentTransitions">true</item>
-        <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>
+<!--        <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>-->
     </style>
 
     <style name="Theme.Podcini.Light" parent="Theme.Podcini.Dynamic.Light">
@@ -67,10 +67,10 @@
         <item name="android:splitMotionEvents">false</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:navigationBarColor">@color/background_darktheme</item>
-        <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>
+<!--        <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>-->
     </style>
 
     <style name="Theme.Podcini.Dark" parent="Theme.Podcini.Dynamic.Dark">
@@ -146,7 +146,7 @@
 
     <style name="Theme.Podcini.Dynamic.Light.Translucent" parent="Theme.Podcini.Dynamic.Light.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -157,7 +157,7 @@
 
     <style name="Theme.Podcini.Light.Translucent" parent="Theme.Podcini.Light.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -168,7 +168,7 @@
 
     <style name="Theme.Podcini.Dynamic.Dark.Translucent" parent="Theme.Podcini.Dynamic.Dark.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -179,7 +179,7 @@
 
     <style name="Theme.Podcini.Dark.Translucent" parent="Theme.Podcini.Dark.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -190,7 +190,7 @@
 
     <style name="Theme.Podcini.Dynamic.TrueBlack.Translucent" parent="Theme.Podcini.Dynamic.TrueBlack.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -201,7 +201,7 @@
 
     <style name="Theme.Podcini.TrueBlack.Translucent" parent="Theme.Podcini.TrueBlack.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -218,30 +218,13 @@
     <style name="Theme.Podcini.Splash" parent="Theme.SplashScreen">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:fitsSystemWindows">true</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/launcher_animate</item>
-    </style>
-
-    <style name="Theme.Podcini.VideoEpisode" parent="@style/Theme.Podcini.Dark">
-        <item name="android:fitsSystemWindows">true</item>
-<!--        <item name="android:windowActionModeOverlay">true</item>-->
-<!--        <item name="android:windowActionBarOverlay">true</item>-->
-<!--        <item name="android:windowActionBar">true</item>-->
-<!--        <item name="windowActionModeOverlay">true</item>-->
-<!--        <item name="windowActionBar">true</item>-->
-        <item name="windowActionBarOverlay">true</item>
-    </style>
-
-    <style name="Theme.Podcini.VideoPlayer" parent="@style/Theme.Podcini.Dark">
-        <item name="windowActionBarOverlay">true</item>
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
-        <item name="android:fitsSystemWindows">true</item>
     </style>
 
     <style name="Podcini.TextView.Heading" parent="@android:style/TextAppearance.Medium">
@@ -284,15 +267,7 @@
         <item name="android:progressDrawable">@drawable/progress_bar_horizontal_dark</item>
     </style>
 
-    <style name="FastScrollRecyclerView" parent="android:Widget">
-        <item name="android:scrollbars">none</item>
-        <item name="fastScrollEnabled">true</item>
-        <item name="fastScrollHorizontalThumbDrawable">?attr/scrollbar_thumb</item>
-        <item name="fastScrollHorizontalTrackDrawable">@drawable/scrollbar_track</item>
-        <item name="fastScrollVerticalThumbDrawable">?attr/scrollbar_thumb</item>
-        <item name="fastScrollVerticalTrackDrawable">@drawable/scrollbar_track</item>
-    </style>
-
+sssss
     <style name="Widget.Podcini.ActionBar" parent="Widget.Material3.Light.ActionBar.Solid">
         <item name="background">?android:attr/colorBackground</item>
         <item name="elevation">0dp</item>
@@ -314,14 +289,6 @@
         <item name="android:textAlignment">center</item>
         <item name="android:paddingStart">8dp</item>
         <item name="android:paddingEnd">8dp</item>
-    </style>
-
-    <style name="AppPreferenceThemeOverlay" parent="@style/PreferenceThemeOverlay">
-        <item name="switchPreferenceCompatStyle">@style/AppSwitchPreference</item>
-    </style>
-
-    <style name="AppSwitchPreference" parent="@style/Preference.SwitchPreferenceCompat.Material">
-        <item name="widgetLayout">@layout/preference_material_switch</item>
     </style>
 
 </resources>

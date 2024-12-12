@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
 import ac.mdiq.podcini.playback.base.LocalMediaPlayer
@@ -17,6 +16,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerAc
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
@@ -33,35 +33,35 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.view.MenuItem.SHOW_AS_ACTION_NEVER
+import android.view.KeyEvent
+import android.view.View
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.widget.EditText
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowCompat.getInsetsController
@@ -77,8 +77,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class VideoplayerActivity : CastEnabledActivity() {
-    private var _binding: VideoplayerActivityBinding? = null
-    private val binding get() = _binding!!
     var switchToAudioOnly = false
 
     private var cleanedNotes by mutableStateOf<String?>(null)
@@ -94,7 +92,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     var errorMessage by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_Podcini_VideoPlayer)
+        setTheme(getNoTitleTheme(this))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         var vmCode = 0
         if (curMedia is EpisodeMedia) {
@@ -118,43 +116,36 @@ class VideoplayerActivity : CastEnabledActivity() {
             videoMode = VideoMode.WINDOW_VIEW
         }
         landscape = videoMode == VideoMode.FULL_SCREEN_VIEW
-
-        supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
         super.onCreate(savedInstanceState)
-
-        _binding = VideoplayerActivityBinding.inflate(LayoutInflater.from(this))
         setForVideoMode()
 
-        binding.mainView.setContent {
-            MaterialTheme(colorScheme = darkColorScheme(), typography = CustomTypography, shapes = Shapes) {
+        setContent {
+            CustomTheme(this) {
                 if (showChapterDialog) ChaptersDialog(curMedia!!, onDismissRequest = { showChapterDialog = false })
                 if (showAudioControlDialog) PlaybackControlsDialog(onDismiss = { showAudioControlDialog = false })
                 if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = { showSpeedDialog = false })
                 MediaPlayerErrorDialog(this, errorMessage, showErrorDialog)
                 LaunchedEffect(curMediaId) { cleanedNotes = null }
 
-                if (landscape) Box(modifier = Modifier.fillMaxSize()) { VideoPlayer() }
-                else {
-                    val textColor = MaterialTheme.colorScheme.onSurface
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(16 / 9f)) { VideoPlayer() }
-                        Text(curMedia?.getEpisodeTitle()?:"", color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(horizontal = 10.dp))
-                        Text(curMedia?.getFeedTitle()?:"", color = textColor, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
-                        MediaDetails()
+                Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                    if (landscape) Box(modifier = Modifier.fillMaxSize()) { VideoPlayer() }
+                    else {
+                        val textColor = MaterialTheme.colorScheme.onSurface
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(16 / 9f)) { VideoPlayer() }
+                            Text(curMedia?.getEpisodeTitle() ?: "", color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(horizontal = 10.dp))
+                            Text(curMedia?.getFeedTitle() ?: "", color = textColor, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
+                            MediaDetails()
+                        }
                     }
                 }
             }
         }
-        setContentView(binding.root)
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(-0x80000000))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setForVideoMode()
     }
 
     private fun setForVideoMode() {
         Logd(TAG, "setForVideoMode videoMode: $videoMode")
-        setTheme(R.style.Theme_Podcini_VideoPlayer)
-        supportActionBar?.hide()
         when (videoMode) {
             VideoMode.FULL_SCREEN_VIEW -> hideSystemUI()
             VideoMode.WINDOW_VIEW -> showSystemUI()
@@ -169,10 +160,19 @@ class VideoplayerActivity : CastEnabledActivity() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
             window.decorView.apply { systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE }
+            val insetsController = getInsetsController(window, window.decorView)
+            insetsController.isAppearanceLightStatusBars = isLightTheme(this)
         } else {
             window.insetsController?.apply {
                 show(WindowInsetsCompat.Type.systemBars())
                 systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                if (isLightTheme(this@VideoplayerActivity)) {
+                    setSystemBarsAppearance(
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
+                } else {
+                    setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS)
+                }
             }
         }
     }
@@ -200,13 +200,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                     useController = true
                     setControllerVisibilityListener(
                         PlayerView.ControllerVisibilityListener { visibility ->
-                            if (visibility == View.VISIBLE) {
-                                showAcrionBar = true
-                                supportActionBar?.show()
-                            } else {
-                                showAcrionBar = false
-                                supportActionBar?.hide()
-                            }
+                            showAcrionBar = if (visibility == View.VISIBLE) true else false
                         }
                     )
                 }
@@ -254,7 +248,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         insetsController.show(WindowInsetsCompat.Type.statusBars())
         insetsController.show(WindowInsetsCompat.Type.navigationBars())
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        _binding = null
         super.onDestroy()
     }
 
@@ -314,8 +307,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         if (media != null) {
             feedTitle = media.getFeedTitle()
             episodeTitle = media.getEpisodeTitle()
-            supportActionBar?.subtitle = episodeTitle
-            supportActionBar?.title = feedTitle
         }
     }
 
@@ -353,98 +344,101 @@ class VideoplayerActivity : CastEnabledActivity() {
         errorDialog.show()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        super.onCreateOptionsMenu(menu)
-        // TODO: consider enable this
-//        requestCastButton(menu)
-        val inflater = menuInflater
-        inflater.inflate(R.menu.videoplayer, menu)
-        return true
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        super.onPrepareOptionsMenu(menu)
-        val media = curMedia
-        val isEpisodeMedia = (media is EpisodeMedia)
-
-        menu.findItem(R.id.show_home_reader_view).isVisible = false
-        menu.findItem(R.id.open_feed_item).isVisible = isEpisodeMedia // EpisodeMedia implies it belongs to a Feed
-
-        val hasWebsiteLink = getWebsiteLinkWithFallback(media) != null
-        menu.findItem(R.id.visit_website_item).isVisible = hasWebsiteLink
-
-        val isItemAndHasLink = isEpisodeMedia && hasLinkToShare(media.episodeOrFetch())
-        val isItemHasDownloadLink = isEpisodeMedia && (media as EpisodeMedia?)?.downloadUrl != null
-        menu.findItem(R.id.share_item).isVisible = hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink
-
-        menu.findItem(R.id.set_sleeptimer_item).isVisible = !isSleepTimerActive()
-        menu.findItem(R.id.disable_sleeptimer_item).isVisible = isSleepTimerActive()
-        menu.findItem(R.id.player_switch_to_audio_only).isVisible = true
-
-        menu.findItem(R.id.audio_controls).isVisible = audioTracks.size >= 2
-        menu.findItem(R.id.playback_speed).isVisible = true
-        menu.findItem(R.id.player_show_chapters).isVisible = true
-
-        if (videoMode == VideoMode.WINDOW_VIEW) {
-            menu.findItem(R.id.set_sleeptimer_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
-            menu.findItem(R.id.disable_sleeptimer_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
-            menu.findItem(R.id.player_switch_to_audio_only).setShowAsAction(SHOW_AS_ACTION_NEVER)
-            menu.findItem(R.id.open_feed_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
-            menu.findItem(R.id.share_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
-        }
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // some options option requires FeedItem
-        when (item.itemId) {
-            R.id.player_switch_to_audio_only -> {
-                switchToAudioOnly = true
-                (curMedia as? EpisodeMedia)?.forceVideo = false
-                finish()
-                return true
-            }
-            android.R.id.home -> {
-                val intent = Intent(this@VideoplayerActivity, MainActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-                finish()
-                return true
-            }
-            R.id.player_show_chapters -> {
-                showChapterDialog = true
-                return true
-            }
-            else -> {
-                val media = curMedia ?: return false
-                val feedItem = (media as? EpisodeMedia)?.episodeOrFetch()
-                when {
-                    item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item ->
-                        SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
-                    item.itemId == R.id.audio_controls -> showAudioControlDialog = true
-                    item.itemId == R.id.open_feed_item && feedItem != null -> {
-                        val intent = MainActivity.getIntentToOpenFeed(this, feedItem.feedId!!)
-                        startActivity(intent)
-                    }
-                    item.itemId == R.id.visit_website_item -> {
-                        val url = getWebsiteLinkWithFallback(media)
-                        if (url != null) openInBrowser(this@VideoplayerActivity, url)
-                    }
-                    item.itemId == R.id.share_item && feedItem != null -> {
-                        val shareDialog = ShareDialog.newInstance(feedItem)
-                        shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
-                    }
-                    item.itemId == R.id.playback_speed -> showSpeedDialog = true
-                    else -> return false
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        if (showAcrionBar) TopAppBar(title = {
+            if (landscape) Column {
+                Text(text = episodeTitle, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(text = feedTitle, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            } else { Text("")}
+        },
+            navigationIcon = { IconButton(onClick = { finish() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
+            actions = {
+                if (!landscape) {
+                    var sleepIconRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.drawable.ic_sleep else R.drawable.ic_sleep_off) }
+                    IconButton(onClick = { SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
+                    }) { Icon(imageVector = ImageVector.vectorResource(sleepIconRes), contentDescription = "sleeper") }
+                    IconButton(onClick = { showSpeedDialog = true
+                    }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), contentDescription = "open podcast") }
+                    IconButton(onClick = {
+                        switchToAudioOnly = true
+                        (curMedia as? EpisodeMedia)?.forceVideo = false
+                        finish()
+                    }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_audiotrack_24), contentDescription = "audio only") }
+                    if (curMedia is EpisodeMedia) IconButton(onClick = {
+                        val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                        if (feedItem != null) startActivity(MainActivity.getIntentToOpenFeed(this@VideoplayerActivity, feedItem.feedId!!))
+                    }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), contentDescription = "open podcast") }
+                    IconButton(onClick = {
+                        val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                        if (feedItem != null) {
+                            val shareDialog = ShareDialog.newInstance(feedItem)
+                            shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
+                        }
+                    }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "share") }
                 }
-                return true
+                CastIconButton()
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+//                     DropdownMenuItem(text = { Text(stringResource(R.string.home_label)) }, onClick = {
+//                         expanded = false
+//                    })
+                    if (landscape) {
+                        var sleeperRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.string.set_sleeptimer_label else R.string.sleep_timer_label) }
+                        DropdownMenuItem(text = { Text(stringResource(sleeperRes)) }, onClick = {
+                            SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.player_switch_to_audio_only)) }, onClick = {
+                            switchToAudioOnly = true
+                            (curMedia as? EpisodeMedia)?.forceVideo = false
+                            finish()
+                            expanded = false
+                        })
+                        if (curMedia is EpisodeMedia) DropdownMenuItem(text = { Text(stringResource(R.string.open_podcast)) }, onClick = {
+                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            if (feedItem != null) startActivity(MainActivity.getIntentToOpenFeed(this@VideoplayerActivity, feedItem.feedId!!))
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
+                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            if (feedItem != null) {
+                                val shareDialog = ShareDialog.newInstance(feedItem)
+                                shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
+                            }
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.playback_speed)) }, onClick = {
+                            showSpeedDialog = true
+                            expanded = false
+                        })
+                    }
+                    if (audioTracks.size >= 2) DropdownMenuItem(text = { Text(stringResource(R.string.audio_controls)) }, onClick = {
+                        showAudioControlDialog = true
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.visit_website_label)) }, onClick = {
+                        val url = getWebsiteLinkWithFallback(curMedia)
+                        if (url != null) openInBrowser(this@VideoplayerActivity, url)
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.chapters_label)) }, onClick = {
+                        showChapterDialog = true
+                        expanded = false
+                    })
+//                    DropdownMenuItem(text = { Text(stringResource(R.string.share_notes_label)) }, onClick = {
+//                        expanded = false
+//                    })
+                }
             }
-        }
+        )
     }
 
     private fun compatEnterPictureInPicture() {
         if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
-            if (videoMode == VideoMode.FULL_SCREEN_VIEW) supportActionBar?.hide()
+//            if (videoMode == VideoMode.FULL_SCREEN_VIEW) supportActionBar?.hide()
 //            videoEpisodeFragment.hideVideoControls(false)
             enterPictureInPictureMode()
         }
@@ -523,7 +517,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     companion object {
         private val TAG: String = VideoplayerActivity::class.simpleName ?: "Anonymous"
-        var videoMode = VideoMode.NONE
+        var videoMode by mutableStateOf(VideoMode.NONE)
 
         private val audioTracks: List<String>
             get() {

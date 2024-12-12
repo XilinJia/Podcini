@@ -1,3 +1,17 @@
+# 6.15.8
+
+* re-worked action bar and menu in more fragments in Jetpack Compose
+* open-drawer icon on the action bar is set in accordance with the page
+* title of "Subscriptions" is removed
+* video player is fully in Compose including action bar and menu
+* reenabled cast button in video player (in Play app, can someone verify its functioning?)
+* BugReport activity is in Compose
+* likely fixed image on PlayUI not updating issue
+* fixed an efficiency issue of possibly duplicate monitoring of episodes' states when a list is changed
+* removed recyclerview dependency
+* various xml files removed or cleaned
+* updated Compose dependencies
+
 # 6.15.7
 
 * re-worked action bar and menu in various fragments in Jetpack Compose

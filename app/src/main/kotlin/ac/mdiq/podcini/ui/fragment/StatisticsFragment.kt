@@ -120,7 +120,7 @@ class StatisticsFragment : Fragment() {
     fun MyTopAppBar() {
         var expanded by remember { mutableStateOf(false) }
         TopAppBar(title = { Text(stringResource(R.string.statistics_label)) },
-            navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } },
+            navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "Open Drawer") } },
             actions = {
                 if (selectedTabIndex.value == 0) IconButton(onClick = {
                     val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {

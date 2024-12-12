@@ -222,9 +222,9 @@ object UserPreferences {
      * or NOTIFICATION_BUTTON.NEXT_CHAPTER.ordinal.
      * @return `true` if button should be shown, `false`  otherwise
      */
-    private fun showButtonOnFullNotification(buttonId: Int): Boolean {
-        return fullNotificationButtons.contains(buttonId)
-    }
+//    private fun showButtonOnFullNotification(buttonId: Int): Boolean {
+//        return fullNotificationButtons.contains(buttonId)
+//    }
 
     /**
      * @return `true` if we should show remaining time or the duration

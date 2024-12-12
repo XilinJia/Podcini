@@ -26,8 +26,8 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020317
-        versionName "6.15.7"
+        versionCode 3020318
+        versionName "6.15.8"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -173,12 +173,12 @@ android {
 
 dependencies {
 
-    implementation platform("androidx.compose:compose-bom:2024.11.00")
+    implementation platform("androidx.compose:compose-bom:2024.12.01")
     implementation "androidx.compose.material3:material3:1.3.1"
     implementation "androidx.activity:activity-compose:1.9.3"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0"
-    implementation "androidx.navigation:navigation-compose:2.8.4"
-    implementation "androidx.compose.ui:ui-tooling-preview:1.7.5"
+    implementation "androidx.navigation:navigation-compose:2.8.5"
+//    implementation "androidx.compose.ui:ui-tooling-preview:1.7.6"
 
     implementation "androidx.annotation:annotation:1.9.1"
     implementation "androidx.appcompat:appcompat:1.7.0"
@@ -187,20 +187,22 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
-    implementation "androidx.media3:media3-exoplayer:1.5.0"
-    implementation "androidx.media3:media3-datasource-okhttp:1.5.0"
-    implementation "androidx.media3:media3-ui:1.5.0"
     implementation "androidx.palette:palette-ktx:1.0.0"
-    implementation "androidx.recyclerview:recyclerview:1.3.2"
+//    implementation "androidx.recyclerview:recyclerview:1.3.2"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.webkit:webkit:1.12.1"
     implementation "androidx.window:window:1.3.0"
     implementation "androidx.work:work-runtime:2.10.0"
-    implementation "androidx.media3:media3-common:1.5.0"
-    implementation "androidx.media3:media3-session:1.5.0"
     implementation "androidx.fragment:fragment-ktx:1.8.5"
 
+    implementation "androidx.media3:media3-exoplayer:1.5.0"
+    implementation "androidx.media3:media3-datasource-okhttp:1.5.0"
+    implementation "androidx.media3:media3-ui:1.5.0"
+    implementation "androidx.media3:media3-common:1.5.0"
+    implementation "androidx.media3:media3-session:1.5.0"
+
     implementation "com.google.android.material:material:1.12.0"
+
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 
     /** Desugaring for using VistaGuide **/
@@ -228,7 +230,8 @@ dependencies {
     compileOnly "com.google.android.wearable:wearable:2.9.0"
 
     freeImplementation "org.conscrypt:conscrypt-android:2.5.2"
-    debugImplementation "androidx.compose.ui:ui-tooling:1.7.5"
+    debugImplementation "androidx.compose.ui:ui-tooling:1.7.6"
+    debugImplementation "androidx.compose.ui:ui-tooling-preview:1.7.6"
 
     playImplementation "com.google.android.play:core-ktx:1.8.1"
     playImplementation "com.google.android.gms:play-services-base:18.5.0"

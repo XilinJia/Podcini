@@ -150,6 +150,7 @@ class SearchFragment : Fragment() {
         _binding = null
         results.clear()
         resultFeeds.clear()
+        stopMonitor(vms)
         vms.clear()
         super.onDestroyView()
     }
@@ -256,8 +257,9 @@ class SearchFragment : Fragment() {
                         results.clear()
                         results.addAll(first_)
                         infoBarText.value = "${results.size} episodes"
+                        stopMonitor(vms)
                         vms.clear()
-                        for (e in first_) { vms.add(EpisodeVM(e)) }
+                        for (e in first_) { vms.add(EpisodeVM(e, TAG)) }
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
                         if (results_.second != null) {

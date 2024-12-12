@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -125,7 +126,7 @@ fun CustomToast(message: String, durationMillis: Long = 2000L, onDismiss: () -> 
         delay(durationMillis)
         onDismiss()
     }
-    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.BottomCenter) {
+    Popup(onDismissRequest = { onDismiss() }) {
         Box(modifier = Modifier.background(Color.Black, RoundedCornerShape(8.dp)).padding(8.dp)) {
             Text(text = message, color = Color.White, style = MaterialTheme.typography.bodyMedium)
         }

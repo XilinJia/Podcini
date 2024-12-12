@@ -156,6 +156,8 @@ import kotlin.math.round
  */
 class PreferenceActivity : AppCompatActivity() {
     var copyrightNoticeText by mutableStateOf("")
+    var showToast by  mutableStateOf(false)
+    var toastMassege by mutableStateOf("")
 
     @SuppressLint("CommitTransaction")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -180,6 +182,8 @@ class PreferenceActivity : AppCompatActivity() {
         setContent {
             val navController = rememberNavController()
             CustomTheme(this) {
+                if (showToast) CustomToast(message = toastMassege, onDismiss = { showToast = false })
+
                 NavHost(navController = navController, startDestination = "Main") {
                     composable("Main") { MainPreferencesScreen(navController) }
                     composable(Screens.preferences_user_interface.tag) { UserInterfacePreferencesScreen(navController) }
@@ -363,7 +367,11 @@ class PreferenceActivity : AppCompatActivity() {
                     val clip = ClipData.newPlainText(getString(R.string.bug_report_title), PreferenceManager.getDefaultSharedPreferences(this@PreferenceActivity).getString("about_version", "Default summary"))
                     clipboard.setPrimaryClip(clip)
 //                    scope.launch { snackbarHostState.showSnackbar(getString(R.string.copied_to_clipboard), duration = SnackbarDuration.Short) }
-                    if (Build.VERSION.SDK_INT <= 32) Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
+                    if (Build.VERSION.SDK_INT <= 32) {
+                        toastMassege = getString(R.string.copied_to_clipboard)
+                        showToast = true
+//                        Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
+                    }
                 })) {
                     Text(stringResource(R.string.podcini_version), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(String.format("%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH), color = textColor)
@@ -495,8 +503,9 @@ class PreferenceActivity : AppCompatActivity() {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
                 if (preferredButtons.size != exactItems) {
-                    val selectionView = dialog.listView
-                    Snackbar.make(selectionView, String.format(resources.getString(R.string.pref_compact_notification_buttons_dialog_error_exact), exactItems), Snackbar.LENGTH_SHORT).show()
+//                    val selectionView = dialog.listView
+                    toastMassege = String.format(resources.getString(R.string.pref_compact_notification_buttons_dialog_error_exact), exactItems)
+                    showToast = true
                 } else {
                     completeListener.onClick(dialog, AlertDialog.BUTTON_POSITIVE)
                     dialog.cancel()
@@ -2576,7 +2585,9 @@ class PreferenceActivity : AppCompatActivity() {
 //                    scope.launch {
 //                        snackbarHostState.showSnackbar(getString(R.string.pref_synchronization_logout_toast), duration = SnackbarDuration.Long)
 //                    }
-                    Snackbar.make(findViewById(android.R.id.content), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
+                    toastMassege = getString(R.string.pref_synchronization_logout_toast)
+                    showToast = true
+//                    Snackbar.make(findViewById(android.R.id.content), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
                     setSelectedSyncProvider(null)
                     loggedIn = isProviderConnected
                 }

@@ -309,11 +309,11 @@ class SubscriptionsFragment : Fragment() {
     @Composable
     fun MyTopAppBar() {
         var expanded by remember { mutableStateOf(false) }
-        TopAppBar(title = { Text( if (displayedFolder.isNotEmpty()) displayedFolder else stringResource(R.string.subscriptions_label)) },
+        TopAppBar(title = { Text( if (displayedFolder.isNotEmpty()) displayedFolder else "") },
             navigationIcon = if (displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
-                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_subscriptions), contentDescription = "Open Drawer") } }
             },
             actions = {
                 IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())

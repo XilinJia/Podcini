@@ -337,7 +337,7 @@ class LogsFragment : Fragment() {
             navigationIcon = if (displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
-                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_history), contentDescription = "Open Drawer") } }
             },
             actions = {
                 if (title != "Downloads log") IconButton(onClick = {

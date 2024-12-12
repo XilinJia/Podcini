@@ -27,7 +27,6 @@ import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getLastNavFragmentArg
-import ac.mdiq.podcini.ui.fragment.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.EventFlow
@@ -35,11 +34,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ComponentName
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.AudioManager
@@ -79,7 +74,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -111,8 +105,8 @@ class MainActivity : CastEnabledActivity() {
 
     private var drawerToggle: ActionBarDrawerToggle? = null
 
-    @JvmField
-    val recycledViewPool: RecyclerView.RecycledViewPool = RecyclerView.RecycledViewPool()
+//    @JvmField
+//    val recycledViewPool: RecyclerView.RecycledViewPool = RecyclerView.RecycledViewPool()
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
@@ -195,7 +189,7 @@ class MainActivity : CastEnabledActivity() {
         super.onCreate(savedInstanceState)
         _binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
+//        recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
         dummyView = object : View(this) {}
         drawerLayout = findViewById(R.id.main_layout)
         navDrawer = findViewById(R.id.navDrawerFragment)

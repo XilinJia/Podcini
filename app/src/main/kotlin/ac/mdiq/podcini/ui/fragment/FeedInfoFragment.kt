@@ -79,6 +79,7 @@ class FeedInfoFragment : Fragment() {
     private var txtvAuthor by mutableStateOf("")
     var txtvUrl by mutableStateOf<String?>(null)
     var rating by mutableStateOf(Rating.UNRATED.code)
+    private val showConnectLocalFolderConfirm = mutableStateOf(false)
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
 
@@ -96,6 +97,9 @@ class FeedInfoFragment : Fragment() {
                         (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
                         // Make sure fragment is hidden before actually starting to delete
                         requireActivity().supportFragmentManager.executePendingTransactions()
+                    }
+                    ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), showConnectLocalFolderConfirm) {
+                        try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                     }
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -303,13 +307,7 @@ class FeedInfoFragment : Fragment() {
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     if (feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.reconnect_local_folder)) }, onClick = {
-                        val alert = MaterialAlertDialogBuilder(requireContext())
-                        alert.setMessage(R.string.reconnect_local_folder_warning)
-                        alert.setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
-                            try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
-                        }
-                        alert.setNegativeButton(string.cancel, null)
-                        alert.show()
+                        showConnectLocalFolderConfirm.value = true
                         expanded = false
                     })
                     if (!feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {

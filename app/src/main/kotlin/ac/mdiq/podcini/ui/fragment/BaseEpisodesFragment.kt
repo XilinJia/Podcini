@@ -141,6 +141,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         Logd(TAG, "onDestroyView")
         _binding = null
         episodes.clear()
+        stopMonitor(vms)
         vms.clear()
         super.onDestroyView()
     }
@@ -231,8 +232,9 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                         episodes.addAll(loadData())
                     }
                     withContext(Dispatchers.Main) {
+                        stopMonitor(vms)
                         vms.clear()
-                        for (e in episodes) { vms.add(EpisodeVM(e)) }
+                        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
                         updateToolbar()
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))

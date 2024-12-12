@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.preferences.ThemeSwitcher.readThemeValue
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.ThemePreference
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
@@ -52,4 +53,8 @@ fun CustomTheme(context: Context, content: @Composable () -> Unit) {
         ThemePreference.SYSTEM -> if (isSystemInDarkTheme()) DarkColors else LightColors
     }
     MaterialTheme(colorScheme = colors, typography = CustomTypography, shapes = Shapes, content = content)
+}
+
+fun isLightTheme(context: Context): Boolean {
+    return readThemeValue(context) == UserPreferences.ThemePreference.LIGHT
 }

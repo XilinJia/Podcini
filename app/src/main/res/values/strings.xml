@@ -80,13 +80,6 @@
     <string name="drawer_close">Close menu</string>
     <string name="drawer_preferences">Drawer preferences</string>
 
-
-
-
-
-
-
-
     <!-- Bug report activity -->
     <string name="log_file_share_exception">No compatible apps found</string>
     <string name="export_logs_menu_title">Export detailed logs</string>

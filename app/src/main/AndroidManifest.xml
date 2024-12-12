@@ -157,11 +157,11 @@
         </activity>
 
         <activity
-                android:name=".ui.activity.BugReportActivity"
-                android:label="@string/bug_report_title">
+            android:name=".ui.activity.BugReportActivity"
+            android:label="@string/bug_report_title">
             <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="ac.mdiq.podcini.ui.activity.PreferenceActivity"/>
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ac.mdiq.podcini.ui.activity.PreferenceActivity"/>
         </activity>
 
         <activity

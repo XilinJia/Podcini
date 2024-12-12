@@ -189,7 +189,14 @@ class AudioPlayerFragment : Fragment() {
             setContent {
                 CustomTheme(requireContext()) {
                     if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = {showSpeedDialog = false})
-                    LaunchedEffect(key1 = curMediaId) { cleanedNotes = null }
+                    LaunchedEffect(key1 = curMediaId) {
+                        cleanedNotes = null
+                        if (curMedia != null) {
+                            updateUi(curMedia!!)
+                            imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
+                            currentMedia = curMedia
+                        }
+                    }
                     MediaPlayerErrorDialog(activity as Activity, errorMessage, showErrorDialog)
                     Box(modifier = Modifier.fillMaxWidth().then(if (isCollapsed) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
                         PlayerUI(Modifier.align(if (isCollapsed) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
@@ -745,7 +752,7 @@ class AudioPlayerFragment : Fragment() {
             val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
             if (curMedia != null && curMedia?.getIdentifier() != currentMedia?.getIdentifier()) {
                 updateUi(curMedia!!)
-                imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
+//                imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
                 currentMedia = curMedia
             }
             if (!isCollapsed && curMediaChanged) {

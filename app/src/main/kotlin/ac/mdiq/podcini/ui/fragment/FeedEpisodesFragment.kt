@@ -136,8 +136,9 @@ class FeedEpisodesFragment : Fragment() {
                 episodes.addAll(etmp)
                 ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                 ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                stopMonitor(vms)
                 vms.clear()
-                for (e in etmp) { vms.add(EpisodeVM(e)) }
+                for (e in etmp) { vms.add(EpisodeVM(e, TAG)) }
                 loadItemsRunning = false
             }
         }
@@ -314,6 +315,7 @@ class FeedEpisodesFragment : Fragment() {
         ieMap = mapOf()
         ueMap = mapOf()
         episodes.clear()
+        stopMonitor(vms)
         vms.clear()
         tts?.stop()
         tts?.shutdown()
@@ -527,8 +529,9 @@ class FeedEpisodesFragment : Fragment() {
                             ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                             ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                             withContext(Dispatchers.Main) {
+                                stopMonitor(vms)
                                 vms.clear()
-                                for (e in etmp) { vms.add(EpisodeVM(e)) }
+                                for (e in etmp) { vms.add(EpisodeVM(e, TAG)) }
                             }
                             if (onInit) {
                                 var hasNonMediaItems = false

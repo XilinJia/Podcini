@@ -128,8 +128,12 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, 
     }
 }
 
+fun stopMonitor(vms: List<EpisodeVM>) {
+    vms.forEach { it.stopMonitoring() }
+}
+
 @Stable
-class EpisodeVM(var episode: Episode) {
+class EpisodeVM(var episode: Episode, val tag: String) {
     var positionState by mutableStateOf(episode.media?.position?:0)
     var durationState by mutableStateOf(episode.media?.duration?:0)
     var playedState by mutableIntStateOf(episode.playState)
@@ -165,7 +169,7 @@ class EpisodeVM(var episode: Episode) {
                 episodeFlow.collect { changes: SingleQueryChange<Episode> ->
                     when (changes) {
                         is UpdatedObject -> {
-                            Logd("EpisodeVM", "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            Logd("EpisodeVM", "episodeMonitor UpdatedObject $tag ${changes.obj.title} ${changes.changedFields.joinToString()}")
                             if (episode.id == changes.obj.id) {
                                 withContext(Dispatchers.Main) {
                                     playedState = changes.obj.playState
@@ -188,7 +192,7 @@ class EpisodeVM(var episode: Episode) {
                 episodeFlow.collect { changes: SingleQueryChange<Episode> ->
                     when (changes) {
                         is UpdatedObject -> {
-                            Logd("EpisodeVM", "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            Logd("EpisodeVM", "mediaMonitor UpdatedObject $tag ${changes.obj.title} ${changes.changedFields.joinToString()}")
                             if (episode.id == changes.obj.id) {
                                 withContext(Dispatchers.Main) {
                                     positionState = changes.obj.media?.position ?: 0

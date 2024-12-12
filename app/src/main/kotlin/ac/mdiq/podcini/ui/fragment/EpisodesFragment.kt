@@ -318,7 +318,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
                     val media = item.media
                     if (media != null && media.downloaded) {
                         episodes.add(pos, item)
-                        vms.add(pos, EpisodeVM(item))
+                        vms.add(pos, EpisodeVM(item, TAG))
                     }
                 }
             }
@@ -339,7 +339,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
                     val media = item.media
                     if (media != null && media.downloaded) {
                         episodes.add(pos, item)
-                        vms.add(pos, EpisodeVM(item))
+                        vms.add(pos, EpisodeVM(item, TAG))
                     }
                 }
             }

@@ -12,7 +12,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -621,6 +620,9 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
 //                    }
                     EpisodesFragment.TAG -> {
                         forFragment = stringResource(R.string.episodes_label)
+                    }
+                    OnlineEpisodesFragment.TAG -> {
+                        forFragment = stringResource(R.string.online_episodes_label)
                     }
 //                    DownloadsFragment.TAG -> {
 //                        forFragment = stringResource(R.string.downloads_label)

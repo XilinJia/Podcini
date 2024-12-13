@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ComposeFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.storage.database.Episodes
@@ -18,18 +17,14 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Pair
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.widget.SearchView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +33,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -45,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -55,7 +52,6 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -64,10 +60,6 @@ import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 
 class SearchFragment : Fragment() {
-    private var _binding: ComposeFragmentBinding? = null
-    private val binding get() = _binding!!
-
-    private lateinit var searchView: SearchView
     private lateinit var automaticSearchDebouncer: Handler
 
     private val resultFeeds = mutableStateListOf<Feed>()
@@ -76,13 +68,11 @@ class SearchFragment : Fragment() {
     private var infoBarText = mutableStateOf("")
     private var searchInFeed by mutableStateOf(false)
     private var feedName by mutableStateOf("")
+    private var queryText by mutableStateOf("")
 
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private lateinit var swipeActions: SwipeActions
-
-    private var lastQueryChange: Long = 0
-    private var isOtherViewInFoucus = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +81,7 @@ class SearchFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = ComposeFragmentBinding.inflate(inflater)
         Logd(TAG, "fragment onCreateView")
-        setupToolbar(binding.toolbar)
         swipeActions = SwipeActions(this, TAG)
         lifecycle.addObserver(swipeActions)
 
@@ -101,38 +89,42 @@ class SearchFragment : Fragment() {
             searchInFeed = true
             feedName = requireArguments().getString(ARG_FEED_NAME, "")
         }
-        binding.mainView.setContent {
-            CustomTheme(requireContext()) {
-                Column {
-                    if (searchInFeed) FilterChip(onClick = {  }, label = { Text(feedName) }, selected = searchInFeed,
-                        trailingIcon = { Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = {
-                            requireArguments().putLong(ARG_FEED, 0)
-                            searchInFeed = false
-                        })) }
-                    )
-                    CriteriaList()
-                    FeedsRow()
-                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-                    EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                        leftSwipeCB = {
-                            if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else leftActionState.value.performAction(it, this@SearchFragment)
-                        },
-                        rightSwipeCB = {
-                            if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
-                            else rightActionState.value.performAction(it, this@SearchFragment)
-                        },
-                    )
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                CustomTheme(requireContext()) {
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            if (searchInFeed) FilterChip(onClick = { }, label = { Text(feedName) }, selected = searchInFeed,
+                                trailingIcon = {
+                                    Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = {
+                                        requireArguments().putLong(ARG_FEED, 0)
+                                        searchInFeed = false
+                                    }))
+                                }
+                            )
+                            CriteriaList()
+                            FeedsRow()
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            EpisodeLazyColumn(
+                                activity as MainActivity, vms = vms,
+                                leftSwipeCB = {
+                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else leftActionState.value.performAction(it, this@SearchFragment)
+                                },
+                                rightSwipeCB = {
+                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else rightActionState.value.performAction(it, this@SearchFragment)
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
         refreshSwipeTelltale()
-        if (requireArguments().getString(ARG_QUERY, null) != null) search()
-
-        searchView.setOnQueryTextFocusChangeListener { view: View, hasFocus: Boolean ->
-            if (hasFocus && !isOtherViewInFoucus) showInputMethod(view.findFocus())
-        }
-        return binding.root
+        val arg = requireArguments().getString(ARG_QUERY, "")
+        if (arg.isNotBlank()) search(arg)
+        return composeView
     }
 
     override fun onStart() {
@@ -147,7 +139,6 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        _binding = null
         results.clear()
         resultFeeds.clear()
         stopMonitor(vms)
@@ -160,42 +151,15 @@ class SearchFragment : Fragment() {
         rightActionState.value = swipeActions.actions.right[0]
     }
 
-    private fun setupToolbar(toolbar: MaterialToolbar) {
-        toolbar.setTitle(R.string.search_label)
-        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        toolbar.inflateMenu(R.menu.search)
-
-        val item: MenuItem = toolbar.menu.findItem(R.id.action_search)
-        item.expandActionView()
-        searchView = item.actionView as SearchView
-        searchView.queryHint = getString(R.string.search_label)
-        searchView.setQuery(requireArguments().getString(ARG_QUERY), true)
-        searchView.requestFocus()
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-             override fun onQueryTextSubmit(s: String): Boolean {
-                searchView.clearFocus()
-                search()
-                return true
-            }
-             override fun onQueryTextChange(s: String): Boolean {
-                automaticSearchDebouncer.removeCallbacksAndMessages(null)
-                if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL))
-                    search()
-                // Don't search instantly with first symbol after some pause
-                else automaticSearchDebouncer.postDelayed({ search(); lastQueryChange = 0 }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
-                lastQueryChange = System.currentTimeMillis()
-                return false
-            }
-        })
-        item.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                return true
-            }
-            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                parentFragmentManager.popBackStack()
-                return true
-            }
-        })
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        TopAppBar(title = { SearchBarRow(R.string.search_label) {
+            queryText = it
+            search(queryText)
+        }},
+            navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+        )
     }
 
     private var eventSink: Job?     = null
@@ -211,7 +175,7 @@ class SearchFragment : Fragment() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search(queryText)
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
@@ -236,12 +200,10 @@ class SearchFragment : Fragment() {
     }
 
     @SuppressLint("StringFormatMatches")
-     private fun search() {
-//        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
+     private fun search(query: String) {
         lifecycleScope.launch {
             try {
                 val results_ = withContext(Dispatchers.IO) {
-                    val query = searchView.query.toString()
                     if (query.isEmpty()) Pair<List<Episode>, List<Feed>>(emptyList(), emptyList())
                     else {
                         val feedID = requireArguments().getLong(ARG_FEED)
@@ -353,17 +315,6 @@ class SearchFragment : Fragment() {
         }
     }
 
-//     private fun performSearch(): Pair<List<Episode>, List<Feed>> {
-//        val query = searchView.query.toString()
-//        if (query.isEmpty()) return Pair<List<Episode>, List<Feed>>(emptyList(), emptyList())
-//
-//        val feedID = requireArguments().getLong(ARG_FEED)
-//        val items: List<Episode> = searchEpisodes(feedID, query)
-//        val feeds: List<Feed> = searchFeeds(query)
-//        Logd(TAG, "performSearch items: ${items.size} feeds: ${feeds.size}")
-//        return Pair<List<Episode>, List<Feed>>(items, feeds)
-//    }
-
     private fun searchFeeds(query: String): List<Feed> {
         Logd(TAG, "searchFeeds called ${SearchBy.AUTHOR.selected}")
         val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -437,16 +388,13 @@ class SearchFragment : Fragment() {
         return realm.query(Episode::class).query(queryString).find()
     }
 
-    private fun showInputMethod(view: View) {
-        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(view, 0)
-    }
+//    private fun showInputMethod(view: View) {
+//        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+//        imm.showSoftInput(view, 0)
+//    }
 
-     private fun searchOnline() {
-        searchView.clearFocus()
-        val inVal = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inVal.hideSoftInputFromWindow(searchView.windowToken, 0)
-        val query = searchView.query.toString()
+    private fun searchOnline() {
+        val query = queryText
         if (query.matches("http[s]?://.*".toRegex())) {
             val fragment: Fragment = OnlineFeedFragment.newInstance(query)
             (activity as MainActivity).loadChildFragment(fragment)

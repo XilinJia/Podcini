@@ -297,7 +297,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         remoteMediaClient?.play()
     }
 
-    override fun pause(abandonFocus: Boolean, reinit: Boolean) {
+    override fun pause(reinit: Boolean) {
         remoteMediaClient?.pause()
     }
 

@@ -16,7 +16,6 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
 import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
-import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
@@ -561,7 +560,7 @@ class MainActivity : CastEnabledActivity() {
             finish()
             startActivity(Intent(this, MainActivity::class.java))
         }
-        if (hiddenDrawerItems.contains(NavDrawerFragment.getLastNavFragment())) loadFragment(defaultPage, null)
+//        if (hiddenDrawerItems.contains(NavDrawerFragment.getLastNavFragment())) loadFragment(defaultPage, null)
     }
 
     @Deprecated("Deprecated in Java")

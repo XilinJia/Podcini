@@ -1,0 +1,11 @@
+ Version 6.15.9
+
+* removed "Set notification buttons" in Preferences as it's not used
+* removed "Persistent playback controls" in Preferences as it's not used
+* added "Show skip on notification" switch in Preferences, enabling/disabling Skip button on the notification panel
+* set reasonable default for switch settings in Preferences
+* in Preferences, Notification setting opens system notification settings on Android 8 and above
+* fixed combo import dialog layout
+* embedded the base class BaseEpisodesFragment in actual classes, and removed base class
+* all fragments have action bar and menu in Jetpack Compose
+* some class restructuring

@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -20,7 +19,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
@@ -62,13 +60,12 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
+class NavDrawerFragment : Fragment() {
     val TAG = this::class.simpleName ?: "Anonymous"
     private val feeds = mutableStateListOf<Feed>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        checkHiddenItems()
         getRecentPodcasts()
         val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
 
@@ -87,13 +84,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
             insets
         }
-        prefs?.registerOnSharedPreferenceChangeListener(this)
         return composeView
-    }
-
-    private fun checkHiddenItems() {
-        val hiddenItems = hiddenDrawerItems.map { it.trim() }
-        for (nav in navMap.values) nav.show = !hiddenItems.contains(nav.tag)
     }
 
     private fun getRecentPodcasts() {
@@ -164,12 +155,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         root.background = drawable
     }
 
-    override fun onDestroyView() {
-        Logd(TAG, "onDestroyView")
-        prefs?.unregisterOnSharedPreferenceChangeListener(this)
-        super.onDestroyView()
-    }
-
     override fun onResume() {
         Logd(TAG, "onResume() called")
         super.onResume()
@@ -180,16 +165,11 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    checkHiddenItems()
                     getRecentPodcasts()
                     getDatasetStats()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-//        if (PREF_LAST_FRAGMENT_TAG == key) navAdapter.notifyDataSetChanged() // Update selection
     }
 
     companion object {

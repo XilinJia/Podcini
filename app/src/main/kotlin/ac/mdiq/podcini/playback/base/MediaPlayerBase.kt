@@ -271,7 +271,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * @param reinit       is true if service should reinit after pausing if the media
      * file is being streamed
      */
-    abstract fun pause(abandonFocus: Boolean, reinit: Boolean)
+    abstract fun pause(reinit: Boolean)
 
     /**
      * Prepared media player for playback if the service is in the INITALIZED

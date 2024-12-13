@@ -35,7 +35,6 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fallbackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
-import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
@@ -68,6 +67,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateUtils
@@ -151,9 +151,6 @@ import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.round
 
-/**
- * PreferenceActivity for API 11+. In order to change the behavior of the preference UI, see PreferenceController.
- */
 class PreferenceActivity : AppCompatActivity() {
     var copyrightNoticeText by mutableStateOf("")
     var showToast by  mutableStateOf(false)
@@ -194,38 +191,12 @@ class PreferenceActivity : AppCompatActivity() {
                     composable(Screens.preferences_playback.tag) { PlaybackPreferencesScreen() }
                     composable(Screens.preferences_notifications.tag) { NotificationPreferencesScreen() }
                     composable(Screens.preferences_swipe.tag) { SwipePreferencesScreen() }
-                    composable(Screens.preferences_swipe.tag) { SwipePreferencesScreen() }
                     composable(Screens.preferences_about.tag) { AboutScreen(navController) }
                     composable(Screens.preferences_license.tag) { LicensesScreen() }
                 }
             }
         }
-
-//        val intent = intent
-//        if (intent.getBooleanExtra(OPEN_AUTO_DOWNLOAD_SETTINGS, false)) openScreen(Screens.preferences_autodownload)
     }
-
-//    fun openScreen(screen: Screens): PreferenceFragmentCompat {
-//        val fragment = when (screen) {
-////            Screens.preferences_user_interface -> UserInterfacePreferencesFragment()
-//            Screens.preferences_downloads -> DownloadsPreferencesFragment()
-//            Screens.preferences_import_export -> ImportExportPreferencesFragment()
-//            Screens.preferences_autodownload -> AutoDownloadPreferencesFragment()
-//            Screens.preferences_synchronization -> SynchronizationPreferencesFragment()
-//            Screens.preferences_playback -> PlaybackPreferencesFragment()
-//            Screens.preferences_notifications -> NotificationPreferencesFragment()
-//            Screens.preferences_swipe -> SwipePreferencesFragment()
-//        }
-//        if (screen == Screens.preferences_notifications && Build.VERSION.SDK_INT >= 26) {
-//            val intent = Intent()
-//            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-//            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-//            startActivity(intent)
-//        }
-////        else
-////            supportFragmentManager.beginTransaction().replace(binding.settingsContainer.id, fragment).addToBackStack(getString(screen.titleRes)).commit()
-//        return fragment
-//    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
@@ -320,10 +291,7 @@ class PreferenceActivity : AppCompatActivity() {
             IconTitleSummaryScreenRow(R.drawable.ic_download, R.string.downloads_pref, R.string.downloads_pref_sum, Screens.preferences_downloads.tag)
             IconTitleSummaryScreenRow(R.drawable.ic_cloud, R.string.synchronization_pref, R.string.synchronization_sum, Screens.preferences_synchronization.tag)
             IconTitleSummaryScreenRow(R.drawable.ic_storage, R.string.import_export_pref, R.string.import_export_summary, Screens.preferences_import_export.tag)
-            IconTitleActionRow(R.drawable.ic_notifications, R.string.notification_pref_fragment) {
-                navController.navigate(Screens.preferences_notifications.tag)
-//               openScreen(Screens.preferences_notifications)
-            }
+            IconTitleActionRow(R.drawable.ic_notifications, R.string.notification_pref_fragment) { navController.navigate(Screens.preferences_notifications.tag) }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -467,52 +435,6 @@ class PreferenceActivity : AppCompatActivity() {
 
     @Composable
     fun UserInterfacePreferencesScreen(navController: NavController) {
-        fun showFullNotificationButtonsDialog() {
-            val preferredButtons = fullNotificationButtons.toMutableList()
-            val allButtonNames = resources.getStringArray(R.array.full_notification_buttons_options)
-            val buttonIDs = intArrayOf(2, 3, 4)
-            val exactItems = 2
-            val completeListener = DialogInterface.OnClickListener { _: DialogInterface?, _: Int -> fullNotificationButtons = preferredButtons }
-            val title = resources.getString(R.string.pref_full_notification_buttons_title)
-
-            val checked = BooleanArray(allButtonNames.size) // booleans default to false in java
-            // Clear buttons that are not part of the setting anymore
-            for (i in preferredButtons.indices.reversed()) {
-                var isValid = false
-                for (j in checked.indices) {
-                    if (buttonIDs[j] == preferredButtons[i]) {
-                        isValid = true
-                        break
-                    }
-                }
-                if (!isValid) preferredButtons.removeAt(i)
-            }
-            for (i in checked.indices) if (preferredButtons.contains(buttonIDs[i])) checked[i] = true
-
-            val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            builder.setTitle(title)
-            builder.setMultiChoiceItems(allButtonNames, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
-                checked[which] = isChecked
-                if (isChecked) preferredButtons.add(buttonIDs[which])
-                else preferredButtons.remove(buttonIDs[which])
-            }
-            builder.setPositiveButton(R.string.confirm_label, null)
-            builder.setNegativeButton(R.string.cancel_label, null)
-            val dialog = builder.create()
-            dialog.show()
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                if (preferredButtons.size != exactItems) {
-//                    val selectionView = dialog.listView
-                    toastMassege = String.format(resources.getString(R.string.pref_compact_notification_buttons_dialog_error_exact), exactItems)
-                    showToast = true
-                } else {
-                    completeListener.onClick(dialog, AlertDialog.BUTTON_POSITIVE)
-                    dialog.cancel()
-                }
-            }
-        }
-
         supportActionBar?.setTitle(R.string.user_interface_label)
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
@@ -576,14 +498,14 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummarySwitchPrefRow(R.string.pref_episode_cover_title, R.string.pref_episode_cover_summary, UserPreferences.Prefs.prefEpisodeCover.name)
             TitleSummarySwitchPrefRow(R.string.pref_show_remain_time_title, R.string.pref_show_remain_time_summary, UserPreferences.Prefs.showTimeLeft.name)
             Text(stringResource(R.string.subscriptions_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-            TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, UserPreferences.Prefs.prefSwipeToRefreshAll.name)
+            TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)
             TitleSummarySwitchPrefRow(R.string.pref_feedGridLayout_title, R.string.pref_feedGridLayout_sum, UserPreferences.Prefs.prefFeedGridLayout.name)
             Text(stringResource(R.string.external_elements), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             if (Build.VERSION.SDK_INT < 26) {
                 TitleSummarySwitchPrefRow(R.string.pref_expandNotify_title, R.string.pref_expandNotify_sum, UserPreferences.Prefs.prefExpandNotify.name)
             }
-            TitleSummarySwitchPrefRow(R.string.pref_persistNotify_title, R.string.pref_persistNotify_sum, UserPreferences.Prefs.prefPersistNotify.name)
-            TitleSummaryActionColumn(R.string.pref_full_notification_buttons_title, R.string.pref_full_notification_buttons_sum) { showFullNotificationButtonsDialog() }
+//            TitleSummarySwitchPrefRow(R.string.pref_persistNotify_title, R.string.pref_persistNotify_sum, UserPreferences.Prefs.prefPersistNotify.name)
+            TitleSummarySwitchPrefRow(R.string.pref_show_notification_skip_title, R.string.pref_show_notification_skip_sum, UserPreferences.Prefs.prefShowSkip.name, true)
             Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showDefaultPageOptions by remember { mutableStateOf(false) }
             var tempSelectedOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefDefaultPage.name, DefaultPages.SubscriptionsFragment.name)!!) }
@@ -745,7 +667,7 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummaryActionColumn(R.string.pref_speed_forward, R.string.pref_speed_forward_sum) { showFFSpeedDialog = true }
             TitleSummarySwitchPrefRow(R.string.pref_stream_over_download_title, R.string.pref_stream_over_download_sum, UserPreferences.Prefs.prefStreamOverDownload.name)
             TitleSummarySwitchPrefRow(R.string.pref_low_quality_on_mobile_title, R.string.pref_low_quality_on_mobile_sum, UserPreferences.Prefs.prefLowQualityOnMobile.name)
-            TitleSummarySwitchPrefRow(R.string.pref_use_adaptive_progress_title, R.string.pref_use_adaptive_progress_sum, UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name)
+            TitleSummarySwitchPrefRow(R.string.pref_use_adaptive_progress_title, R.string.pref_use_adaptive_progress_sum, UserPreferences.Prefs.prefUseAdaptiveProgressUpdate.name, true)
             var showVideoModeDialog by remember { mutableStateOf(false) }
             if (showVideoModeDialog) VideoModeDialog(initMode =  VideoMode.fromCode(videoPlayMode), onDismissRequest = { showVideoModeDialog = false }) { mode -> setVideoMode(mode.code) }
             TitleSummaryActionColumn(R.string.pref_playback_video_mode, R.string.pref_playback_video_mode_sum) { showVideoModeDialog = true }
@@ -803,7 +725,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
             Text(stringResource(R.string.queue_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-            TitleSummarySwitchPrefRow(R.string.pref_enqueue_downloaded_title, R.string.pref_enqueue_downloaded_summary, UserPreferences.Prefs.prefEnqueueDownloaded.name)
+            TitleSummarySwitchPrefRow(R.string.pref_enqueue_downloaded_title, R.string.pref_enqueue_downloaded_summary, UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
             var showEnqueueLocationOptions by remember { mutableStateOf(false) }
             var tempLocationOption by remember { mutableStateOf(EnqueueLocation.BACK.name) }
             TitleSummaryActionColumn(R.string.pref_enqueue_location_title, R.string.pref_enqueue_location_sum) { showEnqueueLocationOptions = true }
@@ -830,9 +752,9 @@ class PreferenceActivity : AppCompatActivity() {
                     dismissButton = { TextButton(onClick = { showEnqueueLocationOptions = false }) { Text(text = "Cancel") } }
                 )
             }
-            TitleSummarySwitchPrefRow(R.string.pref_followQueue_title, R.string.pref_followQueue_sum, UserPreferences.Prefs.prefFollowQueue.name)
+            TitleSummarySwitchPrefRow(R.string.pref_followQueue_title, R.string.pref_followQueue_sum, UserPreferences.Prefs.prefFollowQueue.name, true)
             TitleSummarySwitchPrefRow(R.string.pref_skip_keeps_episodes_title, R.string.pref_skip_keeps_episodes_sum, UserPreferences.Prefs.prefSkipKeepsEpisode.name)
-            TitleSummarySwitchPrefRow(R.string.pref_mark_played_removes_from_queue_title, R.string.pref_mark_played_removes_from_queue_sum, UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name)
+            TitleSummarySwitchPrefRow(R.string.pref_mark_played_removes_from_queue_title, R.string.pref_mark_played_removes_from_queue_sum, UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
         }
     }
 
@@ -1433,8 +1355,8 @@ class PreferenceActivity : AppCompatActivity() {
                                 Text(option, modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodyMedium)
                             }
                         }
+                        if (comboDic["Media files"] != null && comboDic["Database"] == true) Text(stringResource(R.string.pref_import_media_files_later), modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodySmall)
                     }
-                    if (comboDic["Media files"] != null && comboDic["Database"] == true) Text(stringResource(R.string.pref_import_media_files_later), modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodySmall)
                 },
                 confirmButton = {
                     TextButton(onClick = {
@@ -1903,8 +1825,8 @@ class PreferenceActivity : AppCompatActivity() {
                     }
                 })
             }
-            TitleSummarySwitchPrefRow(R.string.pref_keeps_important_episodes_title, R.string.pref_keeps_important_episodes_sum, UserPreferences.Prefs.prefFavoriteKeepsEpisode.name)
-            TitleSummarySwitchPrefRow(R.string.pref_delete_removes_from_queue_title, R.string.pref_delete_removes_from_queue_sum, UserPreferences.Prefs.prefDeleteRemovesFromQueue.name)
+            TitleSummarySwitchPrefRow(R.string.pref_keeps_important_episodes_title, R.string.pref_keeps_important_episodes_sum, UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
+            TitleSummarySwitchPrefRow(R.string.pref_delete_removes_from_queue_title, R.string.pref_delete_removes_from_queue_sum, UserPreferences.Prefs.prefDeleteRemovesFromQueue.name, true)
             Text(stringResource(R.string.download_pref_details), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 10.dp))
             var showMeteredNetworkOptions by remember { mutableStateOf(false) }
@@ -2597,14 +2519,21 @@ class PreferenceActivity : AppCompatActivity() {
 
     @Composable
     fun NotificationPreferencesScreen() {
-        supportActionBar!!.setTitle(R.string.notification_pref_fragment)
-        val textColor = MaterialTheme.colorScheme.onSurface
-        val scrollState = rememberScrollState()
-        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-            Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, UserPreferences.Prefs.prefShowDownloadReport.name)
-            if (isProviderConnected)
-                TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, UserPreferences.Prefs.pref_gpodnet_notifications.name)
+        if (Build.VERSION.SDK_INT >= 26) {
+            val intent = Intent()
+            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            startActivity(intent)
+        } else {
+            supportActionBar!!.setTitle(R.string.notification_pref_fragment)
+            val textColor = MaterialTheme.colorScheme.onSurface
+            val scrollState = rememberScrollState()
+            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
+                Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, UserPreferences.Prefs.prefShowDownloadReport.name, true)
+                if (isProviderConnected)
+                    TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, UserPreferences.Prefs.pref_gpodnet_notifications.name, true)
+            }
         }
     }
 

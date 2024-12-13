@@ -260,10 +260,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         } else Logd(TAG, "Call to resume() was ignored because current state of PSMP object is $status")
     }
 
-    override fun pause(abandonFocus: Boolean, reinit: Boolean) {
+    override fun pause(reinit: Boolean) {
         releaseWifiLockIfNecessary()
         if (status == PlayerStatus.PLAYING) {
-            Logd(TAG, "Pausing playback $abandonFocus $reinit")
+            Logd(TAG, "Pausing playback $reinit")
             exoPlayer?.pause()
             setPlayerStatus(PlayerStatus.PAUSED, curMedia, getPosition())
             if (curEpisode != null) EventFlow.postEvent(FlowEvent.PlayEvent(curEpisode!!, Action.END))

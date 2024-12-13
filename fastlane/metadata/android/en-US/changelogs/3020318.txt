@@ -1,4 +1,4 @@
- Version 6.15.7
+ Version 6.15.8
 
 * re-worked action bar and menu in more fragments in Jetpack Compose
 * open-drawer icon on the action bar is set in accordance with the page

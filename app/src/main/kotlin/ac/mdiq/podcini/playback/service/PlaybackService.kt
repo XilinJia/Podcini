@@ -31,6 +31,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefAdaptiveProgressUpdate
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
+import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnNotification
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
@@ -213,7 +214,7 @@ class PlaybackService : MediaLibraryService() {
             Logd(TAG, "Pausing playback because audio is becoming noisy")
 //            pauseIfPauseOnDisconnect()
             transientPause = (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
-            if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(!isPersistNotify, false)
+            if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(false)
         }
     }
 
@@ -562,7 +563,7 @@ class PlaybackService : MediaLibraryService() {
             when (customCommand.customAction) {
                 NotificationCustomButton.REWIND.customAction -> mPlayer?.seekDelta(-rewindSecs * 1000)
                 NotificationCustomButton.FORWARD.customAction -> mPlayer?.seekDelta(fastForwardSecs * 1000)
-                NotificationCustomButton.SKIP.customAction -> mPlayer?.skip()
+                NotificationCustomButton.SKIP.customAction -> if (showSkipOnNotification) mPlayer?.skip()
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
@@ -698,7 +699,7 @@ class PlaybackService : MediaLibraryService() {
         var wasPlaying = false
         if (mPlayer != null) {
             wasPlaying = MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK
-            mPlayer!!.pause(abandonFocus = true, reinit = false)
+            mPlayer!!.pause(reinit = false)
             mPlayer!!.shutdown()
         }
         mPlayer = CastMediaPlayer.getInstanceIfConnected(this, mediaPlayerCallback)
@@ -897,7 +898,7 @@ class PlaybackService : MediaLibraryService() {
         when (keycode) {
             KeyEvent.KEYCODE_HEADSETHOOK, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 when {
-                    status == PlayerStatus.PLAYING -> mPlayer?.pause(!isPersistNotify, false)
+                    status == PlayerStatus.PLAYING -> mPlayer?.pause(false)
                     status == PlayerStatus.FALLBACK || status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> mPlayer?.resume()
                     status == PlayerStatus.PREPARING -> mPlayer?.startWhenPrepared?.set(!mPlayer!!.startWhenPrepared.get())
                     status == PlayerStatus.INITIALIZED -> {
@@ -925,7 +926,7 @@ class PlaybackService : MediaLibraryService() {
             }
             KeyEvent.KEYCODE_MEDIA_PAUSE -> {
                 if (status == PlayerStatus.PLAYING) {
-                    mPlayer?.pause(!isPersistNotify, false)
+                    mPlayer?.pause(false)
                     return true
                 }
             }
@@ -962,7 +963,7 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
             KEYCODE_MEDIA_STOP -> {
-                if (status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) mPlayer?.pause(abandonFocus = true, reinit = true)
+                if (status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) mPlayer?.pause(reinit = true)
                 return true
             }
             else -> {
@@ -1026,9 +1027,7 @@ class PlaybackService : MediaLibraryService() {
                     is FlowEvent.PlayerErrorEvent -> onPlayerError(event)
                     is FlowEvent.BufferUpdateEvent -> onBufferUpdate(event)
                     is FlowEvent.SleepTimerUpdatedEvent -> onSleepTimerUpdate(event)
-//                    is FlowEvent.VolumeAdaptionChangedEvent -> onVolumeAdaptionChanged(event)
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
-//                    is FlowEvent.SkipIntroEndingChangedEvent -> skipIntroEndingPresetChanged(event)
                     is FlowEvent.PlayEvent -> if (event.action != Action.END) currentitem = event.episode
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     else -> {}
@@ -1071,10 +1070,6 @@ class PlaybackService : MediaLibraryService() {
         mediaSession?.notifyChildrenChanged("CurQueue", range, null)
     }
 
-    //    private fun onVolumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
-//        if (mPlayer != null) updateVolumeIfNecessary(mPlayer!!, event.feedId, event.volumeAdaptionSetting)
-//    }
-
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
         val item = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: currentitem
         if (item?.feed?.id == event.feed.id) {
@@ -1089,7 +1084,7 @@ class PlaybackService : MediaLibraryService() {
 
     private fun onPlayerError(event: FlowEvent.PlayerErrorEvent) {
         if (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
-            mPlayer!!.pause(abandonFocus = true, reinit = false)
+            mPlayer!!.pause(reinit = false)
     }
 
     private fun onBufferUpdate(event: FlowEvent.BufferUpdateEvent) {
@@ -1105,7 +1100,7 @@ class PlaybackService : MediaLibraryService() {
     private fun onSleepTimerUpdate(event: FlowEvent.SleepTimerUpdatedEvent) {
         when {
             event.isOver -> {
-                mPlayer?.pause(abandonFocus = true, reinit = true)
+                mPlayer?.pause(reinit = true)
                 mPlayer?.setVolume(1.0f, 1.0f)
             }
             event.getTimeLeft() < TaskManager.NOTIFICATION_THRESHOLD -> {
@@ -1279,7 +1274,7 @@ class PlaybackService : MediaLibraryService() {
                     add(NotificationCustomButton.REWIND.commandButton)
                     add(defaultPlayPauseButton)
                     add(NotificationCustomButton.FORWARD.commandButton)
-                    add(NotificationCustomButton.SKIP.commandButton)
+                    if (showSkipOnNotification) add(NotificationCustomButton.SKIP.commandButton)
                 }.build()
                 /* Fallback option to handle nullability, in case retrieving default play/pause button fails for some reason (should never happen). */
             } else mediaButtons
@@ -1591,7 +1586,7 @@ class PlaybackService : MediaLibraryService() {
         /**
          * @return `true` if notifications are persistent, `false`  otherwise
          */
-        val isPersistNotify: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true) }
+//        val isPersistNotify: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true) }
 
         val isPauseOnHeadsetDisconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true) }
 
@@ -1679,7 +1674,7 @@ class PlaybackService : MediaLibraryService() {
             when (MediaPlayerBase.status) {
                 PlayerStatus.FALLBACK -> toggleFallbackSpeed(1.0f)
                 PlayerStatus.PLAYING -> {
-                    playbackService?.mPlayer?.pause(true, reinit = false)
+                    playbackService?.mPlayer?.pause(reinit = false)
                     playbackService?.isSpeedForward =  false
                     playbackService?.isFallbackSpeed = false
                     (curMedia as? EpisodeMedia)?.forceVideo = false
@@ -1705,7 +1700,7 @@ class PlaybackService : MediaLibraryService() {
                 if (item_?.feed?.id == feedId) {
                     item_.feed!!.preferences?.volumeAdaptionSetting = volumeAdaptionSetting
                     if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
-                        mediaPlayer.pause(abandonFocus = false, reinit = false)
+                        mediaPlayer.pause(reinit = false)
                         mediaPlayer.resume()
                     }
                 }

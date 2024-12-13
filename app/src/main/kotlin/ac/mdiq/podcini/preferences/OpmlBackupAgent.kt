@@ -170,7 +170,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
         private val TAG: String = OpmlBackupAgent::class.simpleName ?: "Anonymous"
         private const val OPML_BACKUP_KEY = "opml"
 
-        val isOPMLRestared: Boolean
+        val isOPMLRestored: Boolean
             get() = appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLRestore.name, false)
 
         fun performRestore(context: Context) {

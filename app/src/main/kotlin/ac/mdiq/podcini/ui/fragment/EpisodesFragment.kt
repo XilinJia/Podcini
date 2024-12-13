@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
@@ -15,10 +16,12 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
-import ac.mdiq.podcini.ui.compose.ComfirmDialog
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeVM
-import ac.mdiq.podcini.ui.compose.SpinnerExternalSet
+import ac.mdiq.podcini.ui.actions.EpisodeActionButton
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -26,28 +29,58 @@ import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.util.*
 import kotlin.math.min
 
-class EpisodesFragment : BaseEpisodesFragment() {
+class EpisodesFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
+
+    private var displayUpArrow = false
+
+    protected var infoBarText = mutableStateOf("")
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+
+    lateinit var swipeActions: SwipeActions
+
+    val episodes = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
+    var showFilterDialog by mutableStateOf(false)
+    var showSortDialog by mutableStateOf(false)
+    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+
+    var actionButtonToPass by mutableStateOf<((Episode) -> EpisodeActionButton)?>(null)
 
     private val spinnerTexts = QuickAccess.entries.map { it.name }
     private var curIndex by mutableIntStateOf(0)
-    private lateinit var spinnerView:  ComposeView
 
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
@@ -71,33 +104,162 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val root = super.onCreateView(inflater, container, savedInstanceState)
+        super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
-        curIndex = prefs.getInt("curIndex", 0)
-        spinnerView = ComposeView(requireContext()).apply {
+        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
+        swipeActions = SwipeActions(this, TAG)
+        lifecycle.addObserver(swipeActions)
+        val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    SpinnerExternalSet(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
-                        Logd(QueuesFragment.Companion.TAG, "Item selected: $index")
-                        curIndex = index
-                        prefs.edit().putInt("curIndex", index).apply()
-                        actionButtonToPass = if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name)  {it -> DeleteActionButton(it) } else null
-                        loadItems()
+                    if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
+                        onDismissRequest = { showFilterDialog = false }) { onFilterChanged(it) }
+                    if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { order, _ -> onSort(order) }
+                    OpenDialog()
+
+                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            EpisodeLazyColumn(
+                                activity as MainActivity, vms = vms,
+                                leftSwipeCB = {
+                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else leftActionState.value.performAction(it, this@EpisodesFragment)
+                                },
+                                rightSwipeCB = {
+                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    else rightActionState.value.performAction(it, this@EpisodesFragment)
+                                },
+                                actionButton_ = actionButtonToPass
+                            )
+                        }
                     }
                 }
             }
         }
-        toolbar.addView(spinnerView)
-
-        toolbar.inflateMenu(R.menu.episodes)
+        refreshSwipeTelltale()
+        curIndex = prefs.getInt("curIndex", 0)
         sortOrder = episodesSortOrder
         updateToolbar()
-        return root
+        return composeView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+        loadItems()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        cancelFlowEvents()
+    }
+
+    override fun onDestroyView() {
+        Logd(TAG, "onDestroyView")
+//        _binding = null
+        episodes.clear()
+        stopMonitor(vms)
+        vms.clear()
+        super.onDestroyView()
+    }
+
+//    private fun onKeyUp(event: KeyEvent) {
+//        if (!isAdded || !isVisible || !isMenuVisible) return
+//        when (event.keyCode) {
+////            KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
+////            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(adapter.itemCount)
+//            else -> {}
+//        }
+//    }
+
+    private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
+        if (loadItemsRunning) return
+        for (url in event.urls) {
+//            if (!event.isCompleted(url)) continue
+            val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
+            if (pos >= 0) {
+                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            }
+        }
+    }
+
+    private var eventSink: Job? = null
+    private var eventStickySink: Job? = null
+    private var eventKeySink: Job?     = null
+    private fun cancelFlowEvents() {
+        eventSink?.cancel()
+        eventSink = null
+        eventStickySink?.cancel()
+        eventStickySink = null
+        eventKeySink?.cancel()
+        eventKeySink = null
+    }
+    private fun procFlowEvents() {
+        if (eventSink == null) eventSink = lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
+                    is FlowEvent.HistoryEvent -> onHistoryEvent(event)
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.RatingEvent -> loadItems()
+                    else -> {}
+                }
+            }
+        }
+        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                Logd(TAG, "Received sticky event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
+//                    is FlowEvent.FeedUpdatingEvent -> onFeedUpdateRunningEvent(event)
+                    else -> {}
+                }
+            }
+        }
+        if (eventKeySink == null) eventKeySink = lifecycleScope.launch {
+            EventFlow.keyEvents.collectLatest { event ->
+                Logd(TAG, "Received key event: $event, ignored")
+//                onKeyUp(event)
+            }
+        }
+    }
+
+    private fun refreshSwipeTelltale() {
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
+    }
+
+    private var loadItemsRunning = false
+    fun loadItems() {
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            Logd(TAG, "loadItems() called")
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        episodes.clear()
+                        episodes.addAll(loadData())
+                    }
+                    withContext(Dispatchers.Main) {
+                        stopMonitor(vms)
+                        vms.clear()
+                        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
+                        updateToolbar()
+                    }
+                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                } finally { loadItemsRunning = false }
+            }
+        }
     }
 
     @Composable
-    override fun OpenDialog() {
+    fun OpenDialog() {
         ComfirmDialog(titleRes = R.string.clear_history_label, message = stringResource(R.string.clear_playback_history_msg), showDialog = showClearHistoryDialog) { clearHistory() }
     }
     /**
@@ -121,7 +283,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
         return episodes
     }
 
-    override fun loadData(): List<Episode> {
+    fun loadData(): List<Episode> {
         return when (spinnerTexts[curIndex]) {
             QuickAccess.New.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.new.name), episodesSortOrder, false)
             QuickAccess.Planned.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.soon.name, EpisodeFilter.States.later.name), episodesSortOrder, false)
@@ -135,21 +297,73 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    override fun getFilter(): EpisodeFilter {
+    fun getFilter(): EpisodeFilter {
         return EpisodeFilter(prefFilterEpisodes)
     }
 
-    override fun getPrefName(): String {
-        return PREF_NAME
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar() {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = {
+            SpinnerExternalSet(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
+                Logd(QueuesFragment.Companion.TAG, "Item selected: $index")
+                curIndex = index
+                prefs.edit().putInt("curIndex", index).apply()
+                actionButtonToPass = if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name)  {it -> DeleteActionButton(it) } else null
+                loadItems()
+            }
+        },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+            },
+            actions = {
+                IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "web") }
+                IconButton(onClick = { showSortDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "web") }
+                if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.All.name) IconButton(onClick = {
+                    if (spinnerTexts[curIndex] == QuickAccess.History.name) {
+                        val dialog = object: DatesFilterDialog(requireContext(), 0L) {
+                            override fun initParams() {
+                                val calendar = Calendar.getInstance()
+                                calendar.add(Calendar.YEAR, -1) // subtract 1 year
+                                timeFilterFrom = calendar.timeInMillis
+                                showMarkPlayed = false
+                            }
+                            override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed: Boolean) {
+                                EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder, timeFilterFrom, timeFilterTo))
+                            }
+                        }
+                        dialog.show()
+                    } else showFilterDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "web") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.clear_history_label)) }, onClick = {
+                            showClearHistoryDialog.value = true
+                            expanded = false
+                        })
+                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.reconcile_label)) }, onClick = {
+                            reconcile()
+                            expanded = false
+                        })
+                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.New.name)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.clear_new_label)) }, onClick = {
+                            clearNew()
+                            expanded = false
+                        })
+                }
+            }
+        )
     }
 
     var progressing by mutableStateOf(false)
-    override fun updateToolbar() {
-        toolbar.menu.findItem(R.id.clear_new).isVisible = episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.New.name
-        toolbar.menu.findItem(R.id.filter_items).isVisible = episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.All.name
-        toolbar.menu.findItem(R.id.clear_history_item).isVisible = episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name
-        toolbar.menu.findItem(R.id.reconcile).isVisible = episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.Downloaded.name
-
+    fun updateToolbar() {
         var info = "${episodes.size} episodes"
         if (spinnerTexts[curIndex] == QuickAccess.All.name && getFilter().properties.isNotEmpty()) info += " - ${getString(R.string.filtered_label)}"
         else if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name && episodes.isNotEmpty()) {
@@ -159,44 +373,6 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
         if (progressing) info += " - ${getString(R.string.progressing_label)}"
         infoBarText.value = info
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onMenuItemClick(item)) return true
-
-        when (item.itemId) {
-            R.id.filter_items -> {
-                if (spinnerTexts[curIndex] == QuickAccess.History.name) {
-                    val dialog = object: DatesFilterDialog(requireContext(), 0L) {
-                        override fun initParams() {
-                            val calendar = Calendar.getInstance()
-                            calendar.add(Calendar.YEAR, -1) // subtract 1 year
-                            timeFilterFrom = calendar.timeInMillis
-                            showMarkPlayed = false
-                        }
-                        override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed: Boolean) {
-                            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder, timeFilterFrom, timeFilterTo))
-                        }
-                    }
-                    dialog.show()
-                } else showFilterDialog = true
-            }
-            R.id.episodes_sort -> showSortDialog = true
-            R.id.clear_history_item -> showClearHistoryDialog.value = true
-//                {
-//                val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_history_label, R.string.clear_playback_history_msg) {
-//                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
-//                        dialog.dismiss()
-//                        clearHistory()
-//                    }
-//                }
-//                conDialog.createNewDialog().show()
-//            }
-            R.id.reconcile -> reconcile()
-            R.id.clear_new -> clearNew()
-            else -> return false
-        }
-        return true
     }
 
     private fun clearNew() {
@@ -276,7 +452,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    override fun onFilterChanged(filterValues: Set<String>) {
+    fun onFilterChanged(filterValues: Set<String>) {
         if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name || spinnerTexts[curIndex] == QuickAccess.All.name) {
             val fSet = filterValues.toMutableSet()
             if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) fSet.add(EpisodeFilter.States.downloaded.name)
@@ -285,17 +461,17 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    override fun onSort(order: EpisodeSortOrder) {
+    fun onSort(order: EpisodeSortOrder) {
         episodesSortOrder = order
         loadItems()
     }
 
-    override fun filtersDisabled(): MutableSet<EpisodeFilter.EpisodesFilterGroup> {
+    fun filtersDisabled(): MutableSet<EpisodeFilter.EpisodesFilterGroup> {
         return if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA)
         else mutableSetOf()
     }
 
-    override fun onHistoryEvent(event: FlowEvent.HistoryEvent) {
+    fun onHistoryEvent(event: FlowEvent.HistoryEvent) {
         if (spinnerTexts[curIndex] == QuickAccess.History.name) {
             sortOrder = event.sortOrder
             if (event.startDate > 0) startDate = event.startDate
@@ -305,7 +481,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    override fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
+    fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
         if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) {
             var i = 0
             val size: Int = event.episodes.size
@@ -326,7 +502,7 @@ class EpisodesFragment : BaseEpisodesFragment() {
         }
     }
 
-    override fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+    fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
         if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) {
             var i = 0
             val size: Int = event.episodes.size
@@ -345,6 +521,11 @@ class EpisodesFragment : BaseEpisodesFragment() {
             }
             updateToolbar()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        super.onSaveInstanceState(outState)
     }
 
     enum class QuickAccess {
@@ -354,5 +535,6 @@ class EpisodesFragment : BaseEpisodesFragment() {
     companion object {
         val TAG = EpisodesFragment::class.simpleName ?: "Anonymous"
         const val PREF_NAME: String = "PrefEpisodesFragment"
+        private const val KEY_UP_ARROW = "up_arrow"
     }
 }

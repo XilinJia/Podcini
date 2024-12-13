@@ -18,9 +18,11 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
 import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.feedLogsMap
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTextStyles
-import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -35,7 +37,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
@@ -476,7 +477,7 @@ class OnlineFeedFragment : Fragment() {
             episodes[i].media?.id = episodes[i].id
             episodes[i].isRemote.value = true
         }
-        val fragment: Fragment = RemoteEpisodesFragment.newInstance(episodes)
+        val fragment: Fragment = OnlineEpisodesFragment.newInstance(episodes)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
@@ -583,53 +584,6 @@ class OnlineFeedFragment : Fragment() {
                 .setMessage(R.string.null_value_podcast_error)
                 .setOnDismissListener {}
                 .show()
-        }
-    }
-
-    class RemoteEpisodesFragment : BaseEpisodesFragment() {
-        private var episodeList: MutableList<Episode> = mutableListOf()
-
-         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            val root = super.onCreateView(inflater, container, savedInstanceState)
-            Logd(TAG, "fragment onCreateView")
-            toolbar.inflateMenu(R.menu.episodes)
-            toolbar.setTitle(R.string.episodes_label)
-            updateToolbar()
-            return root
-        }
-        override fun onDestroyView() {
-            super.onDestroyView()
-        }
-        fun setEpisodes(episodeList_: MutableList<Episode>) {
-            episodeList = episodeList_
-        }
-        override fun loadData(): List<Episode> {
-            return episodeList
-        }
-        override fun getPrefName(): String {
-            return PREF_NAME
-        }
-        override fun updateToolbar() {
-            toolbar.menu.findItem(R.id.episodes_sort).isVisible = false
-            toolbar.menu.findItem(R.id.action_search).isVisible = false
-            toolbar.menu.findItem(R.id.filter_items).isVisible = false
-            infoBarText.value = "${episodes.size} episodes"
-        }
-         override fun onMenuItemClick(item: MenuItem): Boolean {
-            if (super.onOptionsItemSelected(item)) return true
-            when (item.itemId) {
-                else -> return false
-            }
-        }
-
-        companion object {
-            const val PREF_NAME: String = "EpisodesListFragment"
-
-            fun newInstance(episodes: MutableList<Episode>): RemoteEpisodesFragment {
-                val i = RemoteEpisodesFragment()
-                i.setEpisodes(episodes)
-                return i
-            }
         }
     }
 

@@ -139,12 +139,6 @@ sealed class FlowEvent {
         }
     }
 
-//    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
-
-//    data class SkipIntroEndingChangedEvent(val skipIntro: Int, val skipEnding: Int, val feedId: Long) : FlowEvent()
-
-//  handled together in FeedPrefsChangeEvent
-    //    data class VolumeAdaptionChangedEvent(val volumeAdaptionSetting: VolumeAdaptionSetting, val feedId: Long) : FlowEvent()
     data class FeedPrefsChangeEvent(val feed: Feed) : FlowEvent()
 
     data class SpeedChangedEvent(val newSpeed: Float) : FlowEvent()
@@ -164,12 +158,6 @@ sealed class FlowEvent {
     data class EpisodePlayedEvent(val episode: Episode? = null) : FlowEvent()
 
     data class RatingEvent(val episode: Episode, val rating: Int = Rating.SUPER.code) : FlowEvent()
-
-//    data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
-
-//    data class AllEpisodesSortEvent(val dummy: Unit = Unit) : FlowEvent()
-
-//    data class DownloadsFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
     data class EpisodeEvent(val episodes: List<Episode>) : FlowEvent() {
         companion object {
@@ -202,8 +190,6 @@ sealed class FlowEvent {
     data class FeedUpdatingEvent(val isRunning: Boolean) : FlowEvent()
 
     data class MessageEvent(val message: String, val action: Consumer<Context>? = null, val actionText: String? = null) : FlowEvent()
-
-//    data class StatisticsEvent(val dummy: Unit = Unit) : FlowEvent()
 
     data class SwipeActionsChangedEvent(val dummy: Unit = Unit) : FlowEvent()
 

@@ -401,7 +401,7 @@ class AudioPlayerFragment : Fragment() {
                                             (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
                                             currentMedia = currentItem!!.media
                                             curMedia = currentMedia
-                                            playbackService?.mPlayer?.pause(false, reinit = true)
+                                            playbackService?.mPlayer?.pause(reinit = true)
                                             playbackService?.mPlayer?.resume()
                                         }
                                         onDismissRequest()
@@ -439,7 +439,7 @@ class AudioPlayerFragment : Fragment() {
                     if (!notAudioOnly && (curMedia as? EpisodeMedia)?.forceVideo != true) {
                         (curMedia as? EpisodeMedia)?.forceVideo = true
                         status = PlayerStatus.STOPPED
-                        playbackService?.mPlayer?.pause(true, reinit = true)
+                        playbackService?.mPlayer?.pause(reinit = true)
                         playbackService?.recreateMediaPlayer()
                     }
                     VideoPlayerActivityStarter(requireContext()).start()

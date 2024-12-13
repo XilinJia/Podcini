@@ -11,6 +11,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -224,14 +227,14 @@ fun TitleSummaryActionColumn(titleRes: Int, summaryRes: Int, callback: ()-> Unit
 }
 
 @Composable
-fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String) {
+fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String, default: Boolean = false) {
     val textColor = MaterialTheme.colorScheme.onSurface
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
         Column(modifier = Modifier.weight(1f)) {
             Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
             Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
         }
-        var isChecked by remember { mutableStateOf(appPrefs.getBoolean(prefName, false)) }
+        var isChecked by remember { mutableStateOf(appPrefs.getBoolean(prefName, default)) }
         Switch(checked = isChecked, onCheckedChange = {
             isChecked = it
             appPrefs.edit().putBoolean(prefName, it).apply() })
@@ -291,5 +294,18 @@ fun ComposableLifecycle(lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.cur
         val observer = LifecycleEventObserver { source, event -> onEvent(source, event) }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+}
+
+@Composable
+fun SearchBarRow(hintTextRes: Int, defaultText: String = "", performSearch: (String) -> Unit) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        var queryText by remember { mutableStateOf(defaultText) }
+        TextField(value = queryText, onValueChange = { queryText = it }, label = { Text(stringResource(hintTextRes)) },
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { performSearch(queryText) }), modifier = Modifier.weight(1f))
+        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), tint = textColor, contentDescription = "right_action_icon",
+            modifier = Modifier.width(40.dp).height(40.dp).padding(start = 5.dp).clickable(onClick = { performSearch(queryText) }))
     }
 }

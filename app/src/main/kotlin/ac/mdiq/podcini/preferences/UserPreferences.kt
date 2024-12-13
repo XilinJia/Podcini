@@ -50,29 +50,8 @@ object UserPreferences {
     val isThemeColorTinted: Boolean
         get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(Prefs.prefTintedColors.name, false)
 
-    // not using this
-    var hiddenDrawerItems: List<String>
-        get() {
-            return listOf()
-//            val hiddenItems = appPrefs.getString(Prefs.prefHiddenDrawerItems.name, "")
-//            return hiddenItems?.split(",") ?: listOf()
-        }
-        set(items) {
-            val str = items.joinToString()
-            appPrefs.edit().putString(Prefs.prefHiddenDrawerItems.name, str).apply()
-        }
-
-    var fullNotificationButtons: List<Int>
-        get() {
-            val buttons = appPrefs.getString(Prefs.prefFullNotificationButtons.name, "${NOTIFICATION_BUTTON.SKIP.ordinal},${NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal}")?.split(",") ?: listOf()
-            val notificationButtons: MutableList<Int> = ArrayList()
-            for (button in buttons) notificationButtons.add(button.toInt())
-            return notificationButtons
-        }
-        set(items) {
-            val str = items.joinToString()
-            appPrefs.edit().putString(Prefs.prefFullNotificationButtons.name, str).apply()
-        }
+    val showSkipOnNotification: Boolean
+        get() = appPrefs.getBoolean(Prefs.prefShowSkip.name, true)
 
     val isAutoDelete: Boolean
         get() = appPrefs.getBoolean(Prefs.prefAutoDelete.name, false)
@@ -267,25 +246,17 @@ object UserPreferences {
         prefTheme,
         prefThemeBlack,
         prefTintedColors,
-        prefHiddenDrawerItems,
-//        prefDrawerFeedOrder,
-//        prefDrawerFeedOrderDir,
         prefFeedGridLayout,
         prefSwipeToRefreshAll,
         prefExpandNotify,
         prefEpisodeCover,
         showTimeLeft,
-        prefPersistNotify,
-        prefFullNotificationButtons,
+        prefShowSkip,
         prefShowDownloadReport,
         prefDefaultPage,
         prefBackButtonOpensDrawer,
-
-        prefFeedFilter,
-
         prefQueueKeepSorted,
         prefQueueKeepSortedOrder,
-        prefDownloadSortedOrder,
         prefDownloadsFilter,
 
         // Episodes
@@ -304,11 +275,8 @@ object UserPreferences {
         prefFavoriteKeepsEpisode,
         prefAutoDelete,
         prefAutoDeleteLocal,
-//        prefSmartMarkAsPlayedSecs,
-//        prefSmartMarkAsPlayedPercent,
         prefPlaybackSpeedArray,
         prefFallbackSpeed,
-        prefPauseForFocusLoss,
         prefPlaybackTimeRespectsSpeed,
         prefStreamOverDownload,
         prefLowQualityOnMobile,
@@ -336,7 +304,6 @@ object UserPreferences {
         pref_gpodnet_notifications,
 
         // Other
-//    prefDataFolder
         prefDeleteRemovesFromQueue,
 
         // Mediaplayer
@@ -346,15 +313,6 @@ object UserPreferences {
         prefRewindSecs,
         prefQueueLocked,
         prefVideoPlaybackMode,
-    }
-
-    @Suppress("ClassName")
-    enum class NOTIFICATION_BUTTON {
-        REWIND,
-        FAST_FORWARD,
-        SKIP,
-        NEXT_CHAPTER,
-        PLAYBACK_SPEED,
     }
 
     enum class ThemePreference {

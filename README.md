@@ -14,7 +14,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### Note:
 
-#### *** Podcini is being launched on Google Play. Early testers will become pre-IPO members on the contributors list. Start with a comment [here](https://github.com/XilinJia/Podcini/discussions/120)
+#### *** Podcini is being launched on Google Play. It's updated with every release with the Play app. As a result, Play app will no longer be released here. Google has not accepted it as a formal launch yet, but by being an early tester, you make possible for the formal launch.  More info [here](https://github.com/XilinJia/Podcini/discussions/120)
 #### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.

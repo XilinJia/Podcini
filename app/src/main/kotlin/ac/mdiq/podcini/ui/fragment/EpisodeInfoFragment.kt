@@ -20,7 +20,6 @@ import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -98,6 +97,8 @@ class EpisodeInfoFragment : Fragment() {
     private var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
     var isPlayed by mutableIntStateOf(episode?.playState ?: PlayState.UNSPECIFIED.code)
 
+    var showShareDialog by mutableStateOf(false)
+
     private var webviewData by mutableStateOf("")
     private var showHomeScreen by mutableStateOf(false)
     private var actionButton1 by mutableStateOf<EpisodeActionButton?>(null)
@@ -138,6 +139,8 @@ class EpisodeInfoFragment : Fragment() {
 
         var showPlayStateDialog by remember { mutableStateOf(false) }
         if (showPlayStateDialog) PlayStateDialog(listOf(episode!!)) { showPlayStateDialog = false }
+
+        if (showShareDialog && episode != null) ShareDialog(episode!!, requireActivity()) { showShareDialog = false }
 
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -254,8 +257,7 @@ class EpisodeInfoFragment : Fragment() {
                         expanded = false
                     })
                     if (episode != null) DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
-                        val shareDialog: ShareDialog = ShareDialog.newInstance(episode!!)
-                        shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+                        showShareDialog = true
                         expanded = false
                     })
                 }

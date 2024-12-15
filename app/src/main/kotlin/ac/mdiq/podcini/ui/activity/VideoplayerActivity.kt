@@ -25,7 +25,6 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -91,6 +90,8 @@ class VideoplayerActivity : CastEnabledActivity() {
     val showErrorDialog = mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
+    var showShareDialog by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getNoTitleTheme(this))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -125,6 +126,12 @@ class VideoplayerActivity : CastEnabledActivity() {
                 if (showAudioControlDialog) PlaybackControlsDialog(onDismiss = { showAudioControlDialog = false })
                 if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = { showSpeedDialog = false })
                 MediaPlayerErrorDialog(this, errorMessage, showErrorDialog)
+                if (showShareDialog) {
+                    val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                    if (feedItem != null) ShareDialog(feedItem, this@VideoplayerActivity) { showShareDialog = false }
+                    else showShareDialog = false
+                }
+
                 LaunchedEffect(curMediaId) { cleanedNotes = null }
 
                 Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
@@ -371,12 +378,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                         val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
                         if (feedItem != null) startActivity(MainActivity.getIntentToOpenFeed(this@VideoplayerActivity, feedItem.feedId!!))
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), contentDescription = "open podcast") }
-                    IconButton(onClick = {
-                        val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
-                        if (feedItem != null) {
-                            val shareDialog = ShareDialog.newInstance(feedItem)
-                            shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
-                        }
+                    IconButton(onClick = { showShareDialog = true
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "share") }
                 }
                 CastIconButton()
@@ -403,11 +405,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
-                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
-                            if (feedItem != null) {
-                                val shareDialog = ShareDialog.newInstance(feedItem)
-                                shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
-                            }
+                            showShareDialog = true
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.playback_speed)) }, onClick = {

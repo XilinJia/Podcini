@@ -116,9 +116,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                     }
                 }
                 onDismissRequest()
-            }) {
-                Text("Confirm")
-            }
+            }) { Text("Confirm") }
         }
     }
 

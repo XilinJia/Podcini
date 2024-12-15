@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -72,6 +73,7 @@ class SearchFragment : Fragment() {
 
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var showSwipeActionsDialog by mutableStateOf(false)
     private lateinit var swipeActions: SwipeActions
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +94,8 @@ class SearchFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
+                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             if (searchInFeed) FilterChip(onClick = { }, label = { Text(feedName) }, selected = searchInFeed,
@@ -104,15 +108,14 @@ class SearchFragment : Fragment() {
                             )
                             CriteriaList()
                             FeedsRow()
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
-                            EpisodeLazyColumn(
-                                activity as MainActivity, vms = vms,
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
+                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it, this@SearchFragment)
                                 },
                                 rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else rightActionState.value.performAction(it, this@SearchFragment)
                                 },
                             )
@@ -404,7 +407,8 @@ class SearchFragment : Fragment() {
     }
 
     companion object {
-        private val TAG: String = SearchFragment::class.simpleName ?: "Anonymous"
+        val TAG: String = SearchFragment::class.simpleName ?: "Anonymous"
+
         private const val ARG_QUERY = "query"
         private const val ARG_FEED = "feed"
         private const val ARG_FEED_NAME = "feedName"

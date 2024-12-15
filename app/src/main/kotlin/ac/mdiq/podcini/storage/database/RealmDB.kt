@@ -214,7 +214,7 @@ object RealmDB {
             result
         }
     }
-
+    
     fun runOnIOScope(block: suspend () -> Unit) : Job {
         return ioScope.launch {
             if (Dispatchers.IO == coroutineContext[ContinuationInterceptor]) block()

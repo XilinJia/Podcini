@@ -19,10 +19,10 @@ import ac.mdiq.podcini.ui.actions.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -39,7 +39,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,6 +67,7 @@ class EpisodesFragment : Fragment() {
     protected var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var showSwipeActionsDialog by mutableStateOf(false)
 
     lateinit var swipeActions: SwipeActions
 
@@ -76,6 +76,7 @@ class EpisodesFragment : Fragment() {
     var showFilterDialog by mutableStateOf(false)
     var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+    private var showDatesFilter by mutableStateOf(false)
 
     var actionButtonToPass by mutableStateOf<((Episode) -> EpisodeActionButton)?>(null)
 
@@ -115,22 +116,18 @@ class EpisodesFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
-                        onDismissRequest = { showFilterDialog = false }) { onFilterChanged(it) }
-                    if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { order, _ -> onSort(order) }
                     OpenDialog()
-
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
                             EpisodeLazyColumn(
                                 activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it, this@EpisodesFragment)
                                 },
                                 rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else rightActionState.value.performAction(it, this@EpisodesFragment)
                                 },
                                 actionButton_ = actionButtonToPass
@@ -260,7 +257,15 @@ class EpisodesFragment : Fragment() {
 
     @Composable
     fun OpenDialog() {
+        if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+        if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
+            onDismissRequest = { showFilterDialog = false }) { onFilterChanged(it) }
+        if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { order, _ -> onSort(order) }
+        swipeActions.ActionOptionsDialog()
         ComfirmDialog(titleRes = R.string.clear_history_label, message = stringResource(R.string.clear_playback_history_msg), showDialog = showClearHistoryDialog) { clearHistory() }
+        if (showDatesFilter) DatesFilterDialogCompose(inclPlayed = false, oldestDate = 0L, onDismissRequest = { showDatesFilter = false} ) {timeFilterFrom, timeFilterTo, _ ->
+            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder, timeFilterFrom, timeFilterTo))
+        }
     }
     /**
      * Loads the playback history from the database. A FeedItem is in the playback history if playback of the correpsonding episode
@@ -317,42 +322,30 @@ class EpisodesFragment : Fragment() {
             navigationIcon = if (displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
-                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
+                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), contentDescription = "Open Drawer") } }
             },
             actions = {
                 IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "web") }
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
                 IconButton(onClick = { showSortDialog = true
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "web") }
-                if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.All.name) IconButton(onClick = {
-                    if (spinnerTexts[curIndex] == QuickAccess.History.name) {
-                        val dialog = object: DatesFilterDialog(requireContext(), 0L) {
-                            override fun initParams() {
-                                val calendar = Calendar.getInstance()
-                                calendar.add(Calendar.YEAR, -1) // subtract 1 year
-                                timeFilterFrom = calendar.timeInMillis
-                                showMarkPlayed = false
-                            }
-                            override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed: Boolean) {
-                                EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder, timeFilterFrom, timeFilterTo))
-                            }
-                        }
-                        dialog.show()
-                    } else showFilterDialog = true
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "web") }
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "sort") }
+                if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.All.name) IconButton(onClick = { showFilterDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
+                if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name) IconButton(onClick = { showDatesFilter = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name)
+                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.clear_history_label)) }, onClick = {
                             showClearHistoryDialog.value = true
                             expanded = false
                         })
-                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
+                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.reconcile_label)) }, onClick = {
                             reconcile()
                             expanded = false
                         })
-                    if (episodes.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.New.name)
+                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.New.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.clear_new_label)) }, onClick = {
                             clearNew()
                             expanded = false

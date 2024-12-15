@@ -11,7 +11,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
+import ac.mdiq.podcini.ui.compose.DatesFilterDialogCompose
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -66,13 +65,14 @@ class StatisticsFragment : Fragment() {
     private var includeMarkedAsPlayed by mutableStateOf(false)
     private var statisticsState by mutableIntStateOf(0)
     private val selectedTabIndex = mutableIntStateOf(0)
+    private var showFilter by mutableStateOf(false)
+
     lateinit var statsResult: StatisticsResult
 
     private val showResetDialog = mutableStateOf(false)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-//        setHasOptionsMenu(true)
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
@@ -91,7 +91,12 @@ class StatisticsFragment : Fragment() {
                             }
                         }
                     }
-
+                    if (showFilter) DatesFilterDialogCompose(inclPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false), from = prefs.getLong(PREF_FILTER_FROM, 0), to = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE),
+                        oldestDate = statsResult.oldestDate, onDismissRequest = {showFilter = false} ) { timeFilterFrom, timeFilterTo, includeMarkedAsPlayed_ ->
+                        prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)?.putLong(PREF_FILTER_FROM, timeFilterFrom)?.putLong(PREF_FILTER_TO, timeFilterTo)?.apply()
+                        includeMarkedAsPlayed = includeMarkedAsPlayed_
+                        statisticsState++
+                    }
                     val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -123,23 +128,24 @@ class StatisticsFragment : Fragment() {
             navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "Open Drawer") } },
             actions = {
                 if (selectedTabIndex.value == 0) IconButton(onClick = {
-                    val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
-                        override fun initParams() {
-                            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-                            timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
-                            timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
-                        }
-                        override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
-                            prefs.edit()
-                                ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
-                                ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
-                                ?.putLong(PREF_FILTER_TO, timeFilterTo)
-                                ?.apply()
-                            includeMarkedAsPlayed = includeMarkedAsPlayed_
-                            statisticsState++
-                        }
-                    }
-                    dialog.show()
+                    showFilter = true
+//                    val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
+//                        override fun initParams() {
+//                            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+//                            timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
+//                            timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
+//                        }
+//                        override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
+//                            prefs.edit()
+//                                ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
+//                                ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
+//                                ?.putLong(PREF_FILTER_TO, timeFilterTo)
+//                                ?.apply()
+//                            includeMarkedAsPlayed = includeMarkedAsPlayed_
+//                            statisticsState++
+//                        }
+//                    }
+//                    dialog.show()
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

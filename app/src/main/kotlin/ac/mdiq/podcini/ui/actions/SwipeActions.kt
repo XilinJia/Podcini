@@ -18,13 +18,11 @@ import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.util.TypedValue
-import android.view.ViewGroup
 import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
@@ -39,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -66,34 +63,29 @@ interface SwipeAction {
     @DrawableRes
     fun getActionColor(): Int
 
+    @Composable
+    fun ActionOptions() {}
+
     fun performAction(item: Episode, fragment: Fragment)
 }
 
 class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
-    var actions: Actions = getPrefs(tag, "")
+    var actions by mutableStateOf<Actions>(getPrefs(tag, ""))
 
     override fun onStart(owner: LifecycleOwner) {
         actions = getPrefs(tag, "")
     }
 
-    fun showDialog() {
-        Logd("SwipeActions", "showDialog()")
-        val composeView = ComposeView(fragment.requireContext()).apply {
-            setContent {
-                val showDialog = remember { mutableStateOf(true) }
-                CustomTheme(fragment.requireContext()) {
-                    SwipeActionsDialog(this@SwipeActions.tag, onDismissRequest = {
-                        showDialog.value = false
-                        (fragment.view as? ViewGroup)?.removeView(this@apply)
-                    }) {
-                        actions = getPrefs(this@SwipeActions.tag, "")
-                        // TODO: remove the need of event
-                        EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
-                    }
-                }
-            }
-        }
-        (fragment.view as? ViewGroup)?.addView(composeView)
+    @Composable
+    fun ActionOptionsDialog() {
+        actions.left[0].ActionOptions()
+        actions.right[0].ActionOptions()
+    }
+
+    fun dialogCallback() {
+        actions = getPrefs(this@SwipeActions.tag, "")
+        // TODO: remove the need of event
+        EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
     }
 
     class Actions(prefs: String?) {
@@ -148,6 +140,10 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
     }
 
     class ComboSwipeAction : SwipeAction {
+        var showDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
+        var onFragment by mutableStateOf<Fragment?>(null)
+        var useAction by mutableStateOf<SwipeAction?>(null)
         override fun getId(): String {
             return ActionTypes.COMBO.name
         }
@@ -161,40 +157,36 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.combo_action)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    var showDialog by remember { mutableStateOf(true) }
-                    CustomTheme(fragment.requireContext()) {
-                        if (showDialog) Dialog(onDismissRequest = {
-                            showDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }) {
-                            val context = LocalContext.current
-                            Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-                                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                    for (action in swipeActions) {
-                                        if (action.getId() == ActionTypes.NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
-                                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                                            action.performAction(item, fragment)
-                                            showDialog = false
-                                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                                        }) {
-                                            val colorAccent = remember {
-                                                val typedValue = TypedValue()
-                                                context.theme.resolveAttribute(action.getActionColor(), typedValue, true)
-                                                Color(typedValue.data)
-                                            }
-                                            Icon(imageVector = ImageVector.vectorResource(id = action.getActionIcon()),  tint = colorAccent, contentDescription = action.getTitle(context))
-                                            Text(action.getTitle(context), Modifier.padding(start = 4.dp))
-                                        }
-                                    }
+            onEpisode = item
+            onFragment = fragment
+            showDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            useAction?.ActionOptions()
+            if (showDialog && onEpisode!= null && onFragment != null) Dialog(onDismissRequest = { showDialog = false }) {
+                val context = LocalContext.current
+                Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        for (action in swipeActions) {
+                            if (action.getId() == ActionTypes.NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
+                                useAction = action
+                                action.performAction(onEpisode!!, onFragment!!)
+                                showDialog = false
+                            }) {
+                                val colorAccent = remember {
+                                    val typedValue = TypedValue()
+                                    context.theme.resolveAttribute(action.getActionColor(), typedValue, true)
+                                    Color(typedValue.data)
                                 }
+                                Icon(imageVector = ImageVector.vectorResource(id = action.getActionIcon()),  tint = colorAccent, contentDescription = action.getTitle(context))
+                                Text(action.getTitle(context), Modifier.padding(start = 4.dp))
                             }
                         }
                     }
                 }
             }
-            (fragment.view as? ViewGroup)?.addView(composeView)
         }
     }
 
@@ -226,6 +218,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
     }
 
     class SetRatingSwipeAction : SwipeAction {
+        var showChooseRatingDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
             return ActionTypes.RATING.name
         }
@@ -239,22 +233,20 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.set_rating_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showChooseRatingDialog by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showChooseRatingDialog) ChooseRatingDialog(listOf(item)) {
-                            showChooseRatingDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
+            onEpisode = item
+            showChooseRatingDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showChooseRatingDialog && onEpisode!= null) ChooseRatingDialog(listOf(onEpisode!!)) { showChooseRatingDialog = false }
         }
     }
 
     class AddCommentSwipeAction : SwipeAction {
+        var showEditComment by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
+        var localTime by mutableLongStateOf(System.currentTimeMillis())
+        var editCommentText by mutableStateOf(TextFieldValue(""))
         override fun getId(): String {
             return ActionTypes.COMMENT.name
         }
@@ -268,28 +260,25 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.add_opinion_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showEditComment by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showEditComment) {
-                            val localTime = remember { System.currentTimeMillis() }
-                            val initCommentText = remember { (if (item.comment.isBlank()) "" else item.comment + "\n") + fullDateTimeString(localTime) + ":\n" }
-                            var commentTextState by remember { mutableStateOf(TextFieldValue(initCommentText)) }
-                            LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it },
-                                onDismissRequest = {
-                                    showEditComment = false
-                                    (fragment.view as? ViewGroup)?.removeView(this@apply)
-                                },
-                                onSave = { runOnIOScope { upsert(item) {
-                                    it.comment = commentTextState.text
-                                    it.commentTime = localTime
-                                } } })
+//            onEpisode = realm.query(Episode::class).query("id == ${item.id}").first().find()
+            onEpisode = item
+            localTime = System.currentTimeMillis()
+            editCommentText = TextFieldValue((if (onEpisode?.comment.isNullOrBlank()) "" else onEpisode!!.comment + "\n") + fullDateTimeString(localTime) + ":\n")
+            showEditComment = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showEditComment && onEpisode != null) {
+                LargeTextEditingDialog(textState = editCommentText, onTextChange = { editCommentText = it }, onDismissRequest = { showEditComment = false },
+                    onSave = { text ->
+                        runOnIOScope { upsert(onEpisode!!) {
+                            it.comment = text
+                            it.commentTime = localTime
                         }
-                    }
-                }
+                            onEpisode = null
+                        }
+                    })
             }
-            (fragment.view as? ViewGroup)?.addView(composeView)
         }
     }
 
@@ -371,12 +360,13 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
             }
             if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, resetMediaPosition = false, removeFromQueue = false) }
-//            removeFromQueue(item)
             runOnIOScope { removeFromQueueSync(curQueue, item) }
         }
     }
 
     class PutToQueueSwipeAction : SwipeAction {
+        var showPutToQueueDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
             return ActionTypes.PUT_TO_QUEUE.name
         }
@@ -390,18 +380,12 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.put_in_queue_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showPutToQueueDialog by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showPutToQueueDialog ) PutToQueueDialog(listOf(item)) {
-                            showPutToQueueDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
+            onEpisode = item
+            showPutToQueueDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showPutToQueueDialog && onEpisode != null) PutToQueueDialog(listOf(onEpisode!!)) { showPutToQueueDialog = false }
         }
     }
 
@@ -426,6 +410,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
     }
 
     class SetPlaybackStateSwipeAction : SwipeAction {
+        var showPlayStateDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
             return ActionTypes.SET_PLAY_STATE.name
         }
@@ -439,18 +425,12 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.set_play_state_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showPlayStateDialog by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showPlayStateDialog) PlayStateDialog(listOf(item)) {
-                            showPlayStateDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
+            onEpisode = item
+            showPlayStateDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showPlayStateDialog && onEpisode != null) PlayStateDialog(listOf(onEpisode!!)) { showPlayStateDialog = false }
         }
 //        private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
 //            delay(ceil((duration * 1.05f).toDouble()).toLong())
@@ -464,6 +444,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
     }
 
     class ShelveSwipeAction : SwipeAction {
+        var showShelveDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
             return ActionTypes.SHELVE.name
         }
@@ -477,22 +459,18 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.shelve_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showShelveDialog by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showShelveDialog) ShelveDialog(listOf(item)) {
-                            showShelveDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
+            onEpisode = item
+            showShelveDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showShelveDialog && onEpisode!= null) ShelveDialog(listOf(onEpisode!!)) { showShelveDialog = false }
         }
     }
 
     class EraseSwipeAction : SwipeAction {
+        var showEraseDialog by mutableStateOf(false)
+        var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
             return ActionTypes.ERASE.name
         }
@@ -506,18 +484,12 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.erase_episodes_label)
         }
         override fun performAction(item: Episode, fragment: Fragment) {
-            var showEraseDialog by mutableStateOf(true)
-            val composeView = ComposeView(fragment.requireContext()).apply {
-                setContent {
-                    CustomTheme(fragment.requireContext()) {
-                        if (showEraseDialog) EraseEpisodesDialog(listOf(item), item.feed) {
-                            showEraseDialog = false
-                            (fragment.view as? ViewGroup)?.removeView(this@apply)
-                        }
-                    }
-                }
-            }
-            (fragment.view as? ViewGroup)?.addView(composeView)
+            onEpisode = item
+            showEraseDialog = true
+        }
+        @Composable
+        override fun ActionOptions() {
+            if (showEraseDialog && onEpisode!= null) EraseEpisodesDialog(listOf(onEpisode!!), onEpisode!!.feed) { showEraseDialog = false }
         }
     }
 
@@ -614,21 +586,15 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 var forFragment = ""
                 when (tag) {
-//                    AllEpisodesFragment.TAG -> {
-//                        forFragment = stringResource(R.string.episodes_label)
-//                        keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
-//                    }
                     EpisodesFragment.TAG -> {
                         forFragment = stringResource(R.string.episodes_label)
                     }
                     OnlineEpisodesFragment.TAG -> {
                         forFragment = stringResource(R.string.online_episodes_label)
                     }
-//                    DownloadsFragment.TAG -> {
-//                        forFragment = stringResource(R.string.downloads_label)
-//                        keys = keys.filter { a: SwipeAction ->
-//                            (!a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) && !a.getId().equals(ActionTypes.START_DOWNLOAD.name)) }
-//                    }
+                    SearchFragment.TAG -> {
+                        forFragment = stringResource(R.string.search_label)
+                    }
                     FeedEpisodesFragment.TAG -> {
                         forFragment = stringResource(R.string.subscription)
                         keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
@@ -639,10 +605,6 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                             (!a.getId().equals(ActionTypes.ADD_TO_QUEUE.name) && !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }.toList()
 //                        keys = keys.filter { a: SwipeAction -> (!a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }
                     }
-//                    HistoryFragment.TAG -> {
-//                        forFragment = stringResource(R.string.playback_history_label)
-//                        keys = keys.toList()
-//                    }
                     else -> {}
                 }
                 if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }

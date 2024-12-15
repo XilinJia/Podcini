@@ -11,6 +11,8 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.CrashReportWriter
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -19,6 +21,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -65,7 +69,8 @@ class BugReportActivity : AppCompatActivity() {
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(horizontal = 10.dp)) {
+            val scrollState = rememberScrollState()
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(horizontal = 10.dp).verticalScroll(scrollState)) {
                 if (showToast) CustomToast(message = toastMassege, onDismiss = { showToast = false })
                 ComfirmDialog(0, stringResource(R.string.confirm_export_log_dialog_message), showConfirmExport) {
                     exportLog()
@@ -82,6 +87,7 @@ class BugReportActivity : AppCompatActivity() {
                     toastMassege = getString(R.string.copied_to_clipboard)
                     showToast = true
                 }) { Text(stringResource(R.string.copy_to_clipboard)) }
+                Button(modifier = Modifier.fillMaxWidth(), onClick = { sendEmail() }) { Text(stringResource(R.string.email_developer)) }
                 Text(crashDetailsTextView, color = textColor)
             }
         }
@@ -127,6 +133,19 @@ class BugReportActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendEmail() {
+        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("xilin.vw@gmail.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "Podcini issue")
+            putExtra(Intent.EXTRA_TEXT, crashDetailsTextView)
+        }
+        if (emailIntent.resolveActivity(packageManager) != null) startActivity(emailIntent)
+        else {
+            toastMassege = getString(R.string.need_email_client)
+            showToast = true
+        }
+    }
     companion object {
         private val TAG: String = BugReportActivity::class.simpleName ?: "Anonymous"
     }

@@ -43,6 +43,7 @@ import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
+import ac.mdiq.podcini.ui.compose.ShareDialog
 import ac.mdiq.podcini.ui.compose.SkipDialog
 import ac.mdiq.podcini.ui.compose.SkipDirection
 import ac.mdiq.podcini.ui.dialog.*
@@ -425,6 +426,8 @@ class AudioPlayerFragment : Fragment() {
         val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
         var showVolumeDialog by remember { mutableStateOf(false) }
         if (showVolumeDialog) VolumeAdaptionDialog { showVolumeDialog = false }
+        var showShareDialog by remember { mutableStateOf(false) }
+        if (showShareDialog && currentItem != null) ShareDialog(currentItem!!, requireActivity()) {showShareDialog = false }
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
                 (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
@@ -458,10 +461,7 @@ class AudioPlayerFragment : Fragment() {
                     }
                 })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), tint = textColor, contentDescription = "Share", modifier = Modifier.clickable {
-                if (currentItem != null) {
-                    val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
-                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
-                }
+                if (currentItem != null) showShareDialog = true
             })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_volume_adaption), tint = textColor, contentDescription = "Volume adaptation", modifier = Modifier.clickable {
                 if (currentItem != null) showVolumeDialog = true

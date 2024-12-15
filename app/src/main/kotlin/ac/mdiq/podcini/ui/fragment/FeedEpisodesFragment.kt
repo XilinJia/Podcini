@@ -14,6 +14,7 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -72,6 +73,7 @@ class FeedEpisodesFragment : Fragment() {
     private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var showSwipeActionsDialog by mutableStateOf(false)
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
@@ -177,22 +179,24 @@ class FeedEpisodesFragment : Fragment() {
                             }
                         }
                     }
+                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {
                                 if (enableFilter && feed != null) showFilterDialog = true
                             }, filterLongClickCB = { filterLongClick() })
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
                             EpisodeLazyColumn(
                                 activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
                                 refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it, this@FeedEpisodesFragment)
                                 },
                                 rightSwipeCB = {
                                     Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
-                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else rightActionState.value.performAction(it, this@FeedEpisodesFragment)
                                 },
                             )

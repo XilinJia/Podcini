@@ -347,10 +347,31 @@ class PreferenceActivity : AppCompatActivity() {
             }
             IconTitleSummaryActionRow(R.drawable.ic_questionmark, R.string.online_help, R.string.online_help_sum) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/") }
             IconTitleSummaryActionRow(R.drawable.ic_info, R.string.privacy_policy, R.string.privacy_policy) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/blob/main/PrivacyPolicy.md") }
-            IconTitleSummaryActionRow(R.drawable.ic_info, R.string.licenses, R.string.licenses_summary) {
-                navController.navigate(Screens.preferences_license.tag)
-//                supportFragmentManager.beginTransaction().replace(R.id.settingsContainer, LicensesFragment()).addToBackStack(getString(R.string.translators)).commit()
+            IconTitleSummaryActionRow(R.drawable.ic_info, R.string.licenses, R.string.licenses_summary) { navController.navigate(Screens.preferences_license.tag) }
+            IconTitleSummaryActionRow(R.drawable.baseline_mail_outline_24, R.string.email_developer, R.string.email_sum) {
+                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:")
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf("xilin.vw@gmail.com"))
+                    putExtra(Intent.EXTRA_SUBJECT, "Regarding Podcini")
+                }
+                if (emailIntent.resolveActivity(packageManager) != null) startActivity(emailIntent)
+                else {
+                    toastMassege = getString(R.string.need_email_client)
+                    showToast = true
+                }
             }
+//            TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
+//                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+//                    data = Uri.parse("mailto:")
+//                    putExtra(Intent.EXTRA_EMAIL, arrayOf("xilin.vw@gmail.com"))
+//                    putExtra(Intent.EXTRA_SUBJECT, "Regarding Podcini")
+//                }
+//                if (emailIntent.resolveActivity(packageManager) != null) startActivity(emailIntent)
+//                else {
+//                    toastMassege = getString(R.string.need_email_client)
+//                    showToast = true
+//                }
+//            }) { Text(stringResource(R.string.email_developer)) }
         }
     }
 

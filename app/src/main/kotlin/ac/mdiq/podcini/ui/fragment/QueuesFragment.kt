@@ -24,6 +24,7 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -97,6 +98,7 @@ class QueuesFragment : Fragment() {
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var showSwipeActionsDialog by mutableStateOf(false)
 
     private var isQueueLocked by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true))
 
@@ -148,21 +150,24 @@ class QueuesFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
+                    if (showSwipeActionsDialog) SwipeActionsDialog(if (showBin) "$TAG.Bin" else TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
                     ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = showClearQueueDialog) { clearQueue() }
                     if (shouldShowLockWarningDiwload) ShowLockWarning { shouldShowLockWarningDiwload = false }
                     RenameQueueDialog(showDialog = showRenameQueueDialog.value, onDismiss = { showRenameQueueDialog.value = false })
                     AddQueueDialog(showDialog = showAddQueueDialog.value, onDismiss = { showAddQueueDialog.value = false })
+                    swipeActions.ActionOptionsDialog()
+                    swipeActionsBin.ActionOptionsDialog()
 
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         if (showBin) {
                             Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                                InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
+                                InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { showSwipeActionsDialog = true })
                                 val leftCB = { episode: Episode ->
-                                    if (leftActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
+                                    if (leftActionStateBin.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionStateBin.value.performAction(episode, this@QueuesFragment)
                                 }
                                 val rightCB = { episode: Episode ->
-                                    if (rightActionStateBin.value is NoActionSwipeAction) swipeActionsBin.showDialog()
+                                    if (rightActionStateBin.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else rightActionStateBin.value.performAction(episode, this@QueuesFragment)
                                 }
                                 EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
@@ -177,13 +182,13 @@ class QueuesFragment : Fragment() {
                                         reorderQueue(sortOrder, true)
                                     }
 
-                                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
                                     val leftCB = { episode: Episode ->
-                                        if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                        if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                         else leftActionState.value.performAction(episode, this@QueuesFragment)
                                     }
                                     val rightCB = { episode: Episode ->
-                                        if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                        if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                         else rightActionState.value.performAction(episode, this@QueuesFragment)
                                     }
                                     EpisodeLazyColumn(activity as MainActivity, vms = vms,

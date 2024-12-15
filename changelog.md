@@ -1,3 +1,12 @@
+# 6.15.10
+
+* re-worked dialog mechanisms in swipe actions and fixed related crashes
+* corrected open-drawer icon for Episodes fragment 
+* fixed issue of conditional menu items not correctly shown in Episodes fragment 
+* added "Email to developer" option in BugReport and About screens
+* made BugReport screen scrollable
+* ShareDialog and DatesFilterDialog are in Compose
+
 # 6.15.9
 
 * removed "Set notification buttons" in Preferences as it's not used

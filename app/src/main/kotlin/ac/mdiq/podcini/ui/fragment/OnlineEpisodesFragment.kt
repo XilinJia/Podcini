@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -29,8 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
@@ -42,6 +45,7 @@ class OnlineEpisodesFragment: Fragment() {
     private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var showSwipeActionsDialog by mutableStateOf(false)
     lateinit var swipeActions: SwipeActions
 
     val episodes = mutableListOf<Episode>()
@@ -59,17 +63,18 @@ class OnlineEpisodesFragment: Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    OpenDialog()
+                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it, this@OnlineEpisodesFragment)
                                 },
                                 rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) swipeActions.showDialog()
+                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else rightActionState.value.performAction(it, this@OnlineEpisodesFragment)
                                 },
                             )
@@ -93,9 +98,6 @@ class OnlineEpisodesFragment: Fragment() {
             }
         )
     }
-
-    @Composable
-    fun OpenDialog() {}
 
     override fun onStart() {
         super.onStart()

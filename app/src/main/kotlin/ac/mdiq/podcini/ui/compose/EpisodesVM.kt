@@ -49,10 +49,13 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import ac.mdiq.podcini.util.MiscFormatter.formatLargeInteger
 import ac.mdiq.podcini.util.MiscFormatter.localDateTimeString
+import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
 import ac.mdiq.vista.extractor.stream.StreamInfo
+import android.app.Activity
+import android.content.Context
 import android.net.Uri
 import android.text.format.Formatter
 import android.util.Log
@@ -105,6 +108,10 @@ import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
 import java.io.File
 import java.net.URL
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -1160,4 +1167,149 @@ fun EpisodeSortDialog(initOrder: EpisodeSortOrder, showKeepSorted: Boolean = fal
             }
         }
     }
+}
+
+@Composable
+fun DatesFilterDialogCompose(inclPlayed: Boolean = false, from: Long? = null, to: Long? = null, oldestDate: Long, onDismissRequest: ()->Unit, callback: (Long, Long, Boolean) -> Unit) {
+    @Composable
+    fun MonthYearInput(default: String, onMonthYearChange: (String) -> Unit) {
+        fun formatMonthYear(input: String): String {
+            val sanitized = input.replace(Regex("[^0-9/]"), "")
+            return when {
+                sanitized.length > 7 -> sanitized.substring(0, 7)
+                else -> sanitized
+            }
+        }
+        fun isValidMonthYear(input: String): Boolean {
+            val regex = Regex("^(0[1-9]|1[0-2])/\\d{4}$")
+            return regex.matches(input)
+        }
+        var monthYear by remember { mutableStateOf(TextFieldValue(default)) }
+        var isValid by remember { mutableStateOf(isValidMonthYear(monthYear.text)) }
+        Column(modifier = Modifier.padding(16.dp)) {
+            TextField(value = monthYear, label = { Text(stringResource(R.string.statistics_month_year)) },
+                onValueChange = { input ->
+                    monthYear = input
+                    val formattedInput = formatMonthYear(monthYear.text)
+                    isValid = isValidMonthYear(formattedInput)
+                    if (isValid) onMonthYearChange(formattedInput)
+                },
+                isError = !isValidMonthYear(monthYear.text),
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (!isValid) Text(text = "Invalid format. Please use MM/YYYY.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+    fun convertMonthYearToUnixTime(monthYear: String, start: Boolean = true): Long? {
+        val regex = Regex("^(0[1-9]|1[0-2])/\\d{4}$")
+        if (!regex.matches(monthYear)) return null
+        val (month, year) = monthYear.split("/").map { it.toInt() }
+        val localDate = if (start) LocalDate.of(year, month, 1) else LocalDate.of(year, month, 1).plusMonths(1).minusDays(1)
+        return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    }
+    fun convertUnixTimeToMonthYear(unixTime: Long): String {
+        return Instant.ofEpochMilli(unixTime).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("MM/yyyy"))
+    }
+    var includeMarkedAsPlayed by remember { mutableStateOf(inclPlayed) }
+    var timeFilterFrom by remember { mutableLongStateOf(from ?: oldestDate) }
+    var timeFilterTo by remember { mutableLongStateOf(to ?: Date().time) }
+    var useAllTime by remember { mutableStateOf(false) }
+    AlertDialog(onDismissRequest = { onDismissRequest() },
+        title = { Text(stringResource(R.string.share_label), style = CustomTextStyles.titleCustom) },
+        text = {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = includeMarkedAsPlayed, onCheckedChange = {
+                        includeMarkedAsPlayed = it
+//                        if (includeMarkedAsPlayed) {
+//                            timeFilterFrom = 0
+//                            timeFilterTo = Long.MAX_VALUE
+//                        }
+                    })
+                    Text(stringResource(R.string.statistics_include_marked))
+                }
+                if (!useAllTime) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.statistics_start_month))
+                        MonthYearInput(convertUnixTimeToMonthYear(oldestDate)) { timeFilterFrom = convertMonthYearToUnixTime(it) ?: oldestDate }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.statistics_end_month))
+                        MonthYearInput(convertUnixTimeToMonthYear(System.currentTimeMillis())) { timeFilterTo = convertMonthYearToUnixTime(it, false) ?: Date().time }
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = useAllTime, onCheckedChange = { useAllTime = it })
+                    Text(stringResource(R.string.statistics_filter_all_time))
+                }
+                Text(stringResource(R.string.statistics_speed_not_counted))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (useAllTime) {
+                    timeFilterFrom = oldestDate
+                    timeFilterTo = Date().time
+                }
+                callback(timeFilterFrom, timeFilterTo, includeMarkedAsPlayed)
+                onDismissRequest()
+            }) { Text(text = "OK") }
+        },
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+    )
+}
+
+@Composable
+fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
+    val PREF_SHARE_EPISODE_START_AT = "prefShareEpisodeStartAt"
+    val PREF_SHARE_EPISODE_TYPE = "prefShareEpisodeType"
+
+    val prefs = remember { act.getSharedPreferences("ShareDialog", Context.MODE_PRIVATE) }
+    val hasMedia = remember { item.media != null }
+    val downloaded = remember { hasMedia && item.media!!.downloaded }
+    val hasDownloadUrl = remember { hasMedia && item.media!!.downloadUrl != null }
+
+    var type = remember { prefs.getInt(PREF_SHARE_EPISODE_TYPE, 1) }
+    if ((type == 2 && !hasDownloadUrl) || (type == 3 && !downloaded)) type = 1
+
+    var position by remember { mutableIntStateOf(type) }
+    var isChecked by remember { mutableStateOf(false) }
+    var ctx = LocalContext.current
+
+    AlertDialog(onDismissRequest = { onDismissRequest() },
+        title = { Text(stringResource(R.string.share_label), style = CustomTextStyles.titleCustom) },
+        text = {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = position == 1, onClick = { position = 1 })
+                    Text(stringResource(R.string.share_dialog_for_social))
+                }
+                if (hasDownloadUrl) Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = position == 2, onClick = { position = 2 })
+                    Text(stringResource(R.string.share_dialog_media_address))
+                }
+                if (downloaded) Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = position == 3, onClick = { position = 3 })
+                    Text(stringResource(R.string.share_dialog_media_file_label))
+                }
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().height(5.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
+                    Text(stringResource(R.string.share_playback_position_dialog_label))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                when(position) {
+                    1 -> ShareUtils.shareFeedItemLinkWithDownloadLink(ctx, item, isChecked)
+                    2 -> ShareUtils.shareMediaDownloadLink(ctx, item.media!!)
+                    3 -> ShareUtils.shareFeedItemFile(ctx, item.media!!)
+                }
+                prefs.edit().putBoolean(PREF_SHARE_EPISODE_START_AT, isChecked).putInt(PREF_SHARE_EPISODE_TYPE, position).apply()
+                onDismissRequest()
+            }) { Text(text = "OK") }
+        },
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+    )
 }

@@ -964,9 +964,7 @@ class SubscriptionsFragment : Fragment() {
                         Logd(TAG, "queryString: $queryString")
                         comparator(counterMap, dir)
                     }
-                    else -> {
-                        comparator(mutableMapOf(), 0)
-                    }
+                    else -> comparator(mutableMapOf(), 0)
                 }
             }
             else -> {   // count
@@ -1006,6 +1004,7 @@ class SubscriptionsFragment : Fragment() {
         feedSorted++
         if (!build) return feedList_.sortedWith(comparator)
 
+        saveSortingPrefs()
         feedListFiltered.clear()
         feedListFiltered.addAll(feedList_.sortedWith(comparator))
         return listOf()
@@ -1030,7 +1029,6 @@ class SubscriptionsFragment : Fragment() {
                                 titleAscending = !titleAscending
                                 sortIndex = 0
                                 doSort()
-                                saveSortingPrefs()
                             }
                         ) { Text(text = stringResource(R.string.title) + if (titleAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                         Spacer(Modifier.weight(1f))
@@ -1039,7 +1037,6 @@ class SubscriptionsFragment : Fragment() {
                                 dateAscending = !dateAscending
                                 sortIndex = 1
                                 doSort()
-                                saveSortingPrefs()
                             }
                         ) { Text(text = stringResource(R.string.date) + if (dateAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                         Spacer(Modifier.weight(1f))
@@ -1048,7 +1045,6 @@ class SubscriptionsFragment : Fragment() {
                                 countAscending = !countAscending
                                 sortIndex = 2
                                 doSort()
-                                saveSortingPrefs()
                             }
                         ) { Text(text = stringResource(R.string.count) + if (countAscending) "\u00A0▲" else "\u00A0▼", color = textColor) }
                     }
@@ -1059,7 +1055,6 @@ class SubscriptionsFragment : Fragment() {
                                 onClick = {
                                     dateSortIndex = 0
                                     doSort()
-                                    saveSortingPrefs()
                                 }
                             ) { Text(stringResource(R.string.publish_date)) }
                             Spacer(Modifier.weight(1f))
@@ -1067,7 +1062,6 @@ class SubscriptionsFragment : Fragment() {
                                 onClick = {
                                     dateSortIndex = 1
                                     doSort()
-                                    saveSortingPrefs()
                                 }
                             ) { Text(stringResource(R.string.download_date)) }
                         }
@@ -1089,7 +1083,6 @@ class SubscriptionsFragment : Fragment() {
                                             downlaodedSortIndex = 0
                                         } else downlaodedSortIndex = -1
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
                                 Spacer(Modifier.weight(0.1f))
@@ -1101,7 +1094,6 @@ class SubscriptionsFragment : Fragment() {
                                             downlaodedSortIndex = 1
                                         } else downlaodedSortIndex = -1
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[1].displayName), color = textColor) }
                                 Spacer(Modifier.weight(0.5f))
@@ -1120,7 +1112,6 @@ class SubscriptionsFragment : Fragment() {
                                             commentedSortIndex = 0
                                         } else commentedSortIndex = -1
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[0].displayName), color = textColor) }
                                 Spacer(Modifier.weight(0.1f))
@@ -1132,7 +1123,6 @@ class SubscriptionsFragment : Fragment() {
                                             commentedSortIndex = 1
                                         } else commentedSortIndex = -1
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[1].displayName), color = textColor) }
                                 Spacer(Modifier.weight(0.5f))
@@ -1162,7 +1152,6 @@ class SubscriptionsFragment : Fragment() {
                                         }
                                         lowerSelected = !lowerSelected
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall,
@@ -1171,7 +1160,6 @@ class SubscriptionsFragment : Fragment() {
                                         higherSelected = false
                                         for (i in item.values.indices) playStateSort[i].value = false
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
@@ -1186,7 +1174,6 @@ class SubscriptionsFragment : Fragment() {
                                         }
                                         higherSelected = !higherSelected
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                             }
@@ -1202,7 +1189,6 @@ class SubscriptionsFragment : Fragment() {
                                         selectNone = false
                                         playStateSort[index].value = !playStateSort[index].value
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor) }
                             }
@@ -1231,7 +1217,6 @@ class SubscriptionsFragment : Fragment() {
                                         }
                                         lowerSelected = !lowerSelected
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall,
@@ -1240,7 +1225,6 @@ class SubscriptionsFragment : Fragment() {
                                         higherSelected = false
                                         for (i in item.values.indices) ratingSort[i].value = false
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
@@ -1255,7 +1239,6 @@ class SubscriptionsFragment : Fragment() {
                                         }
                                         higherSelected = !higherSelected
                                         doSort()
-                                        saveSortingPrefs()
                                     })
                                 Spacer(Modifier.weight(1f))
                             }
@@ -1268,7 +1251,6 @@ class SubscriptionsFragment : Fragment() {
                                         selectNone = false
                                         ratingSort[index].value = !ratingSort[index].value
                                         doSort()
-                                        saveSortingPrefs()
                                     },
                                 ) { Text(text = stringResource(item.values[index].displayName), maxLines = 1, color = textColor) }
                             }

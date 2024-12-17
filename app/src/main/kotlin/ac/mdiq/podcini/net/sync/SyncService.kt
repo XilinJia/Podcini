@@ -54,7 +54,6 @@ import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
-
 open class SyncService(context: Context, params: WorkerParameters) : Worker(context, params) {
     val TAG = this::class.simpleName ?: "Anonymous"
 
@@ -151,9 +150,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
                 val uploadResponse = syncServiceImpl.uploadSubscriptionChanges(queuedAddedFeeds, queuedRemovedFeeds)
                 synchronizationQueueStorage.clearFeedQueues()
                 if (uploadResponse != null) newTimeStamp = uploadResponse.timestamp
-            } finally {
-                LockingAsyncExecutor.lock.unlock()
-            }
+            } finally { LockingAsyncExecutor.lock.unlock() }
         }
         SynchronizationSettings.setLastSubscriptionSynchronizationAttemptTimestamp(newTimeStamp)
     }
@@ -172,11 +169,8 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
                     deleteFeedSync(context, feedID)
                     EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feedID))
                 }
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            } catch (e: ExecutionException) {
-                e.printStackTrace()
-            }
+            } catch (e: InterruptedException) { e.printStackTrace()
+            } catch (e: ExecutionException) { e.printStackTrace() }
         } else Log.w(TAG, "removeFeedWithDownloadUrl: Could not find feed with url: $downloadUrl")
     }
 
@@ -234,9 +228,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
                 newTimeStamp = postResponse?.timestamp?:0L
                 Logd(TAG, "Upload episode response: $postResponse")
                 synchronizationQueueStorage.clearEpisodeActionQueue()
-            } finally {
-                LockingAsyncExecutor.lock.unlock()
-            }
+            } finally { LockingAsyncExecutor.lock.unlock() }
         }
         return newTimeStamp
     }
@@ -291,9 +283,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
         runOnIOScope {
             removeFromQueueSync(curQueue, *updatedItems.toTypedArray())
-            for (episode in updatedItems) {
-                upsert(episode) {}
-            }
+            for (episode in updatedItems) upsert(episode) {}
             EventFlow.postEvent(FlowEvent.EpisodeEvent(updatedItems))
         }
     }
@@ -324,8 +314,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 //        }
 
         val intent = applicationContext.packageManager.getLaunchIntentForPackage(applicationContext.packageName)
-        val pendingIntent = PendingIntent.getActivity(applicationContext,
-            R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getActivity(applicationContext, R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val notification = NotificationCompat.Builder(applicationContext,
             NotificationUtils.CHANNEL_ID.sync_error.name)
             .setContentTitle(applicationContext.getString(R.string.gpodnetsync_error_title))
@@ -392,18 +381,14 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         }
 
         fun syncImmediately(context: Context) {
-            val workRequest: OneTimeWorkRequest = getWorkRequest()
-                .setInitialDelay(0L, TimeUnit.SECONDS)
-                .build()
+            val workRequest: OneTimeWorkRequest = getWorkRequest().setInitialDelay(0L, TimeUnit.SECONDS).build()
             WorkManager.getInstance(context).enqueueUniqueWork(WORK_ID_SYNC, ExistingWorkPolicy.REPLACE, workRequest)
         }
 
         fun fullSync(context: Context) {
             executeLockedAsync {
                 SynchronizationSettings.resetTimestamps()
-                val workRequest: OneTimeWorkRequest = getWorkRequest()
-                    .setInitialDelay(0L, TimeUnit.SECONDS)
-                    .build()
+                val workRequest: OneTimeWorkRequest = getWorkRequest().setInitialDelay(0L, TimeUnit.SECONDS).build()
                 WorkManager.getInstance(context).enqueueUniqueWork(WORK_ID_SYNC, ExistingWorkPolicy.REPLACE, workRequest)
             }
         }
@@ -428,7 +413,6 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
                     else -> Log.e(TAG, "Unknown remoteAction: $remoteAction")
                 }
             }
-
             return remoteActionsThatOverrideLocalActions
         }
 

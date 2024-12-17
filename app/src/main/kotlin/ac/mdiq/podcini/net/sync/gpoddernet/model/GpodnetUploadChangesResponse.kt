@@ -1,9 +1,7 @@
 package ac.mdiq.podcini.net.sync.gpoddernet.model
 
-import androidx.collection.ArrayMap
 import ac.mdiq.podcini.net.sync.model.UploadChangesResponse
 import org.json.JSONException
-import org.json.JSONObject
 
 /**
  * Object returned by [GpodnetService] in uploadChanges method.

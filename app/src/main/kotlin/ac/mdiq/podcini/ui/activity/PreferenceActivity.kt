@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.databinding.AuthenticationDialogBinding
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
@@ -16,16 +16,12 @@ import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.setWifiSyncEnabled
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
-import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
-import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
-import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
-import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
+import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow.AuthenticationCallback
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.*
@@ -40,6 +36,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.speedforwardSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.fragments.GpodderAuthenticationFragment
+import ac.mdiq.podcini.preferences.fragments.WifiAuthenticationFragment
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
@@ -54,50 +52,41 @@ import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.fragment.EpisodesFragment
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.QueuesFragment
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.*
 import android.net.Uri
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.provider.Settings
-import android.text.Editable
-import android.text.TextWatcher
 import android.text.format.DateUtils
 import android.text.format.Formatter
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.util.Patterns
-import android.view.*
-import android.view.inputmethod.EditorInfo
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
@@ -118,7 +107,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -147,8 +138,8 @@ import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.Throws
 import kotlin.math.round
 
 class PreferenceActivity : AppCompatActivity() {
@@ -1573,225 +1564,183 @@ class PreferenceActivity : AppCompatActivity() {
 
     @Composable
     fun DownloadsPreferencesScreen(navController: NavController) {
-        class ProxyDialog(private val context: Context) {
-            private lateinit var dialog: AlertDialog
-            private lateinit var spType: Spinner
-            private lateinit var etHost: EditText
-            private lateinit var etPort: EditText
-            private lateinit var etUsername: EditText
-            private lateinit var etPassword: EditText
-            private lateinit var txtvMessage: TextView
-            private var testSuccessful = false
-            private val port: Int
-                get() {
-                    val port = etPort.text.toString()
-                    if (port.isNotEmpty()) try {
-                        return port.toInt()
-                    } catch (e: NumberFormatException) {
-                    }
-                    return 0
-                }
+        @Composable
+        fun ProxyDialog(onDismissRequest: ()->Unit) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            val types = remember { mutableStateListOf<String>() }
 
-            fun show(): Dialog {
-                val content = View.inflate(context, R.layout.proxy_settings, null)
-                val binding = ProxySettingsBinding.bind(content)
-                spType = binding.spType
-                dialog = MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.pref_proxy_title)
-                    .setView(content)
-                    .setNegativeButton(R.string.cancel_label, null)
-                    .setPositiveButton(R.string.proxy_test_label, null)
-                    .setNeutralButton(R.string.reset, null)
-                    .show()
-                // To prevent cancelling the dialog on button click
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-                    if (!testSuccessful) {
-                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-                        test()
-                        return@setOnClickListener
-                    }
-                    setProxyConfig()
-                    reinit()
-                    dialog.dismiss()
-                }
-                dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
-                    etHost.text.clear()
-                    etPort.text.clear()
-                    etUsername.text.clear()
-                    etPassword.text.clear()
-                    setProxyConfig()
-                }
-                val types: MutableList<String> = ArrayList()
+            LaunchedEffect(Unit) {
                 types.add(Proxy.Type.DIRECT.name)
                 types.add(Proxy.Type.HTTP.name)
                 types.add(Proxy.Type.SOCKS.name)
-                val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, types)
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                spType.setAdapter(adapter)
-                val proxyConfig = proxyConfig
-                spType.setSelection(adapter.getPosition(proxyConfig.type.name))
-                etHost = binding.etHost
-                if (!proxyConfig.host.isNullOrEmpty()) etHost.setText(proxyConfig.host)
-                etHost.addTextChangedListener(requireTestOnChange)
-                etPort = binding.etPort
-                if (proxyConfig.port > 0) etPort.setText(proxyConfig.port.toString())
-                etPort.addTextChangedListener(requireTestOnChange)
-                etUsername = binding.etUsername
-                if (!proxyConfig.username.isNullOrEmpty()) etUsername.setText(proxyConfig.username)
-                etUsername.addTextChangedListener(requireTestOnChange)
-                etPassword = binding.etPassword
-                if (!proxyConfig.password.isNullOrEmpty()) etPassword.setText(proxyConfig.password)
-                etPassword.addTextChangedListener(requireTestOnChange)
-                if (proxyConfig.type == Proxy.Type.DIRECT) {
-                    enableSettings(false)
-                    setTestRequired(false)
-                }
-                spType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-                        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).visibility = if (position == 0) View.GONE else View.VISIBLE
-                        enableSettings(position > 0)
-                        setTestRequired(position > 0)
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        enableSettings(false)
-                    }
-                }
-                txtvMessage = binding.txtvMessage
-                checkValidity()
-                return dialog
             }
+            var testSuccessful by remember { mutableStateOf(false) }
+            var type by remember { mutableStateOf(proxyConfig.type.name) }
+            var typePos by remember { mutableIntStateOf(0) }
+            var host by remember { mutableStateOf(proxyConfig.host?:"") }
+            var hostError by remember { mutableStateOf("") }
+            var port by remember { mutableStateOf(if (proxyConfig.port > 0) proxyConfig.port.toString() else "") }
+            var portError by remember { mutableStateOf("") }
+            var portValue by remember { mutableIntStateOf(proxyConfig.port) }
+            var username by remember { mutableStateOf<String?>(proxyConfig.username) }
+            var password by remember { mutableStateOf<String?>(proxyConfig.password) }
+            var message by remember { mutableStateOf("") }
+            var messageColor by remember { mutableStateOf(textColor) }
+            var showOKButton by remember { mutableStateOf(false) }
+            var OKbuttonTextRes by remember { mutableIntStateOf(R.string.proxy_test_label) }
 
-            private fun setProxyConfig() {
-                val type = spType.selectedItem as String
+            fun setProxyConfig() {
                 val typeEnum = Proxy.Type.valueOf(type)
-                val host = etHost.text.toString()
-                val port = etPort.text.toString()
-                var username: String? = etUsername.text.toString()
                 if (username.isNullOrEmpty()) username = null
-                var password: String? = etPassword.text.toString()
                 if (password.isNullOrEmpty()) password = null
-                var portValue = 0
                 if (port.isNotEmpty()) portValue = port.toInt()
                 val config = ProxyConfig(typeEnum, host, portValue, username, password)
                 proxyConfig = config
                 PodciniHttpClient.setProxyConfig(config)
             }
-
-            private val requireTestOnChange: TextWatcher = object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable) {
-                    setTestRequired(true)
+            fun setTestRequired(required: Boolean) {
+                if (required) {
+                    testSuccessful = false
+                    OKbuttonTextRes = R.string.proxy_test_label
+                } else {
+                    testSuccessful = true
+                    OKbuttonTextRes = android.R.string.ok
                 }
             }
-
-            private fun enableSettings(enable: Boolean) {
-                etHost.isEnabled = enable
-                etPort.isEnabled = enable
-                etUsername.isEnabled = enable
-                etPassword.isEnabled = enable
-            }
-
-            private fun checkValidity(): Boolean {
-                var valid = true
-                if (spType.selectedItemPosition > 0) valid = checkHost()
-                valid = valid and checkPort()
-                return valid
-            }
-
-            private fun checkHost(): Boolean {
-                val host = etHost.text.toString()
+            fun checkHost(): Boolean {
                 if (host.isEmpty()) {
-                    etHost.error = context.getString(R.string.proxy_host_empty_error)
+                    hostError = getString(R.string.proxy_host_empty_error)
                     return false
                 }
                 if ("localhost" != host && !Patterns.DOMAIN_NAME.matcher(host).matches()) {
-                    etHost.error = context.getString(R.string.proxy_host_invalid_error)
+                    hostError = getString(R.string.proxy_host_invalid_error)
                     return false
                 }
                 return true
             }
-
-            private fun checkPort(): Boolean {
-                val port = port
-                if (port < 0 || port > 65535) {
-                    etPort.error = context.getString(R.string.proxy_port_invalid_error)
+            fun checkPort(): Boolean {
+                if (portValue < 0 || portValue > 65535) {
+                    portError = getString(R.string.proxy_port_invalid_error)
                     return false
                 }
                 return true
             }
-
-            private fun setTestRequired(required: Boolean) {
-                if (required) {
-                    testSuccessful = false
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.proxy_test_label)
-                } else {
-                    testSuccessful = true
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(android.R.string.ok)
-                }
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
+            fun checkValidity(): Boolean {
+                var valid = true
+                if (typePos > 0) valid = checkHost()
+                valid = valid and checkPort()
+                return valid
             }
-
-            private fun test() {
+            fun test() {
                 if (!checkValidity()) {
                     setTestRequired(true)
                     return
                 }
-                val res = context.theme.obtainStyledAttributes(intArrayOf(android.R.attr.textColorPrimary))
-                val textColorPrimary = res.getColor(0, 0)
-                res.recycle()
-                val checking = context.getString(R.string.proxy_checking)
-                txtvMessage.setTextColor(textColorPrimary)
-                txtvMessage.text = "{faw_circle_o_notch spin} $checking"
-                txtvMessage.visibility = View.VISIBLE
+                val checking = getString(R.string.proxy_checking)
+                messageColor = textColor
+                message = "{faw_circle_o_notch spin} $checking"
                 val coroutineScope = CoroutineScope(Dispatchers.Main)
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
-                        val type = spType.selectedItem as String
-                        val host = etHost.text.toString()
-                        val port = etPort.text.toString()
-                        val username = etUsername.text.toString()
-                        val password = etPassword.text.toString()
-                        var portValue = 8080
                         if (port.isNotEmpty()) portValue = port.toInt()
                         val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
                         val proxyType = Proxy.Type.valueOf(type.uppercase())
                         val builder: OkHttpClient.Builder = newBuilder().connectTimeout(10, TimeUnit.SECONDS).proxy(Proxy(proxyType, address))
-                        if (username.isNotEmpty()) {
-                            builder.proxyAuthenticator { _: Route?, response: Response ->
-                                val credentials = basic(username, password)
-                                response.request.newBuilder().header("Proxy-Authorization", credentials).build()
-                            }
-                        }
+                        if (!username.isNullOrBlank())
+                            builder.proxyAuthenticator { _: Route?, response: Response -> response.request.newBuilder().header("Proxy-Authorization", basic(username?:"", password?:"")).build() }
                         val client: OkHttpClient = builder.build()
                         val request: Request = Builder().url("https://www.example.com").head().build()
-                        try {
-                            client.newCall(request).execute().use { response -> if (!response.isSuccessful) throw IOException(response.message) }
-                        } catch (e: IOException) {
-                            throw e
-                        }
+                        try { client.newCall(request).execute().use { response -> if (!response.isSuccessful) throw IOException(response.message) }
+                        } catch (e: IOException) { throw e }
                         withContext(Dispatchers.Main) {
-                            txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
-                            val message = String.format("%s %s", "{faw_check}", context.getString(R.string.proxy_test_successful))
-                            txtvMessage.text = message
+                            message = String.format("%s %s", "{faw_check}", getString(R.string.proxy_test_successful))
+                            messageColor = Color.Green
                             setTestRequired(false)
                         }
                     } catch (e: Throwable) {
                         e.printStackTrace()
-                        txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_red))
-                        val message = String.format("%s %s: %s", "{faw_close}", context.getString(R.string.proxy_test_failed), e.message)
-                        txtvMessage.text = message
+                        messageColor = Color.Red
+                        message = String.format("%s %s: %s", "{faw_close}", getString(R.string.proxy_test_failed), e.message)
                         setTestRequired(true)
                     }
                 }
             }
+            AlertDialog(onDismissRequest = { onDismissRequest() },
+                title = { Text(stringResource(R.string.pref_proxy_title), style = CustomTextStyles.titleCustom) },
+                text = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.proxy_type_label))
+                            Spinner(items = types, selectedItem = proxyConfig.type.name) { position ->
+                                val name = Proxy.Type.entries.getOrNull(position)?.name
+                                if (!name.isNullOrBlank()) {
+                                    typePos = position
+                                    type = name
+                                    showOKButton = position != 0
+                                    setTestRequired(position > 0)
+                                }
+                            }
+                        }
+                        if (typePos > 0) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.host_label))
+                                TextField(value = host, label = { Text("www.example.com") },
+                                    onValueChange = { host = it },
+                                    isError = !checkHost(),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.port_label))
+                                TextField(value = port, label = { Text("8080") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    onValueChange = {
+                                        port = it
+                                        portValue = it.toIntOrNull() ?: -1
+                                    },
+                                    isError = !checkPort(),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.username_label))
+                                TextField(value = username ?: "", label = { Text(stringResource(R.string.optional_hint)) },
+                                    onValueChange = { username = it },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(stringResource(R.string.password_label))
+                                TextField(value = password ?: "", label = { Text(stringResource(R.string.optional_hint)) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                    onValueChange = { password = it },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                        if (message.isNotBlank()) Text(message)
+                    }
+                },
+                confirmButton = {
+                    if (showOKButton) TextButton(onClick = {
+                        if (!testSuccessful) {
+                            test()
+                            return@TextButton
+                        }
+                        setProxyConfig()
+                        reinit()
+                        onDismissRequest()
+                    }) { Text(stringResource(OKbuttonTextRes)) }
+                },
+                dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            )
         }
 
         var blockAutoDeleteLocal by remember { mutableStateOf(true) }
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
         supportActionBar!!.setTitle(R.string.downloads_pref)
+        var showProxyDialog by remember { mutableStateOf(false) }
+        if (showProxyDialog) ProxyDialog {showProxyDialog = false }
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
             Text(stringResource(R.string.automation), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
@@ -1883,7 +1832,10 @@ class PreferenceActivity : AppCompatActivity() {
                     dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(text = "Cancel") } }
                 )
             }
-            TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) { ProxyDialog(this@PreferenceActivity).show() }
+            TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) {
+                showProxyDialog = true
+//                ProxyDialog(this@PreferenceActivity).show()
+            }
         }
     }
 
@@ -1975,410 +1927,9 @@ class PreferenceActivity : AppCompatActivity() {
         }
     }
 
-    class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.AuthenticationCallback {
-        private val EXTRA_LOGIN_FLOW = "LoginFlow"
-        private var binding: NextcloudAuthDialogBinding? = null
-        private var nextcloudLoginFlow: NextcloudLoginFlow? = null
-        private var shouldDismiss = false
-
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val dialog = MaterialAlertDialogBuilder(requireContext())
-            dialog.setTitle(R.string.gpodnetauth_login_butLabel)
-            dialog.setNegativeButton(R.string.cancel_label, null)
-            dialog.setCancelable(false)
-            this.isCancelable = false
-
-            binding = NextcloudAuthDialogBinding.inflate(layoutInflater)
-            dialog.setView(binding!!.root)
-
-            binding!!.chooseHostButton.setOnClickListener {
-                nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), binding!!.serverUrlText.text.toString(), requireContext(), this)
-                startLoginFlow()
-            }
-            if (savedInstanceState?.getStringArrayList(EXTRA_LOGIN_FLOW) != null) {
-                nextcloudLoginFlow = NextcloudLoginFlow.fromInstanceState(getHttpClient(), requireContext(), this,
-                    savedInstanceState.getStringArrayList(EXTRA_LOGIN_FLOW)!!)
-                startLoginFlow()
-            }
-            return dialog.create()
-        }
-        private fun startLoginFlow() {
-            binding!!.errorText.visibility = View.GONE
-            binding!!.chooseHostButton.visibility = View.GONE
-            binding!!.loginProgressContainer.visibility = View.VISIBLE
-            binding!!.serverUrlText.isEnabled = false
-            nextcloudLoginFlow!!.start()
-        }
-        override fun onSaveInstanceState(outState: Bundle) {
-            super.onSaveInstanceState(outState)
-            if (nextcloudLoginFlow != null) outState.putStringArrayList(EXTRA_LOGIN_FLOW, nextcloudLoginFlow!!.saveInstanceState())
-        }
-        override fun onDismiss(dialog: DialogInterface) {
-            super.onDismiss(dialog)
-            nextcloudLoginFlow?.cancel()
-        }
-        override fun onResume() {
-            super.onResume()
-            nextcloudLoginFlow?.onResume()
-            if (shouldDismiss) dismiss()
-        }
-        override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
-            setSelectedSyncProvider(SynchronizationProviderViewData.NEXTCLOUD_GPODDER)
-            SynchronizationCredentials.clear(requireContext())
-            SynchronizationCredentials.password = password
-            SynchronizationCredentials.hosturl = server
-            SynchronizationCredentials.username = username
-            SyncService.fullSync(requireContext())
-            if (isResumed) dismiss()
-            else shouldDismiss = true
-        }
-        override fun onNextcloudAuthError(errorMessage: String?) {
-            binding!!.loginProgressContainer.visibility = View.GONE
-            binding!!.errorText.visibility = View.VISIBLE
-            binding!!.errorText.text = errorMessage
-            binding!!.chooseHostButton.visibility = View.VISIBLE
-            binding!!.serverUrlText.isEnabled = true
-        }
-
-        companion object {
-            val TAG = NextcloudAuthenticationFragment::class.simpleName ?: "Anonymous"
-            private const val EXTRA_LOGIN_FLOW = "LoginFlow"
-        }
-    }
-
-    class GpodderAuthenticationFragment : DialogFragment() {
-        private var viewFlipper: ViewFlipper? = null
-        private var currentStep = -1
-        private var service: GpodnetService? = null
-        @Volatile
-        private var username: String? = null
-        @Volatile
-        private var password: String? = null
-        @Volatile
-        private var selectedDevice: GpodnetDevice? = null
-        private var devices: List<GpodnetDevice>? = null
-
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val dialog = MaterialAlertDialogBuilder(requireContext())
-            dialog.setTitle(R.string.gpodnetauth_login_butLabel)
-            dialog.setNegativeButton(R.string.cancel_label, null)
-            dialog.setCancelable(false)
-            this.isCancelable = false
-            val binding = GpodnetauthDialogBinding.inflate(layoutInflater)
-//        val root = View.inflate(context, R.layout.gpodnetauth_dialog, null)
-            viewFlipper = binding.viewflipper
-            advance()
-            dialog.setView(binding.root)
-
-            return dialog.create()
-        }
-        private fun setupHostView(view: View) {
-            val binding = GpodnetauthHostBinding.bind(view)
-            val selectHost = binding.chooseHostButton
-            val serverUrlText = binding.serverUrlText
-            selectHost.setOnClickListener {
-                if (serverUrlText.text.isNullOrEmpty()) return@setOnClickListener
-
-                SynchronizationCredentials.clear(requireContext())
-                SynchronizationCredentials.hosturl = serverUrlText.text.toString()
-                service = GpodnetService(getHttpClient(), SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID?:"",
-                    SynchronizationCredentials.username?:"", SynchronizationCredentials.password?:"")
-                dialog?.setTitle(SynchronizationCredentials.hosturl)
-                advance()
-            }
-        }
-        private fun setupLoginView(view: View) {
-            val binding = GpodnetauthCredentialsBinding.bind(view)
-            val username = binding.etxtUsername
-            val password = binding.etxtPassword
-            val login = binding.butLogin
-            val txtvError = binding.credentialsError
-            val progressBar = binding.progBarLogin
-            val createAccountWarning = binding.createAccountWarning
-
-            if (SynchronizationCredentials.hosturl != null && SynchronizationCredentials.hosturl!!.startsWith("http://"))
-                createAccountWarning.visibility = View.VISIBLE
-
-            password.setOnEditorActionListener { _: TextView?, actionID: Int, _: KeyEvent? -> actionID == EditorInfo.IME_ACTION_GO && login.performClick() }
-
-            login.setOnClickListener {
-                val usernameStr = username.text.toString()
-                val passwordStr = password.text.toString()
-
-                if (usernameHasUnwantedChars(usernameStr)) {
-                    txtvError.setText(R.string.gpodnetsync_username_characters_error)
-                    txtvError.visibility = View.VISIBLE
-                    return@setOnClickListener
-                }
-
-                login.isEnabled = false
-                progressBar.visibility = View.VISIBLE
-                txtvError.visibility = View.GONE
-                val inputManager = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                inputManager.hideSoftInputFromWindow(login.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-
-                lifecycleScope.launch {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            service?.setCredentials(usernameStr, passwordStr)
-                            service?.login()
-                            if (service != null) devices = service!!.devices
-                            this@GpodderAuthenticationFragment.username = usernameStr
-                            this@GpodderAuthenticationFragment.password = passwordStr
-                        }
-                        withContext(Dispatchers.Main) {
-                            login.isEnabled = true
-                            progressBar.visibility = View.GONE
-                            advance()
-                        }
-                    } catch (e: Throwable) {
-                        login.isEnabled = true
-                        progressBar.visibility = View.GONE
-                        txtvError.text = e.cause!!.message
-                        txtvError.visibility = View.VISIBLE
-                    }
-                }
-            }
-        }
-        private fun setupDeviceView(view: View) {
-            val binding = GpodnetauthDeviceBinding.bind(view)
-            val deviceName = binding.deviceName
-            val devicesContainer = binding.devicesContainer
-            deviceName.setText(generateDeviceName())
-
-            val createDeviceButton = binding.createDeviceButton
-            createDeviceButton.setOnClickListener { createDevice(view) }
-
-            for (device in devices!!) {
-                val rBinding = GpodnetauthDeviceRowBinding.inflate(layoutInflater)
-//            val row = View.inflate(context, R.layout.gpodnetauth_device_row, null)
-                val selectDeviceButton = rBinding.selectDeviceButton
-                selectDeviceButton.setOnClickListener {
-                    selectedDevice = device
-                    advance()
-                }
-                selectDeviceButton.text = device.caption
-                devicesContainer.addView(rBinding.root)
-            }
-        }
-        private fun createDevice(view: View) {
-            val binding = GpodnetauthDeviceBinding.bind(view)
-            val deviceName = binding.deviceName
-            val txtvError = binding.deviceSelectError
-            val progBarCreateDevice = binding.progbarCreateDevice
-
-            val deviceNameStr = deviceName.text.toString()
-            if (isDeviceInList(deviceNameStr)) return
-
-            progBarCreateDevice.visibility = View.VISIBLE
-            txtvError.visibility = View.GONE
-            deviceName.isEnabled = false
-
-            lifecycleScope.launch {
-                try {
-                    val device = withContext(Dispatchers.IO) {
-                        val deviceId = generateDeviceId(deviceNameStr)
-                        service!!.configureDevice(deviceId, deviceNameStr, GpodnetDevice.DeviceType.MOBILE)
-                        GpodnetDevice(deviceId, deviceNameStr, GpodnetDevice.DeviceType.MOBILE.toString(), 0)
-                    }
-                    withContext(Dispatchers.Main) {
-                        progBarCreateDevice.visibility = View.GONE
-                        selectedDevice = device
-                        advance()
-                    }
-                } catch (e: Throwable) {
-                    deviceName.isEnabled = true
-                    progBarCreateDevice.visibility = View.GONE
-                    txtvError.text = e.message
-                    txtvError.visibility = View.VISIBLE
-                }
-            }
-        }
-        private fun generateDeviceName(): String {
-            val baseName = getString(R.string.gpodnetauth_device_name_default, Build.MODEL)
-            var name = baseName
-            var num = 1
-            while (isDeviceInList(name)) {
-                name = "$baseName ($num)"
-                num++
-            }
-            return name
-        }
-        private fun generateDeviceId(name: String): String {
-            // devices names must be of a certain form:
-            // https://gpoddernet.readthedocs.org/en/latest/api/reference/general.html#devices
-            return generateFileName(name).replace("\\W".toRegex(), "_").lowercase()
-        }
-        private fun isDeviceInList(name: String): Boolean {
-            if (devices == null) return false
-
-            val id = generateDeviceId(name)
-            for (device in devices!!) {
-                if (device.id == id || device.caption == name) return true
-            }
-            return false
-        }
-        private fun setupFinishView(view: View) {
-            val binding = GpodnetauthFinishBinding.bind(view)
-            val sync = binding.butSyncNow
-
-            sync.setOnClickListener {
-                dismiss()
-                SyncService.sync(requireContext())
-            }
-        }
-        private fun advance() {
-            if (currentStep < STEP_FINISH) {
-                val view = viewFlipper!!.getChildAt(currentStep + 1)
-                when (currentStep) {
-                    STEP_DEFAULT -> setupHostView(view)
-                    STEP_HOSTNAME -> setupLoginView(view)
-                    STEP_LOGIN -> {
-                        check(!(username == null || password == null)) { "Username and password must not be null here" }
-                        setupDeviceView(view)
-                    }
-                    STEP_DEVICE -> {
-                        checkNotNull(selectedDevice) { "Device must not be null here" }
-                        setSelectedSyncProvider(SynchronizationProviderViewData.GPODDER_NET)
-                        SynchronizationCredentials.username = username
-                        SynchronizationCredentials.password = password
-                        SynchronizationCredentials.deviceID = selectedDevice!!.id
-                        setupFinishView(view)
-                    }
-                }
-                if (currentStep != STEP_DEFAULT) viewFlipper!!.showNext()
-                currentStep++
-            } else dismiss()
-        }
-        private fun usernameHasUnwantedChars(username: String): Boolean {
-            val special = Pattern.compile("[!@#$%&*()+=|<>?{}\\[\\]~]")
-            val containsUnwantedChars = special.matcher(username)
-            return containsUnwantedChars.find()
-        }
-
-        companion object {
-            val TAG = GpodderAuthenticationFragment::class.simpleName ?: "Anonymous"
-
-            private const val STEP_DEFAULT = -1
-            private const val STEP_HOSTNAME = 0
-            private const val STEP_LOGIN = 1
-            private const val STEP_DEVICE = 2
-            private const val STEP_FINISH = 3
-        }
-    }
-
-    class WifiAuthenticationFragment : DialogFragment() {
-        private var binding: WifiSyncDialogBinding? = null
-        private var portNum = 0
-        private var isGuest: Boolean? = null
-
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val dialog = MaterialAlertDialogBuilder(requireContext())
-            dialog.setTitle(R.string.connect_to_peer)
-            dialog.setNegativeButton(R.string.cancel_label, null)
-            dialog.setPositiveButton(R.string.confirm_label, null)
-
-            binding = WifiSyncDialogBinding.inflate(layoutInflater)
-            dialog.setView(binding!!.root)
-
-            binding!!.hostAddressText.setText(SynchronizationCredentials.hosturl?:"")
-            portNum = SynchronizationCredentials.hostport
-            if (portNum == 0) portNum = hostPort
-            binding!!.hostPortText.setText(portNum.toString())
-
-            binding!!.guestButton.setOnClickListener {
-                binding!!.hostAddressText.visibility = View.VISIBLE
-                binding!!.hostPortText.visibility = View.VISIBLE
-                binding!!.hostButton.visibility = View.INVISIBLE
-                SynchronizationCredentials.hosturl = binding!!.hostAddressText.text.toString()
-                portNum = binding!!.hostPortText.text.toString().toInt()
-                isGuest = true
-                SynchronizationCredentials.hostport = portNum
-            }
-            binding!!.hostButton.setOnClickListener {
-                binding!!.hostAddressText.visibility = View.VISIBLE
-                binding!!.hostPortText.visibility = View.VISIBLE
-                binding!!.guestButton.visibility = View.INVISIBLE
-                val wifiManager = requireContext().applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
-                val ipAddress = wifiManager.connectionInfo.ipAddress
-                val ipString = String.format(Locale.US, "%d.%d.%d.%d", ipAddress and 0xff, ipAddress shr 8 and 0xff, ipAddress shr 16 and 0xff, ipAddress shr 24 and 0xff)
-                binding!!.hostAddressText.setText(ipString)
-                binding!!.hostAddressText.isEnabled = false
-                portNum = binding!!.hostPortText.text.toString().toInt()
-                isGuest = false
-                SynchronizationCredentials.hostport = portNum
-            }
-            procFlowEvents()
-            return dialog.create()
-        }
-        override fun onDestroy() {
-            cancelFlowEvents()
-            super.onDestroy()
-        }
-        override fun onResume() {
-            super.onResume()
-            val d = dialog as? AlertDialog
-            if (d != null) {
-                val confirmButton = d.getButton(Dialog.BUTTON_POSITIVE) as Button
-                confirmButton.setOnClickListener {
-                    Logd(TAG, "confirm button pressed")
-                    if (isGuest == null) {
-                        Toast.makeText(requireContext(), R.string.host_or_guest, Toast.LENGTH_LONG).show()
-                        return@setOnClickListener
-                    }
-                    binding!!.progressContainer.visibility = View.VISIBLE
-                    confirmButton.visibility = View.INVISIBLE
-                    val cancelButton = d.getButton(Dialog.BUTTON_NEGATIVE) as Button
-                    cancelButton.visibility = View.INVISIBLE
-                    portNum = binding!!.hostPortText.text.toString().toInt()
-                    setWifiSyncEnabled(true)
-                    startInstantSync(requireContext(), portNum, binding!!.hostAddressText.text.toString(), isGuest!!)
-                }
-            }
-        }
-
-        private var eventSink: Job?     = null
-        private fun cancelFlowEvents() {
-            eventSink?.cancel()
-            eventSink = null
-        }
-        private fun procFlowEvents() {
-            if (eventSink != null) return
-            eventSink = lifecycleScope.launch {
-                EventFlow.events.collectLatest { event ->
-                    Logd(TAG, "Received event: ${event.TAG}")
-                    when (event) {
-                        is FlowEvent.SyncServiceEvent -> syncStatusChanged(event)
-                        else -> {}
-                    }
-                }
-            }
-        }
-        fun syncStatusChanged(event: FlowEvent.SyncServiceEvent) {
-            when (event.messageResId) {
-                R.string.sync_status_error -> {
-                    Toast.makeText(requireContext(), event.message, Toast.LENGTH_LONG).show()
-                    dialog?.dismiss()
-                }
-                R.string.sync_status_success -> {
-                    Toast.makeText(requireContext(), R.string.sync_status_success, Toast.LENGTH_LONG).show()
-                    dialog?.dismiss()
-                }
-                R.string.sync_status_in_progress -> binding!!.progressBar.progress = event.message.toInt()
-                else -> {
-                    Logd(TAG, "Sync result unknow ${event.messageResId}")
-//                Toast.makeText(context, "Sync result unknow ${event.messageResId}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-
-        companion object {
-            val TAG = WifiAuthenticationFragment::class.simpleName ?: "Anonymous"
-        }
-    }
-
     @Composable
     fun SynchronizationPreferencesScreen() {
+
         abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean, usernameInitialValue: String?, passwordInitialValue: String?)
             : MaterialAlertDialogBuilder(context) {
 
@@ -2432,50 +1983,101 @@ class PreferenceActivity : AppCompatActivity() {
             else supportActionBar!!.setSubtitle(event.messageResId)
         }
 
-        fun chooseProviderAndLogin() {
-            val builder = MaterialAlertDialogBuilder(this@PreferenceActivity)
-            builder.setTitle(R.string.dialog_choose_sync_service_title)
+        @Composable
+        fun NextcloudAuthenticationDialog(onDismissRequest: ()->Unit) {
+            var nextcloudLoginFlow = remember<NextcloudLoginFlow?> { null }
+            var showUrlEdit by remember { mutableStateOf(true) }
+            var serverUrlText by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.pref_nextcloud_server_address.name, "")!!) }
+            var errorText by remember { mutableStateOf("") }
+            var showChooseHost by remember { mutableStateOf(serverUrlText.isNotBlank()) }
 
-            val providers = SynchronizationProviderViewData.entries.toTypedArray()
-            val adapter: ListAdapter = object : ArrayAdapter<SynchronizationProviderViewData?>(this@PreferenceActivity, R.layout.alertdialog_sync_provider_chooser, providers) {
-                var holder: ViewHolder? = null
-
-                inner class ViewHolder {
-                    var icon: ImageView? = null
-                    var title: TextView? = null
+            val nextCloudAuthCallback = object : AuthenticationCallback {
+                override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
+                    Logd("NextcloudAuthenticationDialog", "onNextcloudAuthenticated: $server")
+                    setSelectedSyncProvider(SynchronizationProviderViewData.NEXTCLOUD_GPODDER)
+                    SynchronizationCredentials.clear(this@PreferenceActivity)
+                    SynchronizationCredentials.password = password
+                    SynchronizationCredentials.hosturl = server
+                    SynchronizationCredentials.username = username
+                    SyncService.fullSync(this@PreferenceActivity)
+                    loggedIn = isProviderConnected
+                    onDismissRequest()
                 }
-
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    var convertView = convertView
-                    val inflater = LayoutInflater.from(context)
-                    if (convertView == null) {
-                        convertView = inflater.inflate(R.layout.alertdialog_sync_provider_chooser, null)
-                        val binding = AlertdialogSyncProviderChooserBinding.bind(convertView)
-                        holder = ViewHolder()
-                        if (holder != null) {
-                            holder!!.icon = binding.icon
-                            holder!!.title = binding.title
-                            convertView.tag = holder
-                        }
-                    } else holder = convertView.tag as ViewHolder
-
-                    val synchronizationProviderViewData = getItem(position)
-                    holder!!.title!!.setText(synchronizationProviderViewData!!.summaryResource)
-                    holder!!.icon!!.setImageResource(synchronizationProviderViewData.iconResource)
-                    return convertView!!
+                override fun onNextcloudAuthError(errorMessage: String?) {
+                    errorText = errorMessage ?: ""
+                    showChooseHost = true
+                    showUrlEdit = true
                 }
             }
 
-            builder.setAdapter(adapter) { _: DialogInterface?, which: Int ->
-                when (providers[which]) {
-                    SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(supportFragmentManager, GpodderAuthenticationFragment.TAG)
-                    SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudAuthenticationFragment().show(supportFragmentManager, NextcloudAuthenticationFragment.TAG)
-                }
-                loggedIn = isProviderConnected
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) nextcloudLoginFlow?.poll() }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
 
-            builder.show()
+            AlertDialog(onDismissRequest = { onDismissRequest() },
+                title = { Text(stringResource(R.string.gpodnetauth_login_butLabel), style = CustomTextStyles.titleCustom) },
+                text = {
+                    Column {
+                        Text(stringResource(R.string.synchronization_host_explanation))
+                        if (showUrlEdit) TextField(value = serverUrlText, modifier = Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.synchronization_host_label)) },
+                            onValueChange = {
+                                serverUrlText = it
+                                showChooseHost = serverUrlText.isNotBlank()
+                            }
+                        )
+                        Text(stringResource(R.string.synchronization_nextcloud_authenticate_browser))
+                        if (errorText.isNotBlank()) Text(errorText)
+                    }
+                },
+                confirmButton = {
+                    if (showChooseHost) TextButton(onClick = {
+                        appPrefs.edit().putString(UserPreferences.Prefs.pref_nextcloud_server_address.name, serverUrlText).apply()
+                        nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), serverUrlText, this@PreferenceActivity, nextCloudAuthCallback)
+                        errorText = ""
+                        showChooseHost = false
+                        nextcloudLoginFlow.start()
+//                        onDismissRequest()
+                    }) { Text(stringResource(R.string.proceed_to_login_butLabel)) }
+                },
+                dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            )
         }
+
+        var showNextCloudAuthDialog by remember { mutableStateOf(false) }
+        if (showNextCloudAuthDialog) NextcloudAuthenticationDialog { showNextCloudAuthDialog = false }
+
+        @Composable
+        fun ChooseProviderAndLoginDialog(onDismissRequest: ()->Unit) {
+            AlertDialog(onDismissRequest = { onDismissRequest() },
+                title = { Text(stringResource(R.string.dialog_choose_sync_service_title), style = CustomTextStyles.titleCustom) },
+                text = {
+                    Column {
+                        SynchronizationProviderViewData.entries.forEach { option ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(2.dp)
+                                .clickable {
+                                    when (option) {
+                                        SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(supportFragmentManager, GpodderAuthenticationFragment.TAG)
+                                        SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> showNextCloudAuthDialog = true
+                                    }
+                                    loggedIn = isProviderConnected
+                                    onDismissRequest()
+                                }) {
+                                Icon(painter = painterResource(id = option.iconResource), contentDescription = "", modifier = Modifier.size(40.dp).padding(end = 15.dp))
+                                Text(stringResource(option.summaryResource), modifier = Modifier.padding(start = 16.dp), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            )
+        }
+
+        var ChooseProviderAndLoginDialog by remember { mutableStateOf(false) }
+        if (ChooseProviderAndLoginDialog) ChooseProviderAndLoginDialog { ChooseProviderAndLoginDialog = false }
 
         fun isProviderSelected(provider: SynchronizationProviderViewData): Boolean {
             val selectedSyncProviderKey = selectedSyncProviderKey
@@ -2497,14 +2099,15 @@ class PreferenceActivity : AppCompatActivity() {
                     if (selectedProvider != null) {
                         summaryRes = selectedProvider!!.summaryResource
                         iconRes = selectedProvider!!.iconResource
+                        Icon(painter = painterResource(id = iconRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
                     }
                 } else {
                     titleRes = R.string.synchronization_choose_title
                     summaryRes = R.string.synchronization_summary_unchoosen
                     iconRes = R.drawable.ic_cloud
-                    onClick = { chooseProviderAndLogin() }
+                    onClick = { ChooseProviderAndLoginDialog = true }
+                    Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
                 }
-                Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
                 TitleSummaryActionColumn(titleRes, summaryRes) { onClick?.invoke() }
             }
             if (isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)) {
@@ -2521,16 +2124,10 @@ class PreferenceActivity : AppCompatActivity() {
             if (loggedIn) {
                 TitleSummaryActionColumn(R.string.synchronization_sync_changes_title, R.string.synchronization_sync_summary) { SyncService.syncImmediately(applicationContext) }
                 TitleSummaryActionColumn(R.string.synchronization_full_sync_title, R.string.synchronization_force_sync_summary) { SyncService.fullSync(this@PreferenceActivity) }
-//                val snackbarHostState = remember { SnackbarHostState() }
-//                val scope = rememberCoroutineScope()
                 TitleSummaryActionColumn(R.string.synchronization_logout, 0) {
                     SynchronizationCredentials.clear(this@PreferenceActivity)
-//                    scope.launch {
-//                        snackbarHostState.showSnackbar(getString(R.string.pref_synchronization_logout_toast), duration = SnackbarDuration.Long)
-//                    }
                     toastMassege = getString(R.string.pref_synchronization_logout_toast)
                     showToast = true
-//                    Snackbar.make(findViewById(android.R.id.content), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
                     setSelectedSyncProvider(null)
                     loggedIn = isProviderConnected
                 }

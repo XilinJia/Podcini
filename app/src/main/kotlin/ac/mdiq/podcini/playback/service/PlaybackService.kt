@@ -873,11 +873,11 @@ class PlaybackService : MediaLibraryService() {
                 intentAlwaysAllow, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
             else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
-        val builder = Notification.Builder(this, NotificationUtils.CHANNEL_ID.user_action.name)
+        val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID.user_action.name)
             .setSmallIcon(R.drawable.ic_notification_stream)
             .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
             .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
-            .setStyle(Notification.BigTextStyle().bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
 //            .setPriority(Notification.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntentAllowThisTime)
             .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)

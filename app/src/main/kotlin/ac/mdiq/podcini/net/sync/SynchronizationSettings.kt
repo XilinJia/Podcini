@@ -17,11 +17,7 @@ object SynchronizationSettings {
         get() = selectedSyncProviderKey != null
 
     fun resetTimestamps() {
-        sharedPreferences.edit()
-            .putLong(LAST_SUBSCRIPTION_SYNC_TIMESTAMP, 0)
-            .putLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, 0)
-            .putLong(LAST_SYNC_ATTEMPT_TIMESTAMP, 0)
-            .apply()
+        sharedPreferences.edit().putLong(LAST_SUBSCRIPTION_SYNC_TIMESTAMP, 0).putLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, 0).putLong(LAST_SYNC_ATTEMPT_TIMESTAMP, 0).apply()
     }
 
     val isLastSyncSuccessful: Boolean
@@ -31,20 +27,14 @@ object SynchronizationSettings {
         get() = sharedPreferences.getLong(LAST_SYNC_ATTEMPT_TIMESTAMP, 0)
 
     fun setSelectedSyncProvider(provider: SynchronizationProviderViewData?) {
-        sharedPreferences
-            .edit()
-            .putString(SELECTED_SYNC_PROVIDER, provider?.identifier)
-            .apply()
+        sharedPreferences.edit().putString(SELECTED_SYNC_PROVIDER, provider?.identifier).apply()
     }
 
     val selectedSyncProviderKey: String?
         get() = sharedPreferences.getString(SELECTED_SYNC_PROVIDER, null)
 
     fun setWifiSyncEnabled(stat: Boolean) {
-        sharedPreferences
-            .edit()
-            .putBoolean(WIFI_SYNC_ENABLED, stat)
-            .apply()
+        sharedPreferences.edit().putBoolean(WIFI_SYNC_ENABLED, stat).apply()
     }
 
     val wifiSyncEnabledKey: Boolean

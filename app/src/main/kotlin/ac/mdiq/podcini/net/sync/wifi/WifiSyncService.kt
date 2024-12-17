@@ -32,9 +32,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
-class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncService(context, params), ISyncService {
-
-//    val TAG = this::class.simpleName ?: "Anonymous"
+class WifiSyncService(val context: Context, params: WorkerParameters) : SyncService(context, params), ISyncService {
 
     var loginFail = false
 
@@ -58,8 +56,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
 
                 var receivedBye = false
                 while (!receivedBye) {
-                    try {
-                        receivedBye = receiveFromPeer()
+                    try { receivedBye = receiveFromPeer()
                     } catch (e: SocketTimeoutException) {
                         Log.e("Guest", getString(context, R.string.sync_error_host_not_respond))
                         logout()
@@ -72,8 +69,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
             } else {
                 var receivedBye = false
                 while (!receivedBye) {
-                    try {
-                        receivedBye = receiveFromPeer()
+                    try { receivedBye = receiveFromPeer()
                     } catch (e: SocketTimeoutException) {
                         Log.e("Host", getString(context, R.string.sync_error_guest_not_respond))
                         logout()
@@ -118,9 +114,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
                     try {
                         socket = Socket(hostIp, hostPort)
                         break
-                    } catch (e: ConnectException) {
-                        Thread.sleep(1000)
-                    }
+                    } catch (e: ConnectException) { Thread.sleep(1000) }
                     numTries++
                 }
                 if (numTries >= maxTries) loginFail = true
@@ -180,11 +174,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
         val reader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
         val message: String?
         socket!!.soTimeout = 120000
-        try {
-            message = reader.readLine()
-        } catch (e: SocketTimeoutException) {
-            throw e
-        }
+        try { message = reader.readLine() } catch (e: SocketTimeoutException) { throw e }
         if (message != null) {
             val parts = message.split("|")
             if (parts.size == 2) {
@@ -273,9 +263,7 @@ class WifiSyncService(val context: Context, params: WorkerParameters)  : SyncSer
                 newTimeStamp = postResponse.timestamp
                 Logd(TAG, "Upload episode response: $postResponse")
                 synchronizationQueueStorage.clearEpisodeActionQueue()
-            } finally {
-                LockingAsyncExecutor.lock.unlock()
-            }
+            } finally { LockingAsyncExecutor.lock.unlock() }
         }
         return newTimeStamp
     }

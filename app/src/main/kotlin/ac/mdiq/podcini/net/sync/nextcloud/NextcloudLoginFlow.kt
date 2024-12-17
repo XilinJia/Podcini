@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.net.sync.nextcloud
 
 import ac.mdiq.podcini.net.sync.HostnameParser
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -17,8 +18,12 @@ import java.io.IOException
 import java.net.URI
 import java.net.URL
 
-class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHostUrl: String, private val context: Context,
-                         private val callback: AuthenticationCallback) {
+class NextcloudLoginFlow(
+        private val httpClient: OkHttpClient,
+        private val rawHostUrl: String,
+        private val context: Context,
+        private val callback: AuthenticationCallback) {
+
     private val hostname = HostnameParser(rawHostUrl)
     private var token: String? = null
     private var endpoint: String? = null
@@ -66,40 +71,31 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
     private suspend fun <T> retryIO(retries: Int = 3, delay: Long = 1000, block: suspend () -> T): T {
         var attempt = 0
         while (attempt < retries) {
-            try {
-                return block()
-            } catch (e: Throwable) {
+            try { return block() }
+            catch (e: Throwable) {
                 if (attempt < retries - 1) {
                     delay(delay)
                     attempt++
-                } else {
-                    throw e
-                }
+                } else throw e
             }
         }
         throw RuntimeException("Maximum retries exceeded")
     }
 
-    fun onResume(){ //trigger poll only when returning from the browser
+    // trigger poll only when returning from the browser
+    fun onResume(){
         if (token != null && isWaitingForBrowser){
             poll()
             isWaitingForBrowser = false
         }
     }
 
-    private fun poll() {
+    fun poll() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val result = withTimeout(5 * 60 * 1000) { // 5 minutes
-                    retryIO(3) { // retry 3 times
-                        doRequest(URI.create(endpoint).toURL(), "token=$token")
-                    }
-                }
-                withContext(Dispatchers.Main) {
-                    callback.onNextcloudAuthenticated(result.getString("server"),
-                        result.getString("loginName"),
-                        result.getString("appPassword"))
-                }
+                // time out in 5 minutes, retry 5 times
+                val result = withTimeout(5 * 60 * 1000) { retryIO(5) { doRequest(URI.create(endpoint).toURL(), "token=$token") } }
+                withContext(Dispatchers.Main) { callback.onNextcloudAuthenticated(result.getString("server"), result.getString("loginName"), result.getString("appPassword")) }
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main) {
                     token = null
@@ -116,6 +112,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
 
     @Throws(IOException::class, JSONException::class)
     private fun doRequest(url: URL, bodyContent: String): JSONObject {
+        Logd(TAG, "doRequest $url $bodyContent")
         val requestBody = RequestBody.create("application/x-www-form-urlencoded".toMediaType(), bodyContent)
         val request: Request = Builder().url(url).method("POST", requestBody).build()
         val response = httpClient.newCall(request).execute()
@@ -124,6 +121,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
             throw IOException("Return code " + response.code)
         }
         val body = response.body ?: throw IOException("Empty response")
+        Logd(TAG, "doRequest body: $body ")
         return JSONObject(body.string())
     }
 

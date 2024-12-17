@@ -28,8 +28,13 @@ import kotlin.math.min
 /**
  * Communicates with the gpodder.net service.
  */
-class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
-                     private val deviceId: String, private var username: String, private var password: String) : ISyncService {
+class GpodnetService(
+        private val httpClient: OkHttpClient,
+        baseHosturl: String?,
+        private val deviceId: String,
+        private var username: String,
+        private var password: String) : ISyncService {
+
     val TAG = this::class.simpleName ?: "Anonymous"
 
     private val baseScheme: String?
@@ -251,16 +256,16 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     }
 
     @Throws(SyncServiceException::class)
-    private fun uploadEpisodeActionsPartial(episodeActions: List<EpisodeAction?>?, from: Int, to: Int): UploadChangesResponse {
+    private fun uploadEpisodeActionsPartial(episodeActions: List<EpisodeAction>, from: Int, to: Int): UploadChangesResponse {
         try {
-            Logd(TAG, "Uploading partial actions " + from + " to " + to + " of " + episodeActions!!.size)
+            Logd(TAG, "Uploading partial actions " + from + " to " + to + " of " + episodeActions.size)
             val url = URI(baseScheme, null, baseHost, basePort,
                 String.format("/api/2/episodes/%s.json", username), null, null).toURL()
 
             val list = JSONArray()
             for (i in from until to) {
                 val episodeAction = episodeActions[i]
-                val obj = episodeAction!!.writeToJsonObjectForServer()
+                val obj = episodeAction.writeToJsonObjectForServer()
                 if (obj != null) {
                     obj.put("device", deviceId)
                     list.put(obj)
@@ -322,6 +327,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         val url: URL
         try {
             url = URI(baseScheme, null, baseHost, basePort, String.format("/api/2/auth/%s/login.json", username), null, null).toURL()
+            Logd(TAG, "login url: $url")
         } catch (e: MalformedURLException) {
             e.printStackTrace()
             throw GpodnetServiceException(e)
@@ -336,7 +342,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
             val authRequest = request.newBuilder().header("Authorization", credential).build()
             val response = httpClient.newCall(authRequest).execute()
             checkStatusCode(response)
-            response.body!!.close()
+            response.body?.close()
             this.loggedIn = true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -358,9 +364,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         } catch (e: IOException) {
             e.printStackTrace()
             throw GpodnetServiceException(e)
-        } finally {
-            body?.close()
-        }
+        } finally { body?.close() }
         return responseString
     }
 
@@ -373,9 +377,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
             val buffer = ByteArray(8 * 1024)
             val inVal = body.byteStream()
             var count: Int
-            while ((inVal.read(buffer).also { count = it }) > 0) {
-                outputStream.write(buffer, 0, count)
-            }
+            while ((inVal.read(buffer).also { count = it }) > 0) outputStream.write(buffer, 0, count)
             return outputStream.toString("UTF-8")
         } catch (e: IOException) {
             e.printStackTrace()
@@ -387,17 +389,11 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     private fun checkStatusCode(response: Response) {
         val responseCode = response.code
         if (responseCode != HttpURLConnection.HTTP_OK) {
-            if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                throw GpodnetServiceAuthenticationException("Wrong username or password")
-            } else {
-                if (BuildConfig.DEBUG) {
-                    try { Logd(TAG, response.body!!.string()) } catch (e: IOException) { e.printStackTrace() }
-                }
-                if (responseCode >= 500) {
-                    throw GpodnetServiceBadStatusCodeException("Gpodder.net is currently unavailable (code " + responseCode + ")", responseCode)
-                } else {
-                    throw GpodnetServiceBadStatusCodeException("Unable to connect to Gpodder.net (code " + responseCode + ": " + response.message + ")", responseCode)
-                }
+            if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) throw GpodnetServiceAuthenticationException("Wrong username or password")
+            else {
+                if (BuildConfig.DEBUG) try { Logd(TAG, response.body?.string()?:"") } catch (e: IOException) { e.printStackTrace() }
+                if (responseCode >= 500) throw GpodnetServiceBadStatusCodeException("Gpodder.net is currently unavailable (code " + responseCode + ")", responseCode)
+                else throw GpodnetServiceBadStatusCodeException("Unable to connect to Gpodder.net (code " + responseCode + ": " + response.message + ")", responseCode)
             }
         }
     }
@@ -405,9 +401,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     @Throws(JSONException::class)
     private fun readPodcastListFromJsonArray(array: JSONArray): List<GpodnetPodcast> {
         val result: MutableList<GpodnetPodcast> = ArrayList(array.length())
-        for (i in 0 until array.length()) {
-            result.add(readPodcastFromJsonObject(array.getJSONObject(i)))
-        }
+        for (i in 0 until array.length()) result.add(readPodcastFromJsonObject(array.getJSONObject(i)))
         return result
     }
 
@@ -440,15 +434,13 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         var author: String? = null
         val authorObj = `object`.opt("author")
         if (authorObj is String) author = authorObj
-        return GpodnetPodcast(url, title, description, subscribers, logoUrl!!, website!!, mygpoLink, author!!)
+        return GpodnetPodcast(url, title, description, subscribers, logoUrl?:"", website?:"", mygpoLink, author?:"")
     }
 
     @Throws(JSONException::class)
     private fun readDeviceListFromJsonArray(array: JSONArray): List<GpodnetDevice> {
         val result: MutableList<GpodnetDevice> = ArrayList(array.length())
-        for (i in 0 until array.length()) {
-            result.add(readDeviceFromJsonObject(array.getJSONObject(i)))
-        }
+        for (i in 0 until array.length()) result.add(readDeviceFromJsonObject(array.getJSONObject(i)))
         return result
     }
 

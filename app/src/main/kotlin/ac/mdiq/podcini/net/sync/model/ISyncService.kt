@@ -1,7 +1,5 @@
 package ac.mdiq.podcini.net.sync.model
 
-import ac.mdiq.podcini.net.sync.model.SyncServiceException
-
 interface ISyncService {
     @Throws(SyncServiceException::class)
     fun login()

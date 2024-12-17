@@ -302,6 +302,7 @@ object UserPreferences {
 
         // Services
         pref_gpodnet_notifications,
+        pref_nextcloud_server_address,
 
         // Other
         prefDeleteRemovesFromQueue,

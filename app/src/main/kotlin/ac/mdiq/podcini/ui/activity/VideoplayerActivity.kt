@@ -8,6 +8,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
@@ -26,12 +27,14 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
+import android.content.ComponentName
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -67,8 +70,12 @@ import androidx.core.view.WindowCompat.getInsetsController
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -77,6 +84,8 @@ import kotlinx.coroutines.withContext
 
 class VideoplayerActivity : CastEnabledActivity() {
     var switchToAudioOnly = false
+
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
 
     private var cleanedNotes by mutableStateOf<String?>(null)
     private var feedTitle by mutableStateOf("")
@@ -255,6 +264,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         insetsController.show(WindowInsetsCompat.Type.statusBars())
         insetsController.show(WindowInsetsCompat.Type.navigationBars())
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }
 
@@ -266,6 +276,12 @@ class VideoplayerActivity : CastEnabledActivity() {
     override fun onStart() {
         super.onStart()
         procFlowEvents()
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener({
+            media3Controller = controllerFuture.get()
+//            Logd(TAG, "controllerFuture.addListener: $mediaController")
+        }, MoreExecutors.directExecutor())
     }
 
     override fun onStop() {
@@ -516,6 +532,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     companion object {
         private val TAG: String = VideoplayerActivity::class.simpleName ?: "Anonymous"
         var videoMode by mutableStateOf(VideoMode.NONE)
+        var media3Controller: MediaController? = null
 
         private val audioTracks: List<String>
             get() {

@@ -26,8 +26,8 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020320
-        versionName "6.15.10"
+        versionCode 3020321
+        versionName "6.15.11"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

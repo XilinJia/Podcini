@@ -71,10 +71,6 @@
     <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
     <string name="notification_permission_denied">You denied the permission.</string>
 
-
-
-
-
     <!-- Download Statistics fragment -->
     <string name="total_size_downloaded_podcasts">Total size of episodes on the device</string>
 
@@ -179,16 +175,9 @@
         <item quantity="other">%d days after finishing</item>
     </plurals>
 
-
-
-
     <!-- Actions on feeds -->
-
     <string name="max_episodes_cache">Max episodes allowed</string>
     <string name="new_namee">New name</string>
-
-
-
     <string name="feed_settings_label">Podcast settings</string>
     <string name="switch_queue_label">Choose active queue</string>
     <string name="rename_feed_label">Rename podcast</string>
@@ -206,7 +195,6 @@
     <string name="feed_delete_reason_msg">For future reference, you can record a reason here:</string>
     <string name="load_complete_feed">Refresh complete podcast</string>
     <string name="multi_select">Multi select</string>
-
 
     <string name="filtered_label">Filtered</string>
     <string name="progressing_label">Processing</string>
@@ -297,7 +285,6 @@
     <string name="visit_website_label">Visit website</string>
     <string name="skip_episode_label">Skip episode</string>
 
-
     <string name="delete_local_feed_warning_body">Warning: you are deleting local episodes. It will delete the media files from your device storage. It cannot be downloaded again through Podcini. Continue?</string>
 
     <string name="share_existing">existing</string>
@@ -358,10 +345,6 @@
     <!-- Mediaplayer messages -->
     <string name="playback_error_generic"><![CDATA[The media file could not be played.\n\n- Try deleting and re-downloading the episode.\n- Check your network connection, and make sure no VPN or login page is blocking access.\n- Try long-pressing and sharing the \"Media address\" to your web browser to see if it can be played there. If not, contact the podcast creators.]]></string>
 
-
-
-
-
     <string name="no_media_playing_label">No media playing</string>
     <string name="position_default_label" translatable="false">00:00:00</string>
     <string name="unknown_media_key">Podcini - Unknown media key: %1$d</string>
@@ -405,28 +388,13 @@
     <string name="size">Size</string>
     <string name="clear_queue_confirmation_msg">Please confirm that you want to clear the queue of ALL of the episodes in it</string>
 
-
     <string name="show_bin_label">Show bin</string>
 
     <!--  Variable Speed -->
-
     <string name="preset_already_exists">%1$.2fx is already saved as a preset.</string>
 
     <!-- Empty list labels -->
-
-
     <string name="no_shownotes_label">This episode has no shownotes.</string>
-
-
-
-
-
-
-
-
-
-
-
     <string name="no_subscriptions_label">To subscribe to a podcast, press the plus icon below.</string>
 
     <!-- Preferences -->
@@ -470,7 +438,6 @@
     <string name="pref_auto_local_delete_dialog_body">Note that for local folders this will remove episodes from Podcini and delete their media files from your device storage. They cannot be downloaded again through Podcini. Enable auto delete\?</string>
     <string name="pref_mark_played_removes_from_queue_title">Mark played removes from queue</string>
     <string name="pref_mark_played_removes_from_queue_sum">Removes the episodes from all queues when they are mark episodes as played </string>
-
 
     <string name="pref_skip_keeps_episodes_sum">Keep episodes when they are skipped</string>
     <string name="pref_skip_keeps_episodes_title">Keep skipped episodes</string>
@@ -518,7 +485,6 @@
     <string name="pref_nav_drawer_items_sum">Change which items appear in the navigation drawer</string>
     <string name="pref_nav_drawer_feed_order_title">Set subscription order by</string>
     <string name="pref_nav_drawer_feed_order_sum">Change the order of your subscriptions</string>
-
 
     <string name="pref_automatic_download_title">Automatic download</string>
     <string name="pref_automatic_download_sum">Configure the automatic download of episodes</string>
@@ -614,22 +580,7 @@
     <string name="remember_last_page">Remember last page</string>
     <string name="pref_delete_removes_from_queue_title">Delete removes from queue</string>
     <string name="pref_delete_removes_from_queue_sum">Automatically remove an episode from the queue when it is deleted</string>
-
-
-
-
-
-
-
-
-
-
-
     <string name="pref_contribute">Contribute</string>
-
-
-
-
 
     <!-- About screen -->
     <string name="about_pref">About</string>
@@ -769,6 +720,7 @@
     <string name="synchronization_host_address_label">Host address</string>
     <string name="synchronization_host_port_label">Host port</string>
     <string name="synchronization_host_label">Server address</string>
+    <string name="server">Server</string>
     <string name="guest_butLabel">As guest</string>
     <string name="host_butLabel">As host</string>
     <string name="proceed_to_login_butLabel">Proceed to login</string>
@@ -814,9 +766,7 @@
 
     <!-- Online feed view -->
     <string name="subscribe_label">Subscribe</string>
-
     <string name="preview_episode">Preview</string>
-
 
     <!-- Content descriptions for image buttons -->
     <string name="toolbar_back_button_content_description">Back</string>
@@ -828,13 +778,8 @@
 
     <string name="status_downloading_label">Episode is being downloaded</string>
 
-
-
     <string name="load_next_page_label">Load next page</string>
     <string name="position">Position: %1$s</string>
-
-
-
 
     <string name="next_chapter">Next chapter</string>
 
@@ -874,7 +819,6 @@
     <string name="statistics_view_this">View this podcast»</string>
     <string name="statistics_view_all">View for all podcasts»</string>
     <string name="feeds_related_to_author">Feeds likely related to the author »</string>
-    <string name="wait_icon" translatable="false">{faw_spinner}</string>
     <string name="edit_url_menu">Edit feed URL</string>
     <string name="edit_url_confirmation_msg">Changing the RSS address can easily break the playback state and episode listings of the podcast. We do NOT recommend changing it and will NOT provide support if anything goes wrong. This cannot be undone. The broken subscription CANNOT be repaired by simply changing the address back. We suggest creating a backup before continuing.</string>
     <string name="edit_fast_forward_speed">Edit fast forward speed</string>
@@ -912,20 +856,11 @@
     <string name="unable_to_start_system_file_manager">Unable to start system file manager</string>
 
     <string name="filter">Filter</string>
-
-
     <string name="downloaded_label">Downloaded</string>
 
     <string name="auto_downloadable_label">Auto downloadable</string>
-
-
     <string name="has_media">Has media</string>
     <string name="has_chapters">Has chapters</string>
-
-
-
-
-
     <string name="filename">File name</string>
 
     <string name="play_speed">Play speed</string>
@@ -988,8 +923,6 @@
     <string name="notification_channel_download_error_description">Shown when download or feed update fails.</string>
     <string name="notification_channel_sync_error">Synchronization failed</string>
     <string name="notification_channel_sync_error_description">Shown when gpodder synchronization fails.</string>
-
-
 
     <!-- Widget settings -->
     <string name="widget_settings">Widget settings</string>

@@ -1,3 +1,13 @@
+# 6.15.11
+
+* more dialogs in Compose
+* reworked in Compose the routine to log on to nextcloud and fixed crashes
+* fixed sync with nextcloud
+* likely also fixed sync with Gpodder
+* minor change in video/audio players
+* some resource cleaning
+* some class restructuring
+
 # 6.15.10
 
 * re-worked dialog mechanisms in swipe actions and fixed related crashes

@@ -11,7 +11,6 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
@@ -24,7 +23,6 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getLastNavFragmentArg
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.utils.TransitionEffect
@@ -71,8 +69,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.material.appbar.MaterialToolbar
@@ -80,8 +76,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.min
@@ -98,7 +92,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var audioPlayerView: View
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
-    private lateinit var controllerFuture: ListenableFuture<MediaController>
+//    private lateinit var controllerFuture: ListenableFuture<MediaController>
     lateinit var bottomSheet: BottomSheetBehavior<*>
         private set
 
@@ -397,7 +391,7 @@ class MainActivity : CastEnabledActivity() {
 //        realm.close()
         bottomSheet.removeBottomSheetCallback(bottomSheetCallback)
         if (drawerToggle != null) drawerLayout?.removeDrawerListener(drawerToggle!!)
-        MediaController.releaseFuture(controllerFuture)
+//        MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }
 
@@ -539,12 +533,12 @@ class MainActivity : CastEnabledActivity() {
         super.onStart()
         procFlowEvents()
         RatingDialog.init(this)
-        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        controllerFuture.addListener({
-            media3Controller = controllerFuture.get()
-//            Logd(TAG, "controllerFuture.addListener: $mediaController")
-        }, MoreExecutors.directExecutor())
+//        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+//        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+//        controllerFuture.addListener({
+//            media3Controller = controllerFuture.get()
+////            Logd(TAG, "controllerFuture.addListener: $mediaController")
+//        }, MoreExecutors.directExecutor())
     }
 
     override fun onStop() {

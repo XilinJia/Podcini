@@ -12,6 +12,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
@@ -97,11 +98,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import net.dankito.readability4j.Readability4J
@@ -116,7 +120,7 @@ class AudioPlayerFragment : Fragment() {
 
     private var isCollapsed by mutableStateOf(true)
 
-//    private lateinit var controllerFuture: ListenableFuture<MediaController>
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
     private var controller: ServiceStatusHandler? = null
 
     private var prevMedia: Playable? = null
@@ -222,7 +226,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "Fragment destroyed")
         controller?.release()
         controller = null
-//        MediaController.releaseFuture(controllerFuture)
+        MediaController.releaseFuture(controllerFuture)
         super.onDestroyView()
     }
 
@@ -800,12 +804,12 @@ class AudioPlayerFragment : Fragment() {
         super.onStart()
         procFlowEvents()
 
-//        val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
-//        controllerFuture = MediaController.Builder(requireContext(), sessionToken).buildAsync()
-//        controllerFuture.addListener({
-////            mediaController = controllerFuture.get()
-////            Logd(TAG, "controllerFuture.addListener: $mediaController")
-//        }, MoreExecutors.directExecutor())
+        val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(requireContext(), sessionToken).buildAsync()
+        controllerFuture.addListener({
+            media3Controller = controllerFuture.get()
+//            Logd(TAG, "controllerFuture.addListener: $mediaController")
+        }, MoreExecutors.directExecutor())
 
 //        loadMediaInfo()
     }

@@ -11,8 +11,7 @@ import org.json.JSONObject
  * URLs that should be updated. The key of the map is the original URL, the value of the map
  * is the sanitized URL.
  */
-class GpodnetEpisodeActionPostResponse private constructor(timestamp: Long, private val updatedUrls: Map<String, String>)
-    : UploadChangesResponse(timestamp) {
+class GpodnetEpisodeActionPostResponse private constructor(timestamp: Long, private val updatedUrls: Map<String, String>) : UploadChangesResponse(timestamp) {
 
     override fun toString(): String {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE)

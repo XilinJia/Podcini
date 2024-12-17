@@ -111,6 +111,7 @@ class EpisodeAction private constructor(builder: Builder) {
      * @return JSON object representation, or null if the object is invalid
      */
     fun writeToJsonObjectForServer(): JSONObject? {
+        // server only accepts these fields: podcast, episode, guid, action, timestamp, position, started, total
         val obj = JSONObject()
         try {
             obj.putOpt("podcast", this.podcast)
@@ -141,7 +142,7 @@ class EpisodeAction private constructor(builder: Builder) {
     }
 
     // mandatory
-    class Builder(val podcast: String?, val episode: String?, val action: Action) {
+    class Builder(val podcast: String, val episode: String, val action: Action) {
         // optional
         var timestamp: Date? = null
         var started: Int = -1
@@ -152,7 +153,7 @@ class EpisodeAction private constructor(builder: Builder) {
         var isFavorite: Boolean = false
         var guid: String? = null
 
-        constructor(item: Episode, action: Action) : this(item.feed?.downloadUrl, item.media?.downloadUrl, action) {
+        constructor(item: Episode, action: Action) : this(item.feed?.downloadUrl?:"", item.media?.downloadUrl?:"", action) {
             this.guid(item.identifier)
         }
 

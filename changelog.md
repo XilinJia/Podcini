@@ -1,10 +1,19 @@
+# 6.16.0
+
+* fixed youtube channel selector dialog not showing up in OnlineFeed fragment
+* removed RemoteMedia type
+* when playing youtube video, select video-only stream to mix with audio stream
+* enhanced casting in the Play app
+	* video player casts video, audio player casts audio, force-video casts video
+	* casting youtube video uses the full videostream and the quality is not as customizable as playing locally
+
 # 6.15.11
 
-* more dialogs in Compose
 * reworked in Compose the routine to log on to nextcloud and fixed crashes
 * fixed sync with nextcloud
 * likely also fixed sync with Gpodder
 * minor change in video/audio players
+* more dialogs in Compose
 * some resource cleaning
 * some class restructuring
 

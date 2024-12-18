@@ -92,7 +92,10 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     var forceVideo by mutableStateOf(false)
 
     @Ignore
-    var audioUrl = ""
+    var effectUrl = ""
+
+    @Ignore
+    var effectMimeType = ""
 
     @Ignore
     var bitrate: Int = 0

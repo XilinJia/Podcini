@@ -37,7 +37,7 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 5. Allows setting personal notes, 5-level rating, and 12-level play state on every episode.
 6. Boasts sophisticated filtering and sorting on episodes and podcasts.
 7. Promotes auto-download governed by policy and limit settings of individual feed (podcast).
-8. Supports casting audio-only Youtube media to a Chromecast speaker (the play app)
+8. Supports casting Youtube audio/video contents to a Chromecast speaker/screen (the play app)
 9. Spotlights `instant sync` across devices without a server.
 10. Offers Readability and Text-to-Speech for RSS contents,
 11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,

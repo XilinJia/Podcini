@@ -5,13 +5,20 @@ import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
+import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.fragments.GpodderAuthenticationFragment
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
+import ac.mdiq.podcini.ui.activity.PreferenceActivity.EpisodeCleanupOptions
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.DownloadErrorLabel.from
 import ac.mdiq.vista.extractor.InfoItem
@@ -22,16 +29,23 @@ import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.realm.kotlin.ext.realmListOf
@@ -44,7 +58,7 @@ import java.net.URL
 import kotlin.Throws
 
 class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) {
-    private val TAG = "DirectSubscribe"
+    private val TAG = "FeedBuilder"
 
     private val service by lazy { Vista.getService("YouTube") }
     private val ytTabsMap: MutableMap<Int, String> = mutableMapOf()
@@ -85,39 +99,45 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
 
     @Composable
     fun ConfirmYTChannelTabsDialog(onDismissRequest: () -> Unit, handleFeed: (Feed, Map<String, String>)->Unit) {
-        val textColor = MaterialTheme.colorScheme.onSurface
-        Column {
-            Text(text = stringResource(R.string.choose_tab), color = textColor, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp, bottom = 10.dp))
-            val selectedId = remember { mutableStateOf<Int?>(null) }
-            for (i in channelInfo.tabs.indices) {
-                val t = channelInfo.tabs[i]
-                var url = t.url
-                Logd(TAG, "url: $url ${t.originalUrl} ${t.baseUrl}")
-                if (!url.startsWith("http")) url = urlInit + url
-                val uURL = URL(url)
-                val urlEnd = uURL.path.split("/").last()
-                if (urlEnd != "playlists" && urlEnd != "shorts") Row(verticalAlignment = Alignment.CenterVertically) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 30.dp)) {
-                        var checked by remember { mutableStateOf(false) }
-                        Checkbox(checked = selectedId.value == i, onCheckedChange = {
-                            selectedId.value = if (selectedId.value == i) null else i
-                            checked = it
-                            if (checked) ytTabsMap[i] = urlEnd else ytTabsMap.remove(i)
-                        })
-                        Text(text = urlEnd, color = textColor, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+        AlertDialog(onDismissRequest = { onDismissRequest() },
+            title = { Text(stringResource(R.string.choose_tab), style = CustomTextStyles.titleCustom) },
+            text = {
+                Column {
+                    val selectedId = remember { mutableStateOf<Int?>(null) }
+                    for (i in channelInfo.tabs.indices) {
+                        val t = channelInfo.tabs[i]
+                        var url = t.url
+                        Logd(TAG, "ConfirmYTChannelTabsDialog url: $url ${t.originalUrl} ${t.baseUrl}")
+                        if (!url.startsWith("http")) url = urlInit + url
+                        val uURL = URL(url)
+                        val urlEnd = uURL.path.split("/").last()
+                        if (urlEnd != "playlists" && urlEnd != "shorts") Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 30.dp)) {
+                                var checked by remember { mutableStateOf(false) }
+                                Checkbox(checked = selectedId.value == i, onCheckedChange = {
+                                    selectedId.value = if (selectedId.value == i) null else i
+                                    checked = it
+                                    if (checked) ytTabsMap[i] = urlEnd else ytTabsMap.remove(i)
+                                })
+                                Text(text = urlEnd, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+                            }
+                        }
                     }
                 }
-            }
-            Button(modifier = Modifier.padding(start = 10.dp, top = 10.dp), onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    for (i in ytTabsMap.keys) {
-                        Logd(TAG, "Subscribing $i ${channelInfo.tabs[i].url}")
-                        buildYTChannel(i, ytTabsMap[i]!!) { feed_, map -> handleFeed(feed_, map) }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        for (i in ytTabsMap.keys) {
+                            Logd(TAG, "Subscribing $i ${channelInfo.tabs[i].url}")
+                            buildYTChannel(i, ytTabsMap[i]!!) { feed_, map -> handleFeed(feed_, map) }
+                        }
                     }
-                }
-                onDismissRequest()
-            }) { Text("Confirm") }
-        }
+                    onDismissRequest()
+                }) { Text(text = "Confirm") }
+            },
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+        )
     }
 
     suspend fun buildYTPlaylist(handleFeed: (Feed, Map<String, String>)->Unit) {

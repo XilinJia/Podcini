@@ -40,7 +40,6 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.Throws
 import kotlin.math.max
 
 abstract class MediaPlayerBase protected constructor(protected val context: Context, protected val callback: MediaPlayerCallback) {
@@ -137,13 +136,14 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 media.bitrate = audioStream.bitrate
                 Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
 
-                media.audioUrl = audioStream.content
+                media.effectUrl = audioStream.content
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(
                     MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
                 if (media.forceVideo || media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                     Logd(TAG, "setDataSource1 result: $streamInfo")
                     Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
-                    val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
+//                    val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
+                    val videoStreamsList = getSortedStreamVideosList(listOf(), streamInfo.videoOnlyStreams, true, true)
                     val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
                         when (media.episode?.feed?.preferences?.videoQualitySetting) {
                             FeedPreferences.AVQuality.LOW -> 0
@@ -404,7 +404,8 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         this.oldStatus = status
         status = newStatus
         if (newMedia != null) {
-            setPlayable(newMedia)
+            // TODO: test, this appears not necessary
+//            setPlayable(newMedia)
             if (newStatus != PlayerStatus.INDETERMINATE) {
                 when {
                     oldStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> callback.onPlaybackPause(newMedia, position)

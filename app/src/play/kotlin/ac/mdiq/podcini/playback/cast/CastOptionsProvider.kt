@@ -12,8 +12,6 @@ import com.google.android.gms.cast.framework.media.CastMediaOptions
 @SuppressLint("VisibleForTests")
 class CastOptionsProvider : OptionsProvider {
     override fun getCastOptions(context: Context): CastOptions {
-//        return CastOptions.Builder().setReceiverApplicationId("BEBC1DB1").build()
-//        return CastOptions.Builder().setReceiverApplicationId(CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID).build()
         return CastOptions.Builder().setReceiverApplicationId("C7113B39").build()
     }
 

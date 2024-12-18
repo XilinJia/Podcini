@@ -5,6 +5,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.storage.model.*
@@ -13,22 +14,24 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.app.UiModeManager
+import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Configuration
+import android.net.Uri
 import android.util.Log
 import androidx.media3.common.MediaMetadata
 import com.google.android.gms.cast.*
 import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.media.RemoteMediaClient
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.google.android.gms.common.images.WebImage
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.Throws
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,15 +53,15 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
     private val remoteMediaClientCallback: RemoteMediaClient.Callback = object : RemoteMediaClient.Callback() {
         override fun onMetadataUpdated() {
             super.onMetadataUpdated()
-            onRemoteMediaPlayerStatusUpdated()
+            this@CastMediaPlayer.onStatusUpdated()
         }
         override fun onPreloadStatusUpdated() {
             super.onPreloadStatusUpdated()
-            onRemoteMediaPlayerStatusUpdated()
+            this@CastMediaPlayer.onStatusUpdated()
         }
         override fun onStatusUpdated() {
             super.onStatusUpdated()
-            onRemoteMediaPlayerStatusUpdated()
+            this@CastMediaPlayer.onStatusUpdated()
         }
         override fun onMediaError(mediaError: MediaError) {
             EventFlow.postEvent(FlowEvent.PlayerErrorEvent(mediaError.reason?: "No reason"))
@@ -82,23 +85,22 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
 
     private fun toPlayable(info: MediaInfo?): Playable? {
         if (info == null || info.metadata == null) return null
-        if (CastUtils.matches(info, curMedia)) return curMedia
-        val streamUrl = info.metadata!!.getString(CastUtils.KEY_STREAM_URL)
-        return if (streamUrl == null) CastUtils.makeRemoteMedia(info) else callback.findMedia(streamUrl)
+        if (matches(info, curMedia)) return curMedia
+        val streamUrl = info.metadata!!.getString(KEY_STREAM_URL)
+//        return if (streamUrl == null) makeRemoteMedia(info) else callback.findMedia(streamUrl)
+        return if (streamUrl == null) null else callback.findMedia(streamUrl)
     }
 
     private fun toMediaInfo(playable: Playable?): MediaInfo? {
         return when {
             playable == null -> null
-            CastUtils.matches(mediaInfo, playable) -> mediaInfo
-            playable is EpisodeMedia -> MediaInfoCreator.from(playable)
-            playable is RemoteMedia -> MediaInfoCreator.from(playable)
-//            playable is RemoteMedia -> MediaInfoCreator.from(playable)
+            matches(mediaInfo, playable) -> mediaInfo
+            playable is EpisodeMedia -> from(playable)
             else -> null
         }
     }
 
-    private fun onRemoteMediaPlayerStatusUpdated() {
+    private fun onStatusUpdated() {
         val mediaStatus = remoteMediaClient?.mediaStatus
         if (mediaStatus == null) {
             Logd(TAG, "Received null MediaStatus")
@@ -108,7 +110,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         var state = mediaStatus.playerState
         val oldState = remoteState
         mediaInfo = mediaStatus.mediaInfo
-        val mediaChanged = !CastUtils.matches(mediaInfo, curMedia)
+        val mediaChanged = !matches(mediaInfo, curMedia)
         var stateChanged = state != oldState
         if (!mediaChanged && !stateChanged) {
             Logd(TAG, "Both media and state haven't changed, so nothing to do")
@@ -119,7 +121,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         val position = mediaStatus.streamPosition.toInt()
         // check for incompatible states
         if ((state == MediaStatus.PLAYER_STATE_PLAYING || state == MediaStatus.PLAYER_STATE_PAUSED) && currentMedia == null) {
-            Log.w(TAG, "RemoteMediaPlayer returned playing or pausing state, but with no media")
+            Log.w(TAG, "onStatusUpdated returned playing or pausing state, but with no media")
             state = MediaStatus.PLAYER_STATE_UNKNOWN
             stateChanged = oldState != MediaStatus.PLAYER_STATE_UNKNOWN
         }
@@ -129,7 +131,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             // We don't want setPlayerStatus to handle the onPlaybackPause callback
             setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
         }
-        Log.w(TAG, "RemoteMediaPlayer state: $state")
+        Log.w(TAG, "onStatusUpdated state: $state")
         setBuffering(state == MediaStatus.PLAYER_STATE_BUFFERING)
         when (state) {
             MediaStatus.PLAYER_STATE_PLAYING -> {
@@ -185,8 +187,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                     else -> return
                 }
             }
-            MediaStatus.PLAYER_STATE_UNKNOWN -> if (status != PlayerStatus.INDETERMINATE || curMedia !== currentMedia)
-                setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
+            MediaStatus.PLAYER_STATE_UNKNOWN -> if (status != PlayerStatus.INDETERMINATE || curMedia !== currentMedia) setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
             else -> Log.w(TAG, "Remote media state undetermined!")
         }
         if (mediaChanged) {
@@ -203,12 +204,12 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
      */
     override fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
        Logd(TAG, "playMediaObject")
-        if (!CastUtils.isCastable(playable, castContext.sessionManager.currentCastSession)) {
+        if (!isCastable(playable, castContext.sessionManager.currentCastSession)) {
             Logd(TAG, "media provided is not compatible with cast device")
             EventFlow.postEvent(FlowEvent.PlayerErrorEvent("Media not compatible with cast device"))
             var nextPlayable: Playable? = playable
             do { nextPlayable = callback.getNextInQueue(nextPlayable)
-            } while (nextPlayable != null && !CastUtils.isCastable(nextPlayable, castContext.sessionManager.currentCastSession))
+            } while (nextPlayable != null && !isCastable(nextPlayable, castContext.sessionManager.currentCastSession))
             if (nextPlayable != null) playMediaObject(nextPlayable, streaming, startWhenPrepared, prepareImmediately, forceReset)
             return
         }
@@ -274,20 +275,41 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
                 val streamInfo = media.episode!!.streamInfo ?: return
-                val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
-                Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
-                val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
-                    when (media.episode?.feed?.preferences?.audioQualitySetting) {
-                        FeedPreferences.AVQuality.LOW -> 0
-                        FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
-                        FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
-                        else -> audioStreamsList.size - 1
+                if (!media.forceVideo && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY) {
+                    val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
+                    Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
+                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                        when (media.episode?.feed?.preferences?.audioQualitySetting) {
+                            FeedPreferences.AVQuality.LOW -> 0
+                            FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
+                            FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
+                            else -> audioStreamsList.size - 1
+                        }
                     }
+                    val audioStream = audioStreamsList[audioIndex]
+                    Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
+                    media.effectUrl = audioStream.content
+                    media.effectMimeType = "audio/*"
+                } else {
+                    val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, listOf(), true, false)
+                    Logd(TAG, "setDataSource1 videoStreamsList ${videoStreamsList.size}")
+                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                        when (media.episode?.feed?.preferences?.videoQualitySetting) {
+                            FeedPreferences.AVQuality.LOW -> 0
+                            FeedPreferences.AVQuality.MEDIUM -> videoStreamsList.size / 2
+                            FeedPreferences.AVQuality.HIGH -> videoStreamsList.size - 1
+                            else -> 0
+                        }
+                    }
+                    val videoStream = videoStreamsList[videoIndex]
+                    Logd(TAG, "setDataSource1 use video quality: ${videoStream.resolution}")
+                    media.effectUrl = videoStream.content
+                    media.effectMimeType = "video/*"
                 }
-                val audioStream = audioStreamsList[audioIndex]
-                Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate} forceVideo: ${media.forceVideo}")
-                media.audioUrl = audioStream.content
             } catch (throwable: Throwable) { Log.e(TAG, "setDataSource1 error: ${throwable.message}") }
+        } else {
+            media.effectUrl = media.getStreamUrl() ?: ""
+            media.effectMimeType = media.mimeType ?: ""
         }
     }
 
@@ -414,6 +436,136 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
     }
 
     companion object {
+        /**
+         * Converts [EpisodeMedia] objects into a format suitable for sending to a Cast Device.
+         * Before using this method, one should make sure isCastable(Playable) returns
+         * `true`. This method should not run on the main thread.
+         *
+         * @param media The [EpisodeMedia] object to be converted.
+         * @return [MediaInfo] object in a format proper for casting.
+         */
+        fun from(media: EpisodeMedia?): MediaInfo? {
+            if (media == null) return null
+            val metadata = MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_GENERIC)
+            checkNotNull(media.episode) { "item is null" }
+            val feedItem = media.episode
+            if (feedItem != null) {
+                metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, media.getEpisodeTitle())
+                val subtitle = media.getFeedTitle()
+                metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, subtitle)
+
+                val feed: Feed? = feedItem.feed
+                // Manual because cast does not support embedded images
+                val url: String = if (feedItem.imageUrl == null && feed != null) feed.imageUrl?:"" else feedItem.imageUrl?:""
+                if (url.isNotEmpty()) metadata.addImage(WebImage(Uri.parse(url)))
+                val calendar = Calendar.getInstance()
+                calendar.time = feedItem.getPubDate()
+                metadata.putDate(com.google.android.gms.cast.MediaMetadata.KEY_RELEASE_DATE, calendar)
+                if (feed != null) {
+                    if (!feed.author.isNullOrEmpty()) metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, feed.author!!)
+                    if (!feed.downloadUrl.isNullOrEmpty()) metadata.putString(KEY_FEED_URL, feed.downloadUrl!!)
+                    if (!feed.link.isNullOrEmpty()) metadata.putString(KEY_FEED_WEBSITE, feed.link!!)
+                }
+                if (!feedItem.identifier.isNullOrEmpty()) metadata.putString(KEY_EPISODE_IDENTIFIER, feedItem.identifier!!)
+                else metadata.putString(KEY_EPISODE_IDENTIFIER, media.getStreamUrl() ?: "")
+                if (!feedItem.link.isNullOrEmpty()) metadata.putString(KEY_EPISODE_LINK, feedItem.link!!)
+            }
+            // This field only identifies the id on the device that has the original version.
+            // Idea is to perhaps, on a first approach, check if the version on the local DB with the
+            // same id matches the remote object, and if not then search for episode and feed identifiers.
+            // This at least should make media recognition for a single device much quicker.
+            metadata.putInt(KEY_MEDIA_ID, (media.getIdentifier() as Long).toInt())
+            // A way to identify different casting media formats in case we change it in the future and
+            // senders with different versions share a casting device.
+            metadata.putInt(KEY_FORMAT_VERSION, FORMAT_VERSION_VALUE)
+            metadata.putString(KEY_STREAM_URL, media.getStreamUrl()!!)
+
+            Logd("MediaInfoCreator", "media: ${media.getIdentifier()} ${feedItem?.title}")
+            Logd("MediaInfoCreator", "url: ${media.getMediaType()} $media.effectUrl")
+            val builder = MediaInfo.Builder(media.effectUrl)
+                .setEntity(media.getIdentifier().toString())
+                .setContentType(media.effectMimeType)
+                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                .setMetadata(metadata)
+            if (media.getDuration() > 0) builder.setStreamDuration(media.getDuration().toLong())
+            return builder.build()
+        }
+
+        const val KEY_MEDIA_ID: String = "ac.mdiq.podcini.cast.MediaId"
+
+        const val KEY_EPISODE_IDENTIFIER: String = "ac.mdiq.podcini.cast.EpisodeId"
+        const val KEY_EPISODE_LINK: String = "ac.mdiq.podcini.cast.EpisodeLink"
+        const val KEY_STREAM_URL: String = "ac.mdiq.podcini.cast.StreamUrl"
+        const val KEY_FEED_URL: String = "ac.mdiq.podcini.cast.FeedUrl"
+        const val KEY_FEED_WEBSITE: String = "ac.mdiq.podcini.cast.FeedWebsite"
+        const val KEY_EPISODE_NOTES: String = "ac.mdiq.podcini.cast.EpisodeNotes"
+
+        /**
+         * The field `Podcini.FormatVersion` specifies which version of MediaMetaData
+         * fields we're using. Future implementations should try to be backwards compatible with earlier
+         * versions, and earlier versions should be forward compatible until the version indicated by
+         * `MAX_VERSION_FORWARD_COMPATIBILITY`. If an update makes the format unreadable for
+         * an earlier version, then its version number should be greater than the
+         * `MAX_VERSION_FORWARD_COMPATIBILITY` value set on the earlier one, so that it
+         * doesn't try to parse the object.
+         */
+        const val KEY_FORMAT_VERSION: String = "ac.mdiq.podcini.ui.cast.FormatVersion"
+        const val FORMAT_VERSION_VALUE: Int = 1
+        const val MAX_VERSION_FORWARD_COMPATIBILITY: Int = 9999
+
+        fun isCastable(media: Playable?, castSession: CastSession?): Boolean {
+            if (media == null || castSession == null || castSession.castDevice == null) return false
+//        if (media is EpisodeMedia || media is RemoteMedia) {
+            if (media is EpisodeMedia) {
+                val url = media.getStreamUrl()
+                if (url.isNullOrEmpty()) return false
+                if (url.startsWith(ContentResolver.SCHEME_CONTENT)) return false /* Local feed */
+                return when (media.getMediaType()) {
+                    MediaType.AUDIO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
+                    MediaType.VIDEO -> {
+                        if (media.episode?.feed?.preferences?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
+                            castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
+                        else castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
+                    }
+                    else -> false
+                }
+            }
+            return false
+        }
+        
+        /**
+         * Compares a [MediaInfo] instance with a [EpisodeMedia] one and evaluates whether they
+         * represent the same podcast episode.
+         * @param info      the [MediaInfo] object to be compared.
+         * @param media     the [EpisodeMedia] object to be compared.
+         * @return <true>true</true> if there's a match, `false` otherwise.
+         */
+        fun matches(info: MediaInfo?, media: EpisodeMedia?): Boolean {
+            if (info == null || media == null) return false
+            if (info.contentId != media.getStreamUrl()) return false
+
+            val metadata = info.metadata
+            val fi = media.episode
+            if (fi == null || metadata == null || metadata.getString(KEY_EPISODE_IDENTIFIER) != fi.identifier) return false
+
+            val feed: Feed? = fi.feed
+            return feed != null && metadata.getString(KEY_FEED_URL) == feed.downloadUrl
+        }
+
+        /**
+         * Compares a [MediaInfo] instance with a [Playable] and evaluates whether they
+         * represent the same podcast episode. Useful every time we get a MediaInfo from the Cast Device
+         * and want to avoid unnecessary conversions.
+         * @param info      the [MediaInfo] object to be compared.
+         * @param media     the [Playable] object to be compared.
+         * @return <true>true</true> if there's a match, `false` otherwise.
+         */
+        fun matches(info: MediaInfo?, media: Playable?): Boolean {
+            if (info == null || media == null) return false
+//        if (media is RemoteMedia) return matches(info, media as RemoteMedia?)
+            return media is EpisodeMedia && matches(info, media as EpisodeMedia?)
+        }
+
         fun getInstanceIfConnected(context: Context, callback: MediaPlayerCallback): MediaPlayerBase? {
             if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) return null
             try { if (CastContext.getSharedInstance(context).castState == CastState.CONNECTED) return CastMediaPlayer(context, callback) } catch (e: Exception) { e.printStackTrace() }

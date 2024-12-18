@@ -402,7 +402,8 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun onClick(context: Context) {
         if (item.media == null) return
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
-        val media = if (item.feedId != null) item.media!! else RemoteMedia(item)
+//        val media = if (item.feedId != null) item.media!! else RemoteMedia(item)
+        val media = item.media!!
         UsageStatistics.logAction(UsageStatistics.ACTION_STREAM)
         if (!NetworkUtils.isStreamingAllowed) {
             StreamingConfirmationDialog(context, media).show()

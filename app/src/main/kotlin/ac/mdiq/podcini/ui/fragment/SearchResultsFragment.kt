@@ -112,7 +112,7 @@ class SearchResultsFragment : Fragment() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
-        TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint, defaultText = requireArguments().getString(ARG_QUERY, "")) { queryText -> search(queryText) }},
+        TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint, defaultText = requireArguments().getString(ARG_QUERY, "")) { queryText -> if (queryText.isNotBlank()) search(queryText) }},
             navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
         )
     }

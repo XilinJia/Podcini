@@ -35,7 +35,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -520,22 +519,22 @@ class FeedEpisodesFragment : Fragment() {
                         if (feed_ != null) {
                             layoutMode = if (feed_.preferences?.useWideLayout == true) 1 else 0
                             Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
-                            val etmp = mutableListOf<Episode>()
+                            val eListTmp = mutableListOf<Episode>()
                             if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
                                 Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                                 val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
-                                etmp.addAll(episodes_)
-                            } else etmp.addAll(feed_.episodes)
+                                eListTmp.addAll(episodes_)
+                            } else eListTmp.addAll(feed_.episodes)
                             sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-                            getPermutor(sortOrder).reorder(etmp)
+                            getPermutor(sortOrder).reorder(eListTmp)
                             episodes.clear()
-                            episodes.addAll(etmp)
+                            episodes.addAll(eListTmp)
                             ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                             ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                             withContext(Dispatchers.Main) {
                                 stopMonitor(vms)
                                 vms.clear()
-                                for (e in etmp) { vms.add(EpisodeVM(e, TAG)) }
+                                for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
                             }
                             if (onInit) {
                                 var hasNonMediaItems = false

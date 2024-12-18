@@ -5,7 +5,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -69,7 +69,7 @@ enum class SkipDirection {
 }
 
 @Composable
-fun ChaptersDialog(media: Playable, onDismissRequest: () -> Unit) {
+fun ChaptersDialog(media: EpisodeMedia, onDismissRequest: () -> Unit) {
     val lazyListState = rememberLazyListState()
     val chapters = media.getChapters()
     val textColor = MaterialTheme.colorScheme.onSurface

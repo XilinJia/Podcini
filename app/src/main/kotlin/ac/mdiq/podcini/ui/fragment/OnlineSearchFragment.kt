@@ -187,6 +187,7 @@ class OnlineSearchFragment : Fragment() {
     @Composable
     fun MyTopAppBar() {
         TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint) { queryText ->
+            if (queryText.isBlank()) return@SearchBarRow
             if (queryText.matches("http[s]?://.*".toRegex())) addUrl(queryText)
             else mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
         } },

@@ -319,7 +319,7 @@ object Queues {
          * @param queueItems           the queue to which the item is to be inserted
          * @param currentPlaying     the currently playing media
          */
-        fun calcPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
+        fun calcPosition(queueItems: List<Episode>, currentPlaying: EpisodeMedia?): Int {
             if (queueItems.isEmpty()) return 0
             when (enqueueLocation) {
                 EnqueueLocation.BACK -> return queueItems.size
@@ -349,8 +349,8 @@ object Queues {
             if (curItem?.media?.downloadUrl == null) return false
             return curItem.media != null && DownloadServiceInterface.get()?.isDownloadingEpisode(curItem.media!!.downloadUrl!!)?:false
         }
-        private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
-            if (currentPlaying !is EpisodeMedia) return -1
+        private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: EpisodeMedia?): Int {
+            if (currentPlaying == null) return -1
             val curPlayingItemId = currentPlaying.episodeOrFetch()?.id
             for (i in queueItems.indices) if (curPlayingItemId == queueItems[i].id) return i
             return -1

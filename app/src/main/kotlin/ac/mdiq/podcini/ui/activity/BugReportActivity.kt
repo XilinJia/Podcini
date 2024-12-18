@@ -12,7 +12,6 @@ import ac.mdiq.podcini.util.error.CrashReportWriter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -134,11 +133,11 @@ class BugReportActivity : AppCompatActivity() {
     }
 
     private fun sendEmail() {
-        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:")
+        val emailIntent = Intent(Intent.ACTION_SEND).apply {
             putExtra(Intent.EXTRA_EMAIL, arrayOf("xilin.vw@gmail.com"))
             putExtra(Intent.EXTRA_SUBJECT, "Podcini issue")
             putExtra(Intent.EXTRA_TEXT, crashDetailsTextView)
+            setType("message/rfc822")
         }
         if (emailIntent.resolveActivity(packageManager) != null) startActivity(emailIntent)
         else {

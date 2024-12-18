@@ -2,7 +2,7 @@ package ac.mdiq.podcini.storage.model
 
 import java.util.regex.Pattern
 
-class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: String) {
+class EmbeddedChapterImage(@JvmField val media: EpisodeMedia, private val imageUrl: String) {
     @JvmField
     var position: Int = 0
     @JvmField
@@ -43,7 +43,7 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
             return EMBEDDED_IMAGE_MATCHER.matcher(imageUrl).matches()
         }
 
-        fun getModelFor(media: Playable, chapter: Int): Any? {
+        fun getModelFor(media: EpisodeMedia, chapter: Int): Any? {
             val imageUrl = media.getChapters()[chapter].imageUrl
             return if (imageUrl != null && isEmbeddedChapterImage(imageUrl)) EmbeddedChapterImage(media, imageUrl) else  imageUrl
         }

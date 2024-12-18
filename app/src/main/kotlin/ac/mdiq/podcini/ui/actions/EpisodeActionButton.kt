@@ -173,9 +173,9 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 //            }
 //        }
 
-        fun playVideoIfNeeded(context: Context, media: Playable) {
-            val item = (media as? EpisodeMedia)?.episode
-            if ((media as? EpisodeMedia)?.forceVideo == true || (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        fun playVideoIfNeeded(context: Context, media: EpisodeMedia) {
+            val item = media?.episode
+            if (media.forceVideo == true || (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
                     && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
                     && media.getMediaType() == MediaType.VIDEO))
                 context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
@@ -413,7 +413,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
         actionState.value = getLabel()
     }
 
-    class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {
+    class StreamingConfirmationDialog(private val context: Context, private val playable: EpisodeMedia) {
         fun show() {
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.stream_label)
@@ -429,10 +429,10 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     companion object {
-        fun stream(context: Context, media: Playable) {
-            if (media !is EpisodeMedia || !InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
+        fun stream(context: Context, media: EpisodeMedia) {
+            if (!InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
-            if (media is EpisodeMedia && media.episode != null) {
+            if (media.episode != null) {
                 val item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, media.episode!!, false) }
                 EventFlow.postEvent(FlowEvent.PlayEvent(item))
             }

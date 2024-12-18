@@ -40,22 +40,18 @@ object InTheatre {
             }
         }
 
-    var curMedia: Playable? = null      // unmanged if EpisodeMedia
+    var curMedia: EpisodeMedia? = null      // unmanged if EpisodeMedia
         set(value) {
             when {
-                value is EpisodeMedia -> {
+                value != null -> {
                     field = unmanaged(value)
                     curMediaId = value.id
                     if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
                 }
-                value == null -> {
+                else -> {
                     field = null
                     curMediaId = -1L
                     if (curEpisode != null) curEpisode = null
-                }
-                else -> {
-                    field = value
-                    curMediaId = 0L
                 }
             }
         }
@@ -127,7 +123,7 @@ object InTheatre {
     /**
      * Restores a playable object from a sharedPreferences file. This method might load data from the database,
      * depending on the type of playable that was restored.
-     * @return The restored Playable object
+     * @return The restored EpisodeMedia object
      */
     fun loadPlayableFromPreferences() {
         Logd(TAG, "loadPlayableFromPreferences currentlyPlayingType: $curState.curMediaType")
@@ -138,10 +134,10 @@ object InTheatre {
                 Logd(TAG, "loadPlayableFromPreferences getting mediaId: $mediaId")
                 if (mediaId != 0L) {
                     curMedia = getEpisodeMedia(mediaId)
-                    if (curEpisode != null) curEpisode = (curMedia as EpisodeMedia).episodeOrFetch()
+                    if (curEpisode != null) curEpisode = curMedia?.episodeOrFetch()
                 }
                 Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curMedia?.getIdentifier()}")
-            } else Log.e(TAG, "Could not restore Playable object from preferences")
+            } else Log.e(TAG, "Could not restore EpisodeMedia object from preferences")
         }
     }
 
@@ -152,6 +148,6 @@ object InTheatre {
 
     @JvmStatic
     fun isCurMedia(media: EpisodeMedia?): Boolean {
-        return media != null && (curMedia as? EpisodeMedia)?.id == media.id
+        return media != null && curMedia?.id == media.id
     }
 }

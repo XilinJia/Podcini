@@ -1,3 +1,10 @@
+# 6.16.1
+
+* fixed issue of send mail to developer
+* removed super type Playable of EpisodeMedia, a major project structure change
+* ignore empty text searches avoiding possible crashes
+* in Subscriptions, ensure sorting and filtering in single operations, avoiding possible crashes
+
 # 6.16.0
 
 * fixed youtube channel selector dialog not showing up in OnlineFeed fragment

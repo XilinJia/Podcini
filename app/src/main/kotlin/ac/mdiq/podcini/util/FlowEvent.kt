@@ -18,7 +18,7 @@ sealed class FlowEvent {
     val TAG = this::class.simpleName ?: "FlowEvent"
     val id: Long = Date().time
 
-    data class PlaybackPositionEvent(val media: Playable?, val position: Int, val duration: Int) : FlowEvent()
+    data class PlaybackPositionEvent(val media: EpisodeMedia?, val position: Int, val duration: Int) : FlowEvent()
 
     data class PlaybackServiceEvent(val action: Action) : FlowEvent() {
         enum class Action { SERVICE_STARTED, SERVICE_SHUT_DOWN, }

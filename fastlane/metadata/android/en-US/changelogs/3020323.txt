@@ -1,0 +1,6 @@
+ Version 6.16.1
+
+* fixed send mail to developer
+* removed super type Playable of EpisodeMedia, a major project structure change
+* ignore empty text searches avoiding possible crashes
+* in Subscriptions, ensure sorting and filtering in single operations, avoiding possible crashes

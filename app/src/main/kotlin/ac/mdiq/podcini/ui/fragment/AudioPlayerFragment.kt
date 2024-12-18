@@ -123,8 +123,8 @@ class AudioPlayerFragment : Fragment() {
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private var controller: ServiceStatusHandler? = null
 
-    private var prevMedia: Playable? = null
-    private var currentMedia by mutableStateOf<Playable?>(null)
+    private var prevMedia: EpisodeMedia? = null
+    private var currentMedia by mutableStateOf<EpisodeMedia?>(null)
     private var prevItem: Episode? = null
     private var currentItem: Episode? = null
 
@@ -266,7 +266,7 @@ class AudioPlayerFragment : Fragment() {
                             if (media != null) {
                                 val mediaType = media.getMediaType()
                                 if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
-                                        || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                                        || (media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
                                     Logd(TAG, "popping as audio episode")
                                     ensureService()
                                     (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
@@ -304,7 +304,7 @@ class AudioPlayerFragment : Fragment() {
                             val media = curMedia!!
                             setIsShowPlay(!isShowPlay)
                             if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
-                                    (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
+                                    (media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
                                 playPause()
                                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
                             } else playPause()
@@ -366,7 +366,7 @@ class AudioPlayerFragment : Fragment() {
         Row {
             Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
-            val bitrate = (curMedia as? EpisodeMedia)?.bitrate ?: 0
+            val bitrate = curMedia?.bitrate ?: 0
             if (bitrate > 0) Text(formatLargeInteger(bitrate) + "bits", color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
             showTimeLeft = UserPreferences.shouldShowRemainingTime()
@@ -391,7 +391,7 @@ class AudioPlayerFragment : Fragment() {
 
     @Composable
     fun VolumeAdaptionDialog(onDismissRequest: () -> Unit) {
-        val (selectedOption, onOptionSelected) = remember { mutableStateOf((currentMedia as? EpisodeMedia)?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(currentMedia?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -402,8 +402,8 @@ class AudioPlayerFragment : Fragment() {
                                     Logd(TAG, "row clicked: $item $selectedOption")
                                     if (item != selectedOption) {
                                         onOptionSelected(item)
-                                        if (currentMedia is EpisodeMedia) {
-                                            (currentMedia as? EpisodeMedia)?.volumeAdaptionSetting = item
+                                        if (currentMedia != null) {
+                                            currentMedia?.volumeAdaptionSetting = item
                                             currentMedia = currentItem!!.media
                                             curMedia = currentMedia
                                             playbackService?.mPlayer?.pause(reinit = true)
@@ -423,11 +423,11 @@ class AudioPlayerFragment : Fragment() {
 
     @Composable
     fun Toolbar() {
-        val media: Playable = curMedia ?: return
-        val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
+        val media: EpisodeMedia = curMedia ?: return
+        val feedItem = media.episodeOrFetch()
         val textColor = MaterialTheme.colorScheme.onSurface
         val mediaType = curMedia?.getMediaType()
-        val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        val notAudioOnly = curMedia?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
         var showVolumeDialog by remember { mutableStateOf(false) }
         if (showVolumeDialog) VolumeAdaptionDialog { showVolumeDialog = false }
         var showShareDialog by remember { mutableStateOf(false) }
@@ -443,8 +443,8 @@ class AudioPlayerFragment : Fragment() {
             })
             if (mediaType == MediaType.VIDEO) Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_fullscreen_24), tint = textColor, contentDescription = "Play video",
                 modifier = Modifier.clickable {
-                    if (!notAudioOnly && (curMedia as? EpisodeMedia)?.forceVideo != true) {
-                        (curMedia as? EpisodeMedia)?.forceVideo = true
+                    if (!notAudioOnly && curMedia?.forceVideo != true) {
+                        curMedia?.forceVideo = true
                         status = PlayerStatus.STOPPED
                         playbackService?.mPlayer?.pause(reinit = true)
                         playbackService?.recreateMediaPlayer()
@@ -457,7 +457,7 @@ class AudioPlayerFragment : Fragment() {
                     SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
                 })
             }
-            if (currentMedia is EpisodeMedia) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
+            if (currentMedia != null) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
                 modifier = Modifier.clickable {
                     if (feedItem?.feedId != null) {
                         val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId!!)
@@ -502,7 +502,7 @@ class AudioPlayerFragment : Fragment() {
             }
             Text(txtvPodcastTitle, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp).combinedClickable(onClick = {
-                    if (currentMedia is EpisodeMedia) {
+                    if (currentMedia != null) {
                         if (currentItem?.feedId != null) {
                             val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), currentItem!!.feedId!!)
                             startActivity(openFeed)
@@ -588,16 +588,16 @@ class AudioPlayerFragment : Fragment() {
 
     private fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPositionUpdate")
-        if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia is EpisodeMedia) {
-            if (isCurrentlyPlaying(curMedia as? EpisodeMedia)) playButRes = R.drawable.ic_pause
+        if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia != null) {
+            if (isCurrentlyPlaying(curMedia)) playButRes = R.drawable.ic_pause
             playButInit = true
         }
-        if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == Playable.INVALID_TIME || curDurationFB == Playable.INVALID_TIME) return
+        if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == EpisodeMedia.INVALID_TIME || curDurationFB == EpisodeMedia.INVALID_TIME) return
         val converter = TimeSpeedConverter(curSpeedFB)
         currentPosition = converter.convert(event.position)
         duration = converter.convert(event.duration)
         val remainingTime: Int = converter.convert(max((event.duration - event.position).toDouble(), 0.0).toInt())
-        if (currentPosition == Playable.INVALID_TIME || duration == Playable.INVALID_TIME) {
+        if (currentPosition == EpisodeMedia.INVALID_TIME || duration == EpisodeMedia.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
@@ -607,13 +607,13 @@ class AudioPlayerFragment : Fragment() {
         sliderValue = event.position.toFloat()
     }
 
-    private fun updateUi(media: Playable) {
+    private fun updateUi(media: EpisodeMedia) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
-        if (isPlayingVideoLocally && (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+        if (isPlayingVideoLocally && curMedia?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
         prevMedia = media
@@ -621,12 +621,11 @@ class AudioPlayerFragment : Fragment() {
 
     private fun updateDetails() {
         lifecycleScope.launch {
-            Logd(TAG, "in updateDetails curMedia: ${curMedia is EpisodeMedia}")
+            Logd(TAG, "in updateDetails")
             withContext(Dispatchers.IO) {
                 currentMedia = curMedia
-                if (currentMedia != null && currentMedia is EpisodeMedia) {
-                    val episodeMedia = currentMedia as EpisodeMedia
-                    currentItem = episodeMedia.episodeOrFetch()
+                if (currentMedia != null) {
+                    currentItem = currentMedia!!.episodeOrFetch()
                     showHomeText = false
                     homeText = null
                 }
@@ -764,7 +763,7 @@ class AudioPlayerFragment : Fragment() {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) { curMedia?.apply { ChapterUtils.loadChapters(this, requireContext(), false) } }
                     currentMedia = curMedia
-                    val item = (currentMedia as? EpisodeMedia)?.episodeOrFetch()
+                    val item = currentMedia?.episodeOrFetch()
                     if (item != null) setItem(item)
                     val chapters: List<Chapter> = currentMedia?.getChapters() ?: listOf()
                     if (chapters.isNotEmpty()) {

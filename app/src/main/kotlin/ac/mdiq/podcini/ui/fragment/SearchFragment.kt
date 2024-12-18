@@ -323,31 +323,35 @@ class SearchFragment : Fragment() {
         val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val sb = StringBuilder()
         for (i in queryWords.indices) {
-            sb.append("(")
             var isStart = true
+            val sb1 = StringBuilder()
             if (SearchBy.TITLE.selected) {
-                sb.append("eigenTitle TEXT '${queryWords[i]}'")
-                sb.append(" OR ")
-                sb.append("customTitle TEXT '${queryWords[i]}'")
+                sb1.append("eigenTitle TEXT '${queryWords[i]}'")
+                sb1.append(" OR ")
+                sb1.append("customTitle TEXT '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.AUTHOR.selected) {
-                if (!isStart) sb.append(" OR ")
-                sb.append("author TEXT '${queryWords[i]}'")
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("author TEXT '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.DESCRIPTION.selected) {
-                if (!isStart) sb.append(" OR ")
-                sb.append("description TEXT '${queryWords[i]}'")
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("description TEXT '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.COMMENT.selected) {
-                if (!isStart) sb.append(" OR ")
-                sb.append("comment TEXT '${queryWords[i]}'")
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("comment TEXT '${queryWords[i]}'")
             }
+            if (sb1.isEmpty()) continue
+            sb.append("(")
+            sb.append(sb1)
             sb.append(") ")
             if (i != queryWords.size - 1) sb.append("AND ")
         }
+        if (sb.isEmpty()) return listOf()
         val queryString = sb.toString()
         Logd(TAG, "searchFeeds queryString: $queryString")
         return realm.query(Feed::class).query(queryString).find()
@@ -365,26 +369,31 @@ class SearchFragment : Fragment() {
         val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val sb = StringBuilder()
         for (i in queryWords.indices) {
-            sb.append("(")
+            val sb1 = StringBuilder()
             var isStart = true
             if (SearchBy.TITLE.selected) {
-                sb.append("title TEXT '${queryWords[i]}'" )
+                sb1.append("title TEXT '${queryWords[i]}'" )
                 isStart = false
             }
             if (SearchBy.DESCRIPTION.selected) {
-                if (!isStart) sb.append(" OR ")
-                sb.append("description TEXT '${queryWords[i]}'")
-                sb.append(" OR ")
-                sb.append("transcript TEXT '${queryWords[i]}'")
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("description TEXT '${queryWords[i]}'")
+                sb1.append(" OR ")
+                sb1.append("transcript TEXT '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.COMMENT.selected) {
-                if (!isStart) sb.append(" OR ")
-                sb.append("comment TEXT '${queryWords[i]}'")
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("comment TEXT '${queryWords[i]}'")
             }
+            if (sb1.isEmpty()) continue
+            sb.append("(")
+            sb.append(sb1)
             sb.append(") ")
             if (i != queryWords.size - 1) sb.append("AND ")
         }
+        if (sb.isEmpty()) return listOf()
+
         var queryString = sb.toString()
         if (feedID != 0L) queryString = "(feedId == $feedID) AND $queryString"
         Logd(TAG, "searchEpisodes queryString: $queryString")

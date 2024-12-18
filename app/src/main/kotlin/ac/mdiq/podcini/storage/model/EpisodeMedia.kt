@@ -5,7 +5,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import ac.mdiq.podcini.util.Logd
-import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Parcel
 import android.os.Parcelable
@@ -18,10 +17,11 @@ import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
 import java.io.File
 import java.io.IOException
+import java.io.Serializable
 import java.util.*
 import kotlin.math.max
 
-class EpisodeMedia: EmbeddedRealmObject, Playable {
+class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
     @Index
     var id: Long = 0L   // same as the episode id
 
@@ -110,7 +110,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         this.downloadUrl = downloadUrl
     }
 
-    // mostly used in tests
     constructor(id: Long, item: Episode?, duration: Int, position: Int,
                 size: Long, mimeType: String?, fileUrl: String?, downloadUrl: String?,
                 downloaded: Boolean, playbackCompletionDate: Date?, playedDuration: Int,
@@ -139,7 +138,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     /**
      * Uses mimetype to determine the type of media.
      */
-    override fun getMediaType(): MediaType {
+    fun getMediaType(): MediaType {
         return MediaType.fromMimeType(mimeType)
     }
 
@@ -179,31 +178,35 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         if (url == null) downloaded = false
     }
 
-    override fun getDuration(): Int {
+    fun getDuration(): Int {
         return duration
     }
 
-    override fun setDuration(newDuration: Int) {
+    fun setDuration(newDuration: Int) {
         this.duration = newDuration
     }
-    override fun getPosition(): Int {
+
+    fun getPosition(): Int {
         return position
     }
 
-    override fun setPosition(newPosition: Int) {
+    fun setPosition(newPosition: Int) {
         this.position = newPosition
         if (newPosition > 0 && episode?.isNew == true) episode!!.setPlayed(false)
     }
 
-    override fun getLastPlayedTime(): Long {
+    /**
+     * Returns last time (in ms) when this playable was played or 0 if last played time is unknown.
+     */
+    fun getLastPlayedTime(): Long {
         return lastPlayedTime
     }
 
-    override fun setLastPlayedTime(lastPlayedTime: Long) {
+    fun setLastPlayedTime(lastPlayedTime: Long) {
         this.lastPlayedTime = lastPlayedTime
     }
 
-    override fun getDescription(): String? {
+    fun getDescription(): String? {
         return episode?.description
     }
 
@@ -252,47 +255,63 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         dest.writeLong(lastPlayedTime)
     }
 
-    override fun getEpisodeTitle(): String {
+    fun getEpisodeTitle(): String {
         return episode?.title ?: episode?.identifyingValue ?: "No title"
     }
 
-    override fun getChapters(): List<Chapter> {
+    fun getChapters(): List<Chapter> {
         return episode?.chapters?:listOf()
     }
 
-    override fun chaptersLoaded(): Boolean {
+    fun chaptersLoaded(): Boolean {
         return episode?.chapters != null
     }
 
-    override fun getWebsiteLink(): String? {
+    fun getWebsiteLink(): String? {
         return episode?.link
     }
 
-    override fun getFeedTitle(): String {
+    fun getFeedTitle(): String {
         return episode?.feed?.title?:""
     }
 
-    override fun getIdentifier(): Any {
+    /**
+     * Returns a unique identifier, for example a file url or an ID from a database.
+     */
+    fun getIdentifier(): Any {
         return id
     }
 
-    override fun getLocalMediaUrl(): String? {
+    /**
+     * Returns an url to a local file that can be played or null if this file does not exist.
+     */
+    fun getLocalMediaUrl(): String? {
         return fileUrl
     }
 
-    override fun getStreamUrl(): String? {
+    /**
+     * Returns an url to a file that can be streamed by the player or null if this url is not known.
+     */
+    fun getStreamUrl(): String? {
         return downloadUrl
     }
 
-    override fun getPubDate(): Date? {
+    fun getPubDate(): Date? {
         return episode?.getPubDate()
     }
 
-    override fun localFileAvailable(): Boolean {
+    /**
+     * Returns true if a local file that can be played is available. getFileUrl MUST return a non-null string if this method returns true.
+     */
+    fun localFileAvailable(): Boolean {
         return downloaded && fileUrl != null
     }
 
-    override fun onPlaybackStart() {
+    /**
+     * This method should be called every time playback starts on this object.
+     * Position held by this EpisodeMedia should be set accurately before a call to this method is made.
+     */
+    fun onPlaybackStart() {
         Logd(TAG, "onPlaybackStart ${System.currentTimeMillis()}")
         startPosition = max(position.toDouble(), 0.0).toInt()
         playedDurationWhenStarted = playedDuration
@@ -300,22 +319,37 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         startTime = System.currentTimeMillis()
     }
 
-    override fun onPlaybackPause(context: Context) {
+    /**
+     * This method should be called every time playback pauses or stops on this object,
+     * including just before a seeking operation is performed, after which a call to
+     * [.onPlaybackStart] should be made. If playback completes, calling this method is not
+     * necessary, as long as a call to [.onPlaybackCompleted] is made.
+     * Position held by this EpisodeMedia should be set accurately before a call to this method is made.
+     */
+    fun onPlaybackPause() {
         Logd(TAG, "onPlaybackPause $position $duration")
         if (position > startPosition) playedDuration = playedDurationWhenStarted + position - startPosition
         timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime).toInt()
         startPosition = position
     }
 
-    override fun onPlaybackCompleted(context: Context) {
+    /**
+     * This method should be called when playback completes for this object.
+     */
+    fun onPlaybackCompleted() {
         startPosition = -1
     }
 
-    override fun getPlayableType(): Int {
+    /**
+     * Returns an integer that must be unique among all EpisodeMedia classes. The
+     * return value is later used by CurrentState to determine the type of the
+     * EpisodeMedia object that is restored.
+     */
+    fun getPlayableType(): Int {
         return PLAYABLE_TYPE_FEEDMEDIA
     }
 
-    override fun setChapters(chapters: List<Chapter>) {
+    fun setChapters(chapters: List<Chapter>) {
         if (episode != null) {
             episode!!.chapters.clear()
             for (c in chapters) c.episode = episode
@@ -323,7 +357,12 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         }
     }
 
-    override fun getImageLocation(): String? {
+    /**
+     * Returns the location of the image or null if no image is available.
+     * This can be the feed item image URL, the local embedded media image path, the feed image URL,
+     * or the remote media image URL, depending on what's available.
+     */
+    fun getImageLocation(): String? {
         return when {
             episode != null -> episode!!.imageLocation
             hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
@@ -421,6 +460,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     companion object {
         private val TAG: String = EpisodeMedia::class.simpleName ?: "Anonymous"
 
+        const val INVALID_TIME: Int = -1
         const val FEEDFILETYPE_FEEDMEDIA: Int = 2
         const val PLAYABLE_TYPE_FEEDMEDIA: Int = 1
         const val FILENAME_PREFIX_EMBEDDED_COVER: String = "metadata-retriever:"

@@ -19,7 +19,7 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
-import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
@@ -163,8 +163,8 @@ class SleepTimerDialog : DialogFragment() {
     }
 
     private fun extendSleepTimer(extendTime: Long) {
-        val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: Playable.INVALID_TIME.toLong()
-        if (timeLeft != Playable.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
+        val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: EpisodeMedia.INVALID_TIME.toLong()
+        if (timeLeft != EpisodeMedia.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
     }
 
     private fun setSleepTimer(time: Long) {

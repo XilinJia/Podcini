@@ -46,7 +46,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
     @Volatile
     private var oldStatus: PlayerStatus? = null
-    internal var prevMedia: Playable? = null
+    internal var prevMedia: EpisodeMedia? = null
 
     protected var mediaSource: MediaSource? = null
     protected var mediaItem: MediaItem? = null
@@ -79,7 +79,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         status = PlayerStatus.STOPPED
     }
 
-    protected open fun setPlayable(playable: Playable?) {
+    protected open fun setPlayable(playable: EpisodeMedia?) {
         if (playable != null && playable !== curMedia) curMedia = playable
     }
 
@@ -229,8 +229,8 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     }
 
     /**
-     * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
-     * episode will be stopped and replaced with the new Playable object. If the Playable object is already being played, the method will
+     * Starts or prepares playback of the specified EpisodeMedia object. If another EpisodeMedia object is already being played, the currently playing
+     * episode will be stopped and replaced with the new EpisodeMedia object. If the EpisodeMedia object is already being played, the method will
      * not do anything.
      * Whether playback starts immediately depends on the given parameters. See below for more details.
      *
@@ -240,21 +240,21 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * If 'prepareImmediately' is set to true, the method will go into PREPARING state and after that into PREPARED state. If
      * 'startWhenPrepared' is set to true, the method will additionally go into PLAYING state.
      *
-     * If an unexpected error occurs while loading the Playable's metadata or while setting the MediaPlayers data source, the object
+     * If an unexpected error occurs while loading the EpisodeMedia's metadata or while setting the MediaPlayers data source, the object
      * will enter the ERROR state.
      *
      * This method is executed on an internal executor service.
      *
-     * @param playable           The Playable object that is supposed to be played. This parameter must not be null.
-     * @param streaming             The type of playback. If false, the Playable object MUST provide access to a locally available file via
-     * getLocalMediaUrl. If true, the Playable object MUST provide access to a resource that can be streamed by
+     * @param playable           The EpisodeMedia object that is supposed to be played. This parameter must not be null.
+     * @param streaming             The type of playback. If false, the EpisodeMedia object MUST provide access to a locally available file via
+     * getLocalMediaUrl. If true, the EpisodeMedia object MUST provide access to a resource that can be streamed by
      * the Android MediaPlayer via getStreamUrl.
      * @param startWhenPrepared  Sets the 'startWhenPrepared' flag. This flag determines whether playback will start immediately after the
      * episode has been prepared for playback. Setting this flag to true does NOT mean that the episode will be prepared
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    abstract fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean = false)
+    abstract fun playMediaObject(playable: EpisodeMedia, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean = false)
 
     /**
      * Resumes playback if the PSMP object is in PREPARED or PAUSED state. If the PSMP object is in an invalid state.
@@ -299,7 +299,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
     fun seekDelta(delta: Int) {
         val curPosition = getPosition()
-        if (curPosition != Playable.INVALID_TIME) seekTo(curPosition + delta)
+        if (curPosition != EpisodeMedia.INVALID_TIME) seekTo(curPosition + delta)
         else Log.e(TAG, "seekDelta getPosition() returned INVALID_TIME in seekDelta")
     }
 
@@ -395,11 +395,11 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * depending on the status change.
      * @param newStatus The new PlayerStatus. This must not be null.
      * @param newMedia  The new playable object of the PSMP object. This can be null.
-     * @param position  The position to be set to the current Playable object in case playback started or paused.
-     * Will be ignored if given the value of [Playable.INVALID_TIME].
+     * @param position  The position to be set to the current EpisodeMedia object in case playback started or paused.
+     * Will be ignored if given the value of [EpisodeMedia.INVALID_TIME].
      */
     @Synchronized
-    protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: Playable?, position: Int = Playable.INVALID_TIME) {
+    protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: EpisodeMedia?, position: Int = EpisodeMedia.INVALID_TIME) {
         Log.d(TAG, "${this.javaClass.simpleName}: Setting player status to $newStatus")
         this.oldStatus = status
         status = newStatus
@@ -419,7 +419,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     class MediaPlayerInfo(
             @JvmField val oldPlayerStatus: PlayerStatus?,
             @JvmField var playerStatus: PlayerStatus,
-            @JvmField var playable: Playable?)
+            @JvmField var playable: EpisodeMedia?)
 
     companion object {
         private val TAG: String = MediaPlayerBase::class.simpleName ?: "Anonymous"
@@ -455,7 +455,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 }
             }
 
-        fun buildMetadata(p: Playable): MediaMetadata {
+        fun buildMetadata(p: EpisodeMedia): MediaMetadata {
             val builder = MediaMetadata.Builder()
                 .setIsBrowsable(true)
                 .setIsPlayable(true)
@@ -468,7 +468,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             return builder.build()
         }
 
-        fun buildMediaItem(p: Playable): MediaItem? {
+        fun buildMediaItem(p: EpisodeMedia): MediaItem? {
             val url = p.getStreamUrl() ?: return null
             val metadata = buildMetadata(p)
             return MediaItem.Builder()
@@ -501,12 +501,12 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
          * Returns the currently configured playback speed for the specified media.
          */
         @JvmStatic
-        fun getCurrentPlaybackSpeed(media: Playable?): Float {
+        fun getCurrentPlaybackSpeed(media: EpisodeMedia?): Float {
             var playbackSpeed = FeedPreferences.SPEED_USE_GLOBAL
             if (media != null) {
                 playbackSpeed = curState.curTempSpeed
                 // TODO: something strange here?
-                if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is EpisodeMedia) {
+                if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) {
                     val prefs_ = media.episodeOrFetch()?.feed?.preferences
                     if (prefs_ != null) playbackSpeed = prefs_.playSpeed
                 }

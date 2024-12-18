@@ -7,14 +7,16 @@ import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curIndexInQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.PlayState
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
@@ -133,25 +135,25 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     /**
-     * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
-     * episode will be stopped and replaced with the new Playable object. If the Playable object is already being played, the method will not do anything.
+     * Starts or prepares playback of the specified EpisodeMedia object. If another EpisodeMedia object is already being played, the currently playing
+     * episode will be stopped and replaced with the new EpisodeMedia object. If the EpisodeMedia object is already being played, the method will not do anything.
      * Whether playback starts immediately depends on the given parameters. See below for more details.
      * States:
      * During execution of the method, the object will be in the INITIALIZING state. The end state depends on the given parameters.
      * If 'prepareImmediately' is set to true, the method will go into PREPARING state and after that into PREPARED state.
      * If 'startWhenPrepared' is set to true, the method will additionally go into PLAYING state.
-     * If an unexpected error occurs while loading the Playable's metadata or while setting the MediaPlayers data source, the object will enter the ERROR state.
+     * If an unexpected error occurs while loading the EpisodeMedia's metadata or while setting the MediaPlayers data source, the object will enter the ERROR state.
      * This method is executed on an internal executor service.
-     * @param playable           The Playable object that is supposed to be played. This parameter must not be null.
-     * @param streaming             The type of playback. If false, the Playable object MUST provide access to a locally available file via
-     * getLocalMediaUrl. If true, the Playable object MUST provide access to a resource that can be streamed by
+     * @param playable           The EpisodeMedia object that is supposed to be played. This parameter must not be null.
+     * @param streaming             The type of playback. If false, the EpisodeMedia object MUST provide access to a locally available file via
+     * getLocalMediaUrl. If true, the EpisodeMedia object MUST provide access to a resource that can be streamed by
      * the Android MediaPlayer via getStreamUrl.
      * @param startWhenPrepared  Sets the 'startWhenPrepared' flag. This flag determines whether playback will start immediately after the
      * episode has been prepared for playback. Setting this flag to true does NOT mean that the episode will be prepared
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    override fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
+    override fun playMediaObject(playable: EpisodeMedia, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
         Logd(TAG, "playMediaObject status=$status stream=$streaming startWhenPrepared=$startWhenPrepared prepareImmediately=$prepareImmediately forceReset=$forceReset ${playable.getEpisodeTitle()} ")
 //       showStackTrace()
         if (curMedia != null) {
@@ -177,13 +179,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
         Logd(TAG, "playMediaObject preparing for playable:${playable.getIdentifier()} ${playable.getEpisodeTitle()}")
         curMedia = playable
-        if (curMedia is EpisodeMedia) {
-            val media_ = curMedia as EpisodeMedia
-            var item = media_.episodeOrFetch()
-            if (item != null && item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
-            val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
-            curIndexInQueue = Episodes.indexOfItemWithId(eList, media_.id)
-        } else curIndexInQueue = -1
+        val media_ = curMedia!!
+        var item = media_.episodeOrFetch()
+        if (item != null && item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
+        val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
+        curIndexInQueue = Episodes.indexOfItemWithId(eList, media_.id)
 
         prevMedia = curMedia
         this.isStreaming = streaming
@@ -203,16 +203,13 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     streaming -> {
                         val streamurl = curMedia!!.getStreamUrl()
                         if (streamurl != null) {
-                            val media = curMedia
-                            if (media is EpisodeMedia) {
-                                mediaItem = null
-                                mediaSource = null
-                                setDataSource(metadata, media)
+                            mediaItem = null
+                            mediaSource = null
+                            setDataSource(metadata, curMedia!!)
 //                            val deferred = CoroutineScope(Dispatchers.IO).async { setDataSource(metadata, media) }
 //                            if (startWhenPrepared) runBlocking { deferred.await() }
 //                            val preferences = media.episodeOrFetch()?.feed?.preferences
 //                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
-                            } else setDataSource(metadata, streamurl, null, null)
                         }
                     }
                     else -> {
@@ -283,7 +280,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 if (pos > 0) seekTo(pos)
                 if (curMedia != null && curMedia!!.getDuration() <= 0) {
                     Logd(TAG, "Setting duration of media")
-                    curMedia!!.setDuration(if (exoPlayer?.duration == C.TIME_UNSET) Playable.INVALID_TIME else exoPlayer!!.duration.toInt())
+                    curMedia!!.setDuration(if (exoPlayer?.duration == C.TIME_UNSET) EpisodeMedia.INVALID_TIME else exoPlayer!!.duration.toInt())
                 }
             }
             setPlayerStatus(PlayerStatus.PREPARED, curMedia)
@@ -340,11 +337,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     override fun getDuration(): Int {
-        return curMedia?.getDuration() ?: Playable.INVALID_TIME
+        return curMedia?.getDuration() ?: EpisodeMedia.INVALID_TIME
     }
 
     override fun getPosition(): Int {
-        var retVal = Playable.INVALID_TIME
+        var retVal = EpisodeMedia.INVALID_TIME
         if (exoPlayer != null && status.isAtLeast(PlayerStatus.PREPARED)) retVal = exoPlayer!!.currentPosition.toInt()
         if (retVal <= 0 && curMedia != null) retVal = curMedia!!.getPosition()
         return retVal
@@ -370,7 +367,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         var volumeRight = volumeRight
         Logd(TAG, "setVolume: $volumeLeft $volumeRight")
         val playable = curMedia
-        if (playable is EpisodeMedia) {
+        if (playable != null) {
             var adaptionFactor = 1f
             if (playable.volumeAdaptionSetting != VolumeAdaptionSetting.OFF) adaptionFactor = playable.volumeAdaptionSetting.adaptionFactor
             else {
@@ -472,7 +469,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             status = PlayerStatus.STOPPED
             return
         }
-        val i = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.audioType?: C.AUDIO_CONTENT_TYPE_SPEECH
+        val i = curMedia?.episode?.feed?.preferences?.audioType?: C.AUDIO_CONTENT_TYPE_SPEECH
         val a = exoPlayer!!.audioAttributes
         val b = AudioAttributes.Builder()
         b.setContentType(i)
@@ -487,14 +484,14 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         if (curMedia == null) return
 
         val isPlaying = status == PlayerStatus.PLAYING
-        // we're relying on the position stored in the Playable object for post-playback processing
+        // we're relying on the position stored in the EpisodeMedia object for post-playback processing
         val position = getPosition()
         if (position >= 0) curMedia?.setPosition(position)
         Logd(TAG, "endPlayback hasEnded=$hasEnded wasSkipped=$wasSkipped shouldContinue=$shouldContinue toStoppedState=$toStoppedState")
 //            showStackTrace()
 
         val currentMedia = curMedia
-        var nextMedia: Playable? = null
+        var nextMedia: EpisodeMedia? = null
         if (shouldContinue) {
             // Load next episode if previous episode was in the queue and if there is an episode in the queue left.
             // Start playback immediately if continuous playback is enabled

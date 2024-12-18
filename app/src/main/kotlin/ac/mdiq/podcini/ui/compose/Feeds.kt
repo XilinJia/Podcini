@@ -558,7 +558,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                                     Logd(TAG, "setSpeed codeArray: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
                                     if (settingCode[2]) UserPreferences.setPlaybackSpeed(chipSpeed)
                                     if (settingCode[1]) {
-                                        val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
+                                        val episode = curMedia?.episodeOrFetch() ?: curEpisode
                                         if (episode?.feed?.preferences != null) upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = chipSpeed }
                                     }
                                     if (settingCode[0]) {

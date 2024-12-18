@@ -23,11 +23,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
-import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -105,8 +103,8 @@ class VideoplayerActivity : CastEnabledActivity() {
         setTheme(getNoTitleTheme(this))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         var vmCode = 0
-        if (curMedia is EpisodeMedia) {
-            val media_ = curMedia as EpisodeMedia
+        if (curMedia != null) {
+            val media_ = curMedia!!
             var vPol = media_.episode?.feed?.preferences?.videoModePolicy
             if (vPol != null) {
                 if (vPol == VideoMode.AUDIO_ONLY && media_.forceVideo) vPol = VideoMode.WINDOW_VIEW
@@ -136,7 +134,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = { showSpeedDialog = false })
                 MediaPlayerErrorDialog(this, errorMessage, showErrorDialog)
                 if (showShareDialog) {
-                    val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                    val feedItem = curMedia?.episodeOrFetch()
                     if (feedItem != null) ShareDialog(feedItem, this@VideoplayerActivity) { showShareDialog = false }
                     else showShareDialog = false
                 }
@@ -304,7 +302,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             lifecycleScope.launch {
                 try {
                     val episode = withContext(Dispatchers.IO) {
-                        var episode_ = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                        var episode_ = curMedia?.episodeOrFetch()
                         if (episode_ != null) {
                             val duration = episode_.media?.getDuration() ?: Int.MAX_VALUE
                             val url = episode_.media?.downloadUrl
@@ -387,11 +385,11 @@ class VideoplayerActivity : CastEnabledActivity() {
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), contentDescription = "open podcast") }
                     IconButton(onClick = {
                         switchToAudioOnly = true
-                        (curMedia as? EpisodeMedia)?.forceVideo = false
+                        curMedia?.forceVideo = false
                         finish()
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_audiotrack_24), contentDescription = "audio only") }
-                    if (curMedia is EpisodeMedia) IconButton(onClick = {
-                        val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                    if (curMedia != null) IconButton(onClick = {
+                        val feedItem = curMedia?.episodeOrFetch()
                         if (feedItem != null) startActivity(MainActivity.getIntentToOpenFeed(this@VideoplayerActivity, feedItem.feedId!!))
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), contentDescription = "open podcast") }
                     IconButton(onClick = { showShareDialog = true
@@ -411,12 +409,12 @@ class VideoplayerActivity : CastEnabledActivity() {
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.player_switch_to_audio_only)) }, onClick = {
                             switchToAudioOnly = true
-                            (curMedia as? EpisodeMedia)?.forceVideo = false
+                            curMedia?.forceVideo = false
                             finish()
                             expanded = false
                         })
                         if (curMedia is EpisodeMedia) DropdownMenuItem(text = { Text(stringResource(R.string.open_podcast)) }, onClick = {
-                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            val feedItem = curMedia?.episodeOrFetch()
                             if (feedItem != null) startActivity(MainActivity.getIntentToOpenFeed(this@VideoplayerActivity, feedItem.feedId!!))
                             expanded = false
                         })
@@ -544,12 +542,11 @@ class VideoplayerActivity : CastEnabledActivity() {
         private val selectedAudioTrack: Int
             get() = playbackService?.mPlayer?.getSelectedAudioTrack() ?: -1
 
-        private fun getWebsiteLinkWithFallback(media: Playable?): String? {
+        private fun getWebsiteLinkWithFallback(media: EpisodeMedia?): String? {
             return when {
                 media == null -> null
                 !media.getWebsiteLink().isNullOrBlank() -> media.getWebsiteLink()
-                media is EpisodeMedia -> media.episodeOrFetch()?.getLinkWithFallback()
-                else -> null
+                else -> media.episodeOrFetch()?.getLinkWithFallback()
             }
         }
     }

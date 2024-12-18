@@ -7,7 +7,6 @@ import android.util.Log
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
@@ -31,7 +30,7 @@ object ChapterUtils {
     private val TAG: String = ChapterUtils::class.simpleName ?: "Anonymous"
 
     @JvmStatic
-    fun getCurrentChapterIndex(media: Playable?, position: Int): Int {
+    fun getCurrentChapterIndex(media: EpisodeMedia?, position: Int): Int {
         val chapters = media?.getChapters()
         if (chapters.isNullOrEmpty()) return -1
         for (i in chapters.indices) if (chapters[i].start > position) return i - 1
@@ -39,17 +38,15 @@ object ChapterUtils {
     }
 
     @JvmStatic
-    fun loadChapters(playable: Playable, context: Context, forceRefresh: Boolean) {
+    fun loadChapters(playable: EpisodeMedia, context: Context, forceRefresh: Boolean) {
         // Already loaded
         if (playable.chaptersLoaded() && !forceRefresh) return
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
-        if (playable is EpisodeMedia) {
-            val item = playable.episodeOrFetch()
-            if (item != null) {
-                if (item.chapters.isNotEmpty()) chaptersFromDatabase = item.chapters
-                if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
-            }
+        val item = playable.episodeOrFetch()
+        if (item != null) {
+            if (item.chapters.isNotEmpty()) chaptersFromDatabase = item.chapters
+            if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
         }
         val chaptersFromMediaFile = loadChaptersFromMediaFile(playable, context)
         val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
@@ -59,7 +56,7 @@ object ChapterUtils {
         else playable.setChapters(chapters)
     }
 
-    fun loadChaptersFromMediaFile(playable: Playable, context: Context): List<Chapter> {
+    fun loadChaptersFromMediaFile(playable: EpisodeMedia, context: Context): List<Chapter> {
         try {
             openStream(playable, context).use { inVal ->
                 val chapters = readId3ChaptersFrom(inVal)
@@ -79,7 +76,7 @@ object ChapterUtils {
     }
 
     @Throws(IOException::class)
-    private fun openStream(playable: Playable, context: Context): CountingInputStream {
+    private fun openStream(playable: EpisodeMedia, context: Context): CountingInputStream {
         if (playable.localFileAvailable()) {
             if (playable.getLocalMediaUrl() == null) throw IOException("No local url")
             val source = File(playable.getLocalMediaUrl() ?: "")

@@ -1,6 +1,6 @@
  
 [versions]
-gradle = "8.6.1"
+gradle = "8.7.3"
 groovyXml = "3.0.19"
 kotlin = "2.0.20"
 [libraries]

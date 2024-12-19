@@ -1,46 +1,41 @@
 
-Podcini.R is a revamped version from Podcini version 5, uses a modern object-base database. Though loaded with newer features, it works in similar ways as Podcini.  Version 6.5 as a major step forward brings the capability of handling channels and playlists on Youtube or YT Music as normal podcasts within the Podcini.
-
 Podcini, an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini, invites your harmonious heartbeats.
 
-It allows you to subscribe to, in addition to Youtube channels, any RSS feed (with or without media), gives you instant access to millions of free and paid podcasts or plain RSS feeds, from independent podcasters to large publishing houses. Add, import and export their feeds hassle-free using the Apple Podcasts database, OPML files or simple RSS URLs.
+Do I hear your heartbeats?  Great!
 
-Download, stream or queue episodes and enjoy them the way you like with adjustable playback speeds, chapter support and a sleep timer.  In case the feed contains no media (plain RSS feed), Text-to-Speech engine (if available) is used to play the text.
+Common functionalities of a podcast player are well supported:
 
-Save effort, battery power and mobile data usage with powerful automation controls for downloading episodes (specify times, intervals and WiFi networks) and deleting episodes (based on your favourites and delay settings).
+* Search, discover and subscribe to podcasts, by key words, simple RSS URLs, or OPML files.
+* Download, stream or queue episodes, and enjoy them the way you like with adjustable playback speeds.
+* Save effort, battery power and mobile data usage with powerful automation controls for downloading episodes.
+* If the feed contains no media (plain RSS feed), Text-to-Speech engine is used to play the text.
+* Listening progress can be instantly synced through a NextCloud server or across devices in the same wifi network without a server.
 
-Transcripts or episode descriptions can be easily shared as text to other apps for record-keeping.
+So what's special with this podcast app among the many?
 
-Listening progress can be instantly synced across devices in the same wifi network without a server.
+Well, aside from doing the above well, the following make it stand out:
 
-Made by podcast-enthusiasts, Podcini is free in all senses of the word: open source, no costs, no ads.
+1. It's open sourced, free to use and free of ads, free as in beer and free as in speech!
+2. It takes advantage of modern frameworks to be efficient and conserve energy.
+3. In addition to subscriptions, it allows you to create your own synthetic podcasts to compile your interested episodes from various podcasts to better focus on your interests.
+4. While the list of episodes (filtered and sorted by you) in each podcast serves a natural playlist for you, it also empowers you with multiple queues each associable with any podcasts to group similar contents for better listening.
+5. On any podcast/episode, you can assign 5 levels of rating allowing you to make better decisions on where to put your attention.
+6. You have 12 levels of play states (like to play soon, add in queue, or play again) to better plan and record your listening experiences.
+7. You can also keep your personal notes with your opinions/comments on each podcast/episode.
+8. It has sophisticated sorting and filtering options for you to better select contents.
+9. Sure, you can play any episodes in your car's speakers
+10. And, it's not all about audio, video is well handled.
+11. You can cast the audio/video to Chromecast speakers/screens.
 
-Podcini emphasizes on efficient battery usage, streamlined podcast management and convenient player control while listening.
+OK, some other podcast players can also do some of the above?
 
-<b>Import, organize and play</b>
-
-* Manage playback from anywhere: homescreen widget, system notification and earplug and bluetooth controls
-* Add and import feeds via the Apple Podcasts, gPodder.net, fyyd or Podcast Index directories, OPML files and RSS or Atom links
-* Enjoy listening your way with adjustable playback speed, chapter support, remembered playback position and an advanced sleep timer (shake to reset, lower volume)
-* Access password-protected feeds and episodes
-
-<b>Keep track, share & appreciate</b>
-
-* Keep track of the best of the best by marking episodes as favourites
-* Find that one episode through the playback history or by searching titles and shownotes
-* Share episodes and feeds through advanced social media and email options, the gPodder.net services and via OPML export
-
-<b>Control the system</b>
-
-* Take control over automated downloading: choose feeds, exclude mobile networks, select specific WiFi networks, require the phone to be charging and set times or intervals
-* Manage storage by setting the amount of cached episodes, smart deletion and selecting your preferred location
-* Adapt to your environment using the light and dark theme
-* Back-up your subscriptions with the gPodder.net integration and OPML export
+12. How about getting Youtube and YT Music contents in the experiences of podcasts?
+13. You can search for a Youtube channel and subscribe to it just like a normal podcast.
+14. You can share a channel/podcast/playlist from Youtube or YT Music to Podcini for subscription.
+15. You can also share a single media from Youtube or YT Music to Podcini to be added to a synthetic podcast.
+16. You can enjoy the extra benefits of Youtube media by specifying audio/video quality separately.
 
 <b>Join the Podcini community!</b>
 
 Podcini is under active development by volunteers. You can contribute too, with code, comments or critics.
 https://github.com/XilinJia/Podcini
-
-Transifex is the place to help with translations:
-https://app.transifex.com/xilinjia/podcini/dashboard/

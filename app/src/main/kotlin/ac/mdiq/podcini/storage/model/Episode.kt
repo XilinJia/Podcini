@@ -214,10 +214,6 @@ class Episode : RealmObject {
         this.media = media
     }
 
-//    fun setNew() {
-//        playState = PlayState.NEW.code
-//    }
-
     fun isPlayed(): Boolean {
         return playState >= PlayState.SKIPPED.code
     }
@@ -225,10 +221,6 @@ class Episode : RealmObject {
     fun setPlayed(played: Boolean) {
         playState = if (played) PlayState.PLAYED.code else PlayState.UNPLAYED.code
     }
-
-//    fun setBuilding() {
-//        playState = PlayState.BUILDING.code
-//    }
 
     /**
      * Updates this item's description property if the given argument is longer than the already stored description
@@ -321,11 +313,6 @@ class Episode : RealmObject {
         result = 31 * result + isDownloaded.hashCode()
         return result
     }
-
-//    fun shiftRating(): Int {
-//        val nr = rating + 1
-//        return if (nr <= Rating.FAVORITE.code) nr else Rating.TRASH.code
-//    }
 
     companion object {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"

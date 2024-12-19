@@ -27,12 +27,10 @@ enum class ExportTypes(val contentType: String, val outputNameTemplate: String, 
     PROGRESS("text/x-json", "podcini-progress-%s.json", R.string.progress_export_label),
 }
 
-/**
- * Writes an OPML file into the export directory in the background.
- */
 class ExportWorker private constructor(private val exportWriter: ExportWriter, private val output: File, private val context: Context) {
-    constructor(exportWriter: ExportWriter, context: Context) : this(exportWriter, File(getDataFolder(EXPORT_DIR),
-        DEFAULT_OUTPUT_NAME + "." + exportWriter.fileExtension()), context)
+    constructor(exportWriter: ExportWriter, context: Context)
+            : this(exportWriter, File(getDataFolder(EXPORT_DIR), DEFAULT_OUTPUT_NAME + "." + exportWriter.fileExtension()), context)
+
     suspend fun exportFile(feeds: List<Feed>? = null): File? {
         return withContext(Dispatchers.IO) {
             if (output.exists()) {
@@ -44,11 +42,11 @@ class ExportWorker private constructor(private val exportWriter: ExportWriter, p
                 writer = OutputStreamWriter(FileOutputStream(output), Charset.forName("UTF-8"))
                 val feeds_ = feeds ?: getFeedList()
                 Logd(TAG, "feeds_: ${feeds_.size}")
-                exportWriter.writeDocument(feeds_, writer!!, context)
-                output // return the output file
+                exportWriter.writeDocument(feeds_, writer, context)
+                output
             } catch (e: IOException) {
                 Log.e(TAG, "Error during file export", e)
-                null // return null in case of error
+                null
             } finally { writer?.close() }
         }
     }
@@ -73,7 +71,7 @@ class DocumentFileExportWorker(private val exportWriter: ExportWriter, private v
                 writer = OutputStreamWriter(outputStream, Charset.forName("UTF-8"))
                 val feeds_ = feeds ?: getFeedList()
                 Logd("DocumentFileExportWorker", "feeds_: ${feeds_.size}")
-                exportWriter.writeDocument(feeds_, writer!!, context)
+                exportWriter.writeDocument(feeds_, writer, context)
                 output
             } catch (e: IOException) { throw e
             } finally {

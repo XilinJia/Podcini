@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.net.download
 
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.UserAgentInterceptor
 import ac.mdiq.podcini.storage.algorithms.InfoCache
-import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.downloader.Downloader
 import ac.mdiq.vista.extractor.downloader.Request
 import ac.mdiq.vista.extractor.downloader.Response
@@ -17,10 +15,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.RequestBody
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-import java.util.stream.Stream
+import kotlin.Throws
 
 class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder) : Downloader()  {
     private val mCookies: MutableMap<String, String> = HashMap()
@@ -108,9 +104,7 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
             when {
                 headerValueList.size > 1 -> {
                     requestBuilder.removeHeader(headerName)
-                    for (headerValue in headerValueList) {
-                        requestBuilder.addHeader(headerName, headerValue)
-                    }
+                    for (headerValue in headerValueList) requestBuilder.addHeader(headerName, headerValue)
                 }
                 headerValueList.size == 1 -> requestBuilder.header(headerName, headerValueList[0])
             }

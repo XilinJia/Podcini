@@ -40,11 +40,8 @@ class CrashReportWriter : Thread.UncaughtExceptionHandler {
                 out.println("```")
                 exception.printStackTrace(out)
                 out.println("```")
-            } catch (e: IOException) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            } finally {
-                IOUtils.closeQuietly(out)
-            }
+            } catch (e: IOException) { Log.e(TAG, Log.getStackTraceString(e))
+            } finally { IOUtils.closeQuietly(out) }
         }
 
         val systemInfo: String

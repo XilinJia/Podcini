@@ -66,7 +66,6 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
 class FeedEpisodesFragment : Fragment() {
-
     private lateinit var swipeActions: SwipeActions
 
     private var infoBarText = mutableStateOf("")
@@ -94,7 +93,7 @@ class FeedEpisodesFragment : Fragment() {
     private var showRemoveFeedDialog by mutableStateOf(false)
     private var showFilterDialog by mutableStateOf(false)
     private var showRenameDialog by mutableStateOf(false)
-     var showSortDialog by mutableStateOf(false)
+    var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
     var layoutMode by mutableIntStateOf(0)
 
@@ -103,7 +102,6 @@ class FeedEpisodesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val args: Bundle? = arguments
         if (args != null) feedID = args.getLong(ARGUMENT_FEED_ID)
     }
@@ -115,33 +113,36 @@ class FeedEpisodesFragment : Fragment() {
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         NavDrawerFragment.saveLastNavFragment(TAG, feedID.toString())
-
         swipeActions = SwipeActions(this, TAG)
 
+        var filterJob: Job? = null
         fun filterLongClick() {
-            if (feed != null) {
-                enableFilter = !enableFilter
-                while (loadItemsRunning) Thread.sleep(50)
-                loadItemsRunning = true
-                val etmp = mutableListOf<Episode>()
-                if (enableFilter) {
-                    filterButtonColor.value = Color.White
-                    val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
-                    etmp.addAll(episodes_)
-                } else {
-                    filterButtonColor.value = Color.Red
-                    etmp.addAll(feed!!.episodes)
+            if (feed == null) return
+            enableFilter = !enableFilter
+            filterJob?.cancel()
+            filterJob = lifecycleScope.launch {
+                val eListTmp = mutableListOf<Episode>()
+                withContext(Dispatchers.IO) {
+                    if (enableFilter) {
+                        filterButtonColor.value = Color.White
+                        val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
+                        eListTmp.addAll(episodes_)
+                    } else {
+                        filterButtonColor.value = Color.Red
+                        eListTmp.addAll(feed!!.episodes)
+                    }
+                    getPermutor(fromCode(feed?.preferences?.sortOrderCode ?: 0)).reorder(eListTmp)
+                    episodes.clear()
+                    episodes.addAll(eListTmp)
+                    ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                    ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                 }
-                getPermutor(fromCode(feed?.preferences?.sortOrderCode ?: 0)).reorder(etmp)
-                episodes.clear()
-                episodes.addAll(etmp)
-                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
-                stopMonitor(vms)
-                vms.clear()
-                for (e in etmp) { vms.add(EpisodeVM(e, TAG)) }
-                loadItemsRunning = false
-            }
+                withContext(Dispatchers.Main) {
+                    stopMonitor(vms)
+                    vms.clear()
+                    for (e in eListTmp) vms.add(EpisodeVM(e, TAG))
+                }
+            }.apply { invokeOnCompletion { filterJob = null } }
         }
         layoutMode = if (feed?.preferences?.useWideLayout == true) 1 else 0
 
@@ -186,8 +187,7 @@ class FeedEpisodesFragment : Fragment() {
                                 if (enableFilter && feed != null) showFilterDialog = true
                             }, filterLongClickCB = { filterLongClick() })
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(
-                                activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
+                            EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
                                 refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
@@ -356,9 +356,9 @@ class FeedEpisodesFragment : Fragment() {
                     val qFrag = QueuesFragment()
                     (activity as MainActivity).loadChildFragment(qFrag)
                     (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "web") }
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "queue") }
                 if (feed != null) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "web") }
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
                 if (!feed?.link.isNullOrBlank()) IconButton(onClick = {
                     IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
@@ -414,7 +414,6 @@ class FeedEpisodesFragment : Fragment() {
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEpisodeDownloadEvent() called with ${event.TAG}")
-        if (loadItemsRunning) return
         if (feed == null || episodes.isEmpty()) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
@@ -508,70 +507,67 @@ class FeedEpisodesFragment : Fragment() {
         return false
     }
 
-    private var loadItemsRunning = false
+    private var loadJob: Job? = null
     private fun loadFeed() {
-        if (!loadItemsRunning) {
-            loadItemsRunning = true
-            lifecycleScope.launch {
-                try {
-                    feed = withContext(Dispatchers.IO) {
-                        val feed_ = getFeed(feedID)
-                        if (feed_ != null) {
-                            layoutMode = if (feed_.preferences?.useWideLayout == true) 1 else 0
-                            Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
-                            val eListTmp = mutableListOf<Episode>()
-                            if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
-                                Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
-                                val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
-                                eListTmp.addAll(episodes_)
-                            } else eListTmp.addAll(feed_.episodes)
-                            sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-                            getPermutor(sortOrder).reorder(eListTmp)
-                            episodes.clear()
-                            episodes.addAll(eListTmp)
-                            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
-                            withContext(Dispatchers.Main) {
-                                stopMonitor(vms)
-                                vms.clear()
-                                for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
-                            }
-                            if (onInit) {
-                                var hasNonMediaItems = false
-                                for (item in episodes) {
-                                    if (item.media == null) {
-                                        hasNonMediaItems = true
-                                        break
-                                    }
+        loadJob?.cancel()
+        loadJob = lifecycleScope.launch {
+            try {
+                feed = withContext(Dispatchers.IO) {
+                    val feed_ = getFeed(feedID)
+                    if (feed_ != null) {
+                        layoutMode = if (feed_.preferences?.useWideLayout == true) 1 else 0
+                        Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
+                        val eListTmp = mutableListOf<Episode>()
+                        if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
+                            Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
+                            val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
+                            eListTmp.addAll(episodes_)
+                        } else eListTmp.addAll(feed_.episodes)
+                        sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
+                        getPermutor(sortOrder).reorder(eListTmp)
+                        episodes.clear()
+                        episodes.addAll(eListTmp)
+                        ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                        withContext(Dispatchers.Main) {
+                            stopMonitor(vms)
+                            vms.clear()
+                            for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
+                        }
+                        if (onInit) {
+                            var hasNonMediaItems = false
+                            for (item in episodes) {
+                                if (item.media == null) {
+                                    hasNonMediaItems = true
+                                    break
                                 }
-                                if (hasNonMediaItems) {
-                                    ioScope.launch {
-                                        withContext(Dispatchers.IO) {
-                                            if (!ttsReady) {
-                                                initializeTTS(requireContext())
-                                                semaphore.acquire()
-                                            }
+                            }
+                            if (hasNonMediaItems) {
+                                ioScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        if (!ttsReady) {
+                                            initializeTTS(requireContext())
+                                            semaphore.acquire()
                                         }
                                     }
                                 }
-                                onInit = false
                             }
+                            onInit = false
                         }
-                        feed_
                     }
-                    withContext(Dispatchers.Main) {
-                        Logd(TAG, "loadItems subscribe called ${feed?.title}")
-                        rating = feed?.rating ?: Rating.UNRATED.code
-                        refreshHeaderView()
-                    }
-                } catch (e: Throwable) {
-                    feed = null
+                    feed_
+                }
+                withContext(Dispatchers.Main) {
+                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
+                    rating = feed?.rating ?: Rating.UNRATED.code
                     refreshHeaderView()
-                    Log.e(TAG, Log.getStackTraceString(e))
-                } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e))
-                } finally { loadItemsRunning = false }
-            }
-        }
+                }
+            } catch (e: Throwable) {
+                feed = null
+                refreshHeaderView()
+                Log.e(TAG, Log.getStackTraceString(e))
+            } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
+        }.apply { invokeOnCompletion { loadJob = null } }
     }
 
 //    private fun onKeyUp(event: KeyEvent) {

@@ -12,6 +12,7 @@ object SslProviderInstaller {
         } catch (e: GooglePlayServicesRepairableException) {
             e.printStackTrace()
             GoogleApiAvailability.getInstance().showErrorNotification(context, e.connectionStatusCode)
-        } catch (e: GooglePlayServicesNotAvailableException) { e.printStackTrace() }
+        } catch (e: GooglePlayServicesNotAvailableException) { e.printStackTrace()
+        } catch (e: Exception) { e.printStackTrace() }
     }
 }

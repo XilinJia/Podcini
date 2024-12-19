@@ -37,6 +37,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -63,7 +64,7 @@ class SearchResultsFragment : Fragment() {
         }
         if (searchProvider == null) Logd(TAG,"Podcast searcher not found")
         defaultText = requireArguments().getString(ARG_QUERY, "")
-        if (defaultText.isNotBlank()) search(defaultText)
+        search(defaultText)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -112,7 +113,7 @@ class SearchResultsFragment : Fragment() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
-        TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint, defaultText = requireArguments().getString(ARG_QUERY, "")) { queryText -> if (queryText.isNotBlank()) search(queryText) }},
+        TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint, defaultText = requireArguments().getString(ARG_QUERY, "")) { queryText -> search(queryText) }},
             navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
         )
     }
@@ -122,10 +123,13 @@ class SearchResultsFragment : Fragment() {
         super.onDestroy()
     }
 
+    private var searchJob: Job? = null
     @SuppressLint("StringFormatMatches")
     private fun search(query: String) {
+        if (query.isBlank()) return
+        searchJob?.cancel()
         showOnlyProgressBar()
-        lifecycleScope.launch(Dispatchers.IO) {
+        searchJob = lifecycleScope.launch(Dispatchers.IO) {
             val feeds = getFeedList()
             fun feedId(r: PodcastSearchResult): Long {
                 for (f in feeds) if (f.downloadUrl == r.feedUrl) return f.id
@@ -141,7 +145,7 @@ class SearchResultsFragment : Fragment() {
                     noResultText = getString(R.string.no_results_for_query, query)
                 }
             } catch (e: Exception) { handleSearchError(e, query) }
-        }
+        }.apply { invokeOnCompletion { searchJob = null } }
     }
 
     private fun handleSearchError(e: Throwable, query: String) {

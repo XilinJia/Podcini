@@ -11,6 +11,7 @@ import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.channel.ChannelInfoItem
 import ac.mdiq.vista.extractor.exceptions.ExtractionException
 import ac.mdiq.vista.extractor.search.SearchInfo
+import android.util.Log
 import de.mfietz.fyydlin.FyydClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -130,24 +131,22 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
 
         private fun toHex(bytes: ByteArray): String {
             val buffer = StringBuilder()
-            for (b in bytes) {
-                buffer.append(String.format(Locale.getDefault(), "%02x", b))
-            }
+            for (b in bytes) buffer.append(String.format(Locale.getDefault(), "%02x", b))
             return buffer.toString()
         }
     }
 }
 
 class VistaGuidePodcastSearcher : PodcastSearcher {
-
     override suspend fun search(query: String): List<PodcastSearchResult> {
         val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
-        val searchInfo = SearchInfo.getInfo(service, service.getSearchQHFactory().fromQuery(query, listOf("channels"), ""))
-        val podResults : MutableList<PodcastSearchResult> = mutableListOf()
-        for (ch in searchInfo.relatedItems) {
-            podResults.add(fromChannelInfoItem(ch as ChannelInfoItem))
-        }
-        return podResults
+        try {
+            val searchInfo = SearchInfo.getInfo(service, service.getSearchQHFactory().fromQuery(query, listOf("channels"), ""))
+            val podResults: MutableList<PodcastSearchResult> = mutableListOf()
+            for (ch in searchInfo.relatedItems) podResults.add(fromChannelInfoItem(ch as ChannelInfoItem))
+            return podResults
+        } catch (e: Throwable) { Log.e("VistaGuidePodcastSearcher", "error: ${e.message}") }
+        return listOf()
     }
 
     override suspend fun lookupUrl(url: String): String {
@@ -198,9 +197,7 @@ class GpodnetPodcastSearcher : PodcastSearcher {
                 SynchronizationCredentials.username ?: "", SynchronizationCredentials.password ?: "")
             val gpodnetPodcasts = withContext(Dispatchers.IO) { service.searchPodcasts(query, 0) }
             val results: MutableList<PodcastSearchResult> = ArrayList()
-            for (podcast in gpodnetPodcasts) {
-                results.add(PodcastSearchResult.fromGpodder(podcast))
-            }
+            for (podcast in gpodnetPodcasts) results.add(PodcastSearchResult.fromGpodder(podcast))
             results
         } catch (e: GpodnetService.GpodnetServiceException) {
             e.printStackTrace()

@@ -77,7 +77,6 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         get() = true
 
     var processing by mutableIntStateOf(-1)
-
     val actionState = mutableIntStateOf(0)
 
     abstract fun getLabel(): Int
@@ -155,26 +154,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     
     companion object {
-//        fun forItem(episode: Episode): EpisodeActionButton {
-//            val media = episode.media ?: return TTSActionButton(episode)
-//            val isDownloadingMedia = when (media.downloadUrl) {
-//                null -> false
-//                else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
-//            }
-//            Logd("ItemActionButton", "forItem: local feed: ${episode.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${episode.title} ")
-//            return when {
-//                isCurrentlyPlaying(media) -> PauseActionButton(episode)
-//                episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
-//                media.downloaded -> PlayActionButton(episode)
-//                isDownloadingMedia -> CancelDownloadActionButton(episode)
-//                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.type == Feed.FeedType.YOUTUBE.name
-//                        || episode.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(episode)
-//                else -> DownloadActionButton(episode)
-//            }
-//        }
-
         fun playVideoIfNeeded(context: Context, media: EpisodeMedia) {
-            val item = media?.episode
+            val item = media.episode
             if (media.forceVideo == true || (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
                     && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
                     && media.getMediaType() == MediaType.VIDEO))

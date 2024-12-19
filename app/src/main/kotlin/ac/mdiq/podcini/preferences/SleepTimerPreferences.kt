@@ -26,7 +26,6 @@ object SleepTimerPreferences {
 
     /**
      * Sets up the UserPreferences class.
-     *
      * @throws IllegalArgumentException if context is null
      */
     @JvmStatic

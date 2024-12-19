@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Index
 

@@ -4,6 +4,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.preferences.screens.EpisodeCleanupOptions
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
@@ -12,7 +13,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.PlayState
-import ac.mdiq.podcini.ui.activity.PreferenceActivity.EpisodeCleanupOptions
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
@@ -74,7 +74,7 @@ object AutoCleanups {
             candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
                 val l = lhs.getPubDate()
                 val r = rhs.getPubDate()
-                if (l != null && r != null) return@sortedWith l.compareTo(r)
+                if (l != r) return@sortedWith l.compareTo(r)
                 else return@sortedWith lhs.id.compareTo(rhs.id)  // No date - compare by id which should be always incremented
             }
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
@@ -121,8 +121,6 @@ object AutoCleanups {
             candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
                 var l = lhs.getPubDate()
                 var r = rhs.getPubDate()
-                if (l == null) l = Date()
-                if (r == null) r = Date()
                 l.compareTo(r)
             }
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates

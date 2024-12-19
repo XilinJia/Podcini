@@ -342,30 +342,27 @@ class SubscriptionsFragment : Fragment() {
         )
     }
 
-    private var loadItemsRunning = false
+    private var loadingJob: Job? = null
     private fun loadSubscriptions() {
-        if (!loadItemsRunning) {
-            loadItemsRunning = true
-            lifecycleScope.launch {
-                val feedList: List<Feed>
-                try {
-                    withContext(Dispatchers.IO) {
-                        resetTags()
-                        feedList = fetchAndSort(false)
-                    }
-                    withContext(Dispatchers.Main) {
-                        noSubscription = feedList.isEmpty()
-                        feedListFiltered.clear()
-                        feedListFiltered.addAll(feedList)
-                        feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
-                        infoTextFiltered = " "
-                        if (feedsFilter.isNotEmpty()) infoTextFiltered = getString(R.string.filtered_label)
-                        txtvInformation = (infoTextFiltered + infoTextUpdate)
-                    }
-                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
-                } finally { loadItemsRunning = false }
-            }
-        }
+        loadingJob?.cancel()
+        loadingJob = lifecycleScope.launch {
+            val feedList: List<Feed>
+            try {
+                withContext(Dispatchers.IO) {
+                    resetTags()
+                    feedList = fetchAndSort(false)
+                }
+                withContext(Dispatchers.Main) {
+                    noSubscription = feedList.isEmpty()
+                    feedListFiltered.clear()
+                    feedListFiltered.addAll(feedList)
+                    feedCount = feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
+                    infoTextFiltered = " "
+                    if (feedsFilter.isNotEmpty()) infoTextFiltered = getString(R.string.filtered_label)
+                    txtvInformation = (infoTextFiltered + infoTextUpdate)
+                }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
+        }.apply { invokeOnCompletion { loadingJob = null } }
     }
 
     private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
@@ -1011,14 +1008,10 @@ class SubscriptionsFragment : Fragment() {
 
     @Composable
     fun SortDialog(onDismissRequest: () -> Unit) {
-        var sortingRunning by remember { mutableStateOf(false) }
+        var sortingJob = remember<Job?> { null }
         fun fetchAndSortRoutine() {
-            if (sortingRunning) return
-            sortingRunning = true
-            runOnIOScope {
-                fetchAndSort()
-                sortingRunning = false
-            }
+            sortingJob?.cancel()
+            sortingJob = runOnIOScope { fetchAndSort() }.apply { invokeOnCompletion { sortingJob = null } }
         }
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
@@ -1034,7 +1027,6 @@ class SubscriptionsFragment : Fragment() {
                     Row {
                         OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != 0) textColor else Color.Green),
                             onClick = {
-                                if (sortingRunning) return@OutlinedButton
                                 titleAscending = !titleAscending
                                 sortIndex = 0
                                 fetchAndSortRoutine()
@@ -1043,7 +1035,6 @@ class SubscriptionsFragment : Fragment() {
                         Spacer(Modifier.weight(1f))
                         OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != 1) textColor else Color.Green),
                             onClick = {
-                                if (sortingRunning) return@OutlinedButton
                                 dateAscending = !dateAscending
                                 sortIndex = 1
                                 fetchAndSortRoutine()
@@ -1052,7 +1043,6 @@ class SubscriptionsFragment : Fragment() {
                         Spacer(Modifier.weight(1f))
                         OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (sortIndex != 2) textColor else Color.Green),
                             onClick = {
-                                if (sortingRunning) return@OutlinedButton
                                 countAscending = !countAscending
                                 sortIndex = 2
                                 fetchAndSortRoutine()
@@ -1064,7 +1054,6 @@ class SubscriptionsFragment : Fragment() {
                         Row {
                             OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (dateSortIndex != 0) textColor else Color.Green),
                                 onClick = {
-                                    if (sortingRunning) return@OutlinedButton
                                     dateSortIndex = 0
                                     fetchAndSortRoutine()
                                 }
@@ -1072,7 +1061,6 @@ class SubscriptionsFragment : Fragment() {
                             Spacer(Modifier.weight(1f))
                             OutlinedButton(modifier = Modifier.padding(5.dp), elevation = null, border = BorderStroke(2.dp, if (dateSortIndex != 1) textColor else Color.Green),
                                 onClick = {
-                                    if (sortingRunning) return@OutlinedButton
                                     dateSortIndex = 1
                                     fetchAndSortRoutine()
                                 }
@@ -1091,7 +1079,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (downlaodedSortIndex != 0) textColor else Color.Green),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         if (downlaodedSortIndex != 0) {
                                             selectNone = false
                                             downlaodedSortIndex = 0
@@ -1103,7 +1090,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (downlaodedSortIndex != 1) textColor else Color.Green),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         if (downlaodedSortIndex != 1) {
                                             selectNone = false
                                             downlaodedSortIndex = 1
@@ -1122,7 +1108,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (commentedSortIndex != 0) textColor else Color.Green),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         if (commentedSortIndex != 0) {
                                             selectNone = false
                                             commentedSortIndex = 0
@@ -1134,7 +1119,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(
                                     modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (commentedSortIndex != 1) textColor else Color.Green),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         if (commentedSortIndex != 1) {
                                             selectNone = false
                                             commentedSortIndex = 1
@@ -1157,7 +1141,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         val hIndex = playStateSort.indexOfLast { it.value }
                                         if (hIndex < 0) return@clickable
                                         if (!lowerSelected) {
@@ -1172,7 +1155,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         lowerSelected = false
                                         higherSelected = false
                                         for (i in item.values.indices) playStateSort[i].value = false
@@ -1181,7 +1163,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         val lIndex = playStateSort.indexOfFirst { it.value }
                                         if (lIndex < 0) return@clickable
                                         if (!higherSelected) {
@@ -1204,7 +1185,6 @@ class SubscriptionsFragment : Fragment() {
                                     modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
                                     border = BorderStroke(2.dp, if (playStateSort[index].value) Color.Green else textColor),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         selectNone = false
                                         playStateSort[index].value = !playStateSort[index].value
                                         fetchAndSortRoutine()
@@ -1224,7 +1204,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         val hIndex = ratingSort.indexOfLast { it.value }
                                         if (hIndex < 0) return@clickable
                                         if (!lowerSelected) {
@@ -1239,7 +1218,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         lowerSelected = false
                                         higherSelected = false
                                         for (i in item.values.indices) ratingSort[i].value = false
@@ -1248,7 +1226,6 @@ class SubscriptionsFragment : Fragment() {
                                 Spacer(Modifier.weight(1f))
                                 if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.clickable {
-                                        if (sortingRunning) return@clickable
                                         val lIndex = ratingSort.indexOfFirst { it.value }
                                         if (lIndex < 0) return@clickable
                                         if (!higherSelected) {
@@ -1268,7 +1245,6 @@ class SubscriptionsFragment : Fragment() {
                                     modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
                                     border = BorderStroke(2.dp, if (ratingSort[index].value) Color.Green else textColor),
                                     onClick = {
-                                        if (sortingRunning) return@OutlinedButton
                                         selectNone = false
                                         ratingSort[index].value = !ratingSort[index].value
                                         fetchAndSortRoutine()
@@ -1319,7 +1295,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp),
                                     border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
                                     onClick = {
-                                        if (loadItemsRunning) return@OutlinedButton
                                         if (selectedIndex != 0) {
                                             selectNone = false
                                             selectedIndex = 0
@@ -1336,7 +1311,6 @@ class SubscriptionsFragment : Fragment() {
                                 OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp),
                                     border = BorderStroke(2.dp, if (selectedIndex != 1) textColor else Color.Green),
                                     onClick = {
-                                        if (loadItemsRunning) return@OutlinedButton
                                         if (selectedIndex != 1) {
                                             selectNone = false
                                             selectedIndex = 1
@@ -1356,14 +1330,11 @@ class SubscriptionsFragment : Fragment() {
                                 val selectedList = remember { MutableList(item.values.size) { mutableStateOf(false)} }
                                 var expandRow by remember { mutableStateOf(false) }
                                 Row {
-                                    Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable {
-                                        expandRow = !expandRow
-                                    })
+                                    Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.clickable { expandRow = !expandRow })
                                     var lowerSelected by remember { mutableStateOf(false) }
                                     var higherSelected by remember { mutableStateOf(false) }
                                     Spacer(Modifier.weight(1f))
                                     if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
-                                        if (loadItemsRunning) return@clickable
                                         val hIndex = selectedList.indexOfLast { it.value }
                                         if (hIndex < 0) return@clickable
                                         if (!lowerSelected) {
@@ -1381,7 +1352,6 @@ class SubscriptionsFragment : Fragment() {
                                     })
                                     Spacer(Modifier.weight(1f))
                                     if (expandRow) Text("X", color = textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
-                                        if (loadItemsRunning) return@clickable
                                         lowerSelected = false
                                         higherSelected = false
                                         for (i in item.values.indices) {
@@ -1392,7 +1362,6 @@ class SubscriptionsFragment : Fragment() {
                                     })
                                     Spacer(Modifier.weight(1f))
                                     if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else textColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
-                                        if (loadItemsRunning) return@clickable
                                         val lIndex = selectedList.indexOfFirst { it.value }
                                         if (lIndex < 0) return@clickable
                                         if (!higherSelected) {
@@ -1418,7 +1387,6 @@ class SubscriptionsFragment : Fragment() {
                                     OutlinedButton(modifier = Modifier.padding(0.dp).heightIn(min = 20.dp).widthIn(min = 20.dp).wrapContentWidth(),
                                         border = BorderStroke(2.dp, if (selectedList[index].value) Color.Green else textColor),
                                         onClick = {
-                                            if (loadItemsRunning) return@OutlinedButton
                                             selectNone = false
                                             selectedList[index].value = !selectedList[index].value
                                             if (selectedList[index].value) filterValues.add(item.values[index].filterId)
@@ -1433,7 +1401,6 @@ class SubscriptionsFragment : Fragment() {
                     Row {
                         Spacer(Modifier.weight(0.3f))
                         Button(onClick = {
-                            if (loadItemsRunning) return@Button
                             selectNone = true
                             onFilterChanged(setOf(""))
                         }) { Text(stringResource(R.string.reset)) }

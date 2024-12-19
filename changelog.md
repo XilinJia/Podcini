@@ -1,3 +1,14 @@
+# 6.16.2
+
+* catch exceptions in youtube channel search
+* improved responsiveness and efficiency
+	* in search and online search, ensure uncompleted search is cancelled before a new search
+	* in Subscriptions, on sort or filter, ensure uncompleted task is cancelled before a new task
+	* in FeedEpisodes and Episodes, existing load job is also cancelled when a new request arrives
+* action bar of Preference activity is done in Compose
+* restructured screen functions in Preference activity
+* updated AGP to 8.7.3
+
 # 6.16.1
 
 * fixed issue of send mail to developer

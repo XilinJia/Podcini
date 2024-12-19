@@ -545,10 +545,10 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             val context = LocalContext.current
             val textColor = MaterialTheme.colorScheme.onSurface
 
-            val actions = getPrefs(tag, "${ActionTypes.NO_ACTION.name},${ActionTypes.NO_ACTION.name}")
+            val actions = remember { getPrefs(tag, "${ActionTypes.NO_ACTION.name},${ActionTypes.NO_ACTION.name}") }
             val leftAction = remember { mutableStateOf(actions.left) }
             val rightAction = remember { mutableStateOf(actions.right) }
-            var keys = swipeActions
+            var keys by remember { mutableStateOf(swipeActions) }
 
             fun savePrefs(tag: String, right: String?, left: String?) {
                 getSharedPrefs(context)
@@ -584,29 +584,20 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             }
 
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                var forFragment = ""
-                when (tag) {
-                    EpisodesFragment.TAG -> {
-                        forFragment = stringResource(R.string.episodes_label)
-                    }
-                    OnlineEpisodesFragment.TAG -> {
-                        forFragment = stringResource(R.string.online_episodes_label)
-                    }
-                    SearchFragment.TAG -> {
-                        forFragment = stringResource(R.string.search_label)
-                    }
+                val forFragment = remember(tag) {  when (tag) {
+                    EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
+                    OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)
+                    SearchFragment.TAG -> context.getString(R.string.search_label)
                     FeedEpisodesFragment.TAG -> {
-                        forFragment = stringResource(R.string.subscription)
                         keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
+                        context.getString(R.string.subscription)
                     }
                     QueuesFragment.TAG -> {
-                        forFragment = stringResource(R.string.queue_label)
-                        keys = keys.filter { a: SwipeAction ->
-                            (!a.getId().equals(ActionTypes.ADD_TO_QUEUE.name) && !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }.toList()
-//                        keys = keys.filter { a: SwipeAction -> (!a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }
+                        keys = keys.filter { a: SwipeAction -> (!a.getId().equals(ActionTypes.ADD_TO_QUEUE.name) && !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }.toList()
+                        context.getString(R.string.queue_label)
                     }
-                    else -> {}
-                }
+                    else -> { "" }
+                } }
                 if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {

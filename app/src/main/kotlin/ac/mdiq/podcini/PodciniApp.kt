@@ -29,16 +29,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-/** Main application class.  */
 class PodciniApp : Application() {
-
     private val vistaDownloader: Downloader
         get() {
             val downloader = VistaDownloaderImpl.init(null)
             setCookiesToDownloader(downloader)
             return downloader
         }
-
     
     override fun onCreate() {
         super.onCreate()
@@ -46,10 +43,7 @@ class PodciniApp : Application() {
         ClientConfig.applicationCallbacks = ApplicationCallbacksImpl()
         Thread.setDefaultUncaughtExceptionHandler(CrashReportWriter())
         if (BuildConfig.DEBUG) {
-            val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .penaltyDropBox()
+            val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder().detectAll().penaltyLog().penaltyDropBox()
             StrictMode.setVmPolicy(builder.build())
         }
 
@@ -118,7 +112,6 @@ class PodciniApp : Application() {
 
     companion object {
         private const val PREF_HAS_QUERIED_SP_APPS = "prefSPAUtil.hasQueriedSPApps"
-
         private lateinit var singleton: PodciniApp
 
         fun getInstance(): PodciniApp {

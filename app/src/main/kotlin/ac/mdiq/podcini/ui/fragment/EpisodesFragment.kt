@@ -174,13 +174,10 @@ class EpisodesFragment : Fragment() {
 //    }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
-        if (loadItemsRunning) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) {
-                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
-            }
+            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 
@@ -232,27 +229,24 @@ class EpisodesFragment : Fragment() {
         rightActionState.value = swipeActions.actions.right[0]
     }
 
-    private var loadItemsRunning = false
+    private var loadJob: Job? = null
     fun loadItems() {
-        if (!loadItemsRunning) {
-            loadItemsRunning = true
-            Logd(TAG, "loadItems() called")
-            lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        episodes.clear()
-                        episodes.addAll(loadData())
-                    }
-                    withContext(Dispatchers.Main) {
-                        stopMonitor(vms)
-                        vms.clear()
-                        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
-                        updateToolbar()
-                    }
-                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
-                } finally { loadItemsRunning = false }
-            }
-        }
+        Logd(TAG, "loadItems() called")
+        loadJob?.cancel()
+        loadJob = lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    episodes.clear()
+                    episodes.addAll(loadData())
+                }
+                withContext(Dispatchers.Main) {
+                    stopMonitor(vms)
+                    vms.clear()
+                    for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
+                    updateToolbar()
+                }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
+        }.apply { invokeOnCompletion { loadJob = null } }
     }
 
     @Composable

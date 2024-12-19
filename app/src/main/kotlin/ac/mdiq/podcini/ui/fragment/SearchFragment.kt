@@ -202,9 +202,12 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private var searchJob: Job? = null
     @SuppressLint("StringFormatMatches")
      private fun search(query: String) {
-        lifecycleScope.launch {
+         if (query.isBlank()) return
+        searchJob?.cancel()
+        searchJob = lifecycleScope.launch {
             try {
                 val results_ = withContext(Dispatchers.IO) {
                     if (query.isEmpty()) Pair<List<Episode>, List<Feed>>(emptyList(), emptyList())
@@ -234,7 +237,7 @@ class SearchFragment : Fragment() {
                     } else resultFeeds.clear()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
-        }
+        }.apply { invokeOnCompletion { searchJob = null } }
     }
 
     enum class SearchBy(val nameRes: Int, var selected: Boolean = true) {

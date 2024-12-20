@@ -44,7 +44,8 @@ class EmbeddedChapterImage(@JvmField val media: EpisodeMedia, private val imageU
         }
 
         fun getModelFor(media: EpisodeMedia, chapter: Int): Any? {
-            val imageUrl = media.getChapters()[chapter].imageUrl
+            if (media.episode?.chapters.isNullOrEmpty()) return null
+            val imageUrl = media.episode!!.chapters[chapter].imageUrl
             return if (imageUrl != null && isEmbeddedChapterImage(imageUrl)) EmbeddedChapterImage(media, imageUrl) else  imageUrl
         }
     }

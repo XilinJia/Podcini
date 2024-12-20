@@ -443,7 +443,7 @@ class FeedEpisodesFragment : Fragment() {
                 when (event) {
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
-                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
+//                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
                     is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadFeed()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
@@ -509,7 +509,12 @@ class FeedEpisodesFragment : Fragment() {
 
     private var loadJob: Job? = null
     private fun loadFeed() {
-        loadJob?.cancel()
+        Logd(TAG, "loadFeed called")
+        if (loadJob != null) {
+            loadJob?.cancel()
+            stopMonitor(vms)
+            vms.clear()
+        }
         loadJob = lifecycleScope.launch {
             try {
                 feed = withContext(Dispatchers.IO) {

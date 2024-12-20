@@ -154,7 +154,7 @@ object LocalFeedUpdater {
             val title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
             if (!title.isNullOrEmpty()) item.title = title
             val durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            item.media!!.setDuration(durationStr!!.toLong().toInt())
+            item.media!!.duration = (durationStr!!.toLong().toInt())
             item.media!!.hasEmbeddedPicture = (mediaMetadataRetriever.embeddedPicture != null)
             try {
                 context.contentResolver.openInputStream(file.uri).use { inputStream ->

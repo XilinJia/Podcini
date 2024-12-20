@@ -244,11 +244,11 @@ class WifiSyncService(val context: Context, params: WorkerParameters) : SyncServ
             for (item in comItems) {
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
-                    .timestamp(Date(media.getLastPlayedTime()))
+                    .timestamp(Date(media.lastPlayedTime))
                     .started(media.startPosition / 1000)
-                    .position(media.getPosition() / 1000)
+                    .position(media.position / 1000)
                     .playedDuration(media.playedDuration / 1000)
-                    .total(media.getDuration() / 1000)
+                    .total(media.duration / 1000)
                     .isFavorite(item.isSUPER)
                     .playState(item.playState)
                     .build()
@@ -313,13 +313,13 @@ class WifiSyncService(val context: Context, params: WorkerParameters) : SyncServ
         }
 //        feedItem.media = getFeedMedia(feedItem.media!!.id)
         var idRemove: Long? = null
-        Logd(TAG, "processEpisodeAction ${feedItem.media!!.getLastPlayedTime()} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
-        if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
+        Logd(TAG, "processEpisodeAction ${feedItem.media!!.lastPlayedTime} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
+        if (feedItem.media!!.lastPlayedTime < (action.timestamp?.time?:0L)) {
             feedItem = upsertBlk(feedItem) {
                 it.media!!.startPosition = action.started * 1000
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
-                it.media!!.setLastPlayedTime(action.timestamp!!.time)
+                it.media!!.lastPlayedTime = (action.timestamp!!.time)
                 it.rating = if (action.isFavorite) Rating.SUPER.code else Rating.UNRATED.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {

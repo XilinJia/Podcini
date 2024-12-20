@@ -48,7 +48,6 @@ import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.Throws
 
 class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPlayerBase(context, callback) {
 
@@ -158,26 +157,26 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 //       showStackTrace()
         if (curMedia != null) {
             Logd(TAG, "playMediaObject: curMedia exist status=$status")
-            if (!forceReset && curMedia!!.getIdentifier() == prevMedia?.getIdentifier() && status == PlayerStatus.PLAYING) {
+            if (!forceReset && curMedia!!.id == prevMedia?.id && status == PlayerStatus.PLAYING) {
                 Logd(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
             }
-            Logd(TAG, "playMediaObject starts new playable:${playable.getIdentifier()} curMedia:${curMedia!!.getIdentifier()} prevMedia:${prevMedia?.getIdentifier()}")
+            Logd(TAG, "playMediaObject starts new playable:${playable.id} curMedia:${curMedia!!.id} prevMedia:${prevMedia?.id}")
             // set temporarily to pause in order to update list with current position
             if (status == PlayerStatus.PLAYING) {
-                val pos = curMedia?.getPosition() ?: -1
+                val pos = curMedia?.position ?: -1
                 seekTo(pos)
                 callback.onPlaybackPause(curMedia, pos)
 //                callback.onPostPlayback(curMedia, false, true, true)
             }
             // stop playback of this episode
             if (status == PlayerStatus.PAUSED || status == PlayerStatus.PLAYING || status == PlayerStatus.PREPARED) exoPlayer?.stop()
-            if (prevMedia != null && curMedia?.getIdentifier() != prevMedia?.getIdentifier())
+            if (prevMedia != null && curMedia?.id != prevMedia?.id)
                 callback.onPostPlayback(prevMedia, ended = false, skipped = true, true)
             setPlayerStatus(PlayerStatus.INDETERMINATE, null)
         }
 
-        Logd(TAG, "playMediaObject preparing for playable:${playable.getIdentifier()} ${playable.getEpisodeTitle()}")
+        Logd(TAG, "playMediaObject preparing for playable:${playable.id} ${playable.getEpisodeTitle()}")
         curMedia = playable
         val media_ = curMedia!!
         var item = media_.episodeOrFetch()
@@ -201,7 +200,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             CoroutineScope(Dispatchers.IO).launch {
                 when {
                     streaming -> {
-                        val streamurl = curMedia!!.getStreamUrl()
+                        val streamurl = curMedia!!.downloadUrl
                         if (streamurl != null) {
                             mediaItem = null
                             mediaSource = null
@@ -213,7 +212,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                         }
                     }
                     else -> {
-                        val localMediaurl = curMedia!!.getLocalMediaUrl()
+                        val localMediaurl = curMedia!!.fileUrl
 //                    File(localMediaurl).canRead() time consuming, leave it to MediaItem to handle
 //                    if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(metadata, localMediaurl, null, null)
                         if (!localMediaurl.isNullOrEmpty()) setDataSource(metadata, localMediaurl, null, null)
@@ -244,8 +243,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             acquireWifiLockIfNecessary()
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), isSkipSilence)
             setVolume(1.0f, 1.0f)
-            if (curMedia != null && status == PlayerStatus.PREPARED && curMedia!!.getPosition() > 0) {
-                val newPosition = calculatePositionWithRewind(curMedia!!.getPosition(), curMedia!!.getLastPlayedTime())
+            if (curMedia != null && status == PlayerStatus.PREPARED && curMedia!!.position > 0) {
+                val newPosition = calculatePositionWithRewind(curMedia!!.position, curMedia!!.lastPlayedTime)
                 seekTo(newPosition)
             }
             if (exoPlayer?.playbackState == STATE_IDLE || exoPlayer?.playbackState == STATE_ENDED ) prepareWR()
@@ -276,11 +275,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 //            onPrepared(startWhenPrepared.get())
             if (mediaType == MediaType.VIDEO) videoSize = Pair(videoWidth, videoHeight)
             if (curMedia != null) {
-                val pos = curMedia!!.getPosition()
+                val pos = curMedia!!.position
                 if (pos > 0) seekTo(pos)
-                if (curMedia != null && curMedia!!.getDuration() <= 0) {
+                if (curMedia != null && curMedia!!.duration <= 0) {
                     Logd(TAG, "Setting duration of media")
-                    curMedia!!.setDuration(if (exoPlayer?.duration == C.TIME_UNSET) EpisodeMedia.INVALID_TIME else exoPlayer!!.duration.toInt())
+                    curMedia!!.duration = (if (exoPlayer?.duration == C.TIME_UNSET) EpisodeMedia.INVALID_TIME else exoPlayer!!.duration.toInt())
                 }
             }
             setPlayerStatus(PlayerStatus.PREPARED, curMedia)
@@ -305,7 +304,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         if (t >= getDuration()) {
             Logd(TAG, "Seek reached end of file, skipping to next episode")
             exoPlayer?.seekTo(t.toLong())   // can set curMedia to null
-            if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.getDuration()))
+            if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.duration))
             audioSeekCompleteListener?.run()
             endPlayback(true, wasSkipped = true, true, toStoppedState = true)
             t = getPosition()
@@ -322,7 +321,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 statusBeforeSeeking = status
                 setPlayerStatus(PlayerStatus.SEEKING, curMedia, t)
                 exoPlayer?.seekTo(t.toLong())
-                if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.getDuration()))
+                if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.duration))
                 audioSeekCompleteListener?.run()
                 if (statusBeforeSeeking == PlayerStatus.PREPARED) curMedia?.setPosition(t)
                 try { seekLatch!!.await(3, TimeUnit.SECONDS) } catch (e: InterruptedException) { Log.e(TAG, Log.getStackTraceString(e)) }
@@ -337,13 +336,13 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     override fun getDuration(): Int {
-        return curMedia?.getDuration() ?: EpisodeMedia.INVALID_TIME
+        return curMedia?.duration ?: EpisodeMedia.INVALID_TIME
     }
 
     override fun getPosition(): Int {
         var retVal = EpisodeMedia.INVALID_TIME
         if (exoPlayer != null && status.isAtLeast(PlayerStatus.PREPARED)) retVal = exoPlayer!!.currentPosition.toInt()
-        if (retVal <= 0 && curMedia != null) retVal = curMedia!!.getPosition()
+        if (retVal <= 0 && curMedia != null) retVal = curMedia!!.position
         return retVal
     }
 
@@ -520,7 +519,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 if (currentMedia != null) callback.onPostPlayback(currentMedia, hasEnded, wasSkipped, hasNext)
 //                curMedia = nextMedia
             }
-            isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia!!.getPosition())
+            isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia!!.position)
         }
     }
 

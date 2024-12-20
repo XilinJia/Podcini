@@ -40,7 +40,6 @@ object RatingDialog {
 
     private fun showInAppReview() {
         val context = mContext!!.get() ?: return
-
         val manager: ReviewManager = ReviewManagerFactory.create(context)
         val request: Task<ReviewInfo> = manager.requestReviewFlow()
 
@@ -56,11 +55,9 @@ object RatingDialog {
                         mPreferences.edit().putInt(KEY_NUMBER_OF_REVIEWS, previousAttempts + 1).apply()
                     }
                     Logd("ReviewDialog", "Successfully finished in-app review")
-                }
-                    .addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed in reviewing process") }
+                }.addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed in reviewing process") }
             }
-        }
-            .addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed to get in-app review request") }
+        }.addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed to get in-app review request") }
     }
 
     private fun rated(): Boolean {

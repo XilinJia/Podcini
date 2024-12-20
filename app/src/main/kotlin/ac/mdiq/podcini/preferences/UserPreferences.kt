@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.storage.utils.FilesUtils
 import ac.mdiq.podcini.storage.utils.FilesUtils.createNoMediaFile
@@ -24,8 +25,6 @@ object UserPreferences {
     private val TAG: String = UserPreferences::class.simpleName ?: "Anonymous"
 
     const val EPISODE_CACHE_SIZE_UNLIMITED: Int = 0
-
-    const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
     private lateinit var context: Context
     lateinit var appPrefs: SharedPreferences
@@ -235,6 +234,15 @@ object UserPreferences {
 
     fun setVideoMode(mode: Int) {
         appPrefs.edit().putString(Prefs.prefVideoPlaybackMode.name, mode.toString()).apply()
+    }
+
+    enum class DefaultPages(val res: Int) {
+        SubscriptionsFragment(R.string.subscriptions_label),
+        QueuesFragment(R.string.queue_label),
+        EpisodesFragment(R.string.episodes_label),
+        AddFeedFragment(R.string.add_feed_label),
+        StatisticsFragment(R.string.statistics_label),
+        Remember(R.string.remember_last_page);
     }
 
     @Suppress("EnumEntryName")

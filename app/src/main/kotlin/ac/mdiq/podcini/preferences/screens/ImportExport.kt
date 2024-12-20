@@ -63,7 +63,6 @@ import java.io.*
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.Throws
 
 @Composable
 fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
@@ -356,7 +355,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 it.media!!.startPosition = action.started * 1000
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
-                it.media!!.setLastPlayedTime(action.timestamp!!.time)
+                it.media!!.lastPlayedTime = (action.timestamp!!.time)
                 it.rating = if (action.isFavorite) Rating.SUPER.code else Rating.UNRATED.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
@@ -385,11 +384,11 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             for (item in comItems) {
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
-                    .timestamp(Date(media.getLastPlayedTime()))
+                    .timestamp(Date(media.lastPlayedTime))
                     .started(media.startPosition / 1000)
-                    .position(media.getPosition() / 1000)
+                    .position(media.position / 1000)
                     .playedDuration(media.playedDuration / 1000)
-                    .total(media.getDuration() / 1000)
+                    .total(media.duration / 1000)
                     .isFavorite(item.isSUPER)
                     .playState(item.playState)
                     .build()

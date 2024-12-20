@@ -129,7 +129,7 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
         }
 
         private fun playDate(item: Episode?): Long {
-            return item?.media?.getLastPlayedTime() ?: 0
+            return item?.media?.lastPlayedTime ?: 0
         }
 
         private fun commentDate(item: Episode?): Long {
@@ -149,7 +149,7 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
         }
 
         private fun duration(item: Episode?): Int {
-            return item?.media?.getDuration() ?: 0
+            return item?.media?.duration ?: 0
         }
 
         private fun size(item: Episode?): Long {

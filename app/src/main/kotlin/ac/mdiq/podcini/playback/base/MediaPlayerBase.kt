@@ -114,7 +114,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     protected open fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
         Logd(TAG, "setDataSource1 called")
-        val url = media.getStreamUrl() ?: return
+        val url = media.downloadUrl ?: return
         val preferences = media.episodeOrFetch()?.feed?.preferences
         val user = preferences?.username
         val password = preferences?.password
@@ -459,17 +459,17 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             val builder = MediaMetadata.Builder()
                 .setIsBrowsable(true)
                 .setIsPlayable(true)
-                .setArtist(p.getFeedTitle())
+                .setArtist(p.episode?.feed?.title?:"")
                 .setTitle(p.getEpisodeTitle())
-                .setAlbumArtist(p.getFeedTitle())
+                .setAlbumArtist(p.episode?.feed?.title?:"")
                 .setDisplayTitle(p.getEpisodeTitle())
-                .setSubtitle(p.getFeedTitle())
+                .setSubtitle(p.episode?.feed?.title?:"")
                 .setArtworkUri(null)
             return builder.build()
         }
 
         fun buildMediaItem(p: EpisodeMedia): MediaItem? {
-            val url = p.getStreamUrl() ?: return null
+            val url = p.downloadUrl ?: return null
             val metadata = buildMetadata(p)
             return MediaItem.Builder()
                 .setMediaId(url)

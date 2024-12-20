@@ -213,9 +213,9 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
                     .currentTimestamp()
-                    .started(media.getDuration() / 1000)
-                    .position(media.getPosition() / 1000)
-                    .total(media.getDuration() / 1000)
+                    .started(media.duration / 1000)
+                    .position(media.position / 1000)
+                    .total(media.duration / 1000)
                     .build()
                 queuedEpisodeActions.add(played)
             }

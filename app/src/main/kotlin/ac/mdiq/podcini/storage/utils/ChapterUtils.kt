@@ -31,7 +31,7 @@ object ChapterUtils {
 
     @JvmStatic
     fun getCurrentChapterIndex(media: EpisodeMedia?, position: Int): Int {
-        val chapters = media?.getChapters()
+        val chapters = media?.episode?.chapters
         if (chapters.isNullOrEmpty()) return -1
         for (i in chapters.indices) if (chapters[i].start > position) return i - 1
         return chapters.size - 1
@@ -40,7 +40,7 @@ object ChapterUtils {
     @JvmStatic
     fun loadChapters(playable: EpisodeMedia, context: Context, forceRefresh: Boolean) {
         // Already loaded
-        if (playable.chaptersLoaded() && !forceRefresh) return
+        if (playable.episode?.chapters != null && !forceRefresh) return
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
         val item = playable.episodeOrFetch()
@@ -78,12 +78,12 @@ object ChapterUtils {
     @Throws(IOException::class)
     private fun openStream(playable: EpisodeMedia, context: Context): CountingInputStream {
         if (playable.localFileAvailable()) {
-            if (playable.getLocalMediaUrl() == null) throw IOException("No local url")
-            val source = File(playable.getLocalMediaUrl() ?: "")
+            if (playable.fileUrl == null) throw IOException("No local url")
+            val source = File(playable.fileUrl ?: "")
             if (!source.exists()) throw IOException("Local file does not exist")
             return CountingInputStream(BufferedInputStream(FileInputStream(source)))
         } else {
-            val streamurl = playable.getStreamUrl()
+            val streamurl = playable.downloadUrl
             if (streamurl != null && streamurl.startsWith(ContentResolver.SCHEME_CONTENT)) {
                 val uri = Uri.parse(streamurl)
                 return CountingInputStream(BufferedInputStream(context.contentResolver.openInputStream(uri)))

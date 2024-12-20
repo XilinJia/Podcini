@@ -1,3 +1,12 @@
+# 6.16.3
+
+* to calm Google tested ANR stability issue, ensure only one swipe actions setting dialog is open
+* ensure cleanup when cancelling loading task in FeedEpisodes and Episodes
+* fixed remember default page not working
+* reduced startup time a bit in the Play app
+* reduced cast start time in the Play app
+* cleaned away some getters and setters in EpisodeMedia class
+
 # 6.16.2
 
 * catch exceptions in youtube channel search

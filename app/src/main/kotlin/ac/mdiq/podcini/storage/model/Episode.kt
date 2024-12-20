@@ -131,7 +131,7 @@ class Episode : RealmObject {
         get() = when {
             imageUrl != null -> imageUrl
 //            TODO: this can be very expensive for list
-//            media != null && media?.hasEmbeddedPicture() == true -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+//            media != null && media?.hasEmbeddedPicture() == true -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.fileUrl
             feed != null -> feed!!.imageUrl
             else -> null
         }

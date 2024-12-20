@@ -255,7 +255,7 @@ object Feeds {
                     oldItem.identifier = episode.identifier
                     // queue for syncing with server
                     if (isProviderConnected && oldItem.isPlayed() && oldItem.media != null) {
-                        val durs = oldItem.media!!.getDuration() / 1000
+                        val durs = oldItem.media!!.duration / 1000
                         val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
                             .currentTimestamp()
                             .started(durs)
@@ -352,7 +352,7 @@ object Feeds {
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
             if ((episode.media?.duration?: 0) < 1000) continue
-            if (episode.getPubDate() <= priorMostRecentDate || episode.media?.getStreamUrl() == priorMostRecent?.media?.getStreamUrl()) continue
+            if (episode.getPubDate() <= priorMostRecentDate || episode.media?.downloadUrl == priorMostRecent?.media?.downloadUrl) continue
 
             Logd(TAG, "Found new episode: ${episode.title}")
             episode.feed = savedFeed
@@ -615,7 +615,7 @@ object Feeds {
                      }
                      map[idv] = e
                  }
-                 val url = e.media?.getStreamUrl()
+                 val url = e.media?.downloadUrl
                  if (url != idv && !url.isNullOrEmpty()) {
                      if (map.containsKey(url)) {
                          Logd(TAG, "FeedAssistant init $tag url duplicate: $url ${e.title}")
@@ -650,7 +650,7 @@ object Feeds {
              }
         }
         fun addUrlToMap(episode: Episode) {
-            val url = episode.media?.getStreamUrl()
+            val url = episode.media?.downloadUrl
             if (url != episode.identifyingValue && !url.isNullOrEmpty() && !map.containsKey(url)) map[url] = episode
         }
         fun addidvToMap(episode: Episode) {
@@ -675,7 +675,7 @@ object Feeds {
         fun guessDuplicate(item: Episode): Episode? {
             var episode = map[item.identifier]
             if (episode != null) return episode
-            val url = item.media?.getStreamUrl()
+            val url = item.media?.downloadUrl
             if (!url.isNullOrEmpty()) {
                 episode = map[url]
                 if (episode != null) return episode
@@ -756,7 +756,7 @@ object Feeds {
             return dateOriginal == dateNew // Same date; time is ignored.
         }
         internal fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
-            return abs((media1.getDuration() - media2.getDuration()).toDouble()) < 10 * 60L * 1000L
+            return abs((media1.duration - media2.duration).toDouble()) < 10 * 60L * 1000L
         }
         internal fun mimeTypeLooksSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
             var mimeType1 = media1.mimeType

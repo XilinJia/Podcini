@@ -201,7 +201,7 @@ class EpisodesFragment : Fragment() {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.HistoryEvent -> onHistoryEvent(event)
-                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.RatingEvent -> loadItems()
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.RatingEvent -> loadItems()
                     else -> {}
                 }
             }
@@ -232,7 +232,11 @@ class EpisodesFragment : Fragment() {
     private var loadJob: Job? = null
     fun loadItems() {
         Logd(TAG, "loadItems() called")
-        loadJob?.cancel()
+        if (loadJob != null) {
+            loadJob?.cancel()
+            stopMonitor(vms)
+            vms.clear()
+        }
         loadJob = lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {

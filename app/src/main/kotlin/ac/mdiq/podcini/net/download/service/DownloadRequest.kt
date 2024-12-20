@@ -2,6 +2,7 @@ package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.EpisodeMedia.Companion.FEEDFILETYPE_FEEDMEDIA
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import android.os.Bundle
@@ -138,9 +139,9 @@ class DownloadRequest private constructor(
         constructor(destination: String, media: EpisodeMedia) {
             this.destination = destination
             this.source = if (media.downloadUrl != null) prepareUrl(media.downloadUrl!!) else null
-            this.title = media.getHumanReadableIdentifier()
+            this.title = media.episode?.title ?: media.downloadUrl
             this.feedfileId = media.id
-            this.feedfileType = media.getTypeAsInt()
+            this.feedfileType = FEEDFILETYPE_FEEDMEDIA
         }
         constructor(destination: String, feed: Feed) {
             this.destination = destination

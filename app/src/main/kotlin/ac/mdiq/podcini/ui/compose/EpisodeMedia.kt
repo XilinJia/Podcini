@@ -71,7 +71,7 @@ enum class SkipDirection {
 @Composable
 fun ChaptersDialog(media: EpisodeMedia, onDismissRequest: () -> Unit) {
     val lazyListState = rememberLazyListState()
-    val chapters = media.getChapters()
+    val chapters = remember { media.episode?.chapters?:listOf() }
     val textColor = MaterialTheme.colorScheme.onSurface
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
@@ -95,7 +95,7 @@ fun ChaptersDialog(media: EpisodeMedia, onDismissRequest: () -> Unit) {
                                 Text(ch.title ?: "No title", color = textColor, fontWeight = FontWeight.Companion.Bold)
 //                                Text(ch.link?: "")
                                 val duration = if (index + 1 < chapters.size) chapters[index + 1].start - ch.start
-                                else media.getDuration() - ch.start
+                                else media.duration - ch.start
                                 Text(stringResource(R.string.chapter_duration0) + DurationConverter.getDurationStringLocalized(LocalContext.current, duration), color = textColor)
                             }
                             val playRes = if (index == currentChapterIndex) R.drawable.ic_replay else R.drawable.ic_play_48dp

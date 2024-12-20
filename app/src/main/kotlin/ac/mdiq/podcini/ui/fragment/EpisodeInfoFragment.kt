@@ -363,7 +363,7 @@ class EpisodeInfoFragment : Fragment() {
             hasMedia = false
         } else {
             hasMedia = true
-            if (media.getDuration() > 0) txtvDuration = DurationConverter.getDurationStringLong(media.getDuration())
+            if (media.duration > 0) txtvDuration = DurationConverter.getDurationStringLong(media.duration)
             if (episode != null) {
                 actionButton1 = when {
 //                        media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
@@ -405,7 +405,7 @@ class EpisodeInfoFragment : Fragment() {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.RatingEvent -> onRatingEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.PlayerSettingsEvent -> updateButtons()
+//                    is FlowEvent.PlayerSettingsEvent -> updateButtons()
                     is FlowEvent.EpisodePlayedEvent -> load()
                     else -> {}
                 }
@@ -471,7 +471,7 @@ class EpisodeInfoFragment : Fragment() {
                     withContext(Dispatchers.IO) {
                         if (episode != null && !episode!!.isRemote.value) episode = realm.query(Episode::class).query("id == $0", episode!!.id).first().find()
                         if (episode != null) {
-                            val duration = episode!!.media?.getDuration() ?: Int.MAX_VALUE
+                            val duration = episode!!.media?.duration ?: Int.MAX_VALUE
                             Logd(TAG, "description: ${episode?.description}")
                             val url = episode!!.media?.downloadUrl
                             if (url?.contains("youtube.com") == true && episode!!.description?.startsWith("Short:") == true) {
@@ -517,7 +517,7 @@ class EpisodeInfoFragment : Fragment() {
                 var size = Int.MIN_VALUE.toLong()
                 when {
                     media.downloaded -> {
-                        val url = media.getLocalMediaUrl()
+                        val url = media.fileUrl
                         if (!url.isNullOrEmpty()) {
                             val mediaFile = File(url)
                             if (mediaFile.exists()) size = mediaFile.length()

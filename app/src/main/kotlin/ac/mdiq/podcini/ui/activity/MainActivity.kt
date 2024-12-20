@@ -98,8 +98,6 @@ class MainActivity : CastEnabledActivity() {
 
     private var drawerToggle: ActionBarDrawerToggle? = null
 
-//    @JvmField
-//    val recycledViewPool: RecyclerView.RecycledViewPool = RecyclerView.RecycledViewPool()
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
@@ -207,7 +205,7 @@ class MainActivity : CastEnabledActivity() {
 
         val fm = supportFragmentManager
         if (fm.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {
-            if (UserPreferences.DEFAULT_PAGE_REMEMBER != defaultPage) loadFragment(defaultPage, null)
+            if (defaultPage != UserPreferences.DefaultPages.Remember.name) loadFragment(defaultPage, null)
             else {
                 val lastFragment = NavDrawerFragment.getLastNavFragment()
                 Logd(TAG, "lastFragment: $lastFragment")
@@ -583,7 +581,7 @@ class MainActivity : CastEnabledActivity() {
             supportFragmentManager.backStackEntryCount != 0 -> super.onBackPressed()
             else -> {
                 val toPage = defaultPage
-                if (NavDrawerFragment.getLastNavFragment() == toPage || UserPreferences.DEFAULT_PAGE_REMEMBER == toPage) {
+                if (NavDrawerFragment.getLastNavFragment() == toPage || UserPreferences.DefaultPages.Remember.name == toPage) {
                     if (backButtonOpensDrawer()) drawerLayout?.openDrawer(navDrawer)
                     else super.onBackPressed()
                 } else loadFragment(toPage, null)

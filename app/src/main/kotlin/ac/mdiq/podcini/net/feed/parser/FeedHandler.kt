@@ -482,7 +482,7 @@ class FeedHandler {
                     val currentItem = state.currentItem
                     if (currentItem!!.media != null) {
                         val duration = state.tempObjects[Itunes.DURATION] as Int?
-                        if (duration != null) currentItem.media!!.setDuration(duration)
+                        if (duration != null) currentItem.media!!.duration = (duration)
                     }
                     state.tempObjects.remove(Itunes.DURATION)
                 }
@@ -718,7 +718,7 @@ class FeedHandler {
                             }
                             Logd(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
                             val media = EpisodeMedia(state.currentItem, url, size, mimeType)
-                            if (durationMs > 0) media.setDuration( durationMs)
+                            if (durationMs > 0) media.duration = ( durationMs)
                             state.currentItem!!.media = media
                         }
                         state.currentItem != null && url != null && validTypeImage -> state.currentItem!!.imageUrl = url
@@ -852,7 +852,7 @@ class FeedHandler {
                         if (state.tempObjects.containsKey(Itunes.DURATION)) {
                             if (currentItem.media != null) {
                                 val duration = state.tempObjects[Itunes.DURATION] as? Int
-                                if (duration != null) currentItem.media!!.setDuration(duration)
+                                if (duration != null) currentItem.media!!.duration = (duration)
                             }
                             state.tempObjects.remove(Itunes.DURATION)
                         }

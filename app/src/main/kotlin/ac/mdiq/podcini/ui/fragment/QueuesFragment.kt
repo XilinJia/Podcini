@@ -50,7 +50,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -295,7 +294,7 @@ class QueuesFragment : Fragment() {
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.PlayerSettingsEvent -> onPlayerSettingsEvent(event)
+//                    is FlowEvent.PlayerSettingsEvent -> onPlayerSettingsEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
@@ -394,11 +393,11 @@ class QueuesFragment : Fragment() {
         }
     }
 
-    private fun onPlayerSettingsEvent(event: FlowEvent.PlayerSettingsEvent) {
-        if (showBin) return
-        //        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
-        loadCurQueue(false)
-    }
+//    private fun onPlayerSettingsEvent(event: FlowEvent.PlayerSettingsEvent) {
+//        if (showBin) return
+//        //        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
+//        loadCurQueue(false)
+//    }
 
     private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
         // Sent when playback position is reset
@@ -627,7 +626,7 @@ class QueuesFragment : Fragment() {
                 var playbackSpeed = 1f
                 if (UserPreferences.timeRespectsSpeed()) playbackSpeed = getCurrentPlaybackSpeed(item.media)
                 if (item.media != null) {
-                    val itemTimeLeft: Long = (item.media!!.getDuration() - item.media!!.getPosition()).toLong()
+                    val itemTimeLeft: Long = (item.media!!.duration - item.media!!.position).toLong()
                     timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
                 }
             }

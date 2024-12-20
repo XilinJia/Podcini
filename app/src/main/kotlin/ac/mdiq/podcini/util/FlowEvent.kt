@@ -33,7 +33,7 @@ sealed class FlowEvent {
 
     data class PlayerErrorEvent(val message: String) : FlowEvent()
 
-    data class PlayerSettingsEvent(val dummy: Unit = Unit) : FlowEvent()
+//    data class PlayerSettingsEvent(val dummy: Unit = Unit) : FlowEvent()
 
     data class BufferUpdateEvent(val progress: Float) : FlowEvent() {
         fun hasStarted(): Boolean {

@@ -50,6 +50,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_OTHER
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PAUSED
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PLAYING
+import ac.mdiq.podcini.storage.model.EpisodeMedia.Companion.PLAYABLE_TYPE_FEEDMEDIA
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
@@ -349,10 +350,10 @@ class PlaybackService : MediaLibraryService() {
                                     media.startPosition = playable.startPosition
                                     media.startTime = playable.startTime
                                     media.playedDurationWhenStarted = playable.playedDurationWhenStarted
-                                    media.setPosition(playable.getPosition())
-                                    media.setLastPlayedTime(System.currentTimeMillis())
-                                    if (media.startPosition >= 0 && media.getPosition() > media.startPosition)
-                                        media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
+                                    media.setPosition(playable.position)
+                                    media.lastPlayedTime = (System.currentTimeMillis())
+                                    if (media.startPosition >= 0 && media.position > media.startPosition)
+                                        media.playedDuration = (media.playedDurationWhenStarted + media.position - media.startPosition)
                                     media.timeSpent = media.timeSpentOnStart + (System.currentTimeMillis() - media.startTime).toInt()
                                     if (ended || (skipped && smartMarkAsPlayed)) media.setPosition(0)
                                     if (ended || skipped || playingNext) media.playbackCompletionDate = Date()
@@ -376,7 +377,7 @@ class PlaybackService : MediaLibraryService() {
         }
 
         override fun onPlaybackStart(playable: EpisodeMedia, position: Int) {
-            val delayInterval = positionUpdateInterval(playable.getDuration())
+            val delayInterval = positionUpdateInterval(playable.duration)
             Logd(TAG, "onPlaybackStart position: $position delayInterval: $delayInterval")
 //            if (position != EpisodeMedia.INVALID_TIME) playable.setPosition(position + (delayInterval/2).toInt())
             if (position != EpisodeMedia.INVALID_TIME) playable.setPosition(position)
@@ -469,11 +470,11 @@ class PlaybackService : MediaLibraryService() {
 //            if (media is EpisodeMedia && media.item == null) media.item = DBReader.getFeedItem(media.itemId)
         }
         fun writeMediaPlaying(playable: EpisodeMedia?, playerStatus: PlayerStatus) {
-            Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
+            Logd(InTheatre.TAG, "Writing playback preferences ${playable?.id}")
             if (playable == null) writeNoMediaPlaying()
             else {
                 curState = upsertBlk(curState) {
-                    it.curMediaType = playable.getPlayableType().toLong()
+                    it.curMediaType = PLAYABLE_TYPE_FEEDMEDIA.toLong()
                     it.curIsVideo = playable.getMediaType() == MediaType.VIDEO
                     val feedId = playable.episodeOrFetch()?.feed?.id
                     if (feedId != null) it.curFeedId = feedId
@@ -762,7 +763,7 @@ class PlaybackService : MediaLibraryService() {
             Logd(TAG, "onStartCommand is a redelivered intent, calling stopForeground now. return")
             return START_NOT_STICKY
         }
-        if (keycode == -1 && playable != null && status == PlayerStatus.PLAYING && mPlayer?.prevMedia?.getIdentifier() == playable.getIdentifier()) {
+        if (keycode == -1 && playable != null && status == PlayerStatus.PLAYING && mPlayer?.prevMedia?.id == playable.id) {
 //          pause button on notification also calls onStartCommand
             Logd(TAG, "onStartCommand playing same media: $status, return")
             return super.onStartCommand(intent, flags, startId)
@@ -816,7 +817,7 @@ class PlaybackService : MediaLibraryService() {
 
         val skipIntro = preferences?.introSkip ?: 0
         val skipIntroMS = skipIntro * 1000
-        if (skipIntro > 0 && playable.getPosition() < skipIntroMS) {
+        if (skipIntro > 0 && playable.position < skipIntroMS) {
             val duration = curDuration
             if (skipIntroMS < duration || duration <= 0) {
                 Logd(TAG, "skipIntro " + playable.getEpisodeTitle())
@@ -975,7 +976,7 @@ class PlaybackService : MediaLibraryService() {
         Logd(TAG, "startPlaying called allowStreamThisTime: $allowStreamThisTime")
         val media = curMedia ?: return
 
-        val localFeed = URLUtil.isContentUrl(media.getStreamUrl())
+        val localFeed = URLUtil.isContentUrl(media.downloadUrl)
         val streaming = !media.localFileAvailable() || localFeed
         if (streaming && !localFeed && !isStreamingAllowed && !allowStreamThisTime) {
             displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, media).intent)
@@ -984,7 +985,7 @@ class PlaybackService : MediaLibraryService() {
         }
 
 //        TODO: this is redundant
-//        if (media.getIdentifier() != curState.curMediaId) clearCurTempSpeed()
+//        if (media.id != curState.curMediaId) clearCurTempSpeed()
 
         mPlayer?.playMediaObject(media, streaming, startWhenPrepared = true, true)
 //        recreateMediaSessionIfNeeded()
@@ -1069,9 +1070,9 @@ class PlaybackService : MediaLibraryService() {
 
     private fun onBufferUpdate(event: FlowEvent.BufferUpdateEvent) {
         if (event.hasEnded()) {
-            if (curMedia != null && curMedia!!.getDuration() <= 0 && (mPlayer?.getDuration()?:0) > 0) {
+            if (curMedia != null && curMedia!!.duration <= 0 && (mPlayer?.getDuration()?:0) > 0) {
                 // EpisodeMedia is being streamed and does not have a duration specified in the feed
-                curMedia!!.setDuration(mPlayer!!.getDuration())
+                curMedia!!.duration = (mPlayer!!.getDuration())
 //                DBWriter.persistEpisodeMedia(playable as EpisodeMedia)
             }
         }
@@ -1130,12 +1131,12 @@ class PlaybackService : MediaLibraryService() {
             position = curPosition
             duration_ = this.curDuration
             playable = curMedia
-        } else duration_ = playable?.getDuration() ?: EpisodeMedia.INVALID_TIME
+        } else duration_ = playable?.duration ?: EpisodeMedia.INVALID_TIME
 
         if (position != EpisodeMedia.INVALID_TIME && duration_ != EpisodeMedia.INVALID_TIME && playable != null) {
             Logd(TAG, "persistCurrentPosition to $position $duration_ ${playable.getEpisodeTitle()}")
             playable.setPosition(position)
-            playable.setLastPlayedTime(System.currentTimeMillis())
+            playable.lastPlayedTime = (System.currentTimeMillis())
 
                 var item = realm.query(Episode::class, "id == ${playable.id}").first().find()
                 if (item != null) {
@@ -1146,10 +1147,10 @@ class PlaybackService : MediaLibraryService() {
                             media.startTime = playable.startTime
                             media.playedDurationWhenStarted = playable.playedDurationWhenStarted
                             media.setPosition(position)
-                            media.setLastPlayedTime(System.currentTimeMillis())
+                            media.lastPlayedTime = (System.currentTimeMillis())
                             if (it.isNew) it.playState = PlayState.UNPLAYED.code
-                            if (media.startPosition >= 0 && media.getPosition() > media.startPosition)
-                                media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
+                            if (media.startPosition >= 0 && media.position > media.startPosition)
+                                media.playedDuration = (media.playedDurationWhenStarted + media.position - media.startPosition)
                             media.timeSpent = media.timeSpentOnStart + (System.currentTimeMillis() - media.startTime).toInt()
                             Logd(TAG, "saveCurrentPosition ${media.startTime} timeSpent: ${media.timeSpent} playedDuration: ${media.playedDuration}")
                         }
@@ -1170,11 +1171,11 @@ class PlaybackService : MediaLibraryService() {
             val i = Intent(whatChanged)
             i.putExtra("id", 1L)
             i.putExtra("artist", "")
-            i.putExtra("album", info.playable!!.getFeedTitle())
+            i.putExtra("album", info.playable!!.episode?.feed?.title?:"")
             i.putExtra("track", info.playable!!.getEpisodeTitle())
             i.putExtra("playing", isPlaying)
-            i.putExtra("duration", info.playable!!.getDuration().toLong())
-            i.putExtra("position", info.playable!!.getPosition().toLong())
+            i.putExtra("duration", info.playable!!.duration.toLong())
+            i.putExtra("position", info.playable!!.position.toLong())
             sendBroadcast(i)
         }
     }
@@ -1359,7 +1360,7 @@ class PlaybackService : MediaLibraryService() {
         fun startChapterLoader(media: EpisodeMedia) {
 //        chapterLoaderFuture?.dispose()
 //        chapterLoaderFuture = null
-            if (!media.chaptersLoaded()) {
+            if (media.episode?.chapters == null) {
                 val scope = CoroutineScope(Dispatchers.Main)
                 scope.launch(Dispatchers.IO) {
                     try {
@@ -1588,10 +1589,10 @@ class PlaybackService : MediaLibraryService() {
             }
 
         val curPositionFB: Int
-            get() = playbackService?.curPosition ?: curMedia?.getPosition() ?: EpisodeMedia.INVALID_TIME
+            get() = playbackService?.curPosition ?: curMedia?.position ?: EpisodeMedia.INVALID_TIME
 
         val curDurationFB: Int
-            get() = playbackService?.curDuration ?: curMedia?.getDuration() ?: EpisodeMedia.INVALID_TIME
+            get() = playbackService?.curDuration ?: curMedia?.duration ?: EpisodeMedia.INVALID_TIME
 
         val curSpeedFB: Float
             get() = playbackService?.curSpeed ?: getCurrentPlaybackSpeed(curMedia)

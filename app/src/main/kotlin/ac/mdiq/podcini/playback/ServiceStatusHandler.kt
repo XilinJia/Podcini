@@ -39,8 +39,8 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
             Log.d(TAG, "statusUpdate onReceive called with action: ${intent.action}")
             if (playbackService != null && PlaybackService.mPlayerInfo != null) {
                 val info = PlaybackService.mPlayerInfo!!
-//                Logd(TAG, "statusUpdate onReceive $prevStatus ${MediaPlayerBase.status} ${info.playerStatus} ${curMedia?.getIdentifier()} ${info.playable?.getIdentifier()}.")
-                if (prevStatus != info.playerStatus || curMedia == null || curMedia!!.getIdentifier() != info.playable?.getIdentifier()) {
+//                Logd(TAG, "statusUpdate onReceive $prevStatus ${MediaPlayerBase.status} ${info.playerStatus} ${curMedia?.id} ${info.playable?.id}.")
+                if (prevStatus != info.playerStatus || curMedia == null || curMedia!!.id != info.playable?.id) {
                     Logd(TAG, "statusUpdate onReceive doing updates")
                     MediaPlayerBase.status = info.playerStatus
                     prevStatus = MediaPlayerBase.status

@@ -148,7 +148,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                         Column(modifier = Modifier.fillMaxSize()) {
                             Box(modifier = Modifier.fillMaxWidth().aspectRatio(16 / 9f)) { VideoPlayer() }
                             Text(curMedia?.getEpisodeTitle() ?: "", color = textColor, style = CustomTextStyles.titleCustom, modifier = Modifier.padding(horizontal = 10.dp))
-                            Text(curMedia?.getFeedTitle() ?: "", color = textColor, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
+                            Text(curMedia?.episode?.feed?.title ?: "", color = textColor, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
                             MediaDetails()
                         }
                     }
@@ -304,7 +304,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                     val episode = withContext(Dispatchers.IO) {
                         var episode_ = curMedia?.episodeOrFetch()
                         if (episode_ != null) {
-                            val duration = episode_.media?.getDuration() ?: Int.MAX_VALUE
+                            val duration = episode_.media?.duration ?: Int.MAX_VALUE
                             val url = episode_.media?.downloadUrl
                             val shownotesCleaner = ShownotesCleaner(this@VideoplayerActivity)
                             if (url?.contains("youtube.com") == true && episode_.description?.startsWith("Short:") == true) {
@@ -326,7 +326,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
         val media = curMedia
         if (media != null) {
-            feedTitle = media.getFeedTitle()
+            feedTitle = media.episode?.feed?.title?:""
             episodeTitle = media.getEpisodeTitle()
         }
     }
@@ -545,7 +545,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         private fun getWebsiteLinkWithFallback(media: EpisodeMedia?): String? {
             return when {
                 media == null -> null
-                !media.getWebsiteLink().isNullOrBlank() -> media.getWebsiteLink()
+                !media.episode?.link.isNullOrBlank() -> media.episode?.link
                 else -> media.episodeOrFetch()?.getLinkWithFallback()
             }
         }

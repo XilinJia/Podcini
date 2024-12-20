@@ -138,8 +138,8 @@ class SleepTimerDialog : DialogFragment() {
             }
             try {
                 val time = if (binding.endEpisode.isChecked) {
-                    val curPosition = curMedia?.getPosition() ?: 0
-                    val duration = curMedia?.getDuration() ?: 0
+                    val curPosition = curMedia?.position ?: 0
+                    val duration = curMedia?.duration ?: 0
                     val converter = TimeSpeedConverter(curSpeedFB)
                     TimeUnit.MILLISECONDS.toMinutes(converter.convert(max((duration - curPosition).toDouble(), 0.0).toInt()).toLong()) // ms to minutes
                 } else etxtTime.getText().toString().toLong()

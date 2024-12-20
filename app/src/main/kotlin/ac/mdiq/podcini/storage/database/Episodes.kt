@@ -293,6 +293,6 @@ object Episodes {
 
     @JvmStatic
     fun hasAlmostEnded(media: EpisodeMedia): Boolean {
-        return media.getDuration() > 0 && media.getPosition() >= media.getDuration() * smartMarkAsPlayedPercent * 0.01
+        return media.duration > 0 && media.position >= media.duration * smartMarkAsPlayedPercent * 0.01
     }
 }

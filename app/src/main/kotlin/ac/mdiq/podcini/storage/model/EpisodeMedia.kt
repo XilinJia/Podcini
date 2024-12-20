@@ -33,16 +33,11 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
 
     var downloadTime: Long = 0
 
-    @get:JvmName("getDurationProperty")
-    @set:JvmName("setDurationProperty")
     var duration = 0    // in milliseconds
 
-    @get:JvmName("getPositionProperty")
     @set:JvmName("setPositionProperty")
     var position = 0 // Current position in file, in milliseconds
 
-    @get:JvmName("getLastPlayedTimeProperty")
-    @set:JvmName("setLastPlayedTimeProperty")
     var lastPlayedTime: Long = 0 // Last time this media was played (in ms)
 
     var startPosition: Int = -1
@@ -131,10 +126,6 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         else this.downloaded = downloaded
     }
 
-    fun getHumanReadableIdentifier(): String? {
-        return episode?.title ?: downloadUrl
-    }
-
     /**
      * Uses mimetype to determine the type of media.
      */
@@ -163,10 +154,6 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         return false
     }
 
-    fun getTypeAsInt(): Int {
-        return FEEDFILETYPE_FEEDMEDIA
-    }
-
     fun setIsDownloaded() {
         downloaded = true
         downloadTime = Date().time
@@ -178,36 +165,9 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         if (url == null) downloaded = false
     }
 
-    fun getDuration(): Int {
-        return duration
-    }
-
-    fun setDuration(newDuration: Int) {
-        this.duration = newDuration
-    }
-
-    fun getPosition(): Int {
-        return position
-    }
-
     fun setPosition(newPosition: Int) {
         this.position = newPosition
         if (newPosition > 0 && episode?.isNew == true) episode!!.setPlayed(false)
-    }
-
-    /**
-     * Returns last time (in ms) when this playable was played or 0 if last played time is unknown.
-     */
-    fun getLastPlayedTime(): Long {
-        return lastPlayedTime
-    }
-
-    fun setLastPlayedTime(lastPlayedTime: Long) {
-        this.lastPlayedTime = lastPlayedTime
-    }
-
-    fun getDescription(): String? {
-        return episode?.description
     }
 
     fun fileExists(): Boolean {
@@ -259,47 +219,6 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         return episode?.title ?: episode?.identifyingValue ?: "No title"
     }
 
-    fun getChapters(): List<Chapter> {
-        return episode?.chapters?:listOf()
-    }
-
-    fun chaptersLoaded(): Boolean {
-        return episode?.chapters != null
-    }
-
-    fun getWebsiteLink(): String? {
-        return episode?.link
-    }
-
-    fun getFeedTitle(): String {
-        return episode?.feed?.title?:""
-    }
-
-    /**
-     * Returns a unique identifier, for example a file url or an ID from a database.
-     */
-    fun getIdentifier(): Any {
-        return id
-    }
-
-    /**
-     * Returns an url to a local file that can be played or null if this file does not exist.
-     */
-    fun getLocalMediaUrl(): String? {
-        return fileUrl
-    }
-
-    /**
-     * Returns an url to a file that can be streamed by the player or null if this url is not known.
-     */
-    fun getStreamUrl(): String? {
-        return downloadUrl
-    }
-
-    fun getPubDate(): Date? {
-        return episode?.getPubDate()
-    }
-
     /**
      * Returns true if a local file that can be played is available. getFileUrl MUST return a non-null string if this method returns true.
      */
@@ -340,15 +259,6 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         startPosition = -1
     }
 
-    /**
-     * Returns an integer that must be unique among all EpisodeMedia classes. The
-     * return value is later used by CurrentState to determine the type of the
-     * EpisodeMedia object that is restored.
-     */
-    fun getPlayableType(): Int {
-        return PLAYABLE_TYPE_FEEDMEDIA
-    }
-
     fun setChapters(chapters: List<Chapter>) {
         if (episode != null) {
             episode!!.chapters.clear()
@@ -365,7 +275,7 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
     fun getImageLocation(): String? {
         return when {
             episode != null -> episode!!.imageLocation
-            hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
+            hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + fileUrl
             else -> null
         }
     }
@@ -375,7 +285,7 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         else {
             try {
                 MediaMetadataRetrieverCompat().use { mmr ->
-                    mmr.setDataSource(getLocalMediaUrl())
+                    mmr.setDataSource(fileUrl)
                     val image = mmr.embeddedPicture
                     hasEmbeddedPicture = image != null
                 }
@@ -424,7 +334,6 @@ class EpisodeMedia: EmbeddedRealmObject, Parcelable, Serializable {
         if (playedDurationWhenStarted != other.playedDurationWhenStarted) return false
         if (hasEmbeddedPicture != other.hasEmbeddedPicture) return false
 //        if (isInProgress != other.isInProgress) return false
-
         return true
     }
 

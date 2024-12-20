@@ -276,9 +276,9 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                                 if (isProviderConnected && media_ != null) {
                                                     val actionPlay: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.PLAY)
                                                         .currentTimestamp()
-                                                        .started(media_.getDuration() / 1000)
-                                                        .position(media_.getDuration() / 1000)
-                                                        .total(media_.getDuration() / 1000)
+                                                        .started(media_.duration / 1000)
+                                                        .position(media_.duration / 1000)
+                                                        .total(media_.duration / 1000)
                                                         .build()
                                                     SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionPlay)
                                                 }
@@ -778,7 +778,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         val textColor = MaterialTheme.colorScheme.onSurface
         if (vm.inProgressState || InTheatre.isCurMedia(vm.episode.media)) {
             val pos = vm.positionState
-            val dur = remember { vm.episode.media?.getDuration() ?: 0 }
+            val dur = remember { vm.episode.media?.duration ?: 0 }
             val durText = remember { getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
 //            Logd(TAG, "$index vm.prog: ${vm.prog}")

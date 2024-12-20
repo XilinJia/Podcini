@@ -5,6 +5,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.DefaultPages
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.screens.*
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
@@ -373,15 +374,6 @@ class PreferenceActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    enum class DefaultPages(val res: Int) {
-        SubscriptionsFragment(R.string.subscriptions_label),
-        QueuesFragment(R.string.queue_label),
-        EpisodesFragment(R.string.episodes_label),
-        AddFeedFragment(R.string.add_feed_label),
-        StatisticsFragment(R.string.statistics_label),
-        Remember(R.string.remember_last_page);
     }
 
     @Composable

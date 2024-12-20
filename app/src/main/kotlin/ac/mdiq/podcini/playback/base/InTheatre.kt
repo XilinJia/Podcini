@@ -31,7 +31,7 @@ object InTheatre {
             when {
                 value != null -> {
                     field = unmanaged(value)
-                    if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = unmanaged(field!!.media!!)
+                    if (field?.media != null && curMedia?.id != field?.media?.id) curMedia = unmanaged(field!!.media!!)
                 }
                 else -> {
                     field = null
@@ -136,7 +136,7 @@ object InTheatre {
                     curMedia = getEpisodeMedia(mediaId)
                     if (curEpisode != null) curEpisode = curMedia?.episodeOrFetch()
                 }
-                Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curMedia?.getIdentifier()}")
+                Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curMedia?.id}")
             } else Log.e(TAG, "Could not restore EpisodeMedia object from preferences")
         }
     }

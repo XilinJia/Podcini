@@ -309,12 +309,12 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                         MediaMetadataRetrieverCompat().use { mmr ->
                             if (it.media != null) mmr.setDataSource(it.media!!.fileUrl)
                             durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                            if (durationStr != null) it.media?.setDuration(durationStr.toInt())
+                            if (durationStr != null) it.media?.duration = (durationStr.toInt())
                         }
                     } catch (e: NumberFormatException) { Logd(TAG, "Invalid file duration: $durationStr")
                     } catch (e: Exception) {
                         Log.e(TAG, "Get duration failed", e)
-                        it.media?.setDuration(30000)
+                        it.media?.duration = (30000)
                     }
                     it.disableAutoDownload()
                 }

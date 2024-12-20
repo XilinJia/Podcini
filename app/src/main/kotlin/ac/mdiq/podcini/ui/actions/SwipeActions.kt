@@ -517,10 +517,6 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return Actions(prefsString)
         }
 
-//        fun isSwipeActionEnabled(tag: String): Boolean {
-//            return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
-//        }
-
         fun deleteEpisodesWarnLocal(context: Context, items: Iterable<Episode>) {
             val localItems: MutableList<Episode> = mutableListOf()
             for (item in items) {
@@ -532,9 +528,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.delete_episode_label)
                     .setMessage(R.string.delete_local_feed_warning_body)
-                    .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int ->
-                        for (item in localItems) deleteEpisodeMedia(context, item)
-                    }
+                    .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int -> for (item in localItems) deleteEpisodeMedia(context, item) }
                     .setNegativeButton(R.string.cancel_label, null)
                     .show()
             }
@@ -583,7 +577,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 }
             }
 
-            Dialog(onDismissRequest = { onDismissRequest() }) {
+            if (!showPickerDialog) Dialog(onDismissRequest = { onDismissRequest() }) {
                 val forFragment = remember(tag) {  when (tag) {
                     EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
                     OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)

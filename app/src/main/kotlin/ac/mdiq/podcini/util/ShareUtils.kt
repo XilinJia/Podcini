@@ -70,7 +70,7 @@ object ShareUtils {
                 
                 ${context.resources.getString(R.string.share_starting_position_label)}: 
                 """.trimIndent()
-            pos = item.media!!.getPosition()
+            pos = item.media!!.position
             text += getDurationStringLong(pos)
         }
 
@@ -99,7 +99,7 @@ object ShareUtils {
 
     @JvmStatic
     fun shareFeedItemFile(context: Context, media: EpisodeMedia) {
-        val lurl = media.getLocalMediaUrl()
+        val lurl = media.fileUrl
         if (lurl.isNullOrEmpty()) return
 
         val fileUri = FileProvider.getUriForFile(context, context.getString(R.string.provider_authority), File(lurl))

@@ -165,8 +165,8 @@ class AudioPlayerFragment : Fragment() {
     private var displayedChapterIndex by mutableIntStateOf(-1)
     private val currentChapter: Chapter?
         get() {
-            if (currentMedia == null || currentMedia!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
-            return currentMedia!!.getChapters()[displayedChapterIndex]
+            if (currentMedia?.episode?.chapters.isNullOrEmpty() || displayedChapterIndex == -1) return null
+            return currentMedia!!.episode!!.chapters[displayedChapterIndex]
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -216,7 +216,7 @@ class AudioPlayerFragment : Fragment() {
                 }
             }
         }
-        Logd(TAG, "curMedia: ${curMedia?.getIdentifier()}")
+        Logd(TAG, "curMedia: ${curMedia?.id}")
         (activity as MainActivity).setPlayerVisible(curMedia != null)
         if (curMedia != null) updateUi(curMedia!!)
         return composeView
@@ -508,7 +508,7 @@ class AudioPlayerFragment : Fragment() {
                             startActivity(openFeed)
                         }
                     }
-                }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
+                }, onLongClick = { copyText(currentMedia?.episode?.feed?.title?:"") }))
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp)) {
                 Spacer(modifier = Modifier.weight(0.2f))
                 val ratingIconRes = Rating.fromCode(rating).res
@@ -530,7 +530,7 @@ class AudioPlayerFragment : Fragment() {
 //                    val id = prefs!!.getString(PREF_PLAYABLE_ID, "")
 //                    val scrollY = prefs!!.getInt(PREF_SCROLL_Y, -1)
 //                    if (scrollY != -1) {
-//                        if (id == curMedia?.getIdentifier()?.toString()) {
+//                        if (id == curMedia?.id?.toString()) {
 //                            Logd(TAG, "Restored scroll Position: $scrollY")
 ////                            binding.itemDescriptionFragment.scrollTo(binding.itemDescriptionFragment.scrollX, scrollY)
 //                            return true
@@ -592,7 +592,7 @@ class AudioPlayerFragment : Fragment() {
             if (isCurrentlyPlaying(curMedia)) playButRes = R.drawable.ic_pause
             playButInit = true
         }
-        if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == EpisodeMedia.INVALID_TIME || curDurationFB == EpisodeMedia.INVALID_TIME) return
+        if (curMedia?.id != event.media?.id || controller == null || curPositionFB == EpisodeMedia.INVALID_TIME || curDurationFB == EpisodeMedia.INVALID_TIME) return
         val converter = TimeSpeedConverter(curSpeedFB)
         currentPosition = converter.convert(event.position)
         duration = converter.convert(event.duration)
@@ -612,7 +612,7 @@ class AudioPlayerFragment : Fragment() {
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
-        onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
+        onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.position, media.duration))
         if (isPlayingVideoLocally && curMedia?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
@@ -640,10 +640,10 @@ class AudioPlayerFragment : Fragment() {
                             val info = currentItem!!.streamInfo
                             if (info?.description?.content != null) {
                                 currentItem = upsert(currentItem!!) { it.description = info.description?.content }
-                                cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.getDuration()?:0)
-                            } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
+                                cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.duration?:0)
+                            } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.duration?:0)
                         } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
-                    } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.getDuration()?:0)
+                    } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.duration?:0)
                     prevItem = currentItem
                 }
                 Logd(TAG, "updateDetails cleanedNotes: ${cleanedNotes?.length}")
@@ -653,12 +653,12 @@ class AudioPlayerFragment : Fragment() {
                 if (currentMedia != null) {
                     val media = currentMedia!!
                     Logd(TAG, "displayMediaInfo ${currentItem?.title} ${media.getEpisodeTitle()}")
-                    val pubDateStr = MiscFormatter.formatDateTimeFlex(media.getPubDate())
-                    txtvPodcastTitle = media.getFeedTitle().trim()
+                    val pubDateStr = MiscFormatter.formatDateTimeFlex(media.episode?.getPubDate())
+                    txtvPodcastTitle = (media.episode?.feed?.title?:"").trim()
                     episodeDate = pubDateStr.trim()
                     titleText = currentItem?.title ?:""
                     displayedChapterIndex = -1
-                    refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.getPosition())) //calls displayCoverImage
+                    refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.position)) //calls displayCoverImage
                 }
                 Logd(TAG, "Webview loaded")
             }
@@ -684,7 +684,7 @@ class AudioPlayerFragment : Fragment() {
                 if (!homeText.isNullOrEmpty()) cleanedNotes = shownotesCleaner?.processShownotes(homeText!!, 0)
                 else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             } else {
-                cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentMedia?.getDuration() ?: 0)
+                cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentMedia?.duration ?: 0)
                 if (cleanedNotes.isNullOrEmpty()) withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             }
         }
@@ -693,8 +693,8 @@ class AudioPlayerFragment : Fragment() {
     private fun refreshChapterData(chapterIndex: Int) {
         Logd(TAG, "in refreshChapterData $chapterIndex")
         if (currentMedia != null && chapterIndex > -1) {
-            if (currentMedia!!.getPosition() > currentMedia!!.getDuration() || chapterIndex >= currentMedia!!.getChapters().size - 1) {
-                displayedChapterIndex = currentMedia!!.getChapters().size - 1
+            if (currentMedia!!.position > currentMedia!!.duration || chapterIndex >= (currentMedia!!.episode?.chapters?: listOf()).size - 1) {
+                displayedChapterIndex = (currentMedia!!.episode?.chapters?:listOf()).size - 1
                 hasNextChapter = false
             } else {
                 displayedChapterIndex = chapterIndex
@@ -702,7 +702,7 @@ class AudioPlayerFragment : Fragment() {
             }
         }
         if (currentMedia != null) {
-            imgLocLarge = if (displayedChapterIndex == -1 || currentMedia!!.getChapters().isEmpty() || currentMedia!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty())
+            imgLocLarge = if (displayedChapterIndex == -1 || currentMedia!!.episode?.chapters.isNullOrEmpty() || currentMedia!!.episode!!.chapters[displayedChapterIndex].imageUrl.isNullOrEmpty())
                 currentMedia!!.getImageLocation() else EmbeddedChapterImage.getModelFor(currentMedia!!, displayedChapterIndex)?.toString()
             Logd(TAG, "displayCoverImage: imgLoc: $imgLoc")
         }
@@ -715,16 +715,16 @@ class AudioPlayerFragment : Fragment() {
             displayedChapterIndex < 1 -> seekTo(0)
             (curPositionFB - 10000 * curSpeedFB) < curr.start -> {
                 refreshChapterData(displayedChapterIndex - 1)
-                if (currentMedia != null) seekTo(currentMedia!!.getChapters()[displayedChapterIndex].start.toInt())
+                if (!currentMedia?.episode?.chapters.isNullOrEmpty()) seekTo(currentMedia!!.episode!!.chapters[displayedChapterIndex].start.toInt())
             }
             else -> seekTo(curr.start.toInt())
         }
     }
 
      private fun seekToNextChapter() {
-        if (currentMedia == null || currentMedia!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= currentMedia!!.getChapters().size) return
+        if (currentMedia?.episode?.chapters.isNullOrEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= currentMedia!!.episode!!.chapters.size) return
         refreshChapterData(displayedChapterIndex + 1)
-        seekTo(currentMedia!!.getChapters()[displayedChapterIndex].start.toInt())
+        seekTo(currentMedia!!.episode!!.chapters[displayedChapterIndex].start.toInt())
     }
 
     fun onExpanded() {
@@ -743,7 +743,7 @@ class AudioPlayerFragment : Fragment() {
 
     private var loadItemsRunning = false
     private fun loadMediaInfo() {
-        Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.getIdentifier()}")
+        Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.id}")
         val actMain = (activity as MainActivity)
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
@@ -752,20 +752,20 @@ class AudioPlayerFragment : Fragment() {
         if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            val curMediaChanged = currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier()
-            if (curMedia != null && curMedia?.getIdentifier() != currentMedia?.getIdentifier()) {
+            val curMediaChanged = currentMedia == null || curMedia?.id != currentMedia?.id
+            if (curMedia != null && curMedia?.id != currentMedia?.id) {
                 updateUi(curMedia!!)
 //                imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
                 currentMedia = curMedia
             }
             if (!isCollapsed && curMediaChanged) {
-                Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()}")
+                Logd(TAG, "loadMediaInfo loading details ${curMedia?.id}")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) { curMedia?.apply { ChapterUtils.loadChapters(this, requireContext(), false) } }
                     currentMedia = curMedia
                     val item = currentMedia?.episodeOrFetch()
                     if (item != null) setItem(item)
-                    val chapters: List<Chapter> = currentMedia?.getChapters() ?: listOf()
+                    val chapters: List<Chapter> = currentMedia?.episode?.chapters ?: listOf()
                     if (chapters.isNotEmpty()) {
                         val dividerPos = FloatArray(chapters.size)
                         for (i in chapters.indices) dividerPos[i] = chapters[i].start / curDurationFB.toFloat()
@@ -795,7 +795,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
         super.onResume()
         loadMediaInfo()
-        if (curMedia != null) onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia!!, curMedia!!.getPosition(), curMedia!!.getDuration()))
+        if (curMedia != null) onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia!!, curMedia!!.position, curMedia!!.duration))
     }
 
     override fun onStart() {
@@ -823,7 +823,7 @@ class AudioPlayerFragment : Fragment() {
      override fun onPause() {
         super.onPause()
          val editor = prefs.edit() ?: return
-         if (curMedia != null) editor.putString(PREF_PLAYABLE_ID, curMedia!!.getIdentifier().toString())
+         if (curMedia != null) editor.putString(PREF_PLAYABLE_ID, curMedia!!.id.toString())
          else {
              Logd(TAG, "savePreferences was called while media or webview was null")
              editor.putInt(PREF_SCROLL_Y, -1)
@@ -854,7 +854,7 @@ class AudioPlayerFragment : Fragment() {
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         Logd(TAG, "onPlayEvent ${event.episode.title}")
         val currentitem = event.episode
-        if (currentMedia?.getIdentifier() == null || currentitem.media?.getIdentifier() != currentMedia?.getIdentifier()) {
+        if (currentMedia?.id == null || currentitem.media?.id != currentMedia?.id) {
             currentMedia = currentitem.media
             updateUi(currentMedia!!)
             setItem(currentitem)
@@ -866,7 +866,7 @@ class AudioPlayerFragment : Fragment() {
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPlaybackPositionEvent ${event.episode.title}")
         val media = event.media ?: return
-        if (currentMedia?.getIdentifier() == null || media.getIdentifier() != currentMedia?.getIdentifier()) {
+        if (currentMedia?.id == null || media.id != currentMedia?.id) {
             currentMedia = media
             updateUi(currentMedia!!)
             setItem(curEpisode!!)
@@ -874,7 +874,7 @@ class AudioPlayerFragment : Fragment() {
 //        if (isShowPlay) setIsShowPlay(false)
         onPositionUpdate(event)
         if (!isCollapsed) {
-            if (currentMedia?.getIdentifier() != event.media.getIdentifier()) return
+            if (currentMedia?.id != event.media.id) return
             val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(currentMedia, event.position)
             if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) refreshChapterData(newChapterIndex)
         }

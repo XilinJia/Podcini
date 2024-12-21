@@ -28,10 +28,12 @@ import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.backup.BackupManager
 import android.content.Context
+import android.content.DialogInterface
 import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.documentfile.provider.DocumentFile
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.Job
 import java.io.File
@@ -90,7 +92,24 @@ object Episodes {
         return if (media != null) realm.copyFromRealm(media) else null
     }
 
-// @JvmStatic is needed because some Runnable blocks call this
+    fun deleteEpisodesWarnLocal(context: Context, items: Iterable<Episode>) {
+        val localItems: MutableList<Episode> = mutableListOf()
+        for (item in items) {
+            if (item.feed?.isLocalFeed == true) localItems.add(item)
+            else deleteEpisodeMedia(context, item)
+        }
+
+        if (localItems.isNotEmpty()) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.delete_episode_label)
+                .setMessage(R.string.delete_local_feed_warning_body)
+                .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int -> for (item in localItems) deleteEpisodeMedia(context, item) }
+                .setNegativeButton(R.string.cancel_label, null)
+                .show()
+        }
+    }
+
+    // @JvmStatic is needed because some Runnable blocks call this
     @JvmStatic
     fun deleteEpisodeMedia(context: Context, episode: Episode) : Job {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")

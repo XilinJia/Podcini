@@ -407,6 +407,13 @@
     <string name="download_pref_details">Details</string>
     <string name="import_export_pref">Import/Export</string>
     <string name="import_export_search_keywords">backup, restore</string>
+    <string name="pref_auto_backup_title">Auto backup</string>
+    <string name="pref_auto_backup_sum">Automatically back up DB and preferences at a specified interval into a selected folder.</string>
+    <string name="pref_auto_backup_interval">Backup interval</string>
+    <string name="pref_auto_backup_folder">Spicify a backup folder</string>
+    <string name="pref_auto_backup_folder_sum">Not specified.</string>
+    <string name="pref_auto_backup_limit">Number of backups to keep</string>
+
     <string name="appearance">Appearance</string>
     <string name="external_elements">External elements</string>
     <string name="create_YT_syndicates">Create YT syndicates</string>

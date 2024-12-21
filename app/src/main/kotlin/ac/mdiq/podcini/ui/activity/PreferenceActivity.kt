@@ -8,11 +8,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.DefaultPages
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.screens.*
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.fragment.EpisodesFragment
-import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
-import ac.mdiq.podcini.ui.fragment.QueuesFragment
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
@@ -126,9 +122,9 @@ class PreferenceActivity : AppCompatActivity() {
                         composable(Screens.notifications.tag) {
                             topAppBarTitle = stringResource(Screens.notifications.titleRes)
                             NotificationPreferencesScreen() }
-                        composable(Screens.swipe.tag) {
-                            topAppBarTitle = stringResource(Screens.swipe.titleRes)
-                            SwipePreferencesScreen() }
+//                        composable(Screens.swipe.tag) {
+//                            topAppBarTitle = stringResource(Screens.swipe.titleRes)
+//                            SwipePreferencesScreen() }
                         composable(Screens.about.tag) {
                             topAppBarTitle = stringResource(Screens.about.titleRes)
                             AboutScreen(navController) }
@@ -476,33 +472,33 @@ class PreferenceActivity : AppCompatActivity() {
                 )
             }
             TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)
-            TitleSummaryActionColumn(R.string.swipeactions_label, R.string.swipeactions_summary) {
-                navController.navigate(Screens.swipe.tag)
-//                openScreen(Screens.swipe)
-            }
+//            TitleSummaryActionColumn(R.string.swipeactions_label, R.string.swipeactions_summary) {
+//                navController.navigate(Screens.swipe.tag)
+////                openScreen(Screens.swipe)
+//            }
         }
     }
 
-    @Suppress("EnumEntryName")
-    private enum class SwipePrefs(val res: Int, val tag: String) {
-        prefSwipeQueue(R.string.queue_label, QueuesFragment.TAG),
-        prefSwipeEpisodes(R.string.episodes_label, EpisodesFragment.TAG),
-        prefSwipeFeed(R.string.individual_subscription, FeedEpisodesFragment.TAG),
-    }
+//    @Suppress("EnumEntryName")
+//    private enum class SwipePrefs(val res: Int, val tag: String) {
+//        prefSwipeQueue(R.string.queue_label, QueuesFragment.TAG),
+//        prefSwipeEpisodes(R.string.episodes_label, EpisodesFragment.TAG),
+//        prefSwipeFeed(R.string.individual_subscription, FeedEpisodesFragment.TAG),
+//    }
 
-    @Composable
-    fun SwipePreferencesScreen() {
-//        supportActionBar?.setTitle(R.string.swipeactions_label)
-        val textColor = MaterialTheme.colorScheme.onSurface
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            for (e in SwipePrefs.entries) {
-                val showDialog = remember { mutableStateOf(false) }
-                if (showDialog.value) SwipeActionsDialog(e.tag, onDismissRequest = { showDialog.value = false }) {}
-                Text(stringResource(e.res), color = textColor, style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 10.dp).clickable(onClick = { showDialog.value = true }))
-            }
-        }
-    }
+//    @Composable
+//    fun SwipePreferencesScreen() {
+////        supportActionBar?.setTitle(R.string.swipeactions_label)
+//        val textColor = MaterialTheme.colorScheme.onSurface
+//        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+//            for (e in SwipePrefs.entries) {
+//                val showDialog = remember { mutableStateOf(false) }
+//                if (showDialog.value) SwipeActionsDialog(e.tag, onDismissRequest = { showDialog.value = false }) {}
+//                Text(stringResource(e.res), color = textColor, style = MaterialTheme.typography.headlineSmall,
+//                    modifier = Modifier.padding(bottom = 10.dp).clickable(onClick = { showDialog.value = true }))
+//            }
+//        }
+//    }
 
     @Composable
     fun NotificationPreferencesScreen() {

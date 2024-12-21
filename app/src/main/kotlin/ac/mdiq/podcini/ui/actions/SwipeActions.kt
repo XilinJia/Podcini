@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.actions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -20,7 +20,6 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.util.TypedValue
 import androidx.annotation.AttrRes
@@ -47,30 +46,35 @@ import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
 interface SwipeAction {
-    fun getId(): String?
+    fun getId(): String
     fun getTitle(context: Context): String
-
     @DrawableRes
     fun getActionIcon(): Int
-
     @AttrRes
     @DrawableRes
     fun getActionColor(): Int
-
     @Composable
     fun ActionOptions() {}
-
-    fun performAction(item: Episode, fragment: Fragment)
+    fun performAction(item: Episode)
 }
 
 class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
-    var actions by mutableStateOf<Actions>(getPrefs(tag, ""))
+//    val prefs: SharedPreferences by lazy { fragment.requireContext().getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)}
+
+    val actionsList: List<SwipeAction> = listOf(
+        NoActionSwipeAction(), ComboSwipeAction(),
+        AddToQueueSwipeAction(), PutToQueueSwipeAction(),
+        StartDownloadSwipeAction(), SetRatingSwipeAction(), AddCommentSwipeAction(),
+        SetPlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
+        DeleteSwipeAction(), RemoveFromHistorySwipeAction(),
+        ShelveSwipeAction(), EraseSwipeAction())
+
+    var actions by mutableStateOf<RightLeftActions>(getPrefs(tag, ""))
 
     override fun onStart(owner: LifecycleOwner) {
         actions = getPrefs(tag, "")
@@ -82,25 +86,24 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         actions.right[0].ActionOptions()
     }
 
-    fun dialogCallback() {
-        actions = getPrefs(this@SwipeActions.tag, "")
-        // TODO: remove the need of event
-        EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
+    private fun getPrefs(tag: String, defaultActions: String): RightLeftActions {
+        val prefsString = prefs?.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions) ?: defaultActions
+        return RightLeftActions(prefsString)
     }
 
-    class Actions(prefs: String?) {
+    inner class RightLeftActions(actions_: String) {
         @JvmField
-        var right: MutableList<SwipeAction> = mutableListOf(swipeActions[0], swipeActions[0])
+        var right: MutableList<SwipeAction> = mutableListOf(NoActionSwipeAction(), NoActionSwipeAction())
         @JvmField
-        var left: MutableList<SwipeAction> = mutableListOf(swipeActions[0], swipeActions[0])
+        var left: MutableList<SwipeAction> = mutableListOf(NoActionSwipeAction(), NoActionSwipeAction())
 
         init {
-            val actions = prefs!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val actions = actions_.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (actions.size == 2) {
-                val rActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[0]) }
-                this.right[0] = if (rActs.isEmpty()) swipeActions[0] else rActs[0]
-                val lActs = swipeActions.filter { a: SwipeAction -> a.getId().equals(actions[1]) }
-                this.left[0] = if (lActs.isEmpty()) swipeActions[0] else lActs[0]
+                val rActs = actionsList.filter { a: SwipeAction -> a.getId() == actions[0] }
+                this.right[0] = if (rActs.isEmpty()) actionsList[0] else rActs[0]
+                val lActs = actionsList.filter { a: SwipeAction -> a.getId() == actions[1] }
+                this.left[0] = if (lActs.isEmpty()) actionsList[0] else lActs[0]
             }
         }
     }
@@ -121,7 +124,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         ERASE
     }
 
-    class AddToQueueSwipeAction : SwipeAction {
+    inner class AddToQueueSwipeAction : SwipeAction {
         override fun getId(): String {
             return ActionTypes.ADD_TO_QUEUE.name
         }
@@ -134,15 +137,14 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.add_to_queue_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             addToQueue(item)
         }
     }
 
-    class ComboSwipeAction : SwipeAction {
+    inner class ComboSwipeAction : SwipeAction {
         var showDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
-        var onFragment by mutableStateOf<Fragment?>(null)
         var useAction by mutableStateOf<SwipeAction?>(null)
         override fun getId(): String {
             return ActionTypes.COMBO.name
@@ -156,23 +158,22 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.combo_action)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
-            onFragment = fragment
             showDialog = true
         }
         @Composable
         override fun ActionOptions() {
             useAction?.ActionOptions()
-            if (showDialog && onEpisode!= null && onFragment != null) Dialog(onDismissRequest = { showDialog = false }) {
+            if (showDialog && onEpisode!= null) Dialog(onDismissRequest = { showDialog = false }) {
                 val context = LocalContext.current
                 Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        for (action in swipeActions) {
+                        for (action in actionsList) {
                             if (action.getId() == ActionTypes.NO_ACTION.name || action.getId() == ActionTypes.COMBO.name) continue
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
                                 useAction = action
-                                action.performAction(onEpisode!!, onFragment!!)
+                                action.performAction(onEpisode!!)
                                 showDialog = false
                             }) {
                                 val colorAccent = remember {
@@ -190,7 +191,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class DeleteSwipeAction : SwipeAction {
+    inner class DeleteSwipeAction : SwipeAction {
         override fun getId(): String {
             return ActionTypes.DELETE.name
         }
@@ -203,7 +204,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.delete_episode_label)
         }
-        override fun performAction(item_: Episode, fragment: Fragment) {
+        override fun performAction(item_: Episode) {
             var item = item_
             if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
             val media = item.media
@@ -217,7 +218,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class SetRatingSwipeAction : SwipeAction {
+    inner class SetRatingSwipeAction : SwipeAction {
         var showChooseRatingDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
@@ -232,7 +233,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.set_rating_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
             showChooseRatingDialog = true
         }
@@ -242,7 +243,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class AddCommentSwipeAction : SwipeAction {
+    inner class AddCommentSwipeAction : SwipeAction {
         var showEditComment by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         var localTime by mutableLongStateOf(System.currentTimeMillis())
@@ -259,7 +260,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.add_opinion_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
 //            onEpisode = realm.query(Episode::class).query("id == ${item.id}").first().find()
             onEpisode = item
             localTime = System.currentTimeMillis()
@@ -271,10 +272,11 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             if (showEditComment && onEpisode != null) {
                 LargeTextEditingDialog(textState = editCommentText, onTextChange = { editCommentText = it }, onDismissRequest = { showEditComment = false },
                     onSave = { text ->
-                        runOnIOScope { upsert(onEpisode!!) {
-                            it.comment = text
-                            it.commentTime = localTime
-                        }
+                        runOnIOScope {
+                            upsert(onEpisode!!) {
+                                it.comment = text
+                                it.commentTime = localTime
+                            }
                             onEpisode = null
                         }
                     })
@@ -295,10 +297,10 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.no_action_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {}
+        override fun performAction(item: Episode) {}
     }
 
-    class RemoveFromHistorySwipeAction : SwipeAction {
+    inner class RemoveFromHistorySwipeAction : SwipeAction {
         val TAG = this::class.simpleName ?: "Anonymous"
 
         override fun getId(): String {
@@ -313,15 +315,13 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.remove_history_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
             val lastPlayedDate = item.media?.lastPlayedTime
             setHistoryDates(item)
 
-            (fragment.requireActivity() as MainActivity)
-                .showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
-                .setAction(fragment.getString(R.string.undo)) {
-                    if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate?:0, playbackCompletionDate) }
+            (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
+                .setAction(fragment.getString(R.string.undo)) { if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate?:0, playbackCompletionDate) }
         }
         private fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
             runOnIOScope {
@@ -337,7 +337,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class RemoveFromQueueSwipeAction : SwipeAction {
+    inner class RemoveFromQueueSwipeAction : SwipeAction {
         override fun getId(): String {
             return ActionTypes.REMOVE_FROM_QUEUE.name
         }
@@ -350,7 +350,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.remove_from_queue_label)
         }
-        override fun performAction(item_: Episode, fragment: Fragment) {
+        override fun performAction(item_: Episode) {
 //            val position: Int = curQueue.episodes.indexOf(item_)
             var item = item_
             val media = item.media
@@ -364,7 +364,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class PutToQueueSwipeAction : SwipeAction {
+    inner class PutToQueueSwipeAction : SwipeAction {
         var showPutToQueueDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
@@ -379,7 +379,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.put_in_queue_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
             showPutToQueueDialog = true
         }
@@ -389,7 +389,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class StartDownloadSwipeAction : SwipeAction {
+    inner class StartDownloadSwipeAction : SwipeAction {
         override fun getId(): String {
             return ActionTypes.START_DOWNLOAD.name
         }
@@ -402,14 +402,12 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.download_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
-            if (!item.isDownloaded && item.feed != null && !item.feed!!.isLocalFeed) {
-                DownloadActionButton(item).onClick(fragment.requireContext())
-            }
+        override fun performAction(item: Episode) {
+            if (!item.isDownloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(fragment.requireContext())
         }
     }
 
-    class SetPlaybackStateSwipeAction : SwipeAction {
+    inner class SetPlaybackStateSwipeAction : SwipeAction {
         var showPlayStateDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
@@ -424,7 +422,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.set_play_state_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
             showPlayStateDialog = true
         }
@@ -443,7 +441,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
 //        }
     }
 
-    class ShelveSwipeAction : SwipeAction {
+    inner class ShelveSwipeAction : SwipeAction {
         var showShelveDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
@@ -458,7 +456,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.shelve_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
             showShelveDialog = true
         }
@@ -468,7 +466,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
     }
 
-    class EraseSwipeAction : SwipeAction {
+    inner class EraseSwipeAction : SwipeAction {
         var showEraseDialog by mutableStateOf(false)
         var onEpisode by mutableStateOf<Episode?>(null)
         override fun getId(): String {
@@ -483,7 +481,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getTitle(context: Context): String {
             return context.getString(R.string.erase_episodes_label)
         }
-        override fun performAction(item: Episode, fragment: Fragment) {
+        override fun performAction(item: Episode) {
             onEpisode = item
             showEraseDialog = true
         }
@@ -498,59 +496,28 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         private const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
         private const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
 
-        private var prefs: SharedPreferences? = null
+        var prefs: SharedPreferences? = null
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
         }
 
-        @JvmField
-        val swipeActions: List<SwipeAction> = listOf(
-            NoActionSwipeAction(), ComboSwipeAction(),
-            AddToQueueSwipeAction(), PutToQueueSwipeAction(),
-            StartDownloadSwipeAction(), SetRatingSwipeAction(), AddCommentSwipeAction(),
-            SetPlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
-            DeleteSwipeAction(), RemoveFromHistorySwipeAction(),
-            ShelveSwipeAction(), EraseSwipeAction())
-
-        private fun getPrefs(tag: String, defaultActions: String): Actions {
-            val prefsString = prefs!!.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)
-            return Actions(prefsString)
-        }
-
-        fun deleteEpisodesWarnLocal(context: Context, items: Iterable<Episode>) {
-            val localItems: MutableList<Episode> = mutableListOf()
-            for (item in items) {
-                if (item.feed?.isLocalFeed == true) localItems.add(item)
-                else deleteEpisodeMedia(context, item)
-            }
-
-            if (localItems.isNotEmpty()) {
-                MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.delete_episode_label)
-                    .setMessage(R.string.delete_local_feed_warning_body)
-                    .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int -> for (item in localItems) deleteEpisodeMedia(context, item) }
-                    .setNegativeButton(R.string.cancel_label, null)
-                    .show()
-            }
-        }
-
         @Composable
-        fun SwipeActionsDialog(tag: String, onDismissRequest: () -> Unit, callback: ()->Unit) {
+        fun SwipeActionsSettingDialog(sa: SwipeActions, onDismissRequest: () -> Unit, callback: (RightLeftActions)->Unit) {
             val context = LocalContext.current
             val textColor = MaterialTheme.colorScheme.onSurface
 
-            val actions = remember { getPrefs(tag, "${ActionTypes.NO_ACTION.name},${ActionTypes.NO_ACTION.name}") }
+            var actions = remember { sa.actions }
             val leftAction = remember { mutableStateOf(actions.left) }
             val rightAction = remember { mutableStateOf(actions.right) }
-            var keys by remember { mutableStateOf(swipeActions) }
+            var keys by remember { mutableStateOf(sa.actionsList) }
 
             fun savePrefs(tag: String, right: String?, left: String?) {
-                getSharedPrefs(context)
-                prefs!!.edit().putString(KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left").apply()
+//                getSharedPrefs(context)
+                prefs?.edit()?.putString(KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left")?.apply()
             }
             fun saveActionsEnabledPrefs(enabled: Boolean) {
-                getSharedPrefs(context)
-                prefs!!.edit().putBoolean(KEY_PREFIX_NO_ACTION + tag, enabled).apply()
+//                getSharedPrefs(context)
+                prefs?.edit()?.putBoolean(KEY_PREFIX_NO_ACTION + sa.tag, enabled)?.apply()
             }
 
             var direction by remember { mutableIntStateOf(0) }
@@ -578,21 +545,22 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             }
 
             if (!showPickerDialog) Dialog(onDismissRequest = { onDismissRequest() }) {
-                val forFragment = remember(tag) {  when (tag) {
+                val forFragment = remember(sa.tag) {
+                    if (sa.tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_QUEUE.name }
+                    when (sa.tag) {
                     EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
                     OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)
                     SearchFragment.TAG -> context.getString(R.string.search_label)
                     FeedEpisodesFragment.TAG -> {
-                        keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name) }
+                        keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name }
                         context.getString(R.string.subscription)
                     }
                     QueuesFragment.TAG -> {
-                        keys = keys.filter { a: SwipeAction -> (!a.getId().equals(ActionTypes.ADD_TO_QUEUE.name) && !a.getId().equals(ActionTypes.REMOVE_FROM_HISTORY.name)) }.toList()
+                        keys = keys.filter { a: SwipeAction -> (a.getId() != ActionTypes.ADD_TO_QUEUE.name && a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name) }
                         context.getString(R.string.queue_label)
                     }
                     else -> { "" }
                 } }
-                if (tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> !a.getId().equals(ActionTypes.REMOVE_FROM_QUEUE.name) }
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                         Text(stringResource(R.string.swipeactions_label) + " - " + forFragment)
@@ -603,8 +571,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                                 .clickable(onClick = {
                                     direction = -1
                                     showPickerDialog = true
-                                })
-                            )
+                                }))
                             Spacer(Modifier.weight(0.1f))
                             Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(50.dp).height(35.dp))
                             Spacer(Modifier.weight(0.5f))
@@ -618,15 +585,14 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                                 .clickable(onClick = {
                                     direction = 1
                                     showPickerDialog = true
-                                })
-                            )
+                                }))
                             Spacer(Modifier.weight(0.1f))
                         }
                         Button(onClick = {
-                            savePrefs(tag, rightAction.value[0].getId(), leftAction.value[0].getId())
+                            actions = sa.RightLeftActions("${rightAction.value[0].getId()},${leftAction.value[0].getId()}")
+                            savePrefs(sa.tag, rightAction.value[0].getId(), leftAction.value[0].getId())
                             saveActionsEnabledPrefs(true)
-                            EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
-                            callback()
+                            callback(actions)
                             onDismissRequest()
                         }) { Text("Confirm") }
                     }

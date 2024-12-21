@@ -191,7 +191,7 @@ sealed class FlowEvent {
 
     data class MessageEvent(val message: String, val action: Consumer<Context>? = null, val actionText: String? = null) : FlowEvent()
 
-    data class SwipeActionsChangedEvent(val dummy: Unit = Unit) : FlowEvent()
+//    data class SwipeActionsChangedEvent(val dummy: Unit = Unit) : FlowEvent()
 
     data class SyncServiceEvent(val messageResId: Int, val message: String = "") : FlowEvent()
 

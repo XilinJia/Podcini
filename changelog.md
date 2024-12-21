@@ -1,3 +1,17 @@
+# 6.16.4
+
+* ensure cleanup when cancelling coroutine tasks
+* enhanced and cleaned SwipeActions settings
+	* removed swipe actions settings in Preferences, better be set in associated fragment screen
+	* change of swipe actions is handled directly in the fragment, no long need for posting an event or calling redundant callback
+* fixed issue of setting wide layout in FeedEpsiodes
+* added auto backup settings in Settings->Import/Export
+	* if turned on, one needs to specify interval (in hours), a folder, and number of copies to keep
+	* then Preferences and DB are backed up in sub-folder named "Podcini-AudoBackups-(date)"
+	* backup time is on the next resume of Podcini after interval hours from last backup time
+	* to restore, use Combo restore 
+* media3 updated to 1.5.1
+
 # 6.16.3
 
 * to calm Google tested ANR stability issue, ensure only one swipe actions setting dialog is open

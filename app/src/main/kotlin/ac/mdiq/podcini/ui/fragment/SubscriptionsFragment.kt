@@ -344,7 +344,10 @@ class SubscriptionsFragment : Fragment() {
 
     private var loadingJob: Job? = null
     private fun loadSubscriptions() {
-        loadingJob?.cancel()
+        if (loadingJob != null) {
+            loadingJob?.cancel()
+            feedListFiltered.clear()
+        }
         loadingJob = lifecycleScope.launch {
             val feedList: List<Feed>
             try {

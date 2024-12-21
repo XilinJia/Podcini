@@ -82,4 +82,8 @@ object MiscFormatter {
             else -> String.format(Locale.getDefault(), "%.2fB", n / 1_000_000_000.0)
         }
     }
+
+    fun dateStampFilename(fname: String): String {
+        return String.format(fname, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
+    }
 }

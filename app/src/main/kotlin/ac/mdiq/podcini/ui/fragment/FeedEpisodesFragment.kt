@@ -14,7 +14,7 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -67,12 +67,11 @@ import java.util.concurrent.Semaphore
 
 class FeedEpisodesFragment : Fragment() {
     private lateinit var swipeActions: SwipeActions
-
-    private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var showSwipeActionsDialog by mutableStateOf(false)
 
+    private var infoBarText = mutableStateOf("")
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
     private var displayUpArrow by mutableStateOf(false)
@@ -95,7 +94,7 @@ class FeedEpisodesFragment : Fragment() {
     private var showRenameDialog by mutableStateOf(false)
     var showSortDialog by mutableStateOf(false)
     var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
-    var layoutMode by mutableIntStateOf(0)
+    var layoutModeIndex by mutableIntStateOf(0)
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
     private var onInit: Boolean = true
@@ -114,12 +113,19 @@ class FeedEpisodesFragment : Fragment() {
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         NavDrawerFragment.saveLastNavFragment(TAG, feedID.toString())
         swipeActions = SwipeActions(this, TAG)
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
+        lifecycle.addObserver(swipeActions)
 
         var filterJob: Job? = null
         fun filterLongClick() {
             if (feed == null) return
             enableFilter = !enableFilter
-            filterJob?.cancel()
+            if (filterJob != null) {
+                filterJob?.cancel()
+                stopMonitor(vms)
+                vms.clear()
+            }
             filterJob = lifecycleScope.launch {
                 val eListTmp = mutableListOf<Episode>()
                 withContext(Dispatchers.IO) {
@@ -144,7 +150,8 @@ class FeedEpisodesFragment : Fragment() {
                 }
             }.apply { invokeOnCompletion { filterJob = null } }
         }
-        layoutMode = if (feed?.preferences?.useWideLayout == true) 1 else 0
+
+        layoutModeIndex = if (feed?.preferences?.useWideLayout == true) 1 else 0
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
@@ -179,7 +186,10 @@ class FeedEpisodesFragment : Fragment() {
                             }
                         }
                     }
-                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
+                        swipeActions.actions = actions
+                        refreshSwipeTelltale()
+                    }
                     swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -187,16 +197,16 @@ class FeedEpisodesFragment : Fragment() {
                                 if (enableFilter && feed != null) showFilterDialog = true
                             }, filterLongClickCB = { filterLongClick() })
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutMode,
+                            EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutModeIndex,
                                 refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it, this@FeedEpisodesFragment)
+                                    else leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
                                     Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
                                     if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it, this@FeedEpisodesFragment)
+                                    else rightActionState.value.performAction(it)
                                 },
                             )
                         }
@@ -445,7 +455,7 @@ class FeedEpisodesFragment : Fragment() {
                     is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
 //                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
                     is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadFeed()
-                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+//                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
             }
@@ -520,7 +530,6 @@ class FeedEpisodesFragment : Fragment() {
                 feed = withContext(Dispatchers.IO) {
                     val feed_ = getFeed(feedID)
                     if (feed_ != null) {
-                        layoutMode = if (feed_.preferences?.useWideLayout == true) 1 else 0
                         Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                         val eListTmp = mutableListOf<Episode>()
                         if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
@@ -535,6 +544,7 @@ class FeedEpisodesFragment : Fragment() {
                         ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                         ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                         withContext(Dispatchers.Main) {
+                            layoutModeIndex = if (feed_.preferences?.useWideLayout == true) 1 else 0
                             stopMonitor(vms)
                             vms.clear()
                             for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }

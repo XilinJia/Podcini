@@ -15,6 +15,7 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
 import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
+import ac.mdiq.podcini.preferences.autoBackup
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
@@ -153,7 +154,7 @@ class MainActivity : CastEnabledActivity() {
             return displayMetrics.widthPixels
         }
 
-     public override fun onCreate(savedInstanceState: Bundle?) {
+    public override fun onCreate(savedInstanceState: Bundle?) {
         lastTheme = getNoTitleTheme(this)
         setTheme(lastTheme)
 
@@ -546,6 +547,8 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onResume() {
         super.onResume()
+        autoBackup(this)
+
         handleNavIntent()
         RatingDialog.check()
         if (lastTheme != getNoTitleTheme(this)) {

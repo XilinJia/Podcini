@@ -235,6 +235,11 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 		* copy the previous directories "Podcini-Prefs" and/or "Podcini-MediaFiles" into the above directory
 		* no need to copy all three, only the ones you need
 		* then do the combo import
+* There is an option to turn on auto backup in Settings->Import/Export
+  * if turned on, one needs to specify interval (in hours), a folder, and number of copies to keep
+  * then Preferences and DB are backed up in sub-folder named "Podcini-AudoBackups-(date)"
+  * backup time is on the next resume of Podcini after interval hours from last backup time
+  * to restore, use Combo restore 
 * Play history/progress can be separately exported/imported as Json files
 * Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
 * Podcasts can be selectively exported from Subscriptions view

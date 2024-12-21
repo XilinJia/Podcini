@@ -14,6 +14,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -21,7 +22,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
 import ac.mdiq.podcini.storage.utils.FilesUtils
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.util.EventFlow

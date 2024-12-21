@@ -24,7 +24,7 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -88,15 +88,15 @@ class QueuesFragment : Fragment() {
 
     private lateinit var swipeActions: SwipeActions
     private lateinit var swipeActionsBin: SwipeActions
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
     private var infoTextUpdate = ""
     private var infoText = ""
     private var infoBarText = mutableStateOf("")
 
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var leftActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionStateBin = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var showSwipeActionsDialog by mutableStateOf(false)
 
     private var isQueueLocked by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true))
@@ -144,12 +144,21 @@ class QueuesFragment : Fragment() {
 //        curIndex = queues.indexOf(curQueue)
 
         swipeActions = SwipeActions(this, TAG)
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
         swipeActionsBin = SwipeActions(this, "$TAG.Bin")
+        leftActionStateBin.value = swipeActions.actions.left[0]
+        rightActionStateBin.value = swipeActions.actions.right[0]
+        lifecycle.addObserver(swipeActions)
+        lifecycle.addObserver(swipeActionsBin)
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showSwipeActionsDialog) SwipeActionsDialog(if (showBin) "$TAG.Bin" else TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(if (showBin) swipeActionsBin else swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
+                        swipeActions.actions = actions
+                        refreshSwipeTelltale()
+                    }
                     ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = showClearQueueDialog) { clearQueue() }
                     if (shouldShowLockWarningDiwload) ShowLockWarning { shouldShowLockWarningDiwload = false }
                     RenameQueueDialog(showDialog = showRenameQueueDialog.value, onDismiss = { showRenameQueueDialog.value = false })
@@ -163,11 +172,11 @@ class QueuesFragment : Fragment() {
                                 InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { showSwipeActionsDialog = true })
                                 val leftCB = { episode: Episode ->
                                     if (leftActionStateBin.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionStateBin.value.performAction(episode, this@QueuesFragment)
+                                    else leftActionStateBin.value.performAction(episode)
                                 }
                                 val rightCB = { episode: Episode ->
                                     if (rightActionStateBin.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionStateBin.value.performAction(episode, this@QueuesFragment)
+                                    else rightActionStateBin.value.performAction(episode)
                                 }
                                 EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                             }
@@ -184,11 +193,11 @@ class QueuesFragment : Fragment() {
                                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
                                     val leftCB = { episode: Episode ->
                                         if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                        else leftActionState.value.performAction(episode, this@QueuesFragment)
+                                        else leftActionState.value.performAction(episode)
                                     }
                                     val rightCB = { episode: Episode ->
                                         if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                        else rightActionState.value.performAction(episode, this@QueuesFragment)
+                                        else rightActionState.value.performAction(episode)
                                     }
                                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                         isDraggable = dragDropEnabled, dragCB = { iFrom, iTo -> runOnIOScope { moveInQueueSync(iFrom, iTo, true) } },
@@ -297,7 +306,7 @@ class QueuesFragment : Fragment() {
 //                    is FlowEvent.PlayerSettingsEvent -> onPlayerSettingsEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
-                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+//                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
             }

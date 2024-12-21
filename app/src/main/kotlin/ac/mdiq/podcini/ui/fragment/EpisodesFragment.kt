@@ -19,7 +19,7 @@ import ac.mdiq.podcini.ui.actions.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -64,7 +64,7 @@ class EpisodesFragment : Fragment() {
 
     private var displayUpArrow = false
 
-    protected var infoBarText = mutableStateOf("")
+    private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var showSwipeActionsDialog by mutableStateOf(false)
@@ -112,7 +112,10 @@ class EpisodesFragment : Fragment() {
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         swipeActions = SwipeActions(this, TAG)
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
         lifecycle.addObserver(swipeActions)
+
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
@@ -124,11 +127,11 @@ class EpisodesFragment : Fragment() {
                                 activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it, this@EpisodesFragment)
+                                    else leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
                                     if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it, this@EpisodesFragment)
+                                    else rightActionState.value.performAction(it)
                                 },
                                 actionButton_ = actionButtonToPass
                             )
@@ -197,7 +200,7 @@ class EpisodesFragment : Fragment() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+//                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.HistoryEvent -> onHistoryEvent(event)
@@ -255,7 +258,10 @@ class EpisodesFragment : Fragment() {
 
     @Composable
     fun OpenDialog() {
-        if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+        if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
+            swipeActions.actions = actions
+            refreshSwipeTelltale()
+        }
         if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
             onDismissRequest = { showFilterDialog = false }) { onFilterChanged(it) }
         if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { order, _ -> onSort(order) }

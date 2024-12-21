@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -71,10 +71,10 @@ class SearchFragment : Fragment() {
     private var feedName by mutableStateOf("")
     private var queryText by mutableStateOf("")
 
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var showSwipeActionsDialog by mutableStateOf(false)
     private lateinit var swipeActions: SwipeActions
+    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +85,8 @@ class SearchFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
         swipeActions = SwipeActions(this, TAG)
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
         lifecycle.addObserver(swipeActions)
 
         if (requireArguments().getLong(ARG_FEED, 0) > 0L) {
@@ -94,7 +96,10 @@ class SearchFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
+                        swipeActions.actions = actions
+                        refreshSwipeTelltale()
+                    }
                     swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -112,11 +117,11 @@ class SearchFragment : Fragment() {
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it, this@SearchFragment)
+                                    else leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
                                     if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it, this@SearchFragment)
+                                    else rightActionState.value.performAction(it)
                                 },
                             )
                         }
@@ -179,7 +184,7 @@ class SearchFragment : Fragment() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent -> search(queryText)
-                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+//                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
             }
@@ -204,9 +209,13 @@ class SearchFragment : Fragment() {
 
     private var searchJob: Job? = null
     @SuppressLint("StringFormatMatches")
-     private fun search(query: String) {
-         if (query.isBlank()) return
-        searchJob?.cancel()
+    private fun search(query: String) {
+        if (query.isBlank()) return
+        if (searchJob != null) {
+            searchJob?.cancel()
+            stopMonitor(vms)
+            vms.clear()
+        }
         searchJob = lifecycleScope.launch {
             try {
                 val results_ = withContext(Dispatchers.IO) {
@@ -223,16 +232,18 @@ class SearchFragment : Fragment() {
                     if (results_.first != null) {
                         val first_ = results_.first!!.toMutableList()
                         results.clear()
-                        results.addAll(first_)
                         infoBarText.value = "${results.size} episodes"
                         stopMonitor(vms)
                         vms.clear()
-                        for (e in first_) { vms.add(EpisodeVM(e, TAG)) }
+                        if (first_.isNotEmpty()) {
+                            results.addAll(first_)
+                            for (e in first_) { vms.add(EpisodeVM(e, TAG)) }
+                        }
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
                         if (results_.second != null) {
                             resultFeeds.clear()
-                            resultFeeds.addAll(results_.second!!)
+                            if (results_.second.isNotEmpty()) resultFeeds.addAll(results_.second!!)
                         }
                     } else resultFeeds.clear()
                 }

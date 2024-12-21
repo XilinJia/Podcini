@@ -11,6 +11,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.ui.compose.SearchBarRow
+import ac.mdiq.podcini.ui.compose.stopMonitor
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -127,7 +128,10 @@ class SearchResultsFragment : Fragment() {
     @SuppressLint("StringFormatMatches")
     private fun search(query: String) {
         if (query.isBlank()) return
-        searchJob?.cancel()
+        if (searchJob != null) {
+            searchJob?.cancel()
+            searchResults.clear()
+        }
         showOnlyProgressBar()
         searchJob = lifecycleScope.launch(Dispatchers.IO) {
             val feeds = getFeedList()

@@ -120,7 +120,7 @@ class AudioPlayerFragment : Fragment() {
 
     private var isCollapsed by mutableStateOf(true)
 
-    private lateinit var controllerFuture: ListenableFuture<MediaController>
+    private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: ServiceStatusHandler? = null
 
     private var prevMedia: EpisodeMedia? = null
@@ -226,7 +226,8 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "Fragment destroyed")
         controller?.release()
         controller = null
-        MediaController.releaseFuture(controllerFuture)
+        if (controllerFuture != null) MediaController.releaseFuture(controllerFuture!!)
+        controllerFuture =  null
         super.onDestroyView()
     }
 
@@ -804,13 +805,13 @@ class AudioPlayerFragment : Fragment() {
         procFlowEvents()
 
         val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
-        controllerFuture = MediaController.Builder(requireContext(), sessionToken).buildAsync()
-        controllerFuture.addListener({
-            media3Controller = controllerFuture.get()
+        if (controllerFuture == null) {
+            controllerFuture = MediaController.Builder(requireContext(), sessionToken).buildAsync()
+            controllerFuture?.addListener({
+                media3Controller = controllerFuture!!.get()
 //            Logd(TAG, "controllerFuture.addListener: $mediaController")
-        }, MoreExecutors.directExecutor())
-
-//        loadMediaInfo()
+            }, MoreExecutors.directExecutor())
+        }
     }
 
     override fun onStop() {

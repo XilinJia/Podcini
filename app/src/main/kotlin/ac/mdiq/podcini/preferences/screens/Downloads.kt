@@ -349,7 +349,6 @@ enum class EpisodeCleanupOptions(val res: Int, val num: Int) {
 fun AutoDownloadPreferencesScreen() {
     val textColor = MaterialTheme.colorScheme.onSurface
     val scrollState = rememberScrollState()
-//        supportActionBar!!.setTitle(R.string.pref_automatic_download_title)
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
         var isEnabled by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, false)) }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {

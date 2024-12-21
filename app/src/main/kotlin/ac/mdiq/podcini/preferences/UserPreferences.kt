@@ -281,6 +281,13 @@ object UserPreferences {
         prefSkipKeepsEpisode,
         prefRemoveFromQueueMarkedPlayed,
         prefFavoriteKeepsEpisode,
+
+        prefAutoBackup,
+        prefAutoBackupIntervall,
+        prefAutoBackupFolder,
+        prefAutoBackupLimit,
+        prefAutoBackupTimeStamp,
+
         prefAutoDelete,
         prefAutoDeleteLocal,
         prefPlaybackSpeedArray,

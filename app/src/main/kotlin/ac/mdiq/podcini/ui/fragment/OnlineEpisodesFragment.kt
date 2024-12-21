@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
-import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsDialog
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +44,11 @@ class OnlineEpisodesFragment: Fragment() {
     private var displayUpArrow = false
 
     private var infoBarText = mutableStateOf("")
+    private lateinit var swipeActions: SwipeActions
     private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
     private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+
     private var showSwipeActionsDialog by mutableStateOf(false)
-    lateinit var swipeActions: SwipeActions
 
     val episodes = mutableListOf<Episode>()
     val vms = mutableStateListOf<EpisodeVM>()
@@ -58,12 +60,17 @@ class OnlineEpisodesFragment: Fragment() {
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         swipeActions = SwipeActions(this, TAG)
+        leftActionState.value = swipeActions.actions.left[0]
+        rightActionState.value = swipeActions.actions.right[0]
         lifecycle.addObserver(swipeActions)
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showSwipeActionsDialog) SwipeActionsDialog(TAG, onDismissRequest = { showSwipeActionsDialog = false }) { swipeActions.dialogCallback() }
+                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
+                        swipeActions.actions = actions
+                        refreshSwipeTelltale()
+                    }
                     swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
@@ -71,11 +78,11 @@ class OnlineEpisodesFragment: Fragment() {
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it, this@OnlineEpisodesFragment)
+                                    else leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
                                     if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it, this@OnlineEpisodesFragment)
+                                    else rightActionState.value.performAction(it)
                                 },
                             )
                         }

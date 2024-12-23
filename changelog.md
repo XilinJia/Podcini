@@ -1,4 +1,4 @@
-# 6.17.0
+# 7.0.0
 
 * largely improved responsiveness and efficiency in episodes list with progressive building
 * fixed strange appearance of horizontal dividers

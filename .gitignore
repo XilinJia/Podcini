@@ -17,6 +17,7 @@ build/
 **/*.classpath
 **/.directory
 
+widgets.qss
 toml2gradle.py
 
 # Local configuration file (sdk path, etc)

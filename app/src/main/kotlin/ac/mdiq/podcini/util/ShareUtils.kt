@@ -2,7 +2,7 @@ package ac.mdiq.podcini.util
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import android.content.Context
@@ -57,7 +57,7 @@ object ShareUtils {
     }
 
     @JvmStatic
-    fun shareMediaDownloadLink(context: Context, media: EpisodeMedia) {
+    fun shareMediaDownloadLink(context: Context, media: Episode) {
         if (!media.downloadUrl.isNullOrEmpty()) shareLink(context, media.downloadUrl!!)
     }
 
@@ -65,12 +65,12 @@ object ShareUtils {
     fun shareFeedItemLinkWithDownloadLink(context: Context, item: Episode, withPosition: Boolean) {
         var text: String? = item.feed?.title + ": " + item.title
         var pos = 0
-        if (item.media != null && withPosition) {
+        if (withPosition) {
             text += """
                 
                 ${context.resources.getString(R.string.share_starting_position_label)}: 
                 """.trimIndent()
-            pos = item.media!!.position
+            pos = item.position
             text += getDurationStringLong(pos)
         }
 
@@ -83,13 +83,13 @@ object ShareUtils {
             text += item.getLinkWithFallback()
         }
 
-        if (item.media != null && item.media!!.downloadUrl != null) {
+        if (item.downloadUrl != null) {
             text += """
                 
                 
                 ${context.resources.getString(R.string.share_dialog_media_file_label)}: 
                 """.trimIndent()
-            text += item.media!!.downloadUrl
+            text += item.downloadUrl
             if (withPosition) {
                 text += "#t=" + pos / 1000
             }
@@ -98,7 +98,7 @@ object ShareUtils {
     }
 
     @JvmStatic
-    fun shareFeedItemFile(context: Context, media: EpisodeMedia) {
+    fun shareFeedItemFile(context: Context, media: Episode) {
         val lurl = media.fileUrl
         if (lurl.isNullOrEmpty()) return
 

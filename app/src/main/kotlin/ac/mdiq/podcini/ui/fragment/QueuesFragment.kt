@@ -633,11 +633,9 @@ class QueuesFragment : Fragment() {
             var timeLeft: Long = 0
             for (item in queueItems) {
                 var playbackSpeed = 1f
-                if (UserPreferences.timeRespectsSpeed()) playbackSpeed = getCurrentPlaybackSpeed(item.media)
-                if (item.media != null) {
-                    val itemTimeLeft: Long = (item.media!!.duration - item.media!!.position).toLong()
-                    timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
-                }
+                if (UserPreferences.timeRespectsSpeed()) playbackSpeed = getCurrentPlaybackSpeed(item)
+                val itemTimeLeft: Long = (item.duration - item.position).toLong()
+                timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
             }
             infoText += " • "
             infoText += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)

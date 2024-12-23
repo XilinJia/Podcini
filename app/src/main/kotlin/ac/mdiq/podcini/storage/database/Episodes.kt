@@ -80,14 +80,14 @@ object Episodes {
     fun getEpisodeByGuidOrUrl(guid: String?, episodeUrl: String, copy: Boolean = true): Episode? {
         Logd(TAG, "getEpisodeByGuidOrUrl called $guid $episodeUrl")
         val episode = if (guid != null) realm.query(Episode::class).query("identifier == $0", guid).first().find()
-        else realm.query(Episode::class).query("media.downloadUrl == $0", episodeUrl).first().find()
+        else realm.query(Episode::class).query("downloadUrl == $0", episodeUrl).first().find()
         if (!copy) return episode
         return if (episode != null) realm.copyFromRealm(episode) else null
     }
 
-    fun getEpisodeMedia(mediaId: Long, copy: Boolean = true): EpisodeMedia? {
+    fun getEpisodeMedia(mediaId: Long, copy: Boolean = true): Episode? {
         Logd(TAG, "getEpisodeMedia called $mediaId")
-        val media = realm.query(EpisodeMedia::class).query("id == $0", mediaId).first().find()
+        val media = realm.query(Episode::class).query("id == $0", mediaId).first().find()
         if (!copy) return media
         return if (media != null) realm.copyFromRealm(media) else null
     }
@@ -114,7 +114,6 @@ object Episodes {
     fun deleteEpisodeMedia(context: Context, episode: Episode) : Job {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")
         return runOnIOScope {
-            if (episode.media == null) return@runOnIOScope
             val episode_ = deleteMediaSync(context, episode)
             if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(episode_)
         }
@@ -122,22 +121,20 @@ object Episodes {
 
     fun deleteMediaSync(context: Context, episode: Episode): Episode {
         Logd(TAG, "deleteMediaSync called")
-        val media = episode.media ?: return episode
-        Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.downloaded))
+        Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", episode.id, episode.getEpisodeTitle(), episode.downloaded))
         var localDelete = false
-        val url = media.fileUrl
+        val url = episode.fileUrl
         var episode = episode
         when {
             url != null && url.startsWith("content://") -> {
                 // Local feed
-                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.fileUrl))
+                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(episode.fileUrl))
                 if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
                     EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.delete_local_failed)))
                     return episode
                 }
                 episode = upsertBlk(episode) {
-                    it.media?.setfileUrlOrNull(null)
-                    if (media.downloadUrl.isNullOrEmpty()) it.media = null
+                    it.setfileUrlOrNull(null)
                     if (it.playState < PlayState.SKIPPED.code) it.playState = PlayState.SKIPPED.code
                 }
                 EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
@@ -153,17 +150,16 @@ object Episodes {
                     return episode
                 }
                 episode = upsertBlk(episode) {
-                    it.media?.downloaded = false
-                    it.media?.setfileUrlOrNull(null)
-                    it.media?.hasEmbeddedPicture = false
+                    it.downloaded = false
+                    it.setfileUrlOrNull(null)
+                    it.hasEmbeddedPicture = false
                     if (it.playState < PlayState.SKIPPED.code) it.playState = PlayState.SKIPPED.code
-                    if (media.downloadUrl.isNullOrEmpty()) it.media = null
                 }
                 EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
             }
         }
 
-        if (media.id == curState.curMediaId) {
+        if (episode.id == curState.curMediaId) {
             writeNoMediaPlaying()
             sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
             val nm = NotificationManagerCompat.from(context)
@@ -195,17 +191,15 @@ object Episodes {
             val queueItems = curQueue.episodes.toMutableList()
             for (episode in episodes) {
                 if (queueItems.remove(episode)) removedFromQueue.add(episode)
-                if (episode.media != null) {
-                    if (episode.media?.id == curState.curMediaId) {
+                    if (episode?.id == curState.curMediaId) {
                         // Applies to both downloaded and streamed media
                         writeNoMediaPlaying()
                         sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                     }
                     if (episode.feed != null && !episode.feed!!.isLocalFeed) {
-                        DownloadServiceInterface.get()?.cancel(context, episode.media!!)
-                        if (episode.media!!.downloaded) deleteMediaSync(context, episode)
+                        DownloadServiceInterface.get()?.cancel(context, episode)
+                        if (episode.downloaded) deleteMediaSync(context, episode)
                     }
-                }
             }
             if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
             for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
@@ -248,7 +242,7 @@ object Episodes {
                 if (it.playState == PlayState.PLAYED.code) it.playState = PlayState.UNPLAYED.code
                 else it.playState = PlayState.PLAYED.code
             }
-            if (resetMediaPosition || it.playState == PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.media?.setPosition(0)
+            if (resetMediaPosition || it.playState == PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.setPosition(0)
         }
         Logd(TAG, "setPlayStateSync played0: ${result.playState}")
         if (removeFromQueue && played == PlayState.PLAYED.code && prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(result)
@@ -265,10 +259,9 @@ object Episodes {
         e.imageUrl = item.thumbnails.first().url
         e.setPubDate(item.uploadDate?.date()?.time)
         e.viewCount = item.viewCount.toInt()
-        val m = EpisodeMedia(e, item.url, 0, "video/*")
-        if (item.duration > 0) m.duration = item.duration.toInt() * 1000
-        m.fileUrl = getMediafilename(m)
-        e.media = m
+        e.fillMedia(item.url, 0, "video/*")
+        if (item.duration > 0) e.duration = item.duration.toInt() * 1000
+        e.fileUrl = getMediafilename(e)
         return e
     }
 
@@ -280,10 +273,9 @@ object Episodes {
         e.imageUrl = info.thumbnails.first().url
         e.setPubDate(info.uploadDate?.date()?.time)
         e.viewCount = info.viewCount.toInt()
-        val m = EpisodeMedia(e, info.url, 0, "video/*")
-        if (info.duration > 0) m.duration = info.duration.toInt() * 1000
-        m.fileUrl = getMediafilename(m)
-        e.media = m
+        e.fillMedia(info.url, 0, "video/*")
+        if (info.duration > 0) e.duration = info.duration.toInt() * 1000
+        e.fileUrl = getMediafilename(e)
         return e
     }
 
@@ -305,13 +297,13 @@ object Episodes {
     fun indexOfItemWithDownloadUrl(items: List<Episode?>, downloadUrl: String): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item?.media?.downloadUrl == downloadUrl) return i
+            if (item?.downloadUrl == downloadUrl) return i
         }
         return -1
     }
 
     @JvmStatic
-    fun hasAlmostEnded(media: EpisodeMedia): Boolean {
+    fun hasAlmostEnded(media: Episode): Boolean {
         return media.duration > 0 && media.position >= media.duration * smartMarkAsPlayedPercent * 0.01
     }
 }

@@ -277,7 +277,7 @@ class LogsFragment : Fragment() {
                         val statusText = remember {"" +
                                 when (status.feedfileType) {
                                     Feed.FEEDFILETYPE_FEED ->  requireContext().getString(R.string.download_type_feed)
-                                    EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> requireContext().getString(R.string.download_type_media)
+                                    Episode.FEEDFILETYPE_FEEDMEDIA -> requireContext().getString(R.string.download_type_media)
                                     else -> "" } + " · " +
                                 DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
                         }
@@ -310,7 +310,7 @@ class LogsFragment : Fragment() {
                                         }
                                         FeedUpdateManager.runOnce(requireContext(), feed)
                                     }
-                                    EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                                    Episode.FEEDFILETYPE_FEEDMEDIA -> {
                                         showAction = false
                                         val item_ = realm.query(Episode::class).query("id == $0", status.feedfileId).first().find()
                                         if (item_ != null) DownloadActionButton(item_).onClick(requireContext())
@@ -468,8 +468,8 @@ class LogsFragment : Fragment() {
         if (showDialog) {
             var url = "unknown"
             when (status.feedfileType) {
-                EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
-                    val media = realm.query(EpisodeMedia::class).query("id == $0", status.feedfileId).first().find()
+                Episode.FEEDFILETYPE_FEEDMEDIA -> {
+                    val media = realm.query(Episode::class).query("id == $0", status.feedfileId).first().find()
                     if (media != null) url = media.downloadUrl?:""
                 }
                 Feed.FEEDFILETYPE_FEED -> {

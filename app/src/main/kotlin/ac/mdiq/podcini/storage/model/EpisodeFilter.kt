@@ -21,10 +21,10 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
     fun queryString(): String {
         val statements: MutableList<String> = mutableListOf()
         val mediaTypeQuerys = mutableListOf<String>()
-        if (properties.contains(States.unknown.name)) mediaTypeQuerys.add(" media == nil OR media.mimeType == nil OR media.mimeType == '' ")
-        if (properties.contains(States.audio.name)) mediaTypeQuerys.add(" media.mimeType BEGINSWITH 'audio' ")
-        if (properties.contains(States.video.name)) mediaTypeQuerys.add(" media.mimeType BEGINSWITH 'video' ")
-        if (properties.contains(States.audio_app.name)) mediaTypeQuerys.add(" media.mimeType IN {\"application/ogg\", \"application/opus\", \"application/x-flac\"} ")
+        if (properties.contains(States.unknown.name)) mediaTypeQuerys.add(" mimeType == nil OR mimeType == '' ")
+        if (properties.contains(States.audio.name)) mediaTypeQuerys.add(" mimeType BEGINSWITH 'audio' ")
+        if (properties.contains(States.video.name)) mediaTypeQuerys.add(" mimeType BEGINSWITH 'video' ")
+        if (properties.contains(States.audio_app.name)) mediaTypeQuerys.add(" mimeType IN {\"application/ogg\", \"application/opus\", \"application/x-flac\"} ")
         if (mediaTypeQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + mediaTypeQuerys[0])
             if (mediaTypeQuerys.size > 1) for (r in mediaTypeQuerys.subList(1, mediaTypeQuerys.size)) {
@@ -77,12 +77,12 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
         }
 
         when {
-            properties.contains(States.paused.name) -> statements.add(" media.position > 0 ")
-            properties.contains(States.not_paused.name) -> statements.add(" media.position == 0 ")
+            properties.contains(States.paused.name) -> statements.add(" position > 0 ")
+            properties.contains(States.not_paused.name) -> statements.add(" position == 0 ")
         }
         when {
-            showDownloaded -> statements.add("media.downloaded == true ")
-            showNotDownloaded -> statements.add("media.downloaded == false ")
+            showDownloaded -> statements.add("downloaded == true ")
+            showNotDownloaded -> statements.add("downloaded == false ")
         }
         when {
             properties.contains(States.auto_downloadable.name) -> statements.add("isAutoDownloadEnabled == true ")

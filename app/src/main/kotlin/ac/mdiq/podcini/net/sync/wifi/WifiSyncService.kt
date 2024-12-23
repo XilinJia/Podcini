@@ -242,13 +242,12 @@ class WifiSyncService(val context: Context, params: WorkerParameters) : SyncServ
             comItems.addAll(favoriteItems)
             Logd(TAG, "First sync. Upload state for all " + comItems.size + " played episodes")
             for (item in comItems) {
-                val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
-                    .timestamp(Date(media.lastPlayedTime))
-                    .started(media.startPosition / 1000)
-                    .position(media.position / 1000)
-                    .playedDuration(media.playedDuration / 1000)
-                    .total(media.duration / 1000)
+                    .timestamp(Date(item.lastPlayedTime))
+                    .started(item.startPosition / 1000)
+                    .position(item.position / 1000)
+                    .playedDuration(item.playedDuration / 1000)
+                    .total(item.duration / 1000)
                     .isFavorite(item.isSUPER)
                     .playState(item.playState)
                     .build()
@@ -307,25 +306,20 @@ class WifiSyncService(val context: Context, params: WorkerParameters) : SyncServ
             Logd(TAG, "Unknown feed item: $action")
             return null
         }
-        if (feedItem.media == null) {
-            Logd(TAG, "Feed item has no media: $action")
-            return null
-        }
-//        feedItem.media = getFeedMedia(feedItem.media!!.id)
         var idRemove: Long? = null
-        Logd(TAG, "processEpisodeAction ${feedItem.media!!.lastPlayedTime} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
-        if (feedItem.media!!.lastPlayedTime < (action.timestamp?.time?:0L)) {
+        Logd(TAG, "processEpisodeAction ${feedItem.lastPlayedTime} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
+        if (feedItem.lastPlayedTime < (action.timestamp?.time?:0L)) {
             feedItem = upsertBlk(feedItem) {
-                it.media!!.startPosition = action.started * 1000
-                it.media!!.setPosition(action.position * 1000)
-                it.media!!.playedDuration = action.playedDuration * 1000
-                it.media!!.lastPlayedTime = (action.timestamp!!.time)
+                it.startPosition = action.started * 1000
+                it.setPosition(action.position * 1000)
+                it.playedDuration = action.playedDuration * 1000
+                it.lastPlayedTime = (action.timestamp!!.time)
                 it.rating = if (action.isFavorite) Rating.SUPER.code else Rating.UNRATED.code
                 it.playState = action.playState
-                if (hasAlmostEnded(it.media!!)) {
+                if (hasAlmostEnded(it)) {
                     Logd(TAG, "Marking as played")
                     it.setPlayed(true)
-                    it.media!!.setPosition(0)
+                    it.setPosition(0)
                     idRemove = it.id
                 } else Logd(TAG, "Setting position")
             }

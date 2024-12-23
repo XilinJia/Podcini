@@ -3,7 +3,7 @@ package ac.mdiq.podcini.net.download.service
 import android.content.Context
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
 
 abstract class DownloadServiceInterface {
     private var currentDownloads: Map<String, DownloadStatus> = HashMap()
@@ -22,7 +22,7 @@ abstract class DownloadServiceInterface {
      */
     abstract fun download(context: Context, item: Episode)
 
-    abstract fun cancel(context: Context, media: EpisodeMedia)
+    abstract fun cancel(context: Context, media: Episode)
 
     abstract fun cancelAll(context: Context)
 

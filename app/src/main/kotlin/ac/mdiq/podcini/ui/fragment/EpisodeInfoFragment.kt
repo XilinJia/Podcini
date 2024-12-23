@@ -135,7 +135,7 @@ class EpisodeInfoFragment : Fragment() {
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(episode!!)) { showChooseRatingDialog = false }
 
         var showChaptersDialog by remember { mutableStateOf(false) }
-        if (showChaptersDialog && episode?.media != null) ChaptersDialog(media = episode!!.media!!, onDismissRequest = {showChaptersDialog = false})
+        if (showChaptersDialog && episode != null) ChaptersDialog(media = episode!!, onDismissRequest = {showChaptersDialog = false})
 
         var showPlayStateDialog by remember { mutableStateOf(false) }
         if (showPlayStateDialog) PlayStateDialog(listOf(episode!!)) { showPlayStateDialog = false }
@@ -158,7 +158,7 @@ class EpisodeInfoFragment : Fragment() {
                     val playedIconRes = PlayState.fromCode(isPlayed).res
                     Icon(imageVector = ImageVector.vectorResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showPlayStateDialog = true }))
-                    if (episode?.media != null && !inQueue) {
+                    if (episode != null && !inQueue) {
                         Spacer(modifier = Modifier.weight(0.2f))
                         val inQueueIconRes = R.drawable.ic_playlist_remove
                         Icon(imageVector = ImageVector.vectorResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue",
@@ -334,7 +334,7 @@ class EpisodeInfoFragment : Fragment() {
 
         if (episode?.pubDate != null) txtvPublished = formatDateTimeFlex(Date(episode!!.pubDate))
 
-        val media = episode?.media
+        val media = episode
         when {
             media == null -> txtvSize = ""
             media.size > 0 -> txtvSize = formatShortFileSize(activity, media.size)
@@ -353,7 +353,7 @@ class EpisodeInfoFragment : Fragment() {
     private fun updateButtons() {
         val dls = DownloadServiceInterface.get()
 
-        val media: EpisodeMedia? = episode?.media
+        val media: Episode? = episode
         if (media == null) {
             if (episode != null) {
 //                actionButton1 = VisitWebsiteActionButton(episode!!)
@@ -456,8 +456,8 @@ class EpisodeInfoFragment : Fragment() {
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
-        if (episode == null || episode!!.media == null) return
-        if (!event.urls.contains(episode!!.media!!.downloadUrl)) return
+        if (episode == null) return
+        if (!event.urls.contains(episode!!.downloadUrl)) return
         if (itemLoaded && activity != null) updateButtons()
     }
 
@@ -471,9 +471,9 @@ class EpisodeInfoFragment : Fragment() {
                     withContext(Dispatchers.IO) {
                         if (episode != null && !episode!!.isRemote.value) episode = realm.query(Episode::class).query("id == $0", episode!!.id).first().find()
                         if (episode != null) {
-                            val duration = episode!!.media?.duration ?: Int.MAX_VALUE
+                            val duration = episode?.duration ?: Int.MAX_VALUE
                             Logd(TAG, "description: ${episode?.description}")
-                            val url = episode!!.media?.downloadUrl
+                            val url = episode?.downloadUrl
                             if (url?.contains("youtube.com") == true && episode!!.description?.startsWith("Short:") == true) {
                                 Logd(TAG, "getting extended description: ${episode!!.title}")
                                 try {
@@ -512,7 +512,7 @@ class EpisodeInfoFragment : Fragment() {
         private suspend fun getMediaSize(episode: Episode?) : Long {
             return withContext(Dispatchers.IO) {
                 if (!isEpisodeHeadDownloadAllowed) return@withContext -1
-                val media = episode?.media ?: return@withContext -1
+                val media = episode ?: return@withContext -1
 
                 var size = Int.MIN_VALUE.toLong()
                 when {
@@ -549,8 +549,8 @@ class EpisodeInfoFragment : Fragment() {
                 }
                 // they didn't tell us the size, but we don't want to keep querying on it
                 upsert(episode) {
-                    if (size <= 0) it.media?.setCheckedOnSizeButUnknown()
-                    else it.media?.size = size
+                    if (size <= 0) it.setCheckedOnSizeButUnknown()
+                    else it.size = size
                 }
                 size
             }

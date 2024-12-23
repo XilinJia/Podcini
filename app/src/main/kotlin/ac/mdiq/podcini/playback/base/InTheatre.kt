@@ -31,27 +31,11 @@ object InTheatre {
             when {
                 value != null -> {
                     field = unmanaged(value)
-                    if (field?.media != null && curMedia?.id != field?.media?.id) curMedia = unmanaged(field!!.media!!)
-                }
-                else -> {
-                    field = null
-                    if (curMedia != null) curMedia = null
-                }
-            }
-        }
-
-    var curMedia: EpisodeMedia? = null      // unmanged if EpisodeMedia
-        set(value) {
-            when {
-                value != null -> {
-                    field = unmanaged(value)
                     curMediaId = value.id
-                    if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
                 }
                 else -> {
                     field = null
                     curMediaId = -1L
-                    if (curEpisode != null) curEpisode = null
                 }
             }
         }
@@ -129,25 +113,25 @@ object InTheatre {
         Logd(TAG, "loadPlayableFromPreferences currentlyPlayingType: $curState.curMediaType")
         if (curState.curMediaType != NO_MEDIA_PLAYING) {
             val type = curState.curMediaType.toInt()
-            if (type == EpisodeMedia.PLAYABLE_TYPE_FEEDMEDIA) {
+            if (type == Episode.PLAYABLE_TYPE_FEEDMEDIA) {
                 val mediaId = curState.curMediaId
                 Logd(TAG, "loadPlayableFromPreferences getting mediaId: $mediaId")
                 if (mediaId != 0L) {
-                    curMedia = getEpisodeMedia(mediaId)
-                    if (curEpisode != null) curEpisode = curMedia?.episodeOrFetch()
+                    curEpisode = getEpisodeMedia(mediaId)
+                    if (curEpisode != null) curEpisode = curEpisode
                 }
-                Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curMedia?.id}")
+                Logd(TAG, "loadPlayableFromPreferences: curMedia: ${curEpisode?.id}")
             } else Log.e(TAG, "Could not restore EpisodeMedia object from preferences")
         }
     }
 
      @JvmStatic
-    fun isCurrentlyPlaying(media: EpisodeMedia?): Boolean {
+    fun isCurrentlyPlaying(media: Episode?): Boolean {
         return isCurMedia(media) && PlaybackService.isRunning && MediaPlayerBase.status == PlayerStatus.PLAYING
     }
 
     @JvmStatic
-    fun isCurMedia(media: EpisodeMedia?): Boolean {
-        return media != null && curMedia?.id == media.id
+    fun isCurMedia(media: Episode?): Boolean {
+        return media != null && curEpisode?.id == media.id
     }
 }

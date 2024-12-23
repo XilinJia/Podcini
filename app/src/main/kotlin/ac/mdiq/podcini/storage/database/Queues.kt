@@ -2,7 +2,7 @@ package ac.mdiq.podcini.storage.database
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -97,7 +97,7 @@ object Queues {
             val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<Episode> = ArrayList()
             val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
-            val currentlyPlaying = curMedia
+            val currentlyPlaying = curEpisode
             var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
 
             val qItems = curQueue.episodes.toMutableList()
@@ -133,7 +133,7 @@ object Queues {
         val queue = queue_ ?: curQueue
         if (queue.episodeIds.contains(episode.id)) return
 
-        val currentlyPlaying = curMedia
+        val currentlyPlaying = curEpisode
         val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
         var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)
         Logd(TAG, "addToQueueSync insertPosition: $insertPosition")
@@ -319,7 +319,7 @@ object Queues {
          * @param queueItems           the queue to which the item is to be inserted
          * @param currentPlaying     the currently playing media
          */
-        fun calcPosition(queueItems: List<Episode>, currentPlaying: EpisodeMedia?): Int {
+        fun calcPosition(queueItems: List<Episode>, currentPlaying: Episode?): Int {
             if (queueItems.isEmpty()) return 0
             when (enqueueLocation) {
                 EnqueueLocation.BACK -> return queueItems.size
@@ -346,12 +346,12 @@ object Queues {
         }
         private fun isItemAtPositionDownloading(position: Int, queueItems: List<Episode>): Boolean {
             val curItem = try { queueItems[position] } catch (e: IndexOutOfBoundsException) { null }
-            if (curItem?.media?.downloadUrl == null) return false
-            return curItem.media != null && DownloadServiceInterface.get()?.isDownloadingEpisode(curItem.media!!.downloadUrl!!)?:false
+            if (curItem?.downloadUrl == null) return false
+            return DownloadServiceInterface.get()?.isDownloadingEpisode(curItem.downloadUrl!!)?:false
         }
-        private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: EpisodeMedia?): Int {
+        private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: Episode?): Int {
             if (currentPlaying == null) return -1
-            val curPlayingItemId = currentPlaying.episodeOrFetch()?.id
+            val curPlayingItemId = currentPlaying.id
             for (i in queueItems.indices) if (curPlayingItemId == queueItems[i].id) return i
             return -1
         }

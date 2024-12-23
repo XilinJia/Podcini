@@ -1,3 +1,17 @@
+# 6.17.0
+
+* largely improved responsiveness and efficiency in episodes list with progressive building
+* fixed strange appearance of horizontal dividers
+* flattened Episode class, removed linked class EpisodeMedia, a major project structure change
+* fixed player error dialog not showing
+* added advanced audio quality tuning feature in PlayerDetailed view (Youtube media only)
+	* a spinner to select locale (if any options)
+	* a spinner to select codec (if any optioins)
+	* a spinner to select bitrates (if any options)
+* added ability to import DB from AntennaPod and Podcast Addict
+	* most properties are transcribed
+	* if imported feed exist in Podcini, relevant properties of the existing feed will be overwritten
+
 # 6.16.4
 
 * ensure cleanup when cancelling coroutine tasks
@@ -461,7 +475,7 @@
 
 * fixed play not resuming after interruption (watch for any side effects)
 * fixed incorrect initial play button on PlayerUI
-* fixed startup delay when curMedia is null
+* fixed startup delay when curEpisode is null
 * rating list in popup for Subscriptions is reversed (favorite on top)
 * first migration of Episodes and Feeds filters to Jetpack Compose
 * added has/no comments in the filters

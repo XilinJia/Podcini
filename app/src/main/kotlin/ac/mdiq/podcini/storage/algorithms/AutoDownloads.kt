@@ -99,7 +99,7 @@ object AutoDownloads {
                 if (networkShouldAutoDl && powerShouldAutoDl) {
                     Logd(TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
                     val candidates: MutableSet<Episode> = mutableSetOf()
-                    val queueItems = realm.query(Episode::class).query("id IN $0 AND media.downloaded == false", curQueue.episodeIds).find()
+                    val queueItems = realm.query(Episode::class).query("id IN $0 AND downloaded == false", curQueue.episodeIds).find()
                     Logd(TAG, "autoDownloadEpisodeMedia add from queue: ${queueItems.size}")
                     if (queueItems.isNotEmpty()) candidates.addAll(queueItems)
                     val feeds = feeds ?: getFeedList()
@@ -114,7 +114,7 @@ object AutoDownloads {
                             val allowedDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
                             Logd(TAG, "autoDownloadEpisodeMedia ${f.preferences?.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
                             if (allowedDLCount > 0) {
-                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
+                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
                                     FeedPreferences.AutoDownloadPolicy.ONLY_NEW -> {
                                         queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
@@ -137,9 +137,9 @@ object AutoDownloads {
                                 if (episodes.isNotEmpty()) {
                                     var count = 0
                                     for (e in episodes) {
-                                        if (isCurMedia(e.media)) continue
+                                        if (isCurMedia(e)) continue
                                         if (f.preferences?.autoDownloadFilter?.meetsAutoDLCriteria(e) == true) {
-                                            Logd(TAG, "autoDownloadEpisodeMedia add to cadidates: ${e.title} ${e.isDownloaded}")
+                                            Logd(TAG, "autoDownloadEpisodeMedia add to cadidates: ${e.title} ${e.downloaded}")
                                             candidates.add(e)
                                             if (++count >= allowedDLCount) break
                                         } else upsertBlk(e) { it.setPlayed(true)}

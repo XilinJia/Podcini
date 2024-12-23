@@ -237,9 +237,9 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
     var blockAutoDeleteLocal by remember { mutableStateOf(true) }
     val textColor = MaterialTheme.colorScheme.onSurface
     val scrollState = rememberScrollState()
-//        supportActionBar!!.setTitle(R.string.downloads_pref)
     var showProxyDialog by remember { mutableStateOf(false) }
     if (showProxyDialog) ProxyDialog {showProxyDialog = false }
+
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
         Text(stringResource(R.string.automation), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
@@ -267,10 +267,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
             }
             Text(stringResource(R.string.feed_refresh_sum), color = textColor)
         }
-        TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) {
-            navController.navigate(Screens.autodownload.tag)
-//                openScreen(Screens.preferences_autodownload)
-        }
+        TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) { navController.navigate(Screens.autodownload.tag) }
         TitleSummarySwitchPrefRow(R.string.pref_auto_delete_title, R.string.pref_auto_delete_sum, UserPreferences.Prefs.prefAutoDelete.name)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
@@ -331,10 +328,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                 dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(text = "Cancel") } }
             )
         }
-        TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) {
-            showProxyDialog = true
-//                ProxyDialog(this@PreferenceActivity).show()
-        }
+        TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) { showProxyDialog = true }
     }
 }
 

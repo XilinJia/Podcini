@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.net.download.service
 
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
+import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.findUnusedFile
@@ -27,15 +28,15 @@ object DownloadRequestCreator {
     }
 
     @JvmStatic
-    fun create(media: EpisodeMedia): DownloadRequest.Builder {
-        Logd(TAG, "create: ${media.fileUrl} ${media.episode?.title}")
+    fun create(media: Episode): DownloadRequest.Builder {
+        Logd(TAG, "create: ${media.fileUrl} ${media.title}")
         val pdFile = if (media.fileUrl != null) File(media.fileUrl!!) else null
         val partiallyDownloadedFileExists = pdFile?.exists() ?: false
         var dest: File
         dest = if (partiallyDownloadedFileExists) pdFile!! else File(getMediafilePath(media), getMediafilename(media))
         if (dest.exists() && !partiallyDownloadedFileExists) dest = findUnusedFile(dest)!!
         Logd(TAG, "Requesting download media from url " + media.downloadUrl)
-        val feed = media.episodeOrFetch()?.feed
+        val feed = media.feed
         val username = feed?.preferences?.username
         val password = feed?.preferences?.password
         return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)

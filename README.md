@@ -14,7 +14,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### Note:
 
-#### *** Podcini is being launched on Google Play. Every release of the Play app is updated there. As a result, the Play app will no longer be released here. Google requires more testing to accept it as a formal listing, so by being an early tester, you make possible for the formal listing.  More info [here](https://github.com/XilinJia/Podcini/discussions/120)
+#### Podcini.R 7.0 supports importing databases from AntennaPod and Podcast Addict.
 #### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
@@ -43,8 +43,6 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
-
-While podcast subscriptions' OPML files (from AntennaPod or any other sources) can be easily imported, Podcini can not import DB from AntennaPod.
 
 ## Usage and notable features description 
 <details> <summary>Click to expand</summary>

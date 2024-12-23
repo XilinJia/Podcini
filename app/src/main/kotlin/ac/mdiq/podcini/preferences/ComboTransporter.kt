@@ -182,8 +182,8 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
                 Logd(TAG, "copyRecursive copying file to: ${destFile.absolutePath}")
                 copyFile(srcFile, destFile, context)
                 upsertBlk(episode) {
-                    it.media?.fileUrl = destFile.absolutePath
-                    it.media?.setIsDownloaded()
+                    it.fileUrl = destFile.absolutePath
+                    it.setIsDownloaded()
                 }
             }
         }

@@ -4,6 +4,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
+import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -32,7 +33,6 @@ class Feed : RealmObject {
      */
     @FullText
     var eigenTitle: String? = null
-        private set
 
     /**
      * custom title set by the user.
@@ -72,6 +72,7 @@ class Feed : RealmObject {
      * into feeds with page number "0".
      * This attribute's value is not saved in the database
      */
+    @Ignore
     var pageNr: Int = 0
 
     /**
@@ -103,6 +104,8 @@ class Feed : RealmObject {
     var comment: String = ""
 
     var commentTime: Long = 0L
+
+    var subscriberCount: Int = 0
 
     /**
      * Returns the value that uniquely identifies this Feed. If the
@@ -234,7 +237,7 @@ class Feed : RealmObject {
         }
     }
 
-    fun updateFromOther(other: Feed) {
+    fun updateFromOther(other: Feed, includingPrefs: Boolean = false) {
         // don't update feed's download_url, we do that manually if redirected
         // see PodciniHttpClient
         if (other.imageUrl != null) this.imageUrl = other.imageUrl
@@ -252,9 +255,19 @@ class Feed : RealmObject {
             this.isPaged = other.isPaged
             this.nextPageLink = other.nextPageLink
         }
+
+        if (includingPrefs && other.preferences != null) {
+            if (this.preferences == null) this.preferences = FeedPreferences(id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+            this.preferences?.tags = other.preferences!!.tags
+            this.preferences?.keepUpdated = other.preferences!!.keepUpdated
+            this.preferences?.username = other.preferences!!.username
+            this.preferences?.password = other.preferences!!.password
+            this.preferences?.playSpeed = other.preferences!!.playSpeed
+            this.preferences?.autoDownload = other.preferences!!.autoDownload
+        }
     }
 
-    fun compareWithOther(other: Feed): Boolean {
+    fun differentFrom(other: Feed): Boolean {
         if (other.imageUrl != null) {
             if (imageUrl == null || imageUrl != other.imageUrl) return true
         }
@@ -297,7 +310,7 @@ class Feed : RealmObject {
     fun getVirtualQueueItems():  List<Episode> {
         var qString = "feedId == $id AND (playState < ${PlayState.SKIPPED.code} OR playState == ${PlayState.AGAIN.code} OR playState == ${PlayState.FOREVER.code})"
 //        TODO: perhaps need to set prefStreamOverDownload for youtube feeds
-        if (type != FeedType.YOUTUBE.name && preferences?.prefStreamOverDownload != true) qString += " AND media.downloaded == true"
+        if (type != FeedType.YOUTUBE.name && preferences?.prefStreamOverDownload != true) qString += " AND downloaded == true"
         val eList_ = realm.query(Episode::class, qString).query(episodeFilter.queryString()).find().toMutableList()
         if (sortOrder != null) getPermutor(sortOrder!!).reorder(eList_)
         return eList_

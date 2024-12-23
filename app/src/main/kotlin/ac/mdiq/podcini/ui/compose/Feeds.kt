@@ -5,7 +5,7 @@ import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -134,7 +134,7 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                                     }
                                 } else {
                                     for (e in f.episodes) {
-                                        val sLog = SubscriptionLog(e.id, e.title ?: "", e.media?.downloadUrl ?: "", e.link ?: "", SubscriptionLog.Type.Media.name)
+                                        val sLog = SubscriptionLog(e.id, e.title ?: "", e.downloadUrl ?: "", e.link ?: "", SubscriptionLog.Type.Media.name)
                                         upsert(sLog) {
                                             it.rating = e.rating
                                             it.comment = if (e.comment.isBlank()) "" else (e.comment + "\n")
@@ -558,7 +558,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                                     Logd(TAG, "setSpeed codeArray: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
                                     if (settingCode[2]) UserPreferences.setPlaybackSpeed(chipSpeed)
                                     if (settingCode[1]) {
-                                        val episode = curMedia?.episodeOrFetch() ?: curEpisode
+                                        val episode = curEpisode ?: curEpisode
                                         if (episode?.feed?.preferences != null) upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = chipSpeed }
                                     }
                                     if (settingCode[0]) {

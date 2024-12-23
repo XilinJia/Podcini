@@ -354,11 +354,8 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
         feed.id = 0L
         for (item in feed.episodes) {
             item.id = 0L
-            item.media?.id = 0L
             item.feedId = null
             item.feed = feed
-            val media = item.media
-            media?.episode = item
         }
         val fo = updateFeed(context, feed, false)
 //        if (fo?.downloadUrl != null || fo?.link != null) {

@@ -82,7 +82,7 @@ class StatisticsFragment : Fragment() {
                         lifecycleScope.launch {
                             try {
                                 withContext(Dispatchers.IO) {
-                                    val mediaAll = realm.query(EpisodeMedia::class).find()
+                                    val mediaAll = realm.query(Episode::class).find()
                                     for (m in mediaAll) update(m) { m.playedDuration = 0 }
                                 }
                                 statisticsState++
@@ -240,7 +240,7 @@ class StatisticsFragment : Fragment() {
             try {
                 includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
                 val months: MutableList<MonthlyStatisticsItem> = ArrayList()
-                val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > 0").find()
+                val medias = realm.query(Episode::class).query("lastPlayedTime > 0").find()
                 val groupdMedias = medias.groupBy {
                     val calendar = Calendar.getInstance()
                     calendar.timeInMillis = it.lastPlayedTime
@@ -263,7 +263,7 @@ class StatisticsFragment : Fragment() {
                         dur += if (m.playedDuration > 0) m.playedDuration
                         else {
                             if (includeMarkedAsPlayed) {
-                                if (m.playbackCompletionTime > 0 || (m.episodeOrFetch()?.playState ?: -10) >= PlayState.SKIPPED.code) m.duration
+                                if (m.playbackCompletionTime > 0 || m.playState >= PlayState.SKIPPED.code) m.duration
                                 else if (m.position > 0) m.position else 0
                             } else m.position
                         }
@@ -445,9 +445,9 @@ class StatisticsFragment : Fragment() {
             Logd(TAG, "getStatistics called")
             val queryString = if (feedId != 0L) "episode.feedId == $feedId AND ((lastPlayedTime > $timeFilterFrom AND lastPlayedTime < $timeFilterTo) OR downloaded == true)"
             else if (forDL) "downloaded == true" else "lastPlayedTime > $timeFilterFrom AND lastPlayedTime < $timeFilterTo"
-            val medias = realm.query(EpisodeMedia::class).query(queryString).find()
+            val medias = realm.query(Episode::class).query(queryString).find()
 
-            val groupdMedias = medias.groupBy { it.episodeOrFetch()?.feedId ?: 0L }
+            val groupdMedias = medias.groupBy { it.feedId ?: 0L }
             val result = StatisticsResult()
             result.oldestDate = Long.MAX_VALUE
             for ((fid, feedMedias) in groupdMedias) {
@@ -465,7 +465,7 @@ class StatisticsFragment : Fragment() {
                         if (m.lastPlayedTime > 0 && m.lastPlayedTime < result.oldestDate) result.oldestDate = m.lastPlayedTime
                         feedTotalTime += m.duration
                         if (includeMarkedAsPlayed) {
-                            if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || (m.episodeOrFetch()?.playState ?: -10) >= PlayState.SKIPPED.code || m.position > 0) {
+                            if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || m.playState >= PlayState.SKIPPED.code || m.position > 0) {
                                 episodesStarted += 1
                                 feedPlayedTime += m.duration
                                 timeSpent += m.timeSpent

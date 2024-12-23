@@ -79,7 +79,7 @@ fun PlaybackPreferencesScreen() {
             TitleSummarySwitchPrefRow(R.string.pref_unpauseOnHeadsetReconnect_title, R.string.pref_unpauseOnHeadsetReconnect_sum, UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name)
             TitleSummarySwitchPrefRow(R.string.pref_unpauseOnBluetoothReconnect_title, R.string.pref_unpauseOnBluetoothReconnect_sum, UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)
         }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 10.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         Text(stringResource(R.string.playback_control), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -160,7 +160,7 @@ fun PlaybackPreferencesScreen() {
         var showVideoModeDialog by remember { mutableStateOf(false) }
         if (showVideoModeDialog) VideoModeDialog(initMode =  VideoMode.fromCode(videoPlayMode), onDismissRequest = { showVideoModeDialog = false }) { mode -> setVideoMode(mode.code) }
         TitleSummaryActionColumn(R.string.pref_playback_video_mode, R.string.pref_playback_video_mode_sum) { showVideoModeDialog = true }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 10.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         Text(stringResource(R.string.reassign_hardware_buttons), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
         var showHardwareForwardButtonOptions by remember { mutableStateOf(false) }
         var tempFFSelectedOption by remember { mutableStateOf(R.string.keycode_media_fast_forward) }
@@ -212,7 +212,7 @@ fun PlaybackPreferencesScreen() {
                 dismissButton = { TextButton(onClick = { showHardwarePreviousButtonOptions = false }) { Text(text = "Cancel") } }
             )
         }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 10.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         Text(stringResource(R.string.queue_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
         TitleSummarySwitchPrefRow(R.string.pref_enqueue_downloaded_title, R.string.pref_enqueue_downloaded_summary, UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
         var showEnqueueLocationOptions by remember { mutableStateOf(false) }

@@ -43,22 +43,18 @@ class EpisodeProgressReader {
     private fun processEpisodeAction(action: EpisodeAction): Pair<Long, Episode>? {
         val guid = if (isValidGuid(action.guid)) action.guid else null
         var feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"", false) ?: return null
-        if (feedItem.media == null) {
-            Logd(TAG, "Feed item has no media: $action")
-            return null
-        }
         var idRemove = 0L
         feedItem = upsertBlk(feedItem) {
-            it.media!!.startPosition = action.started * 1000
-            it.media!!.setPosition(action.position * 1000)
-            it.media!!.playedDuration = action.playedDuration * 1000
-            it.media!!.lastPlayedTime = (action.timestamp!!.time)
+            it.startPosition = action.started * 1000
+            it.setPosition(action.position * 1000)
+            it.playedDuration = action.playedDuration * 1000
+            it.lastPlayedTime = (action.timestamp!!.time)
             it.rating = if (action.isFavorite) Rating.SUPER.code else Rating.UNRATED.code
             it.playState = action.playState
-            if (hasAlmostEnded(it.media!!)) {
+            if (hasAlmostEnded(it)) {
                 Logd(TAG, "Marking as played: $action")
                 it.setPlayed(true)
-                it.media!!.setPosition(0)
+                it.setPosition(0)
                 idRemove = it.id
             } else Logd(TAG, "Setting position: $action")
         }
@@ -82,13 +78,12 @@ class EpisodesProgressWriter : ExportWriter {
         comItems.addAll(favoriteItems)
         Logd(TAG, "Save state for all " + comItems.size + " played episodes")
         for (item in comItems) {
-            val media = item.media ?: continue
             val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
-                .timestamp(Date(media.lastPlayedTime))
-                .started(media.startPosition / 1000)
-                .position(media.position / 1000)
-                .playedDuration(media.playedDuration / 1000)
-                .total(media.duration / 1000)
+                .timestamp(Date(item.lastPlayedTime))
+                .started(item.startPosition / 1000)
+                .position(item.position / 1000)
+                .playedDuration(item.playedDuration / 1000)
+                .total(item.duration / 1000)
                 .isFavorite(item.isSUPER)
                 .playState(item.playState)
                 .build()
@@ -180,9 +175,7 @@ class FavoritesWriter : ExportWriter {
         var favItem = favoriteTemplate.replace("{FAV_TITLE}", item.title!!.trim { it <= ' ' })
         favItem = if (item.link != null) favItem.replace("{FAV_WEBSITE}", item.link!!)
         else favItem.replace("{FAV_WEBSITE}", "")
-        favItem =
-            if (item.media != null && item.media!!.downloadUrl != null) favItem.replace("{FAV_MEDIA}", item.media!!.downloadUrl!!)
-            else favItem.replace("{FAV_MEDIA}", "")
+        favItem = if (item.downloadUrl != null) favItem.replace("{FAV_MEDIA}", item.downloadUrl!!) else favItem.replace("{FAV_MEDIA}", "")
         writer.append(favItem)
     }
     override fun fileExtension(): String {

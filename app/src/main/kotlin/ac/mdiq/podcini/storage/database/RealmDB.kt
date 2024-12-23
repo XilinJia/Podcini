@@ -32,7 +32,7 @@ object RealmDB {
                 FeedPreferences::class,
                 FeedMeasures::class,
                 Episode::class,
-                EpisodeMedia::class,
+//                EpisodeMedia::class,
                 CurrentState::class,
                 PlayQueue::class,
                 DownloadResult::class,
@@ -40,7 +40,7 @@ object RealmDB {
                 SubscriptionLog::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(36)
+            .schemaVersion(37)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
@@ -132,6 +132,40 @@ object RealmDB {
                                     val newMedia = newObject.getObject(propertyName = "media")
                                     newMedia?.set("timeSpent", playedDuration)
                                 }
+                            }
+                        }
+                    }
+                }
+                if (oldRealm.schemaVersion() < 37) {
+                    Logd(TAG, "migrating DB from below 37")
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            Logd(TAG, "start: ${getNullableValue("title", String::class)}")
+                            val media = oldObject.getObject(propertyName = "media")
+                            var playedDuration = 0L
+                            if (media != null) {
+                                set("fileUrl", media.getNullableValue("fileUrl", String::class))
+                                set("downloadUrl", media.getNullableValue("downloadUrl", String::class))
+                                set("mimeType", media.getNullableValue("mimeType", String::class))
+                                Logd(TAG, "after mimeType")
+                                set("downloaded", media.getValue("downloaded", Boolean::class))
+                                Logd(TAG, "after downloaded")
+                                set("downloadTime", media.getValue("downloadTime", Long::class))
+                                set("duration", media.getValue("duration", Long::class))
+                                set("position", media.getValue("position", Long::class))
+                                set("lastPlayedTime", media.getValue("lastPlayedTime", Long::class))
+                                set("startPosition", media.getValue("startPosition", Long::class))
+                                Logd(TAG, "after startPosition")
+                                set("playedDurationWhenStarted", media.getValue("playedDurationWhenStarted", Long::class))
+                                set("playedDuration", media.getValue("playedDuration", Long::class))
+                                set("timeSpentOnStart", media.getValue("timeSpentOnStart", Long::class))
+                                set("startTime", media.getValue("startTime", Long::class))
+                                Logd(TAG, "after startTime")
+                                set("timeSpent", media.getValue("timeSpent", Long::class))
+                                set("size", media.getValue("size", Long::class))
+                                set("playbackCompletionTime", media.getValue("playbackCompletionTime", Long::class))
+                                set("playbackCompletionTime", media.getValue("playbackCompletionTime", Long::class))
+                                Logd(TAG, "after all")
                             }
                         }
                     }

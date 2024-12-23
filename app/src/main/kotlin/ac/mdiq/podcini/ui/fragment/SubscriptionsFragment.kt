@@ -953,10 +953,10 @@ class SubscriptionsFragment : Fragment() {
                         comparator(counterMap, dir)
                     }
                     1 -> {  // date downloaded
-                        val queryString = "feedId == $0 SORT(media.downloadTime DESC)"
+                        val queryString = "feedId == $0 SORT(downloadTime DESC)"
                         val counterMap: MutableMap<Long, Long> = mutableMapOf()
                         for (f in feedList_) {
-                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
+                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.downloadTime ?: 0L
                             counterMap[f.id] = d
                             f.sortInfo = "Downloaded: " + formatDateTimeFlex(Date(d))
                         }
@@ -982,7 +982,7 @@ class SubscriptionsFragment : Fragment() {
                         ratingQueries += " rating == ${Rating.entries[i].code} "
                     }
                 }
-                val downloadedQuery = if (downlaodedSortIndex == 0) " media.downloaded == true " else if (downlaodedSortIndex == 1) " media.downloaded == false " else ""
+                val downloadedQuery = if (downlaodedSortIndex == 0) " downloaded == true " else if (downlaodedSortIndex == 1) " downloaded == false " else ""
                 val commentedQuery = if (commentedSortIndex == 0) " comment != '' " else if (commentedSortIndex == 1) " comment == '' " else ""
 
                 var queryString = "feedId == $0"

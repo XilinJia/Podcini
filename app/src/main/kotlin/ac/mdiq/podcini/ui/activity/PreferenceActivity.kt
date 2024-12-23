@@ -103,7 +103,7 @@ class PreferenceActivity : AppCompatActivity() {
                             MainPreferencesScreen(navController) }
                         composable(Screens.ui.tag) {
                             topAppBarTitle = stringResource(Screens.ui.titleRes)
-                            UserInterfacePreferencesScreen(navController) }
+                            UserInterfacePreferencesScreen() }
                         composable(Screens.downloads.tag) {
                             topAppBarTitle = stringResource(Screens.downloads.titleRes)
                             DownloadsPreferencesScreen(this@PreferenceActivity, navController) }
@@ -122,9 +122,6 @@ class PreferenceActivity : AppCompatActivity() {
                         composable(Screens.notifications.tag) {
                             topAppBarTitle = stringResource(Screens.notifications.titleRes)
                             NotificationPreferencesScreen() }
-//                        composable(Screens.swipe.tag) {
-//                            topAppBarTitle = stringResource(Screens.swipe.titleRes)
-//                            SwipePreferencesScreen() }
                         composable(Screens.about.tag) {
                             topAppBarTitle = stringResource(Screens.about.titleRes)
                             AboutScreen(navController) }
@@ -182,7 +179,6 @@ class PreferenceActivity : AppCompatActivity() {
     }
 
     fun onEventMainThread(event: FlowEvent.MessageEvent) {
-//        Logd(TAG, "onEvent($event)")
         val s = Snackbar.make(findViewById(android.R.id.content), event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) s.setAction(event.actionText) { event.action.accept(this) }
         s.show()
@@ -190,8 +186,6 @@ class PreferenceActivity : AppCompatActivity() {
 
     @Composable
     fun MainPreferencesScreen(navController: NavController) {
-//        supportActionBar!!.setTitle(R.string.settings_label)
-
         @Composable
         fun IconTitleSummaryScreenRow(vecRes: Int, titleRes: Int, summaryRes: Int, screen: String) {
             val textColor = MaterialTheme.colorScheme.onSurface
@@ -246,7 +240,7 @@ class PreferenceActivity : AppCompatActivity() {
                     startActivity(intent)
                 })
             }
-            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp).padding(top = 10.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
             Text(stringResource(R.string.project_pref), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             IconTitleActionRow(R.drawable.ic_questionmark, R.string.documentation_support) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini") }
             IconTitleActionRow(R.drawable.ic_chat, R.string.visit_user_forum) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/discussions") }
@@ -254,16 +248,12 @@ class PreferenceActivity : AppCompatActivity() {
             IconTitleActionRow(R.drawable.ic_bug, R.string.bug_report_title) { startActivity(Intent(this@PreferenceActivity, BugReportActivity::class.java)) }
             IconTitleActionRow(R.drawable.ic_info, R.string.about_pref) {
                 navController.navigate(Screens.about.tag)
-//                supportFragmentManager.beginTransaction().replace(R.id.settingsContainer, AboutFragment()).addToBackStack(getString(R.string.about_pref)).commit()
             }
         }
     }
 
     @Composable
     fun AboutScreen(navController: NavController) {
-//        supportActionBar?.setTitle(R.string.about_pref)
-//        val snackbarHostState = remember { SnackbarHostState() }
-//        val scope = rememberCoroutineScope()
         val textColor = MaterialTheme.colorScheme.onSurface
         Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp)) {
             Image(painter = painterResource(R.drawable.teaser), contentDescription = "")
@@ -273,11 +263,9 @@ class PreferenceActivity : AppCompatActivity() {
                     val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText(getString(R.string.bug_report_title), PreferenceManager.getDefaultSharedPreferences(this@PreferenceActivity).getString("about_version", "Default summary"))
                     clipboard.setPrimaryClip(clip)
-//                    scope.launch { snackbarHostState.showSnackbar(getString(R.string.copied_to_clipboard), duration = SnackbarDuration.Short) }
                     if (Build.VERSION.SDK_INT <= 32) {
                         toastMassege = getString(R.string.copied_to_clipboard)
                         showToast = true
-//                        Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
                     }
                 })) {
                     Text(stringResource(R.string.podcini_version), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -305,7 +293,6 @@ class PreferenceActivity : AppCompatActivity() {
     @Composable
     fun LicensesScreen() {
         class LicenseItem(val title: String, val subtitle: String, val licenseUrl: String, val licenseTextFile: String)
-//        supportActionBar!!.setTitle(R.string.licenses)
         val licenses = remember { mutableStateListOf<LicenseItem>() }
         LaunchedEffect(Unit) {
             lifecycleScope.launch(Dispatchers.IO) {
@@ -373,8 +360,7 @@ class PreferenceActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun UserInterfacePreferencesScreen(navController: NavController) {
-//        supportActionBar?.setTitle(R.string.user_interface_label)
+    fun UserInterfacePreferencesScreen() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
@@ -472,33 +458,8 @@ class PreferenceActivity : AppCompatActivity() {
                 )
             }
             TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)
-//            TitleSummaryActionColumn(R.string.swipeactions_label, R.string.swipeactions_summary) {
-//                navController.navigate(Screens.swipe.tag)
-////                openScreen(Screens.swipe)
-//            }
         }
     }
-
-//    @Suppress("EnumEntryName")
-//    private enum class SwipePrefs(val res: Int, val tag: String) {
-//        prefSwipeQueue(R.string.queue_label, QueuesFragment.TAG),
-//        prefSwipeEpisodes(R.string.episodes_label, EpisodesFragment.TAG),
-//        prefSwipeFeed(R.string.individual_subscription, FeedEpisodesFragment.TAG),
-//    }
-
-//    @Composable
-//    fun SwipePreferencesScreen() {
-////        supportActionBar?.setTitle(R.string.swipeactions_label)
-//        val textColor = MaterialTheme.colorScheme.onSurface
-//        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-//            for (e in SwipePrefs.entries) {
-//                val showDialog = remember { mutableStateOf(false) }
-//                if (showDialog.value) SwipeActionsDialog(e.tag, onDismissRequest = { showDialog.value = false }) {}
-//                Text(stringResource(e.res), color = textColor, style = MaterialTheme.typography.headlineSmall,
-//                    modifier = Modifier.padding(bottom = 10.dp).clickable(onClick = { showDialog.value = true }))
-//            }
-//        }
-//    }
 
     @Composable
     fun NotificationPreferencesScreen() {

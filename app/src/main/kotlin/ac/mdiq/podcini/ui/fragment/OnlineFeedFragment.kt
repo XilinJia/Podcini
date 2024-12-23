@@ -476,7 +476,6 @@ class OnlineFeedFragment : Fragment() {
         var id_ = Feed.newId()
         for (i in 0..<episodes.size) {
             episodes[i].id = id_++
-            episodes[i].media?.id = episodes[i].id
             episodes[i].isRemote.value = true
         }
         val fragment: Fragment = OnlineEpisodesFragment.newInstance(episodes)

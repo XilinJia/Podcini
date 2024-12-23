@@ -27,7 +27,6 @@ import java.security.DigestOutputStream
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-
 class OpmlBackupAgent : BackupAgentHelper() {
 
     override fun onCreate() {
@@ -38,13 +37,8 @@ class OpmlBackupAgent : BackupAgentHelper() {
         } else Logd(TAG, "Backup of OPML disabled in preferences")
     }
 
-    /**
-     * Class for backing up and restoring the OPML file.
-     */
     private class OpmlBackupHelper(private val mContext: Context) : BackupHelper {
-        /**
-         * Checksum of restored OPML file
-         */
+
         private var mChecksum: ByteArray = byteArrayOf()
 
         override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput, newState: ParcelFileDescriptor) {
@@ -56,9 +50,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
             try {
                 digester = MessageDigest.getInstance("MD5")
                 writer = OutputStreamWriter(DigestOutputStream(byteStream, digester), Charset.forName("UTF-8"))
-            } catch (e: NoSuchAlgorithmException) {
-                writer = OutputStreamWriter(byteStream, Charset.forName("UTF-8"))
-            }
+            } catch (e: NoSuchAlgorithmException) { writer = OutputStreamWriter(byteStream, Charset.forName("UTF-8")) }
 
             try {
                 // Write OPML
@@ -87,11 +79,8 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 val bytes = byteStream.toByteArray()
                 data.writeEntityHeader(OPML_ENTITY_KEY, bytes.size)
                 data.writeEntityData(bytes, bytes.size)
-            } catch (e: IOException) {
-                Log.e(TAG, "Error during backup", e)
-            } finally {
-                IOUtils.closeQuietly(writer)
-            }
+            } catch (e: IOException) { Log.e(TAG, "Error during backup", e)
+            } finally { IOUtils.closeQuietly(writer) }
         }
         
         override fun restoreEntity(data: BackupDataInputStream) {
@@ -106,14 +95,11 @@ class OpmlBackupAgent : BackupAgentHelper() {
             try {
                 digester = MessageDigest.getInstance("MD5")
                 reader = InputStreamReader(DigestInputStream(data, digester), Charset.forName("UTF-8"))
-            } catch (e: NoSuchAlgorithmException) {
-                reader = InputStreamReader(data, Charset.forName("UTF-8"))
-            }
+            } catch (e: NoSuchAlgorithmException) { reader = InputStreamReader(data, Charset.forName("UTF-8")) }
             try {
                 mChecksum = digester?.digest() ?: byteArrayOf()
                 BufferedReader(reader).use { bufferedReader ->
                     val tempFile = File(mContext.filesDir, "opml_restored.txt")
-//                    val tempFile = File.createTempFile("opml_restored", ".tmp", mContext.filesDir)
                     FileWriter(tempFile).use { fileWriter ->
                         while (true) {
                             val line = bufferedReader.readLine() ?: break
@@ -124,10 +110,8 @@ class OpmlBackupAgent : BackupAgentHelper() {
                         }
                     }
                 }
-            } catch (e: XmlPullParserException) {
-                Log.e(TAG, "Error while parsing the OPML file", e)
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to restore OPML backup", e)
+            } catch (e: XmlPullParserException) { Log.e(TAG, "Error while parsing the OPML file", e)
+            } catch (e: IOException) { Log.e(TAG, "Failed to restore OPML backup", e)
             } finally {
                 if (linesRead > 0) {
                     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
@@ -155,9 +139,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 outState.write(checksum)
                 outState.flush()
                 outState.close()
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to write new state description", e)
-            }
+            } catch (e: IOException) { Log.e(TAG, "Failed to write new state description", e) }
         }
 
         companion object {
@@ -187,9 +169,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 }
                 Toast.makeText(context, "${opmlElements.size} feeds were restored", Toast.LENGTH_SHORT).show()
                 runOnce(context)
-            } else {
-                Toast.makeText(context, "No backup data found", Toast.LENGTH_SHORT).show()
-            }
+            } else Toast.makeText(context, "No backup data found", Toast.LENGTH_SHORT).show()
         }
     }
 }

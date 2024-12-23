@@ -87,16 +87,17 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     open fun forItem(item_: Episode): EpisodeActionButton {
         item = item_
-        val media = item.media ?: return TTSActionButton(item)
-        val isDownloadingMedia = when (media.downloadUrl) {
+        // TODO: ensure TTS
+//        val media = item.media ?: return TTSActionButton(item)
+        val isDownloadingMedia = when (item.downloadUrl) {
             null -> false
-            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
+            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(item.downloadUrl!!) == true
         }
-        Logd("ItemActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${item.title} ")
+        Logd("ItemActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${item.downloaded} playing: ${isCurrentlyPlaying(item)}  ${item.title} ")
         return when {
-            isCurrentlyPlaying(media) -> PauseActionButton(item)
+            isCurrentlyPlaying(item) -> PauseActionButton(item)
             item.feed != null && item.feed!!.isLocalFeed -> PlayLocalActionButton(item)
-            media.downloaded -> PlayActionButton(item)
+            item.downloaded -> PlayActionButton(item)
             isDownloadingMedia -> CancelDownloadActionButton(item)
             isStreamOverDownload || item.feed == null || item.feedId == null || item.feed?.type == Feed.FeedType.YOUTUBE.name
                     || item.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(item)
@@ -154,11 +155,10 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     
     companion object {
-        fun playVideoIfNeeded(context: Context, media: EpisodeMedia) {
-            val item = media.episode
-            if (media.forceVideo == true || (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        fun playVideoIfNeeded(context: Context, item: Episode) {
+            if (item.forceVideo == true || (item.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
                     && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
-                    && media.getMediaType() == MediaType.VIDEO))
+                    && item.getMediaType() == MediaType.VIDEO))
                 context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         }
     }
@@ -200,8 +200,7 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 
     
     override fun onClick(context: Context) {
-        val media = item.media
-        if (media != null) DownloadServiceInterface.get()?.cancel(context, media)
+        DownloadServiceInterface.get()?.cancel(context, item)
         if (UserPreferences.isEnableAutodownload) {
             val item_ = upsertBlk(item) {
                 it.disableAutoDownload()
@@ -224,26 +223,21 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     
     override fun onClick(context: Context) {
         Logd("PlayActionButton", "onClick called")
-        val media = item.media
-        if (media == null) {
-            Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()
-            return
-        }
-        if (!media.fileExists()) {
+        if (!item.fileExists()) {
             Toast.makeText(context, R.string.error_file_not_found, Toast.LENGTH_LONG).show()
-            notifyMissingEpisodeMediaFile(context, media)
+            notifyMissingEpisodeMediaFile(context, item)
             return
         }
-        if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(media)) {
+        if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(item)) {
             PlaybackService.playbackService?.mPlayer?.resume()
             PlaybackService.playbackService?.taskManager?.restartSleepTimer()
         } else {
             PlaybackService.clearCurTempSpeed()
-            PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
+            PlaybackServiceStarter(context, item).callEvenIfRunning(true).start()
             if (item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
-        playVideoIfNeeded(context, media)
+        playVideoIfNeeded(context, item)
         actionState.value = getLabel()
     }
 
@@ -251,16 +245,15 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
      * Notifies the database about a missing EpisodeMedia file. This method will correct the EpisodeMedia object's
      * values in the DB and send a FeedItemEvent.
      */
-    fun notifyMissingEpisodeMediaFile(context: Context, media: EpisodeMedia) {
+    fun notifyMissingEpisodeMediaFile(context: Context, media: Episode) {
         Logd(TAG, "notifyMissingEpisodeMediaFile called")
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
         val episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
 //        val episode = media.episodeOrFetch()
         if (episode != null) {
             val episode_ = upsertBlk(episode) {
-//                it.media = media
-                it.media?.downloaded = false
-                it.media?.fileUrl = null
+                it.downloaded = false
+                it.fileUrl = null
             }
             EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode_))
         }
@@ -271,7 +264,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
 class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
         get() {
-            return item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)
+            return (item.downloaded || item.feed?.isLocalFeed == true)
         }
 
     override fun getLabel(): Int {
@@ -308,10 +301,7 @@ class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
     
     override fun onClick(context: Context) {
         Logd("PauseActionButton", "onClick called")
-        val media = item.media ?: return
-
-        if (isCurrentlyPlaying(media)) context.sendBroadcast(MediaButtonReceiver.createIntent(context,
-            KeyEvent.KEYCODE_MEDIA_PAUSE))
+        if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
 //        EventFlow.postEvent(FlowEvent.PlayEvent(item, Action.END))
         actionState.value = getLabel()
     }
@@ -330,7 +320,7 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     override fun onClick(context: Context) {
-        if (shouldNotDownload(item.media)) return
+        if (shouldNotDownload(item)) return
         UsageStatistics.logAction(UsageStatistics.ACTION_DOWNLOAD)
         if (NetworkUtils.isEpisodeDownloadAllowed) DownloadServiceInterface.get()?.downloadNow(context, item, false)
         else {
@@ -348,26 +338,11 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         actionState.value = getLabel()
     }
 
-    private fun shouldNotDownload(media: EpisodeMedia?): Boolean {
+    private fun shouldNotDownload(media: Episode?): Boolean {
         if (media?.downloadUrl == null) return true
         val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
         return isDownloading || media.downloaded
     }
-
-//    override fun forItem(item_: Episode): EpisodeActionButton {
-//        item = item_
-//        val media = item.media ?: return TTSActionButton(item)
-//        val isDownloadingMedia = when (media.downloadUrl) {
-//            null -> false
-//            else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
-//        }
-//        Logd("DownloadActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${media.downloaded} playing: ${isCurrentlyPlaying(media)}  ${item.title} ")
-//        return when {
-//            media.downloaded -> PlayActionButton(item)
-//            isDownloadingMedia -> CancelDownloadActionButton(item)
-//            else -> DownloadActionButton(item)
-//        }
-//    }
 }
 
 class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
@@ -381,20 +356,17 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
 
     
     override fun onClick(context: Context) {
-        if (item.media == null) return
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
-//        val media = if (item.feedId != null) item.media!! else RemoteMedia(item)
-        val media = item.media!!
         UsageStatistics.logAction(UsageStatistics.ACTION_STREAM)
         if (!NetworkUtils.isStreamingAllowed) {
-            StreamingConfirmationDialog(context, media).show()
+            StreamingConfirmationDialog(context, item).show()
             return
         }
-        stream(context, media)
+        stream(context, item)
         actionState.value = getLabel()
     }
 
-    class StreamingConfirmationDialog(private val context: Context, private val playable: EpisodeMedia) {
+    class StreamingConfirmationDialog(private val context: Context, private val playable: Episode) {
         fun show() {
             MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.stream_label)
@@ -410,13 +382,11 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     companion object {
-        fun stream(context: Context, media: EpisodeMedia) {
+        fun stream(context: Context, media: Episode) {
             if (!InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
             PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
-            if (media.episode != null) {
-                val item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, media.episode!!, false) }
-                EventFlow.postEvent(FlowEvent.PlayEvent(item))
-            }
+            val item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, media, false) }
+            EventFlow.postEvent(FlowEvent.PlayEvent(item))
             playVideoIfNeeded(context, media)
         }
     }
@@ -531,12 +501,10 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     val item_ = realm.query(Episode::class).query("id = ${item.id}").first().find()
                     if (item_ != null) {
                         item = upsertBlk(item_) {
-                            val media = EpisodeMedia(it, null, 0, "audio/*")
-                            media.id = it.id
-                            media.fileUrl = mFilename
-                            media.duration = durationMs
-                            it.media = media
-                            it.media?.setIsDownloaded()
+                            it.fillMedia(null, 0, "audio/*")
+                            it.fileUrl = mFilename
+                            it.duration = durationMs
+                            it.setIsDownloaded()
                             it.setTranscriptIfLonger(readerText)
                         }
                     }
@@ -567,21 +535,16 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
     
     override fun onClick(context: Context) {
         Logd("PlayLocalActionButton", "onClick called")
-        val media = item.media
-        if (media == null) {
-            Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()
-            return
-        }
-        if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(media)) {
+        if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(item)) {
             PlaybackService.playbackService?.mPlayer?.resume()
             PlaybackService.playbackService?.taskManager?.restartSleepTimer()
         } else {
             PlaybackService.clearCurTempSpeed()
-            PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
+            PlaybackServiceStarter(context, item).callEvenIfRunning(true).start()
             item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
-        if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
+        if (item.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         actionState.value = getLabel()
     }
 }

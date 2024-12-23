@@ -4,8 +4,9 @@ import android.content.Context
 import ac.mdiq.podcini.net.sync.LockingAsyncExecutor
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.lastSyncAttempt
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.storage.model.Episode
 
 object SynchronizationQueueSink {
     // To avoid a dependency loop of every class to SyncService, and from SyncService back to every class.
@@ -52,12 +53,12 @@ object SynchronizationQueueSink {
         }
     }
 
-    fun enqueueEpisodePlayedIfSyncActive(context: Context, media: EpisodeMedia, completed: Boolean) {
+    fun enqueueEpisodePlayedIfSyncActive(context: Context, media: Episode, completed: Boolean) {
         if (!isProviderConnected) return
-        val item_ = media.episodeOrFetch()
-        if (item_?.feed?.isLocalFeed == true) return
+        val item_ = media
+        if (item_.feed?.isLocalFeed == true) return
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.position)) return
-        val action = EpisodeAction.Builder(item_!!, EpisodeAction.PLAY)
+        val action = EpisodeAction.Builder(item_, EpisodeAction.PLAY)
             .currentTimestamp()
             .started(media.startPosition / 1000)
             .position((if (completed) media.duration else media.position) / 1000)

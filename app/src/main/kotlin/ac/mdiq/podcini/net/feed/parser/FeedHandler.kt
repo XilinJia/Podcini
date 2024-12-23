@@ -427,8 +427,7 @@ class FeedHandler {
                                     try { if (strSize != null) size = strSize.toLong() } catch (e: NumberFormatException) { Logd(TAG, "Length attribute could not be parsed.") }
                                     val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
                                     val currItem = state.currentItem
-                                    if (isMediaFile(mimeType) && currItem != null && currItem.media == null)
-                                        currItem.media = EpisodeMedia(currItem, href, size, mimeType)
+                                    if (isMediaFile(mimeType) && currItem != null) currItem.fillMedia(href, size, mimeType)
                                 }
                                 LINK_REL_PAYMENT -> if (state.currentItem != null) state.currentItem!!.paymentLink = href
                             }
@@ -480,9 +479,9 @@ class FeedHandler {
             if (ENTRY == localName) {
                 if (state.currentItem != null && state.tempObjects.containsKey(Itunes.DURATION)) {
                     val currentItem = state.currentItem
-                    if (currentItem!!.media != null) {
+                    if (currentItem != null) {
                         val duration = state.tempObjects[Itunes.DURATION] as Int?
-                        if (duration != null) currentItem.media!!.duration = (duration)
+                        if (duration != null) currentItem.duration = (duration)
                     }
                     state.tempObjects.remove(Itunes.DURATION)
                 }
@@ -702,7 +701,7 @@ class FeedHandler {
                     }
 
                     when {
-                        state.currentItem != null && (state.currentItem!!.media == null || isDefault) && url != null && validTypeMedia -> {
+                        state.currentItem != null && (state.currentItem == null || isDefault) && url != null && validTypeMedia -> {
                             var size: Long = 0
                             val sizeStr: String? = attributes.getValue(SIZE)
                             if (!sizeStr.isNullOrEmpty()) {
@@ -717,9 +716,8 @@ class FeedHandler {
                                 } catch (e: NumberFormatException) { Log.e(TAG, "Duration \"$durationStr\" could not be parsed") }
                             }
                             Logd(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
-                            val media = EpisodeMedia(state.currentItem, url, size, mimeType)
-                            if (durationMs > 0) media.duration = ( durationMs)
-                            state.currentItem!!.media = media
+                            state.currentItem?.fillMedia(url, size, mimeType)
+                            if (durationMs > 0) state.currentItem?.duration = ( durationMs)
                         }
                         state.currentItem != null && url != null && validTypeImage -> state.currentItem!!.imageUrl = url
                     }
@@ -824,15 +822,14 @@ class FeedHandler {
                     val url: String? = attributes.getValue(ENC_URL)
                     val mimeType: String? = getMimeType(attributes.getValue(ENC_TYPE), url)
                     val validUrl = !url.isNullOrBlank()
-                    if (state.currentItem?.media == null && isMediaFile(mimeType) && validUrl) {
+                    if (state.currentItem == null && isMediaFile(mimeType) && validUrl) {
                         var size: Long = 0
                         try {
                             size = attributes.getValue(ENC_LEN)?.toLong() ?: 0
                             // less than 16kb is suspicious, check manually
                             if (size < 16384) size = 0
                         } catch (e: NumberFormatException) { Logd(TAG, "Length attribute could not be parsed.") }
-                        val media = EpisodeMedia(state.currentItem, url, size, mimeType)
-                        if(state.currentItem != null) state.currentItem!!.media = media
+                        state.currentItem?.fillMedia(url, size, mimeType)
                     }
                 }
             }
@@ -850,10 +847,8 @@ class FeedHandler {
                         if (currentItem.title == null) currentItem.title = currentItem.description
 
                         if (state.tempObjects.containsKey(Itunes.DURATION)) {
-                            if (currentItem.media != null) {
-                                val duration = state.tempObjects[Itunes.DURATION] as? Int
-                                if (duration != null) currentItem.media!!.duration = (duration)
-                            }
+                            val duration = state.tempObjects[Itunes.DURATION] as? Int
+                            if (duration != null) currentItem.duration = duration
                             state.tempObjects.remove(Itunes.DURATION)
                         }
                     }

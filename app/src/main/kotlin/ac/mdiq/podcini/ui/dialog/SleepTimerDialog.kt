@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.TimeDialogBinding
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
@@ -19,7 +19,8 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Episode
+
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
@@ -138,8 +139,8 @@ class SleepTimerDialog : DialogFragment() {
             }
             try {
                 val time = if (binding.endEpisode.isChecked) {
-                    val curPosition = curMedia?.position ?: 0
-                    val duration = curMedia?.duration ?: 0
+                    val curPosition = curEpisode?.position ?: 0
+                    val duration = curEpisode?.duration ?: 0
                     val converter = TimeSpeedConverter(curSpeedFB)
                     TimeUnit.MILLISECONDS.toMinutes(converter.convert(max((duration - curPosition).toDouble(), 0.0).toInt()).toLong()) // ms to minutes
                 } else etxtTime.getText().toString().toLong()
@@ -163,8 +164,8 @@ class SleepTimerDialog : DialogFragment() {
     }
 
     private fun extendSleepTimer(extendTime: Long) {
-        val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: EpisodeMedia.INVALID_TIME.toLong()
-        if (timeLeft != EpisodeMedia.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
+        val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: Episode.INVALID_TIME.toLong()
+        if (timeLeft != Episode.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
     }
 
     private fun setSleepTimer(time: Long) {

@@ -129,7 +129,7 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
         }
 
         private fun playDate(item: Episode?): Long {
-            return item?.media?.lastPlayedTime ?: 0
+            return item?.lastPlayedTime ?: 0
         }
 
         private fun commentDate(item: Episode?): Long {
@@ -137,11 +137,11 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
         }
 
         private fun downloadDate(item: Episode?): Long {
-            return item?.media?.downloadTime ?: 0
+            return item?.downloadTime ?: 0
         }
 
         private fun completeDate(item: Episode?): Date {
-            return item?.media?.playbackCompletionDate ?: Date(0)
+            return item?.playbackCompletionDate ?: Date(0)
         }
 
         private fun itemTitle(item: Episode?): String {
@@ -149,11 +149,11 @@ enum class EpisodeSortOrder(val code: Int, val res: Int) {
         }
 
         private fun duration(item: Episode?): Int {
-            return item?.media?.duration ?: 0
+            return item?.duration ?: 0
         }
 
         private fun size(item: Episode?): Long {
-            return item?.media?.size ?: 0
+            return item?.size ?: 0
         }
 
         private fun itemLink(item: Episode?): String {

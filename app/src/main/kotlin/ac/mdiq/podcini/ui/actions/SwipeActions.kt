@@ -206,14 +206,12 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         }
         override fun performAction(item_: Episode) {
             var item = item_
-            if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
-            val media = item.media
-            if (media != null) {
-                val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code)
-                    item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
-                if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
-            }
+            if (!item.downloaded && item.feed?.isLocalFeed != true) return
+            val almostEnded = hasAlmostEnded(item)
+            if (almostEnded && item.playState < PlayState.PLAYED.code)
+                item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
+            if (almostEnded) item = upsertBlk(item) { it.playbackCompletionDate = Date() }
+
             deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
         }
     }
@@ -316,8 +314,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.remove_history_label)
         }
         override fun performAction(item: Episode) {
-            val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
-            val lastPlayedDate = item.media?.lastPlayedTime
+            val playbackCompletionDate: Date? = item.playbackCompletionDate
+            val lastPlayedDate = item.lastPlayedTime
             setHistoryDates(item)
 
             (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
@@ -328,8 +326,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
                 if (episode_ != null) {
                     upsert(episode_) {
-                        it.media?.lastPlayedTime = lastPlayed
-                        it.media?.playbackCompletionDate = completed
+                        it.lastPlayedTime = lastPlayed
+                        it.playbackCompletionDate = completed
                     }
                     EventFlow.postEvent(FlowEvent.HistoryEvent())
                 }
@@ -353,12 +351,9 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun performAction(item_: Episode) {
 //            val position: Int = curQueue.episodes.indexOf(item_)
             var item = item_
-            val media = item.media
-            if (media != null) {
-                val almostEnded = hasAlmostEnded(media)
-                if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
-                if (almostEnded) item = upsertBlk(item) { it.media?.playbackCompletionDate = Date() }
-            }
+            val almostEnded = hasAlmostEnded(item)
+            if (almostEnded && item.playState < PlayState.PLAYED.code) item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
+            if (almostEnded) item = upsertBlk(item) { it.playbackCompletionDate = Date() }
             if (item.playState < PlayState.SKIPPED.code) item = runBlocking { setPlayStateSync(PlayState.SKIPPED.code, item, resetMediaPosition = false, removeFromQueue = false) }
             runOnIOScope { removeFromQueueSync(curQueue, item) }
         }
@@ -403,7 +398,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return context.getString(R.string.download_label)
         }
         override fun performAction(item: Episode) {
-            if (!item.isDownloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(fragment.requireContext())
+            if (!item.downloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(fragment.requireContext())
         }
     }
 
@@ -430,15 +425,6 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun ActionOptions() {
             if (showPlayStateDialog && onEpisode != null) PlayStateDialog(listOf(onEpisode!!)) { showPlayStateDialog = false }
         }
-//        private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
-//            delay(ceil((duration * 1.05f).toDouble()).toLong())
-//            val media: EpisodeMedia? = item.media
-//            val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
-//            if (media != null && Episodes.hasAlmostEnded(media) && shouldAutoDelete) {
-////                deleteMediaOfEpisode(fragment.requireContext(), item)
-//                val item_ = deleteMediaSync(fragment.requireContext(), item)
-//                if (prefDeleteRemovesFromQueue) removeFromQueueSync(null, item_)   }
-//        }
     }
 
     inner class ShelveSwipeAction : SwipeAction {

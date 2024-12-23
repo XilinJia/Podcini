@@ -816,7 +816,7 @@ class FeedSettingsFragment : Fragment() {
                         textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyMedium.fontSize, fontWeight = FontWeight.Bold),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
                     var filterDurationMinutes by remember { mutableStateOf((filter.minimalDurationFilter / 60).toString()) }
                     var markPlayedChecked by remember { mutableStateOf(filter.markExcludedPlayed) }
                     if (inexcl == ADLIncExc.EXCLUDE) {

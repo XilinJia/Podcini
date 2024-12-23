@@ -5,11 +5,12 @@ import ac.mdiq.podcini.net.feed.parser.utils.DateUtils.parse
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.net.utils.NetworkUtils.wasDownloadBlocked
 import ac.mdiq.podcini.storage.utils.StorageUtils.freeSpaceAvailable
 import ac.mdiq.podcini.net.utils.URIUtil.getURIFromRequestUrl
+import ac.mdiq.podcini.storage.model.Episode
 import android.util.Log
 import okhttp3.*
 import okhttp3.internal.http.StatusLine
@@ -40,7 +41,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             httpReq.cacheControl(CacheControl.Builder().noStore().build())
 
             Logd(TAG, "starting download: " + downloadRequest.feedfileType + " " + uri.scheme)
-            if (downloadRequest.feedfileType == EpisodeMedia.FEEDFILETYPE_FEEDMEDIA) {
+            if (downloadRequest.feedfileType == Episode.FEEDFILETYPE_FEEDMEDIA) {
                 // set header explicitly so that okhttp doesn't do transparent gzip
                 Logd(TAG, "addHeader(\"Accept-Encoding\", \"identity\")")
                 httpReq.addHeader("Accept-Encoding", "identity")
@@ -90,7 +91,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     callOnFailByResponseCode(response)
                     return
                 }
-                downloadRequest.feedfileType == EpisodeMedia.FEEDFILETYPE_FEEDMEDIA && isContentTypeTextAndSmallerThan100kb(response) -> {
+                downloadRequest.feedfileType == Episode.FEEDFILETYPE_FEEDMEDIA && isContentTypeTextAndSmallerThan100kb(response) -> {
                     onFail(DownloadError.ERROR_FILE_TYPE, null)
                     return
                 }

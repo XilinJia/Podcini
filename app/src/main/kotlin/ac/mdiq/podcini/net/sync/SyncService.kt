@@ -210,7 +210,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
             Logd(TAG, "First sync. Upload state for all " + readItems.size + " played episodes")
             for (item in readItems) {
-                val media = item.media ?: continue
+                val media = item
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
                     .currentTimestamp()
                     .started(media.duration / 1000)
@@ -250,16 +250,12 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             Logd(TAG, "Unknown feed item: $action")
             return null
         }
-        if (feedItem.media == null) {
-            Logd(TAG, "Feed item has no media: $action")
-            return null
-        }
         var idRemove: Long? = null
-        feedItem.media!!.setPosition(action.position * 1000)
-        if (hasAlmostEnded(feedItem.media!!)) {
+        feedItem.setPosition(action.position * 1000)
+        if (hasAlmostEnded(feedItem)) {
             Logd(TAG, "Marking as played: $action")
             feedItem.setPlayed(true)
-            feedItem.media!!.setPosition(0)
+            feedItem.setPosition(0)
             idRemove = feedItem.id
         } else Logd(TAG, "Setting position: $action")
 

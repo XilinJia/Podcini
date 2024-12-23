@@ -5,10 +5,11 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.isYoutubeMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.ytMediaSpecs
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
@@ -35,6 +36,7 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
+import ac.mdiq.podcini.ui.actions.PlayActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
@@ -47,6 +49,7 @@ import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
 import ac.mdiq.podcini.ui.compose.ShareDialog
 import ac.mdiq.podcini.ui.compose.SkipDialog
 import ac.mdiq.podcini.ui.compose.SkipDirection
+import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -123,10 +126,8 @@ class AudioPlayerFragment : Fragment() {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: ServiceStatusHandler? = null
 
-    private var prevMedia: EpisodeMedia? = null
-    private var currentMedia by mutableStateOf<EpisodeMedia?>(null)
     private var prevItem: Episode? = null
-    private var currentItem: Episode? = null
+    private var currentItem by mutableStateOf<Episode?>(null)
 
     private var playButInit = false
     private var isShowPlay: Boolean = true
@@ -159,14 +160,16 @@ class AudioPlayerFragment : Fragment() {
     private var hasNextChapter by mutableStateOf(true)
     var rating by mutableStateOf(currentItem?.rating ?: Rating.UNRATED.code)
 
+    private var resetPlayer by mutableStateOf(false)
+
     val showErrorDialog = mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
     private var displayedChapterIndex by mutableIntStateOf(-1)
     private val currentChapter: Chapter?
         get() {
-            if (currentMedia?.episode?.chapters.isNullOrEmpty() || displayedChapterIndex == -1) return null
-            return currentMedia!!.episode!!.chapters[displayedChapterIndex]
+            if (currentItem?.chapters.isNullOrEmpty() || displayedChapterIndex == -1) return null
+            return currentItem!!.chapters[displayedChapterIndex]
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -196,10 +199,10 @@ class AudioPlayerFragment : Fragment() {
                     if (showSpeedDialog) PlaybackSpeedFullDialog(settingCode = booleanArrayOf(true, true, true), indexDefault = 0, maxSpeed = 3f, onDismiss = {showSpeedDialog = false})
                     LaunchedEffect(key1 = curMediaId) {
                         cleanedNotes = null
-                        if (curMedia != null) {
-                            updateUi(curMedia!!)
-                            imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
-                            currentMedia = curMedia
+                        if (curEpisode != null) {
+                            updateUi(curEpisode!!)
+                            imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curEpisode!!)
+                            currentItem = curEpisode
                         }
                     }
                     MediaPlayerErrorDialog(activity as Activity, errorMessage, showErrorDialog)
@@ -216,9 +219,9 @@ class AudioPlayerFragment : Fragment() {
                 }
             }
         }
-        Logd(TAG, "curMedia: ${curMedia?.id}")
-        (activity as MainActivity).setPlayerVisible(curMedia != null)
-        if (curMedia != null) updateUi(curMedia!!)
+        Logd(TAG, "curMedia: ${curEpisode?.id}")
+        (activity as MainActivity).setPlayerVisible(curEpisode != null)
+        if (curEpisode != null) updateUi(curEpisode!!)
         return composeView
     }
 
@@ -254,8 +257,8 @@ class AudioPlayerFragment : Fragment() {
 
         Row {
             fun ensureService() {
-                if (curMedia == null) return
-                if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
+                if (curEpisode == null) return
+                if (playbackService == null) PlaybackServiceStarter(requireContext(), curEpisode!!).start()
             }
             AsyncImage(contentDescription = "imgvCover", model = ImageRequest.Builder(context).data(imgLoc)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
@@ -263,11 +266,11 @@ class AudioPlayerFragment : Fragment() {
                     .clickable(onClick = {
                         Logd(TAG, "playerUiFragment icon was clicked")
                         if (isCollapsed) {
-                            val media = curMedia
+                            val media = curEpisode
                             if (media != null) {
                                 val mediaType = media.getMediaType()
                                 if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
-                                        || (media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                                        || (media.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
                                     Logd(TAG, "popping as audio episode")
                                     ensureService()
                                     (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
@@ -301,14 +304,20 @@ class AudioPlayerFragment : Fragment() {
                 modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(
                     onClick = {
                         if (controller == null) return@combinedClickable
-                        if (curMedia != null) {
-                            val media = curMedia!!
+                        if (curEpisode != null) {
+                            val media = curEpisode!!
                             setIsShowPlay(!isShowPlay)
                             if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
-                                    (media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
+                                    (media.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
                                 playPause()
-                                requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
-                            } else playPause()
+                                requireContext().startActivity(getPlayerActivityIntent(requireContext(), curEpisode!!.getMediaType()))
+                            } else {
+//                                if (resetPlayer) {
+//                                    playbackService?.mPlayer?.reinit()
+//                                    resetPlayer = false
+//                                } else playPause()
+                                playPause()
+                            }
                         } },
                     onLongClick = {
                         if (status == PlayerStatus.PLAYING) {
@@ -367,7 +376,7 @@ class AudioPlayerFragment : Fragment() {
         Row {
             Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
-            val bitrate = curMedia?.bitrate ?: 0
+            val bitrate = curEpisode?.bitrate ?: 0
             if (bitrate > 0) Text(formatLargeInteger(bitrate) + "bits", color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
             showTimeLeft = UserPreferences.shouldShowRemainingTime()
@@ -375,7 +384,7 @@ class AudioPlayerFragment : Fragment() {
                 if (controller == null) return@clickable
                 showTimeLeft = !showTimeLeft
                 UserPreferences.setShowRemainTimeSetting(showTimeLeft)
-                onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia, curPositionFB, curDurationFB))
+                onPositionUpdate(FlowEvent.PlaybackPositionEvent(curEpisode, curPositionFB, curDurationFB))
             })
         }
     }
@@ -392,7 +401,7 @@ class AudioPlayerFragment : Fragment() {
 
     @Composable
     fun VolumeAdaptionDialog(onDismissRequest: () -> Unit) {
-        val (selectedOption, onOptionSelected) = remember { mutableStateOf(currentMedia?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
+        val (selectedOption, onOptionSelected) = remember { mutableStateOf(currentItem?.volumeAdaptionSetting ?: VolumeAdaptionSetting.OFF) }
         Dialog(onDismissRequest = { onDismissRequest() }) {
             Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -403,10 +412,9 @@ class AudioPlayerFragment : Fragment() {
                                     Logd(TAG, "row clicked: $item $selectedOption")
                                     if (item != selectedOption) {
                                         onOptionSelected(item)
-                                        if (currentMedia != null) {
-                                            currentMedia?.volumeAdaptionSetting = item
-                                            currentMedia = currentItem!!.media
-                                            curMedia = currentMedia
+                                        if (currentItem != null) {
+                                            currentItem?.volumeAdaptionSetting = item
+                                            curEpisode = currentItem
                                             playbackService?.mPlayer?.pause(reinit = true)
                                             playbackService?.mPlayer?.resume()
                                         }
@@ -424,11 +432,11 @@ class AudioPlayerFragment : Fragment() {
 
     @Composable
     fun Toolbar() {
-        val media: EpisodeMedia = curMedia ?: return
-        val feedItem = media.episodeOrFetch()
+        val feedItem: Episode = curEpisode ?: return
+//        val feedItem = media.episodeOrFetch()
         val textColor = MaterialTheme.colorScheme.onSurface
-        val mediaType = curMedia?.getMediaType()
-        val notAudioOnly = curMedia?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        val mediaType = curEpisode?.getMediaType()
+        val notAudioOnly = curEpisode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
         var showVolumeDialog by remember { mutableStateOf(false) }
         if (showVolumeDialog) VolumeAdaptionDialog { showVolumeDialog = false }
         var showShareDialog by remember { mutableStateOf(false) }
@@ -444,8 +452,8 @@ class AudioPlayerFragment : Fragment() {
             })
             if (mediaType == MediaType.VIDEO) Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_fullscreen_24), tint = textColor, contentDescription = "Play video",
                 modifier = Modifier.clickable {
-                    if (!notAudioOnly && curMedia?.forceVideo != true) {
-                        curMedia?.forceVideo = true
+                    if (!notAudioOnly && curEpisode?.forceVideo != true) {
+                        curEpisode?.forceVideo = true
                         status = PlayerStatus.STOPPED
                         playbackService?.mPlayer?.pause(reinit = true)
                         playbackService?.recreateMediaPlayer()
@@ -458,9 +466,9 @@ class AudioPlayerFragment : Fragment() {
                     SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
                 })
             }
-            if (currentMedia != null) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
+            if (currentItem != null) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
                 modifier = Modifier.clickable {
-                    if (feedItem?.feedId != null) {
+                    if (feedItem.feedId != null) {
                         val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId!!)
                         startActivity(intent)
                     }
@@ -472,7 +480,7 @@ class AudioPlayerFragment : Fragment() {
                 if (currentItem != null) showVolumeDialog = true
             })
             Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_offline_share_24), tint = textColor, contentDescription = "Share Note", modifier = Modifier.clickable {
-                val notes = if (showHomeText) readerhtml else feedItem?.description
+                val notes = if (showHomeText) readerhtml else feedItem.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
@@ -490,7 +498,7 @@ class AudioPlayerFragment : Fragment() {
         var showChooseRatingDialog by remember { mutableStateOf(false) }
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) { showChooseRatingDialog = false }
         var showChaptersDialog by remember { mutableStateOf(false) }
-        if (showChaptersDialog) ChaptersDialog(media = currentMedia!!, onDismissRequest = {showChaptersDialog = false})
+        if (showChaptersDialog) ChaptersDialog(media = currentItem!!, onDismissRequest = {showChaptersDialog = false})
 
         val scrollState = rememberScrollState()
         Column(modifier = modifier.fillMaxWidth().verticalScroll(scrollState)) {
@@ -501,15 +509,92 @@ class AudioPlayerFragment : Fragment() {
                 if (Build.VERSION.SDK_INT <= 32) (requireActivity() as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
                 return true
             }
+            if (isYoutubeMedia) {
+                val locales = remember { mutableStateListOf<String>() }
+                var locale by remember { mutableStateOf("") }
+                val codecs = remember { mutableStateListOf<String>() }
+                var codec by remember { mutableStateOf("") }
+                val bitRates = remember { mutableStateListOf<String>() }
+                var bitrate by remember { mutableIntStateOf(0) }
+                LaunchedEffect(ytMediaSpecs) {
+                    locales.clear()
+                    bitRates.clear()
+                    codecs.clear()
+                    val lSet = mutableSetOf<String>()
+                    val bSet = mutableSetOf<String>()
+                    val cSet = mutableSetOf<String>()
+                    for (s in ytMediaSpecs.audioStreamsList) {
+                        lSet.add(s.audioLocale.toString())
+                        bSet.add(s.averageBitrate.toString())
+                        if (s.codec != null) cSet.add(s.codec!!)
+                    }
+                    locales.addAll(lSet)
+                    bitRates.addAll(bSet)
+                    codecs.addAll(cSet)
+                    if (locales.isNotEmpty()) locale = locales[0]
+                    if (bitRates.isNotEmpty()) bitrate = bitRates[0].toInt()
+                    if (codecs.isNotEmpty()) codec = codecs[0]
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary))) {
+                    if (locales.size > 1) {
+                        Text("Locale:", color = textColor, modifier = Modifier.padding(end = 10.dp))
+                        Spinner(items = locales, selectedItem = locale) { index ->
+                            Logd(TAG, "Locale selected: ${locales[index]}")
+                            bitRates.clear()
+                            locale = locales[index]
+                            val bSet = mutableSetOf<String>()
+                            for (s in ytMediaSpecs.audioStreamsList) {
+                                if (s.audioLocale.toString() == locale) bSet.add(s.averageBitrate.toString())
+                            }
+                            bitRates.addAll(bSet)
+                            bitrate = bitRates[0].toInt()
+                            ytMediaSpecs.setAudioStream(locale, codec, bitrate)
+                            resetPlayer = true
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (codecs.size > 1) {
+                        Text("Codec:", color = textColor, modifier = Modifier.padding(end = 10.dp))
+                        Spinner(items = codecs, selectedItem = codec) { index ->
+                            Logd(TAG, "Locale selected: ${codecs[index]}")
+                            bitRates.clear()
+                            codec = codecs[index]
+                            val bSet = mutableSetOf<String>()
+                            for (s in ytMediaSpecs.audioStreamsList) {
+                                if (s.codec == codec) bSet.add(s.averageBitrate.toString())
+                            }
+                            bitRates.addAll(bSet)
+                            bitrate = bitRates[0].toInt()
+                            ytMediaSpecs.setAudioStream(locale, codec, bitrate)
+                            resetPlayer = true
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (bitRates.size > 1) {
+                        Text("BPS:", color = textColor, modifier = Modifier.padding(end = 10.dp))
+                        Spinner(items = bitRates, selectedItem = bitrate.toString()) { index ->
+                            Logd(TAG, "BitRate selected: ${bitRates[index]}")
+                            bitrate = bitRates[index].toInt()
+                            ytMediaSpecs.setAudioStream(locale, codec, bitrate)
+                            resetPlayer = true
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (resetPlayer) IconButton(onClick = {
+                        playbackService?.mPlayer?.reinit()
+                        resetPlayer = false
+                    }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_build_24), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "Build") }
+                }
+            }
             Text(txtvPodcastTitle, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp).combinedClickable(onClick = {
-                    if (currentMedia != null) {
+                    if (currentItem != null) {
                         if (currentItem?.feedId != null) {
                             val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), currentItem!!.feedId!!)
                             startActivity(openFeed)
                         }
                     }
-                }, onLongClick = { copyText(currentMedia?.episode?.feed?.title?:"") }))
+                }, onLongClick = { copyText(currentItem?.feed?.title?:"") }))
             Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp)) {
                 Spacer(modifier = Modifier.weight(0.2f))
                 val ratingIconRes = Rating.fromCode(rating).res
@@ -589,16 +674,16 @@ class AudioPlayerFragment : Fragment() {
 
     private fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPositionUpdate")
-        if (!playButInit && playButRes == R.drawable.ic_play_48dp && curMedia != null) {
-            if (isCurrentlyPlaying(curMedia)) playButRes = R.drawable.ic_pause
+        if (!playButInit && playButRes == R.drawable.ic_play_48dp && curEpisode != null) {
+            if (isCurrentlyPlaying(curEpisode)) playButRes = R.drawable.ic_pause
             playButInit = true
         }
-        if (curMedia?.id != event.media?.id || controller == null || curPositionFB == EpisodeMedia.INVALID_TIME || curDurationFB == EpisodeMedia.INVALID_TIME) return
+        if (curEpisode?.id != event.episode?.id || controller == null || curPositionFB == Episode.INVALID_TIME || curDurationFB == Episode.INVALID_TIME) return
         val converter = TimeSpeedConverter(curSpeedFB)
         currentPosition = converter.convert(event.position)
         duration = converter.convert(event.duration)
         val remainingTime: Int = converter.convert(max((event.duration - event.position).toDouble(), 0.0).toInt())
-        if (currentPosition == EpisodeMedia.INVALID_TIME || duration == EpisodeMedia.INVALID_TIME) {
+        if (currentPosition == Episode.INVALID_TIME || duration == Episode.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
@@ -608,54 +693,55 @@ class AudioPlayerFragment : Fragment() {
         sliderValue = event.position.toFloat()
     }
 
-    private fun updateUi(media: EpisodeMedia) {
+    private fun updateUi(media: Episode) {
         Logd(TAG, "updateUi called $media")
         titleText = media.getEpisodeTitle()
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.position, media.duration))
-        if (isPlayingVideoLocally && curMedia?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+        if (isPlayingVideoLocally && curEpisode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
-        prevMedia = media
+        prevItem = media
     }
 
     private fun updateDetails() {
         lifecycleScope.launch {
             Logd(TAG, "in updateDetails")
             withContext(Dispatchers.IO) {
-                currentMedia = curMedia
-                if (currentMedia != null) {
-                    currentItem = currentMedia!!.episodeOrFetch()
+                currentItem = curEpisode
+                if (currentItem != null) {
+//                    currentItem = currentItem
+//                    currentItem = currentItem!!.episodeOrFetch()
                     showHomeText = false
                     homeText = null
                 }
                 if (currentItem != null) {
                     if (rating == Rating.UNRATED.code || prevItem?.identifyingValue != currentItem!!.identifyingValue) rating = currentItem!!.rating
-                    currentMedia = currentItem!!.media
+//                    currentItem = currentItem
                     Logd(TAG, "updateDetails updateInfo ${cleanedNotes == null} ${prevItem?.identifyingValue} ${currentItem!!.identifyingValue}")
-                    val url = currentItem!!.media?.downloadUrl
+                    val url = currentItem!!.downloadUrl
                     if (url?.contains("youtube.com") == true && currentItem!!.description?.startsWith("Short:") == true) {
                         Logd(TAG, "getting extended description: ${currentItem!!.title}")
                         try {
                             val info = currentItem!!.streamInfo
                             if (info?.description?.content != null) {
                                 currentItem = upsert(currentItem!!) { it.description = info.description?.content }
-                                cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentMedia?.duration?:0)
-                            } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.duration?:0)
+                                cleanedNotes = shownotesCleaner?.processShownotes(info.description!!.content, currentItem?.duration?:0)
+                            } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentItem?.duration?:0)
                         } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
-                    } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentMedia?.duration?:0)
+                    } else cleanedNotes = shownotesCleaner?.processShownotes(currentItem!!.description ?: "", currentItem?.duration?:0)
                     prevItem = currentItem
                 }
                 Logd(TAG, "updateDetails cleanedNotes: ${cleanedNotes?.length}")
             }
             withContext(Dispatchers.Main) {
-                Logd(TAG, "subscribe: ${currentMedia?.getEpisodeTitle()}")
-                if (currentMedia != null) {
-                    val media = currentMedia!!
+                Logd(TAG, "subscribe: ${currentItem?.getEpisodeTitle()}")
+                if (currentItem != null) {
+                    val media = currentItem!!
                     Logd(TAG, "displayMediaInfo ${currentItem?.title} ${media.getEpisodeTitle()}")
-                    val pubDateStr = MiscFormatter.formatDateTimeFlex(media.episode?.getPubDate())
-                    txtvPodcastTitle = (media.episode?.feed?.title?:"").trim()
+                    val pubDateStr = MiscFormatter.formatDateTimeFlex(media.getPubDate())
+                    txtvPodcastTitle = (media.feed?.title?:"").trim()
                     episodeDate = pubDateStr.trim()
                     titleText = currentItem?.title ?:""
                     displayedChapterIndex = -1
@@ -685,7 +771,7 @@ class AudioPlayerFragment : Fragment() {
                 if (!homeText.isNullOrEmpty()) cleanedNotes = shownotesCleaner?.processShownotes(homeText!!, 0)
                 else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             } else {
-                cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentMedia?.duration ?: 0)
+                cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", currentItem?.duration ?: 0)
                 if (cleanedNotes.isNullOrEmpty()) withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             }
         }
@@ -693,18 +779,18 @@ class AudioPlayerFragment : Fragment() {
 
     private fun refreshChapterData(chapterIndex: Int) {
         Logd(TAG, "in refreshChapterData $chapterIndex")
-        if (currentMedia != null && chapterIndex > -1) {
-            if (currentMedia!!.position > currentMedia!!.duration || chapterIndex >= (currentMedia!!.episode?.chapters?: listOf()).size - 1) {
-                displayedChapterIndex = (currentMedia!!.episode?.chapters?:listOf()).size - 1
+        if (currentItem != null && chapterIndex > -1) {
+            if (currentItem!!.position > currentItem!!.duration || chapterIndex >= (currentItem?.chapters?: listOf()).size - 1) {
+                displayedChapterIndex = currentItem!!.chapters.size - 1
                 hasNextChapter = false
             } else {
                 displayedChapterIndex = chapterIndex
                 hasNextChapter = true
             }
         }
-        if (currentMedia != null) {
-            imgLocLarge = if (displayedChapterIndex == -1 || currentMedia!!.episode?.chapters.isNullOrEmpty() || currentMedia!!.episode!!.chapters[displayedChapterIndex].imageUrl.isNullOrEmpty())
-                currentMedia!!.getImageLocation() else EmbeddedChapterImage.getModelFor(currentMedia!!, displayedChapterIndex)?.toString()
+        if (currentItem != null) {
+            imgLocLarge = if (displayedChapterIndex == -1 || currentItem?.chapters.isNullOrEmpty() || currentItem!!.chapters[displayedChapterIndex].imageUrl.isNullOrEmpty())
+                currentItem!!.imageLocation else EmbeddedChapterImage.getModelFor(currentItem!!, displayedChapterIndex)?.toString()
             Logd(TAG, "displayCoverImage: imgLoc: $imgLoc")
         }
     }
@@ -716,16 +802,16 @@ class AudioPlayerFragment : Fragment() {
             displayedChapterIndex < 1 -> seekTo(0)
             (curPositionFB - 10000 * curSpeedFB) < curr.start -> {
                 refreshChapterData(displayedChapterIndex - 1)
-                if (!currentMedia?.episode?.chapters.isNullOrEmpty()) seekTo(currentMedia!!.episode!!.chapters[displayedChapterIndex].start.toInt())
+                if (!currentItem?.chapters.isNullOrEmpty()) seekTo(currentItem!!.chapters[displayedChapterIndex].start.toInt())
             }
             else -> seekTo(curr.start.toInt())
         }
     }
 
      private fun seekToNextChapter() {
-        if (currentMedia?.episode?.chapters.isNullOrEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= currentMedia!!.episode!!.chapters.size) return
+        if (currentItem?.chapters.isNullOrEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= currentItem!!.chapters.size) return
         refreshChapterData(displayedChapterIndex + 1)
-        seekTo(currentMedia!!.episode!!.chapters[displayedChapterIndex].start.toInt())
+        seekTo(currentItem!!.chapters[displayedChapterIndex].start.toInt())
     }
 
     fun onExpanded() {
@@ -744,29 +830,30 @@ class AudioPlayerFragment : Fragment() {
 
     private var loadItemsRunning = false
     private fun loadMediaInfo() {
-        Logd(TAG, "loadMediaInfo() curMedia: ${curMedia?.id}")
+        Logd(TAG, "loadMediaInfo() curMedia: ${curEpisode?.id}")
         val actMain = (activity as MainActivity)
-        if (curMedia == null) {
+        if (curEpisode == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
             return
         }
         if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            val curMediaChanged = currentMedia == null || curMedia?.id != currentMedia?.id
-            if (curMedia != null && curMedia?.id != currentMedia?.id) {
-                updateUi(curMedia!!)
+            val curMediaChanged = currentItem == null || curEpisode?.id != currentItem?.id
+            if (curEpisode != null && curEpisode?.id != currentItem?.id) {
+                updateUi(curEpisode!!)
 //                imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
-                currentMedia = curMedia
+                currentItem = curEpisode
             }
             if (!isCollapsed && curMediaChanged) {
-                Logd(TAG, "loadMediaInfo loading details ${curMedia?.id}")
+                Logd(TAG, "loadMediaInfo loading details ${curEpisode?.id}")
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { curMedia?.apply { ChapterUtils.loadChapters(this, requireContext(), false) } }
-                    currentMedia = curMedia
-                    val item = currentMedia?.episodeOrFetch()
+                    withContext(Dispatchers.IO) { curEpisode?.apply { ChapterUtils.loadChapters(this, requireContext(), false) } }
+                    currentItem = curEpisode
+                    val item = currentItem
+//                    val item = currentItem?.episodeOrFetch()
                     if (item != null) setItem(item)
-                    val chapters: List<Chapter> = currentMedia?.episode?.chapters ?: listOf()
+                    val chapters: List<Chapter> = currentItem?.chapters ?: listOf()
                     if (chapters.isNotEmpty()) {
                         val dividerPos = FloatArray(chapters.size)
                         for (i in chapters.indices) dividerPos[i] = chapters[i].start / curDurationFB.toFloat()
@@ -796,7 +883,7 @@ class AudioPlayerFragment : Fragment() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
         super.onResume()
         loadMediaInfo()
-        if (curMedia != null) onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia!!, curMedia!!.position, curMedia!!.duration))
+        if (curEpisode != null) onPositionUpdate(FlowEvent.PlaybackPositionEvent(curEpisode!!, curEpisode!!.position, curEpisode!!.duration))
     }
 
     override fun onStart() {
@@ -824,7 +911,7 @@ class AudioPlayerFragment : Fragment() {
      override fun onPause() {
         super.onPause()
          val editor = prefs.edit() ?: return
-         if (curMedia != null) editor.putString(PREF_PLAYABLE_ID, curMedia!!.id.toString())
+         if (curEpisode != null) editor.putString(PREF_PLAYABLE_ID, curEpisode!!.id.toString())
          else {
              Logd(TAG, "savePreferences was called while media or webview was null")
              editor.putInt(PREF_SCROLL_Y, -1)
@@ -855,9 +942,9 @@ class AudioPlayerFragment : Fragment() {
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         Logd(TAG, "onPlayEvent ${event.episode.title}")
         val currentitem = event.episode
-        if (currentMedia?.id == null || currentitem.media?.id != currentMedia?.id) {
-            currentMedia = currentitem.media
-            updateUi(currentMedia!!)
+        if (currentItem?.id == null || currentitem.id != currentItem?.id) {
+            currentItem = currentitem
+            updateUi(currentItem!!)
             setItem(currentitem)
         }
         (activity as MainActivity).setPlayerVisible(true)
@@ -866,17 +953,17 @@ class AudioPlayerFragment : Fragment() {
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPlaybackPositionEvent ${event.episode.title}")
-        val media = event.media ?: return
-        if (currentMedia?.id == null || media.id != currentMedia?.id) {
-            currentMedia = media
-            updateUi(currentMedia!!)
+        val media = event.episode ?: return
+        if (currentItem?.id == null || media.id != currentItem?.id) {
+            currentItem = media
+            updateUi(currentItem!!)
             setItem(curEpisode!!)
         }
 //        if (isShowPlay) setIsShowPlay(false)
         onPositionUpdate(event)
         if (!isCollapsed) {
-            if (currentMedia?.id != event.media.id) return
-            val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(currentMedia, event.position)
+            if (currentItem?.id != event.episode.id) return
+            val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(currentItem, event.position)
             if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) refreshChapterData(newChapterIndex)
         }
     }
@@ -888,9 +975,8 @@ class AudioPlayerFragment : Fragment() {
         eventSink = null
     }
     private fun procFlowEvents() {
-        if (eventSink != null) return
         Logd(TAG, "procFlowEvents")
-        eventSink = lifecycleScope.launch {
+        if (eventSink == null) eventSink = lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
@@ -899,17 +985,17 @@ class AudioPlayerFragment : Fragment() {
                             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
                         when (event.action) {
                             FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
-                            FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> if (curMedia != null) (activity as MainActivity).setPlayerVisible(true)
+                            FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> if (curEpisode != null) (activity as MainActivity).setPlayerVisible(true)
 //                PlaybackServiceEvent.Action.SERVICE_RESTARTED -> (activity as MainActivity).setPlayerVisible(true)
                         }
                     }
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.RatingEvent -> if (curEpisode?.id == event.episode.id) rating = event.rating
+//                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
                     is FlowEvent.PlayerErrorEvent -> {
                         showErrorDialog.value = true
                         errorMessage = event.message
                     }
-//                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) sleepTimerActive = isSleepTimerActive()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.SpeedChangedEvent -> updatePlaybackSpeedButton(event)

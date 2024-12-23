@@ -141,13 +141,13 @@ fun stopMonitor(vms: List<EpisodeVM>) {
 
 @Stable
 class EpisodeVM(var episode: Episode, val tag: String) {
-    var positionState by mutableStateOf(episode.media?.position?:0)
-    var durationState by mutableStateOf(episode.media?.duration?:0)
+    var positionState by mutableStateOf(episode.position?:0)
+    var durationState by mutableStateOf(episode.duration?:0)
     var playedState by mutableIntStateOf(episode.playState)
     var isPlayingState by mutableStateOf(false)
     var ratingState by mutableIntStateOf(episode.rating)
     var inProgressState by mutableStateOf(episode.isInProgress)
-    var downloadState by mutableIntStateOf(if (episode.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
+    var downloadState by mutableIntStateOf(if (episode.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
     var viewCount by mutableIntStateOf(episode.viewCount)
     var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode))
     var actionRes by mutableIntStateOf(actionButton.getDrawable())
@@ -157,13 +157,13 @@ class EpisodeVM(var episode: Episode, val tag: String) {
     var prog by mutableFloatStateOf(0f)
 
     private var episodeMonitor: Job? by mutableStateOf(null)
-    private var mediaMonitor: Job? by mutableStateOf(null)
+//    private var mediaMonitor: Job? by mutableStateOf(null)
 
     fun stopMonitoring() {
         episodeMonitor?.cancel()
-        mediaMonitor?.cancel()
+//        mediaMonitor?.cancel()
         episodeMonitor = null
-        mediaMonitor = null
+//        mediaMonitor = null
         Logd("EpisodeVM", "cancel monitoring")
     }
 
@@ -181,36 +181,14 @@ class EpisodeVM(var episode: Episode, val tag: String) {
                                 withContext(Dispatchers.Main) {
                                     playedState = changes.obj.playState
                                     ratingState = changes.obj.rating
+                                    positionState = changes.obj.position
+                                    durationState = changes.obj.duration
+                                    inProgressState = changes.obj.isInProgress
+                                    downloadState = if (changes.obj.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal
                                     episode = changes.obj     // direct assignment doesn't update member like media??
                                 }
                                 Logd("EpisodeVM", "episodeMonitor $playedState $playedState ")
                             } else Logd("EpisodeVM", "episodeMonitor index out bound")
-                        }
-                        else -> {}
-                    }
-                }
-            }
-        }
-        if (mediaMonitor == null) {
-            mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
-                val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
-                Logd("EpisodeVM", "start monitoring media: ${episode.title}")
-                val episodeFlow = item_.asFlow(listOf("media.*"))
-                episodeFlow.collect { changes: SingleQueryChange<Episode> ->
-                    when (changes) {
-                        is UpdatedObject -> {
-                            Logd("EpisodeVM", "mediaMonitor UpdatedObject $tag ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                            if (episode.id == changes.obj.id) {
-                                withContext(Dispatchers.Main) {
-                                    positionState = changes.obj.media?.position ?: 0
-                                    durationState = changes.obj.media?.duration ?: 0
-                                    inProgressState = changes.obj.isInProgress
-                                    downloadState = if (changes.obj.media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal
-                                    Logd("EpisodeVM", "mediaMonitor $positionState $inProgressState ${episode.title}")
-                                    episode = changes.obj
-//                                    Logd("EpisodeVM", "mediaMonitor downloaded: ${changes.obj.media?.downloaded} ${episode.media?.downloaded}")
-                                }
-                            } else Logd("EpisodeVM", "mediaMonitor index out bound")
                         }
                         else -> {}
                     }
@@ -252,33 +230,32 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)
                             .clickable {
                                 for (item in selected) {
-                                    var media: EpisodeMedia? = item.media
-                                    val hasAlmostEnded = if (media != null) hasAlmostEnded(media) else false
+//                                    var media: Episode? = item
+                                    val hasAlmostEnded = if (item != null) hasAlmostEnded(item) else false
                                     var item_ = runBlocking { setPlayStateSync(state.code, item, hasAlmostEnded, false) }
                                     when (state) {
                                         PlayState.UNPLAYED -> {
-                                            if (isProviderConnected && item_.feed?.isLocalFeed != true && item_.media != null) {
+                                            if (isProviderConnected && item_.feed?.isLocalFeed != true) {
                                                 val actionNew: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.NEW).currentTimestamp().build()
                                                 SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionNew)
                                             }
                                         }
                                         PlayState.PLAYED -> {
-                                            if (hasAlmostEnded) item_ = upsertBlk(item_) { it.media?.playbackCompletionDate = Date() }
+                                            if (hasAlmostEnded) item_ = upsertBlk(item_) { it.playbackCompletionDate = Date() }
                                             val shouldAutoDelete = if (item_.feed == null) false else allowForAutoDelete(item_.feed!!)
-                                            media = item_.media
-                                            if (media != null && hasAlmostEnded && shouldAutoDelete) {
+//                                            item = item_
+                                            if (hasAlmostEnded && shouldAutoDelete) {
                                                 item_ = deleteMediaSync(context, item_)
                                                 if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(item_)
                                             } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item_)
                                             if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
-                                                val media_: EpisodeMedia? = item_.media
                                                 // not all items have media, Gpodder only cares about those that do
-                                                if (isProviderConnected && media_ != null) {
+                                                if (isProviderConnected && item_ != null) {
                                                     val actionPlay: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.PLAY)
                                                         .currentTimestamp()
-                                                        .started(media_.duration / 1000)
-                                                        .position(media_.duration / 1000)
-                                                        .total(media_.duration / 1000)
+                                                        .started(item_.duration / 1000)
+                                                        .position(item_.duration / 1000)
+                                                        .total(item_.duration / 1000)
                                                         .build()
                                                     SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, actionPlay)
                                                 }
@@ -378,7 +355,6 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                             if (!removeChecked || (e.feedId != null && e.feedId!! >= MAX_SYNTHETIC_ID)) {
                                 e_ = realm.copyFromRealm(e)
                                 e_.id = newId()
-                                e_.media?.id = e_.id
                             } else {
                                 val feed = realm.query(Feed::class).query("id == $0", e_.feedId).first().find()
                                 if (feed != null) upsertBlk(feed) { it.episodes.remove(e_) }
@@ -419,7 +395,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             for (e in selected) {
-                                val sLog = SubscriptionLog(e.id, e.title?:"", e.media?.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
+                                val sLog = SubscriptionLog(e.id, e.title?:"", e.downloadUrl?:"", e.link?:"", SubscriptionLog.Type.Media.name)
                                 upsert(sLog) {
                                     it.rating = e.rating
                                     it.comment = if (e.comment.isBlank()) "" else (e.comment + "\n")
@@ -429,7 +405,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                             }
                             realm.write {
                                 for (e in selected) {
-                                    val url = e.media?.fileUrl
+                                    val url = e.fileUrl
                                     when {
                                         url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
                                         url != null -> File(url).delete()
@@ -451,6 +427,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null, layoutMode: Int = 0,
+                      buildMoreItems: ((MutableList<EpisodeVM>)-> Unit) = {},
                       isDraggable: Boolean = false, dragCB: ((Int, Int)->Unit)? = null,
                       refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
                       actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
@@ -494,14 +471,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 runOnIOScope {
                     for (item_ in selected) {
                         var item = item_
-                        if (!item.isDownloaded && item.feed?.isLocalFeed != true) continue
-                        val media = item.media
-                        if (media != null) {
-                            val almostEnded = hasAlmostEnded(media)
-                            if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
-                            if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
-                            deleteEpisodeMedia(activity, item)
-                        }
+                        if (!item.downloaded && item.feed?.isLocalFeed != true) continue
+                        val almostEnded = hasAlmostEnded(item)
+                        if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                        if (almostEnded) item = upsert(item) { it.playbackCompletionDate = Date() }
+                        deleteEpisodeMedia(activity, item)
                     }
                 }
 //                    LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
@@ -513,7 +487,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 selectMode = false
                 Logd(TAG, "ic_download: ${selected.size}")
                 for (episode in selected) {
-                    if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
+                    if (episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
                 }
             }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "Download")
@@ -534,12 +508,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 runOnIOScope {
                     for (item_ in selected) {
                         var item = item_
-                        val media = item.media
-                        if (media != null) {
-                            val almostEnded = hasAlmostEnded(media)
-                            if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
-                            if (almostEnded) item = upsert(item) { it.media?.playbackCompletionDate = Date() }
-                        }
+                        val almostEnded = hasAlmostEnded(item)
+                        if (almostEnded && item.playState < PlayState.PLAYED.code) item = setPlayStateSync(PlayState.PLAYED.code, item, almostEnded, false)
+                        if (almostEnded) item = upsert(item) { it.playbackCompletionDate = Date() }
                         if (item.playState < PlayState.SKIPPED.code) setPlayState(PlayState.SKIPPED.code, false, item)
                     }
                     removeFromQueueSync(curQueue, *selected.toTypedArray())
@@ -590,10 +561,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     CoroutineScope(Dispatchers.IO).launch {
                         youtubeUrls.clear()
                         for (e in selected) {
-                            Logd(TAG, "downloadUrl: ${e.media?.downloadUrl}")
-                            val url = URL(e.media?.downloadUrl ?: "")
+                            Logd(TAG, "downloadUrl: ${e.downloadUrl}")
+                            val url = URL(e.downloadUrl ?: "")
                             if ((isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url))
-                                youtubeUrls.add(e.media!!.downloadUrl!!)
+                                youtubeUrls.add(e.downloadUrl!!)
                             else addToMiscSyndicate(e)
                         }
                         Logd(TAG, "youtubeUrls: ${youtubeUrls.size}")
@@ -667,12 +638,12 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (vm.ratingState != Rating.UNRATED.code)
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                             modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
-                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
+                    if (vm.episode.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val curContext = LocalContext.current
                     val dateSizeText = " · " + formatDateTimeFlex(vm.episode.getPubDate()) +
                             " · " + getDurationStringLong(vm.durationState) +
-                            (if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else "") +
+                            (if (vm.episode.size > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.size) else "") +
                             (if (vm.viewCount > 0) " · " + formatLargeInteger(vm.viewCount) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
@@ -686,10 +657,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     if (vm.ratingState != Rating.UNRATED.code)
                         Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                             modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(16.dp).height(16.dp))
-                    if (vm.episode.media?.getMediaType() == MediaType.VIDEO)
+                    if (vm.episode.getMediaType() == MediaType.VIDEO)
                         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(16.dp).height(16.dp))
                     val dateSizeText = " · " + getDurationStringLong(vm.durationState) +
-                            (if ((vm.episode.media?.size ?: 0) > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.media?.size ?: 0) else "")
+                            (if (vm.episode.size > 0) " · " + Formatter.formatShortFileSize(curContext, vm.episode.size) else "")
                     Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -744,9 +715,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 if (actionButton_ == null) {
                     LaunchedEffect(key1 = status, key2 = vm.downloadState) {
                         if (index >= vms.size) return@LaunchedEffect
-                        if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.media?.downloadUrl ?: "") ?: 0
+                        if (isDownloading()) vm.dlPercent = dls?.getProgress(vms[index].episode.downloadUrl ?: "") ?: 0
                         Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
-                        Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.media?.downloaded} ${vm.dlPercent}")
+                        Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.downloaded} ${vm.dlPercent}")
                         vm.actionButton = vm.actionButton.forItem(vm.episode)
                         if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
                     }
@@ -776,9 +747,9 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
     @Composable
     fun ProgressRow(vm: EpisodeVM, index: Int) {
         val textColor = MaterialTheme.colorScheme.onSurface
-        if (vm.inProgressState || InTheatre.isCurMedia(vm.episode.media)) {
+        if (vm.inProgressState || InTheatre.isCurMedia(vm.episode)) {
             val pos = vm.positionState
-            val dur = remember { vm.episode.media?.duration ?: 0 }
+            val dur = remember { vm.episode.duration ?: 0 }
             val durText = remember { getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
 //            Logd(TAG, "$index vm.prog: ${vm.prog}")
@@ -788,6 +759,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                 Text(durText, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
         }
+    }
+
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisibleIndex -> if (lastVisibleIndex == vms.size - 1) buildMoreItems(vms) }
     }
 
     var refreshing by remember { mutableStateOf(false)}
@@ -1265,9 +1241,11 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
     val PREF_SHARE_EPISODE_TYPE = "prefShareEpisodeType"
 
     val prefs = remember { act.getSharedPreferences("ShareDialog", Context.MODE_PRIVATE) }
-    val hasMedia = remember { item.media != null }
-    val downloaded = remember { hasMedia && item.media!!.downloaded }
-    val hasDownloadUrl = remember { hasMedia && item.media!!.downloadUrl != null }
+    // TODO: ensure
+//    val hasMedia = remember { item.media != null }
+    val hasMedia = remember { true }
+    val downloaded = remember { hasMedia && item.downloaded }
+    val hasDownloadUrl = remember { hasMedia && item.downloadUrl != null }
 
     var type = remember { prefs.getInt(PREF_SHARE_EPISODE_TYPE, 1) }
     if ((type == 2 && !hasDownloadUrl) || (type == 3 && !downloaded)) type = 1
@@ -1292,7 +1270,7 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
                     RadioButton(selected = position == 3, onClick = { position = 3 })
                     Text(stringResource(R.string.share_dialog_media_file_label))
                 }
-                HorizontalDivider(modifier = Modifier.fillMaxWidth().height(5.dp))
+                HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = isChecked, onCheckedChange = { isChecked = it })
                     Text(stringResource(R.string.share_playback_position_dialog_label))
@@ -1303,8 +1281,8 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
             TextButton(onClick = {
                 when(position) {
                     1 -> ShareUtils.shareFeedItemLinkWithDownloadLink(ctx, item, isChecked)
-                    2 -> ShareUtils.shareMediaDownloadLink(ctx, item.media!!)
-                    3 -> ShareUtils.shareFeedItemFile(ctx, item.media!!)
+                    2 -> ShareUtils.shareMediaDownloadLink(ctx, item)
+                    3 -> ShareUtils.shareFeedItemFile(ctx, item)
                 }
                 prefs.edit().putBoolean(PREF_SHARE_EPISODE_START_AT, isChecked).putInt(PREF_SHARE_EPISODE_TYPE, position).apply()
                 onDismissRequest()

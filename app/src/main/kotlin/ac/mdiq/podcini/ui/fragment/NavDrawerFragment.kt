@@ -110,7 +110,7 @@ class NavDrawerFragment : Fragment() {
                     if (nav.count > 0) Text(nav.count.toString(), color = textColor, modifier = Modifier.padding(end = 10.dp))
                 }
             }
-            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
             Column {
                 for (f in feeds) {
                     Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp).clickable {
@@ -126,11 +126,9 @@ class NavDrawerFragment : Fragment() {
                 }
             }
             Spacer(Modifier.weight(1f))
-            Text("Currently launching on Google Play, early testers will become pre-IPO members. Click for details", color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.clickable(onClick = {
-                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions/120")
-            }))
-            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+            Text("Formal listing on Google Play has been approved - many thanks to all for the kind support!", color = textColor,
+                modifier = Modifier.clickable(onClick = {}))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
                 startActivity(Intent(activity, PreferenceActivity::class.java))
             }) {

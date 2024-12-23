@@ -43,8 +43,8 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
         if (includeTerms.isNullOrEmpty() && excludeTerms.isNullOrEmpty() && minimalDurationFilter <= -1) return true
 
         // Check if the episode is long enough if minimal duration filter is on
-        if (hasMinimalDurationFilter() && item.media != null) {
-            val durationInMs = item.media!!.duration
+        if (hasMinimalDurationFilter()) {
+            val durationInMs = item.duration
             // Minimal Duration is stored in seconds
             if (durationInMs > 0 && durationInMs / 1000 < minimalDurationFilter) return false
         }

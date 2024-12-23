@@ -11,7 +11,7 @@ import ac.mdiq.podcini.net.feed.parser.utils.MimeTypeUtils
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.EpisodeMedia.MediaMetadataRetrieverCompat
+import ac.mdiq.podcini.storage.model.Episode.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.media.MediaMetadataRetriever
@@ -114,9 +114,7 @@ object LocalFeedUpdater {
 
     private fun feedContainsFile(feed: Feed, filename: String): Episode? {
         val items = feed.episodes
-        for (i in items) {
-            if (i.media != null && i.link == filename) return i
-        }
+        for (i in items) if (i.link == filename) return i
         return null
     }
 
@@ -124,10 +122,9 @@ object LocalFeedUpdater {
         val item = Episode(0L, file.name, UUID.randomUUID().toString(), file.name, Date(file.lastModified), PlayState.UNPLAYED.code, feed)
         item.disableAutoDownload()
         val size = file.length
-        val media = EpisodeMedia(0, item, 0, 0, size, file.type, file.uri.toString(), file.uri.toString(), false, null, 0, 0)
-        item.media = media
+        val media = item.fillMedia(0, 0, size, file.type, file.uri.toString(), file.uri.toString(), false, null, 0, 0)
         for (existingItem in feed.episodes) {
-            if (existingItem.media != null && existingItem.media!!.downloadUrl == file.uri.toString() && file.length == existingItem.media!!.size) {
+            if (existingItem.downloadUrl == file.uri.toString() && file.length == existingItem.size) {
                 // We found an old file that we already scanned. Re-use metadata.
                 item.updateFromOther(existingItem)
                 return item
@@ -154,8 +151,8 @@ object LocalFeedUpdater {
             val title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
             if (!title.isNullOrEmpty()) item.title = title
             val durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            item.media!!.duration = (durationStr!!.toLong().toInt())
-            item.media!!.hasEmbeddedPicture = (mediaMetadataRetriever.embeddedPicture != null)
+            item.duration = (durationStr!!.toLong().toInt())
+            item.hasEmbeddedPicture = (mediaMetadataRetriever.embeddedPicture != null)
             try {
                 context.contentResolver.openInputStream(file.uri).use { inputStream ->
                     val reader = Id3MetadataReader(CountingInputStream(BufferedInputStream(inputStream)))

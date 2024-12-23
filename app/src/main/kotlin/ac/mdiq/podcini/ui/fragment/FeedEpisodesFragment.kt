@@ -64,6 +64,7 @@ import kotlinx.coroutines.flow.collectLatest
 import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
+import kotlin.math.min
 
 class FeedEpisodesFragment : Fragment() {
     private lateinit var swipeActions: SwipeActions
@@ -141,7 +142,7 @@ class FeedEpisodesFragment : Fragment() {
                     episodes.clear()
                     episodes.addAll(eListTmp)
                     ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                    ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                    ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                 }
                 withContext(Dispatchers.Main) {
                     stopMonitor(vms)
@@ -198,6 +199,7 @@ class FeedEpisodesFragment : Fragment() {
                             }, filterLongClickCB = { filterLongClick() })
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
                             EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutModeIndex,
+                                buildMoreItems = { buildMoreItems(it) },
                                 refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
@@ -429,7 +431,7 @@ class FeedEpisodesFragment : Fragment() {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = ueMap[url] ?: -1
             if (pos >= 0) {
-                Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].media?.downloaded} ${episodes[pos].title}")
+                Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].downloaded} ${episodes[pos].title}")
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
         }
@@ -509,7 +511,7 @@ class FeedEpisodesFragment : Fragment() {
             if (!episodes_.contains(episode)) {
                 episodes.remove(episode)
                 ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
+                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.downloadUrl?.let { it to index } }.toMap()
                 return true
             }
             return false
@@ -542,21 +544,23 @@ class FeedEpisodesFragment : Fragment() {
                         episodes.clear()
                         episodes.addAll(eListTmp)
                         ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                         withContext(Dispatchers.Main) {
                             layoutModeIndex = if (feed_.preferences?.useWideLayout == true) 1 else 0
                             stopMonitor(vms)
                             vms.clear()
-                            for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
+                            buildMoreItems(vms)
+//                            for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
                         }
                         if (onInit) {
                             var hasNonMediaItems = false
-                            for (item in episodes) {
-                                if (item.media == null) {
-                                    hasNonMediaItems = true
-                                    break
-                                }
-                            }
+                            // TODO: ensure
+//                            for (item in episodes) {
+//                                if (item.media == null) {
+//                                    hasNonMediaItems = true
+//                                    break
+//                                }
+//                            }
                             if (hasNonMediaItems) {
                                 ioScope.launch {
                                     withContext(Dispatchers.IO) {
@@ -583,6 +587,11 @@ class FeedEpisodesFragment : Fragment() {
                 Log.e(TAG, Log.getStackTraceString(e))
             } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { loadJob = null } }
+    }
+
+    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
+        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
+        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
     }
 
 //    private fun onKeyUp(event: KeyEvent) {

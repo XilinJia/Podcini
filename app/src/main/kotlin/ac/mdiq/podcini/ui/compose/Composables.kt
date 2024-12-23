@@ -9,12 +9,15 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -280,9 +283,9 @@ fun MediaPlayerErrorDialog(activity: Activity, message: String, showDialog: Muta
             },
             confirmButton = {
                 TextButton(onClick = {
-                    if (activity is MainActivity) activity.bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+//                    if (activity is MainActivity) activity.bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
                     showDialog.value = false
-                }) { Text("Confirm") }
+                }) { Text("OK") }
             },
         )
     }
@@ -309,4 +312,3 @@ fun SearchBarRow(hintTextRes: Int, defaultText: String = "", performSearch: (Str
             modifier = Modifier.width(40.dp).height(40.dp).padding(start = 5.dp).clickable(onClick = { performSearch(queryText) }))
     }
 }
-

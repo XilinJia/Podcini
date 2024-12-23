@@ -194,7 +194,7 @@ object Feeds {
      * @return The updated Feed from the database if it already existed, or the new Feed from the parameters otherwise.
      */
     @Synchronized
-    fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean= false): Feed? {
+    fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean = false, overwriteOld: Boolean = false): Feed? {
         Logd(TAG, "updateFeed called")
         var resultFeed: Feed?
 //        val unlistedItems: MutableList<Episode> = ArrayList()
@@ -219,7 +219,8 @@ object Feeds {
         Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
         newFeed.episodes.sortWith(EpisodePubdateComparator())
         if (newFeed.pageNr == savedFeed.pageNr) {
-            if (savedFeed.compareWithOther(newFeed)) {
+            if (overwriteOld) savedFeed.updateFromOther(newFeed, true)
+            else if (savedFeed.differentFrom(newFeed)) {
                 Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
                 savedFeed.updateFromOther(newFeed)
             }
@@ -254,8 +255,8 @@ object Feeds {
                                 """.trimIndent()))
                     oldItem.identifier = episode.identifier
                     // queue for syncing with server
-                    if (isProviderConnected && oldItem.isPlayed() && oldItem.media != null) {
-                        val durs = oldItem.media!!.duration / 1000
+                    if (isProviderConnected && oldItem.isPlayed()) {
+                        val durs = oldItem.duration / 1000
                         val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
                             .currentTimestamp()
                             .started(durs)
@@ -267,16 +268,13 @@ object Feeds {
                 }
             }
 
-            if (oldItem != null) oldItem.updateFromOther(episode)
+            if (oldItem != null) oldItem.updateFromOther(episode, overwriteOld)
             else {
                 Logd(TAG, "Found new episode: ${episode.title}")
                 episode.feed = savedFeed
                 episode.id = idLong++
                 episode.feedId = savedFeed.id
-                if (episode.media != null) {
-                    episode.media!!.id = episode.id
-                    if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
-                }
+                if (!savedFeed.hasVideoMedia && episode.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
                 if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
                 else savedFeed.episodes.add(idx, episode)
 
@@ -316,7 +314,7 @@ object Feeds {
         savedFeed.type = newFeed.type
         savedFeed.lastUpdateFailed = false
         savedFeed.totleDuration = 0
-        for (e in savedFeed.episodes) savedFeed.totleDuration += e.media?.duration ?: 0
+        for (e in savedFeed.episodes) savedFeed.totleDuration += e.duration
 
         resultFeed = savedFeed
         try {
@@ -335,7 +333,7 @@ object Feeds {
         Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
         newFeed.episodes.sortWith(EpisodePubdateComparator())
         if (newFeed.pageNr == savedFeed.pageNr) {
-            if (savedFeed.compareWithOther(newFeed)) {
+            if (savedFeed.differentFrom(newFeed)) {
                 Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
                 savedFeed.updateFromOther(newFeed)
             }
@@ -351,17 +349,14 @@ object Feeds {
         // Look for new or updated Items
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
-            if ((episode.media?.duration?: 0) < 1000) continue
-            if (episode.getPubDate() <= priorMostRecentDate || episode.media?.downloadUrl == priorMostRecent?.media?.downloadUrl) continue
+            if (episode.duration < 1000) continue
+            if (episode.getPubDate() <= priorMostRecentDate || episode.downloadUrl == priorMostRecent?.downloadUrl) continue
 
             Logd(TAG, "Found new episode: ${episode.title}")
             episode.feed = savedFeed
             episode.id = idLong++
             episode.feedId = savedFeed.id
-            if (episode.media != null) {
-                episode.media!!.id = episode.id
-                if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
-            }
+            if (!savedFeed.hasVideoMedia && episode.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
             if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
             else savedFeed.episodes.add(idx, episode)
 
@@ -381,7 +376,7 @@ object Feeds {
         savedFeed.type = newFeed.type
         savedFeed.lastUpdateFailed = false
         savedFeed.totleDuration = 0
-        for (e in savedFeed.episodes) savedFeed.totleDuration += e.media?.duration ?: 0
+        for (e in savedFeed.episodes) savedFeed.totleDuration += e.duration
 
         val resultFeed = savedFeed
         try { upsertBlk(savedFeed) {}
@@ -418,10 +413,10 @@ object Feeds {
                 feed.totleDuration = 0
                 Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
+                    Logd(TAG, "addNewFeedsSync ${episode.playState} ${episode.title}")
                     episode.id = idLong++
                     episode.feedId = feed.id
-                    if (episode.media != null) episode.media!!.id = episode.id
-                    feed.totleDuration += episode.media?.duration ?: 0
+                    feed.totleDuration += episode.duration
                 }
                 copyToRealm(feed)
             }
@@ -460,7 +455,7 @@ object Feeds {
                 if (feed_ != null) {
                     val episodes = feed_.episodes.toList()
                     if (episodes.isNotEmpty()) episodes.forEach { episode ->
-                        val url = episode.media?.fileUrl
+                        val url = episode.fileUrl
                         when {
                             // Local feed
                             url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
@@ -515,11 +510,8 @@ object Feeds {
         episode.feed = feed
         episode.id = Feed.newId()
         episode.feedId = feed.id
-        episode.media?.id = episode.id
         upsertBlk(episode) {}
-        upsertBlk(feed) {
-            it.episodes.add(episode)
-        }
+        upsertBlk(feed) { it.episodes.add(episode) }
         EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
         return 1
     }
@@ -567,7 +559,6 @@ object Feeds {
         episode.feed = feed
         episode.id = Feed.newId()
         episode.feedId = feed.id
-        episode.media?.id = episode.id
         upsertBlk(episode) {}
         feed.episodes.add(episode)
         upsertBlk(feed) {}
@@ -615,7 +606,7 @@ object Feeds {
                      }
                      map[idv] = e
                  }
-                 val url = e.media?.downloadUrl
+                 val url = e.downloadUrl
                  if (url != idv && !url.isNullOrEmpty()) {
                      if (map.containsKey(url)) {
                          Logd(TAG, "FeedAssistant init $tag url duplicate: $url ${e.title}")
@@ -632,9 +623,7 @@ object Feeds {
                      if (map.containsKey(title)) {
                          val episode = map[title]
                          if (episode != null) {
-                             val media1 = episode.media
-                             val media2 = e.media
-                             if (media1 != null && media2 != null && datesLookSimilar(episode, e) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2)) {
+                             if (datesLookSimilar(episode, e) && durationsLookSimilar(episode, e) && mimeTypeLooksSimilar(episode, e)) {
                                  Logd(TAG, "FeedAssistant init $tag title duplicate: $title ${e.title}")
                                  if (savedFeedId > 0L) {
                                      addDownloadStatus(e, episode)
@@ -650,7 +639,7 @@ object Feeds {
              }
         }
         fun addUrlToMap(episode: Episode) {
-            val url = episode.media?.downloadUrl
+            val url = episode.downloadUrl
             if (url != episode.identifyingValue && !url.isNullOrEmpty() && !map.containsKey(url)) map[url] = episode
         }
         fun addidvToMap(episode: Episode) {
@@ -675,7 +664,7 @@ object Feeds {
         fun guessDuplicate(item: Episode): Episode? {
             var episode = map[item.identifier]
             if (episode != null) return episode
-            val url = item.media?.downloadUrl
+            val url = item.downloadUrl
             if (!url.isNullOrEmpty()) {
                 episode = map[url]
                 if (episode != null) return episode
@@ -684,10 +673,7 @@ object Feeds {
             if (title.isNotEmpty()) {
                 episode = map[title]
                 if (episode != null) {
-                    val media1 = episode.media
-                    val media2 = item.media
-                    if (media1 == null || media2 == null) return null
-                    if (datesLookSimilar(episode, item) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2)) return episode
+                    if (datesLookSimilar(episode, item) && durationsLookSimilar(episode, item) && mimeTypeLooksSimilar(episode, item)) return episode
                 }
             }
             return null
@@ -722,9 +708,9 @@ object Feeds {
             return ("""
                 Title: ${episode.title}
                 ID: ${episode.identifier}
-                """.trimIndent() + if (episode.media == null) "" else """
+                """.trimIndent() + """
                  
-                URL: ${episode.media!!.downloadUrl}
+                URL: ${episode.downloadUrl}
                 """.trimIndent())
         }
     }
@@ -735,15 +721,6 @@ object Feeds {
      * even if their feed explicitly says that the episodes are different.
      */
     object EpisodeDuplicateGuesser {
-        // only used in test
-//        fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
-//            if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
-//            val media1 = item1.media
-//            val media2 = item2.media
-//            if (media1 == null || media2 == null) return false
-//            if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
-//            return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
-//        }
         private fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
             if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
             return string1 == string2
@@ -755,10 +732,10 @@ object Feeds {
             val dateNew = dateFormat.format(item1.getPubDate())
             return dateOriginal == dateNew // Same date; time is ignored.
         }
-        internal fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
+        internal fun durationsLookSimilar(media1: Episode, media2: Episode): Boolean {
             return abs((media1.duration - media2.duration).toDouble()) < 10 * 60L * 1000L
         }
-        internal fun mimeTypeLooksSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
+        internal fun mimeTypeLooksSimilar(media1: Episode, media2: Episode): Boolean {
             var mimeType1 = media1.mimeType
             var mimeType2 = media2.mimeType
             if (mimeType1 == null || mimeType2 == null) return true

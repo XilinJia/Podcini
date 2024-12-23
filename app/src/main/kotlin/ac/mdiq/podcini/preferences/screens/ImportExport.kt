@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences.screens
 
+import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.*
@@ -17,6 +18,7 @@ import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -49,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -179,7 +182,6 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             readElements.addAll(it)
             Logd(TAG, "readElements: ${readElements.size}")
         }
-//        showImportSuccessDialog()
         showOpmlImportSelectionDialog = true
     }
 
@@ -332,6 +334,24 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         }
     }
 
+    val chooseAPImportPathLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            showProgress = true
+            importAP(uri, activity = activity) {
+                showImporSuccessDialog.value = true
+                showProgress = false
+            }
+        } }
+
+    val choosePAImportPathLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            showProgress = true
+            importPA(uri, activity = activity) {
+                showImporSuccessDialog.value = true
+                showProgress = false
+            }
+        } }
+
     fun launchExportCombos() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -432,7 +452,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 Text(backupFolder, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
         }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 20.dp, bottom = 20.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         TitleSummaryActionColumn(R.string.combo_export_label, R.string.combo_export_summary) { launchExportCombos() }
         val showComboImportDialog = remember { mutableStateOf(false) }
         ComfirmDialog(titleRes = R.string.combo_import_label, message = stringResource(R.string.combo_import_warning), showDialog = showComboImportDialog) {
@@ -442,12 +462,24 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             restoreComboLauncher.launch(intent)
         }
         TitleSummaryActionColumn(R.string.combo_import_label, R.string.combo_import_summary) { showComboImportDialog.value = true }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 20.dp, bottom = 20.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
+        val showAPImportDialog = remember { mutableStateOf(false) }
+        ComfirmDialog(titleRes = R.string.import_AP_label, message = stringResource(R.string.import_SQLite_message), showDialog = showAPImportDialog) {
+            try { chooseAPImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+        }
+        TitleSummaryActionColumn(R.string.import_AP_label, 0) { showAPImportDialog.value = true }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
+        val showPAImportDialog = remember { mutableStateOf(false) }
+        ComfirmDialog(titleRes = R.string.import_PA_label, message = stringResource(R.string.import_SQLite_message), showDialog = showPAImportDialog) {
+            try { choosePAImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+        }
+        TitleSummaryActionColumn(R.string.import_PA_label, 0) { showPAImportDialog.value = true }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         TitleSummaryActionColumn(R.string.opml_export_label, R.string.opml_export_summary) { openExportPathPicker(ExportTypes.OPML, chooseOpmlExportPathLauncher, OpmlWriter()) }
         if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
         TitleSummaryActionColumn(R.string.opml_import_label, R.string.opml_import_summary) {
             try { chooseOpmlImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") } }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 20.dp, bottom = 20.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         TitleSummaryActionColumn(R.string.progress_export_label, R.string.progress_export_summary) { openExportPathPicker(ExportTypes.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter()) }
         val showProgressImportDialog = remember { mutableStateOf(false) }
         ComfirmDialog(titleRes = R.string.progress_import_label, message = stringResource(R.string.progress_import_warning), showDialog = showProgressImportDialog) {
@@ -458,7 +490,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             restoreProgressLauncher.launch(intent)
         }
         TitleSummaryActionColumn(R.string.progress_import_label, R.string.progress_import_summary) { showProgressImportDialog.value = true }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth().height(2.dp).padding(top = 20.dp, bottom = 20.dp))
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         TitleSummaryActionColumn(R.string.html_export_label, R.string.html_export_summary) { openExportPathPicker(ExportTypes.HTML, chooseHtmlExportPathLauncher, HtmlWriter()) }
         TitleSummaryActionColumn(R.string.favorites_export_label, R.string.favorites_export_summary) { openExportPathPicker(ExportTypes.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter()) }
     }

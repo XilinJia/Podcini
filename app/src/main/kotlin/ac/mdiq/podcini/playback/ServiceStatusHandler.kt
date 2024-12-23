@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.playback
 
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -40,7 +40,7 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
             if (playbackService != null && PlaybackService.mPlayerInfo != null) {
                 val info = PlaybackService.mPlayerInfo!!
 //                Logd(TAG, "statusUpdate onReceive $prevStatus ${MediaPlayerBase.status} ${info.playerStatus} ${curMedia?.id} ${info.playable?.id}.")
-                if (prevStatus != info.playerStatus || curMedia == null || curMedia!!.id != info.playable?.id) {
+                if (prevStatus != info.playerStatus || curEpisode == null || curEpisode!!.id != info.playable?.id) {
                     Logd(TAG, "statusUpdate onReceive doing updates")
                     MediaPlayerBase.status = info.playerStatus
                     prevStatus = MediaPlayerBase.status

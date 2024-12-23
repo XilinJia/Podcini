@@ -1,7 +1,8 @@
 package ac.mdiq.podcini.playback.base
 
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Episode
+
 import ac.mdiq.podcini.storage.model.MediaType
 
 interface MediaPlayerCallback {
@@ -9,17 +10,17 @@ interface MediaPlayerCallback {
 
     fun onMediaChanged(reloadUI: Boolean)
 
-    fun onPostPlayback(playable: EpisodeMedia?, ended: Boolean, skipped: Boolean, playingNext: Boolean)
+    fun onPostPlayback(playable: Episode?, ended: Boolean, skipped: Boolean, playingNext: Boolean)
 
-    fun onPlaybackStart(playable: EpisodeMedia, position: Int)
+    fun onPlaybackStart(playable: Episode, position: Int)
 
-    fun onPlaybackPause(playable: EpisodeMedia?, position: Int)
+    fun onPlaybackPause(playable: Episode?, position: Int)
 
-    fun getNextInQueue(currentMedia: EpisodeMedia?): EpisodeMedia?
+    fun getNextInQueue(currentMedia: Episode?): Episode?
 
-    fun findMedia(url: String): EpisodeMedia?
+    fun findMedia(url: String): Episode?
 
     fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean)
 
-    fun ensureMediaInfoLoaded(media: EpisodeMedia)
+    fun ensureMediaInfoLoaded(media: Episode)
 }

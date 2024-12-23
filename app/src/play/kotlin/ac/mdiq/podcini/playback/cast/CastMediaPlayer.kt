@@ -1,14 +1,15 @@
 package ac.mdiq.podcini.playback.cast
 
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Episode
+
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.MediaType
@@ -74,7 +75,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         if (castContext == null) castContext = CastContext.getSharedInstance(context.applicationContext)
         remoteMediaClient = castContext!!.sessionManager.currentCastSession?.remoteMediaClient
         remoteMediaClient?.registerCallback(remoteMediaClientCallback)
-        curMedia = null
+        curEpisode = null
         isStreaming = true
         isBuffering = AtomicBoolean(false)
         remoteState = MediaStatus.PLAYER_STATE_UNKNOWN
@@ -87,15 +88,15 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         }
     }
 
-    private fun toPlayable(info: MediaInfo?): EpisodeMedia? {
+    private fun toPlayable(info: MediaInfo?): Episode? {
         if (info == null || info.metadata == null) return null
-        if (matches(info, curMedia)) return curMedia
+        if (matches(info, curEpisode)) return curEpisode
         val streamUrl = info.metadata!!.getString(KEY_STREAM_URL)
 //        return if (streamUrl == null) makeRemoteMedia(info) else callback.findMedia(streamUrl)
         return if (streamUrl == null) null else callback.findMedia(streamUrl)
     }
 
-    private fun toMediaInfo(playable: EpisodeMedia?): MediaInfo? {
+    private fun toMediaInfo(playable: Episode?): MediaInfo? {
         return when {
             playable == null -> null
             matches(mediaInfo, playable) -> mediaInfo
@@ -113,14 +114,14 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         var state = mediaStatus.playerState
         val oldState = remoteState
         mediaInfo = mediaStatus.mediaInfo
-        val mediaChanged = !matches(mediaInfo, curMedia)
+        val mediaChanged = !matches(mediaInfo, curEpisode)
         var stateChanged = state != oldState
         if (!mediaChanged && !stateChanged) {
             Logd(TAG, "Both media and state haven't changed, so nothing to do")
             return
         }
-        val currentMedia = if (mediaChanged) toPlayable(mediaInfo) else curMedia
-        val oldMedia = curMedia
+        val currentMedia = if (mediaChanged) toPlayable(mediaInfo) else curEpisode
+        val oldMedia = curEpisode
         val position = mediaStatus.streamPosition.toInt()
         // check for incompatible states
         if ((state == MediaStatus.PLAYER_STATE_PLAYING || state == MediaStatus.PLAYER_STATE_PAUSED) && currentMedia == null) {
@@ -130,7 +131,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         }
         if (stateChanged) remoteState = state
         if (mediaChanged && stateChanged && oldState == MediaStatus.PLAYER_STATE_PLAYING && state != MediaStatus.PLAYER_STATE_IDLE) {
-            callback.onPlaybackPause(null, EpisodeMedia.INVALID_TIME)
+            callback.onPlaybackPause(null, Episode.INVALID_TIME)
             // We don't want setPlayerStatus to handle the onPlaybackPause callback
             setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
         }
@@ -149,7 +150,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             MediaStatus.PLAYER_STATE_LOADING -> { Logd(TAG, "Remote player loading") }
             MediaStatus.PLAYER_STATE_BUFFERING -> setPlayerStatus(
                 if ((mediaChanged || status == PlayerStatus.PREPARING)) PlayerStatus.PREPARING else PlayerStatus.SEEKING,
-                currentMedia, currentMedia?.position ?: EpisodeMedia.INVALID_TIME)
+                currentMedia, currentMedia?.position ?: Episode.INVALID_TIME)
             MediaStatus.PLAYER_STATE_IDLE -> {
                 val reason = mediaStatus.idleReason
                 when (reason) {
@@ -168,7 +169,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                         // Means that a request to load a different media was sent
                         // Not sure if currentMedia already reflects the to be loaded one
                         if (mediaChanged && oldState == MediaStatus.PLAYER_STATE_PLAYING) {
-                            callback.onPlaybackPause(null, EpisodeMedia.INVALID_TIME)
+                            callback.onPlaybackPause(null, Episode.INVALID_TIME)
                             setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
                         }
                         setPlayerStatus(PlayerStatus.PREPARING, currentMedia)
@@ -177,7 +178,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                     MediaStatus.IDLE_REASON_NONE -> setPlayerStatus(PlayerStatus.INITIALIZED, currentMedia)
                     MediaStatus.IDLE_REASON_FINISHED -> {
                         // This is our onCompletionListener...
-                        if (mediaChanged && currentMedia != null) curMedia = currentMedia
+                        if (mediaChanged && currentMedia != null) curEpisode = currentMedia
                         endPlayback(true, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
                     }
@@ -190,7 +191,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                     else -> return
                 }
             }
-            MediaStatus.PLAYER_STATE_UNKNOWN -> if (status != PlayerStatus.INDETERMINATE || curMedia !== currentMedia) setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
+            MediaStatus.PLAYER_STATE_UNKNOWN -> if (status != PlayerStatus.INDETERMINATE || curEpisode !== currentMedia) setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
             else -> Log.w(TAG, "Remote media state undetermined!")
         }
         if (mediaChanged) {
@@ -205,48 +206,48 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
      * the given playable parameter is the same object as the currently playing media.
      * @see .playMediaObject
      */
-    override fun playMediaObject(playable: EpisodeMedia, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
+    override fun playMediaObject(playable: Episode, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
        Logd(TAG, "playMediaObject")
         if (!isCastable(playable, castContext?.sessionManager?.currentCastSession)) {
             Logd(TAG, "media provided is not compatible with cast device")
             EventFlow.postEvent(FlowEvent.PlayerErrorEvent("Media not compatible with cast device"))
-            var nextPlayable: EpisodeMedia? = playable
+            var nextPlayable: Episode? = playable
             do { nextPlayable = callback.getNextInQueue(nextPlayable)
             } while (nextPlayable != null && !isCastable(nextPlayable, castContext?.sessionManager?.currentCastSession))
             if (nextPlayable != null) playMediaObject(nextPlayable, streaming, startWhenPrepared, prepareImmediately, forceReset)
             return
         }
 
-        if (curMedia != null) {
-            if (!forceReset && curMedia!!.id == prevMedia?.id && status == PlayerStatus.PLAYING) {
+        if (curEpisode != null) {
+            if (!forceReset && curEpisode!!.id == prevMedia?.id && status == PlayerStatus.PLAYING) {
                 // episode is already playing -> ignore method call
                 Logd(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
             } else {
-                if (curMedia?.id != prevMedia?.id) {
-                    prevMedia = curMedia
+                if (curEpisode?.id != prevMedia?.id) {
+                    prevMedia = curEpisode
                     callback.onPostPlayback(prevMedia, false, false, true)
                 }
                 setPlayerStatus(PlayerStatus.INDETERMINATE, null)
             }
         }
 
-        curMedia = playable
-        this.mediaType = curMedia!!.getMediaType()
+        curEpisode = playable
+        this.mediaType = curEpisode!!.getMediaType()
         this.startWhenPrepared.set(startWhenPrepared)
-        setPlayerStatus(PlayerStatus.INITIALIZING, curMedia)
+        setPlayerStatus(PlayerStatus.INITIALIZING, curEpisode)
 
-        val metadata = buildMetadata(curMedia!!)
+        val metadata = buildMetadata(curEpisode!!)
         try {
-            callback.ensureMediaInfoLoaded(curMedia!!)
+            callback.ensureMediaInfoLoaded(curEpisode!!)
             // TODO: test
             callback.onMediaChanged(true)
-            setPlaybackParams(getCurrentPlaybackSpeed(curMedia), isSkipSilence)
+            setPlaybackParams(getCurrentPlaybackSpeed(curEpisode), isSkipSilence)
             when {
                 streaming -> {
-                    val streamurl = curMedia!!.downloadUrl
+                    val streamurl = curEpisode!!.downloadUrl
                     if (streamurl != null) {
-                        val media = curMedia
+                        val media = curEpisode
                         if (media != null) {
                             mediaItem = null
                             mediaSource = null
@@ -258,31 +259,31 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             }
             mediaInfo = toMediaInfo(playable)
             val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-            if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, curMedia)
+            if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, curEpisode)
             if (prepareImmediately) prepare()
         } catch (e: IOException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventFlow.postEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
         } catch (e: IllegalStateException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventFlow.postEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
         } finally { }
     }
 
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
-    override fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
+    override fun setDataSource(metadata: MediaMetadata, media: Episode) {
         Logd(TAG, "setDataSource1 called")
-        if (media.episode?.feed?.type == Feed.FeedType.YOUTUBE.name) {
+        if (media.feed?.type == Feed.FeedType.YOUTUBE.name) {
             Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
-                val streamInfo = media.episode!!.streamInfo ?: return
-                if (!media.forceVideo && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY) {
+                val streamInfo = media.streamInfo ?: return
+                if (!media.forceVideo && media.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY) {
                     val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
                     Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
-                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
-                        when (media.episode?.feed?.preferences?.audioQualitySetting) {
+                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                        when (media.feed?.preferences?.audioQualitySetting) {
                             FeedPreferences.AVQuality.LOW -> 0
                             FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
                             FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
@@ -296,8 +297,8 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                 } else {
                     val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, listOf(), true, false)
                     Logd(TAG, "setDataSource1 videoStreamsList ${videoStreamsList.size}")
-                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.episode?.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
-                        when (media.episode?.feed?.preferences?.videoQualitySetting) {
+                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
+                        when (media.feed?.preferences?.videoQualitySetting) {
                             FeedPreferences.AVQuality.LOW -> 0
                             FeedPreferences.AVQuality.MEDIUM -> videoStreamsList.size / 2
                             FeedPreferences.AVQuality.HIGH -> videoStreamsList.size - 1
@@ -317,7 +318,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
     }
 
     override fun resume() {
-        val newPosition = calculatePositionWithRewind(curMedia!!.position, curMedia!!.lastPlayedTime)
+        val newPosition = calculatePositionWithRewind(curEpisode!!.position, curEpisode!!.lastPlayedTime)
         seekTo(newPosition)
         remoteMediaClient?.play()
     }
@@ -329,9 +330,9 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
     override fun prepare() {
         if (status == PlayerStatus.INITIALIZED) {
             Logd(TAG, "Preparing media player $mediaInfo")
-            setPlayerStatus(PlayerStatus.PREPARING, curMedia)
-            var position = curMedia!!.position
-            if (position > 0) position = calculatePositionWithRewind(position, curMedia!!.lastPlayedTime)
+            setPlayerStatus(PlayerStatus.PREPARING, curEpisode)
+            var position = curEpisode!!.position
+            if (position > 0) position = calculatePositionWithRewind(position, curEpisode!!.lastPlayedTime)
             remoteMediaClient?.load(MediaLoadRequestData.Builder()
                 .setMediaInfo(mediaInfo)
                 .setAutoplay(startWhenPrepared.get())
@@ -341,7 +342,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
 
     override fun reinit() {
         Logd(TAG, "reinit() called")
-        if (curMedia != null) playMediaObject(curMedia!!, streaming = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false, true)
+        if (curEpisode != null) playMediaObject(curEpisode!!, streaming = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false, true)
         else Logd(TAG, "Call to reinit was ignored: media was null")
     }
 
@@ -350,22 +351,22 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         remoteMediaClient?.seek(MediaSeekOptions.Builder().setPosition(t.toLong()).setResumeState(MediaSeekOptions.RESUME_STATE_PLAY).build())?.addStatusListener {
             if (it.isSuccess) {
                 Logd(TAG, "seekTo Seek succeeded to position $t ms")
-                if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.duration))
+                if (curEpisode != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curEpisode, t, curEpisode!!.duration))
             } else Log.e(TAG, "Seek failed")
         }
     }
 
     override fun getDuration(): Int {
 //        if (curMedia != null && remoteMediaClient?.currentItem?.media?.entity != curMedia?.id.toString()) return curMedia!!.getDuration()
-        var retVal = remoteMediaClient?.streamDuration?.toInt() ?: EpisodeMedia.INVALID_TIME
-        if (retVal == EpisodeMedia.INVALID_TIME && curMedia != null && curMedia!!.duration > 0) retVal = curMedia!!.duration
+        var retVal = remoteMediaClient?.streamDuration?.toInt() ?: Episode.INVALID_TIME
+        if (retVal == Episode.INVALID_TIME && curEpisode != null && curEpisode!!.duration > 0) retVal = curEpisode!!.duration
         return retVal
     }
 
     override fun getPosition(): Int {
 //        Logd(TAG, "getPosition: $status ${remoteMediaClient?.approximateStreamPosition} ${curMedia?.getPosition()} ${remoteMediaClient?.currentItem?.media?.entity} ${curMedia?.id.toString()} ${curMedia?.getEpisodeTitle()}")
-        var retVal = remoteMediaClient?.approximateStreamPosition?.toInt() ?: EpisodeMedia.INVALID_TIME
-        if (retVal <= 0 && curMedia != null && curMedia!!.position >= 0) retVal = curMedia!!.position
+        var retVal = remoteMediaClient?.approximateStreamPosition?.toInt() ?: Episode.INVALID_TIME
+        if (retVal <= 0 && curEpisode != null && curEpisode!!.position >= 0) retVal = curEpisode!!.position
         return retVal
     }
 
@@ -388,9 +389,9 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         remoteMediaClient?.unregisterCallback(remoteMediaClientCallback)
     }
 
-    override fun setPlayable(playable: EpisodeMedia?) {
-        if (playable != null && playable !== curMedia) {
-            curMedia = playable
+    override fun setPlayable(playable: Episode?) {
+        if (playable != null && playable !== curEpisode) {
+            curEpisode = playable
             mediaInfo = toMediaInfo(playable)
         }
     }
@@ -398,15 +399,15 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
     override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
         Logd(TAG, "endPlayback() called")
         val isPlaying = status == PlayerStatus.PLAYING
-        if (status != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, curMedia)
+        if (status != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, curEpisode)
 
-        if (curMedia != null && wasSkipped) {
+        if (curEpisode != null && wasSkipped) {
             // current position only really matters when we skip
             val position = getPosition()
-            if (position >= 0) curMedia!!.setPosition(position)
+            if (position >= 0) curEpisode!!.setPosition(position)
         }
-        val currentMedia = curMedia
-        var nextMedia: EpisodeMedia? = null
+        val currentMedia = curEpisode
+        var nextMedia: Episode? = null
         if (shouldContinue) {
             nextMedia = callback.getNextInQueue(currentMedia)
             val playNextEpisode = isPlaying && nextMedia != null
@@ -418,7 +419,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             if (nextMedia != null) {
                 callback.onPlaybackEnded(nextMedia.getMediaType(), !playNextEpisode)
                 // setting media to null signals to playMediaObject() that we're taking care of post-playback processing
-                curMedia = null
+                curEpisode = null
                 playMediaObject(nextMedia, streaming = true, startWhenPrepared = playNextEpisode, prepareImmediately = playNextEpisode, forceReset = false)
             }
         }
@@ -430,7 +431,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                     callback.onPostPlayback(currentMedia, hasEnded, wasSkipped, false)
                 } else callback.onPostPlayback(currentMedia, hasEnded, wasSkipped, true)
             }
-            isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia?.position ?: EpisodeMedia.INVALID_TIME)
+            isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia?.position ?: Episode.INVALID_TIME)
         }
     }
 
@@ -447,32 +448,30 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
          * @param media The [EpisodeMedia] object to be converted.
          * @return [MediaInfo] object in a format proper for casting.
          */
-        fun from(media: EpisodeMedia?): MediaInfo? {
+        fun from(media: Episode?): MediaInfo? {
             if (media == null) return null
             val metadata = MediaMetadata(com.google.android.gms.cast.MediaMetadata.MEDIA_TYPE_GENERIC)
-            checkNotNull(media.episode) { "item is null" }
-            val feedItem = media.episode
-            if (feedItem != null) {
-                metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, media.getEpisodeTitle())
-                val subtitle = media.episode?.feed?.title?:""
-                metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, subtitle)
+            val feedItem = media
+            metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE, media.getEpisodeTitle())
+            val subtitle = media.feed?.title?:""
+            metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_SUBTITLE, subtitle)
 
-                val feed: Feed? = feedItem.feed
-                // Manual because cast does not support embedded images
-                val url: String = if (feedItem.imageUrl == null && feed != null) feed.imageUrl?:"" else feedItem.imageUrl?:""
-                if (url.isNotEmpty()) metadata.addImage(WebImage(Uri.parse(url)))
-                val calendar = Calendar.getInstance()
-                calendar.time = feedItem.getPubDate()
-                metadata.putDate(com.google.android.gms.cast.MediaMetadata.KEY_RELEASE_DATE, calendar)
-                if (feed != null) {
-                    if (!feed.author.isNullOrEmpty()) metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, feed.author!!)
-                    if (!feed.downloadUrl.isNullOrEmpty()) metadata.putString(KEY_FEED_URL, feed.downloadUrl!!)
-                    if (!feed.link.isNullOrEmpty()) metadata.putString(KEY_FEED_WEBSITE, feed.link!!)
-                }
-                if (!feedItem.identifier.isNullOrEmpty()) metadata.putString(KEY_EPISODE_IDENTIFIER, feedItem.identifier!!)
-                else metadata.putString(KEY_EPISODE_IDENTIFIER, media.downloadUrl ?: "")
-                if (!feedItem.link.isNullOrEmpty()) metadata.putString(KEY_EPISODE_LINK, feedItem.link!!)
+            val feed: Feed? = feedItem.feed
+            // Manual because cast does not support embedded images
+            val url: String = if (feedItem.imageUrl == null && feed != null) feed.imageUrl?:"" else feedItem.imageUrl?:""
+            if (url.isNotEmpty()) metadata.addImage(WebImage(Uri.parse(url)))
+            val calendar = Calendar.getInstance()
+            calendar.time = feedItem.getPubDate()
+            metadata.putDate(com.google.android.gms.cast.MediaMetadata.KEY_RELEASE_DATE, calendar)
+            if (feed != null) {
+                if (!feed.author.isNullOrEmpty()) metadata.putString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST, feed.author!!)
+                if (!feed.downloadUrl.isNullOrEmpty()) metadata.putString(KEY_FEED_URL, feed.downloadUrl!!)
+                if (!feed.link.isNullOrEmpty()) metadata.putString(KEY_FEED_WEBSITE, feed.link!!)
             }
+            if (!feedItem.identifier.isNullOrEmpty()) metadata.putString(KEY_EPISODE_IDENTIFIER, feedItem.identifier!!)
+            else metadata.putString(KEY_EPISODE_IDENTIFIER, media.downloadUrl ?: "")
+            if (!feedItem.link.isNullOrEmpty()) metadata.putString(KEY_EPISODE_LINK, feedItem.link!!)
+
             // This field only identifies the id on the device that has the original version.
             // Idea is to perhaps, on a first approach, check if the version on the local DB with the
             // same id matches the remote object, and if not then search for episode and feed identifiers.
@@ -516,7 +515,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         const val FORMAT_VERSION_VALUE: Int = 1
         const val MAX_VERSION_FORWARD_COMPATIBILITY: Int = 9999
 
-        fun isCastable(media: EpisodeMedia?, castSession: CastSession?): Boolean {
+        fun isCastable(media: Episode?, castSession: CastSession?): Boolean {
             if (media == null || castSession == null || castSession.castDevice == null) return false
 //        if (media is EpisodeMedia || media is RemoteMedia) {
             val url = media.downloadUrl
@@ -525,7 +524,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             return when (media.getMediaType()) {
                 MediaType.AUDIO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
                 MediaType.VIDEO -> {
-                    if (media.episode?.feed?.preferences?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
+                    if (media.feed?.preferences?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
                         castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
                     else castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
                 }
@@ -541,15 +540,14 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
          * @param media     the [EpisodeMedia] object to be compared.
          * @return <true>true</true> if there's a match, `false` otherwise.
          */
-        fun matches(info: MediaInfo?, media: EpisodeMedia?): Boolean {
+        fun matches(info: MediaInfo?, media: Episode?): Boolean {
             if (info == null || media == null) return false
             if (info.contentId != media.downloadUrl) return false
 
             val metadata = info.metadata
-            val fi = media.episode
-            if (fi == null || metadata == null || metadata.getString(KEY_EPISODE_IDENTIFIER) != fi.identifier) return false
+            if (metadata == null || metadata.getString(KEY_EPISODE_IDENTIFIER) != media.identifier) return false
 
-            val feed: Feed? = fi.feed
+            val feed: Feed? = media.feed
             return feed != null && metadata.getString(KEY_FEED_URL) == feed.downloadUrl
         }
 

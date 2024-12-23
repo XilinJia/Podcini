@@ -153,7 +153,7 @@ class EpisodeAction private constructor(builder: Builder) {
         var isFavorite: Boolean = false
         var guid: String? = null
 
-        constructor(item: Episode, action: Action) : this(item.feed?.downloadUrl?:"", item.media?.downloadUrl?:"", action) {
+        constructor(item: Episode, action: Action) : this(item.feed?.downloadUrl?:"", item.downloadUrl?:"", action) {
             this.guid(item.identifier)
         }
 

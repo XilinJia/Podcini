@@ -12,7 +12,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
@@ -123,8 +123,8 @@ class EpisodesFragment : Fragment() {
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(
-                                activity as MainActivity, vms = vms,
+                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                                buildMoreItems = { buildMoreItems(it) },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it)
@@ -249,11 +249,17 @@ class EpisodesFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     stopMonitor(vms)
                     vms.clear()
-                    for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
+                    buildMoreItems(vms)
+//                    for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
                     updateToolbar()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { loadJob = null } }
+    }
+
+    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
+        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
+        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
     }
 
     @Composable
@@ -280,10 +286,10 @@ class EpisodesFragment : Fragment() {
     fun getHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time,
                    sortOrder: EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD): List<Episode> {
         Logd(TAG, "getHistory() called")
-        val medias = realm.query(EpisodeMedia::class).query("(playbackCompletionTime > 0) OR (lastPlayedTime > \$0 AND lastPlayedTime <= \$1)", start, end).find()
+        val medias = realm.query(Episode::class).query("(playbackCompletionTime > 0) OR (lastPlayedTime > \$0 AND lastPlayedTime <= \$1)", start, end).find()
         var episodes: MutableList<Episode> = mutableListOf()
         for (m in medias) {
-            val item_ = m.episodeOrFetch()
+            val item_ = m
             if (item_ != null) episodes.add(item_)
             else Logd(TAG, "getHistory: media has null episode: ${m.id}")
         }
@@ -365,7 +371,7 @@ class EpisodesFragment : Fragment() {
         if (spinnerTexts[curIndex] == QuickAccess.All.name && getFilter().properties.isNotEmpty()) info += " - ${getString(R.string.filtered_label)}"
         else if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name && episodes.isNotEmpty()) {
             var sizeMB: Long = 0
-            for (item in episodes) sizeMB += item.media?.size ?: 0
+            for (item in episodes) sizeMB += item.size
             info += " • " + (sizeMB / 1000000) + " MB"
         }
         if (progressing) info += " - ${getString(R.string.progressing_label)}"
@@ -407,12 +413,11 @@ class EpisodesFragment : Fragment() {
         }
         runOnIOScope {
             progressing = true
-            val items = realm.query(Episode::class).query("media.episode == nil").find()
-            Logd(TAG, "number of episode with null backlink: ${items.size}")
-            for (item in items) if (item.media != null) upsert(item) { it.media!!.episode = it }
+//            val items = realm.query(Episode::class).query("media.episode == nil").find()
+//            Logd(TAG, "number of episode with null backlink: ${items.size}")
             nameEpisodeMap.clear()
             for (e in episodes) {
-                var fileUrl = e.media?.fileUrl ?: continue
+                var fileUrl = e.fileUrl ?: continue
                 fileUrl = fileUrl.substring(fileUrl.lastIndexOf('/') + 1)
                 Logd(TAG, "reconcile: fileUrl: $fileUrl")
                 nameEpisodeMap[fileUrl] = e
@@ -420,7 +425,7 @@ class EpisodesFragment : Fragment() {
             val mediaDir = requireContext().getExternalFilesDir("media") ?: return@runOnIOScope
             mediaDir.listFiles()?.forEach { file -> traverse(file, mediaDir) }
             Logd(TAG, "reconcile: end, episodes missing file: ${nameEpisodeMap.size}")
-            if (nameEpisodeMap.isNotEmpty()) for (e in nameEpisodeMap.values) upsertBlk(e) { it.media?.setfileUrlOrNull(null) }
+            if (nameEpisodeMap.isNotEmpty()) for (e in nameEpisodeMap.values) upsertBlk(e) { it.setfileUrlOrNull(null) }
             loadItems()
             Logd(TAG, "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}")
             withContext(Dispatchers.Main) {
@@ -434,11 +439,11 @@ class EpisodesFragment : Fragment() {
         Logd(TAG, "clearHistory called")
         return runOnIOScope {
             progressing = true
-            val episodes = realm.query(Episode::class).query("media.playbackCompletionTime > 0 || media.lastPlayedTime > 0").find()
+            val episodes = realm.query(Episode::class).query("playbackCompletionTime > 0 || lastPlayedTime > 0").find()
             for (e in episodes) {
                 upsert(e) {
-                    it.media?.playbackCompletionDate = null
-                    it.media?.lastPlayedTime = 0
+                    it.playbackCompletionDate = null
+                    it.lastPlayedTime = 0
                 }
             }
             withContext(Dispatchers.Main) {
@@ -488,8 +493,7 @@ class EpisodesFragment : Fragment() {
                 if (pos >= 0) {
                     episodes.removeAt(pos)
                     vms.removeAt(pos)
-                    val media = item.media
-                    if (media != null && media.downloaded) {
+                    if (item.downloaded) {
                         episodes.add(pos, item)
                         vms.add(pos, EpisodeVM(item, TAG))
                     }
@@ -509,8 +513,7 @@ class EpisodesFragment : Fragment() {
                 if (pos >= 0) {
                     episodes.removeAt(pos)
                     vms.removeAt(pos)
-                    val media = item.media
-                    if (media != null && media.downloaded) {
+                    if (item.downloaded) {
                         episodes.add(pos, item)
                         vms.add(pos, EpisodeVM(item, TAG))
                     }

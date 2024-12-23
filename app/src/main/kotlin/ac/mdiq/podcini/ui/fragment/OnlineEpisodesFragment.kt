@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
+import kotlin.math.min
 
 class OnlineEpisodesFragment: Fragment() {
     private var displayUpArrow = false
@@ -76,6 +77,7 @@ class OnlineEpisodesFragment: Fragment() {
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                                buildMoreItems = { buildMoreItems(it) },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it)
@@ -94,6 +96,11 @@ class OnlineEpisodesFragment: Fragment() {
         return composeView
     }
 
+    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
+        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
+        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
@@ -110,7 +117,8 @@ class OnlineEpisodesFragment: Fragment() {
         super.onStart()
         stopMonitor(vms)
         vms.clear()
-        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
+        buildMoreItems(vms)
+//        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
         infoBarText.value = "${episodes.size} episodes"
     }
 

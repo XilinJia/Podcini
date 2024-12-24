@@ -383,7 +383,7 @@ class AudioPlayerFragment : Fragment() {
     @Composable
     fun PlayerUI(modifier: Modifier) {
         val textColor = MaterialTheme.colorScheme.onSurface
-        Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
+        Column(modifier = modifier.fillMaxWidth().border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)).background(MaterialTheme.colorScheme.surface)) {
             Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.bodyMedium)
             ProgressBar()
             ControlUI()

@@ -68,7 +68,6 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
         try {
             val client = PodciniHttpClient.getHttpClient()
             val response = client.newCall(buildAuthenticatedRequest(formattedUrl)).execute()
-
             if (response.isSuccessful) {
                 val resultString = response.body!!.string()
                 val result = JSONObject(resultString)
@@ -83,14 +82,6 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
         } catch (e: IOException) { throw e
         } catch (e: JSONException) { throw e }
         return podcasts
-    }
-
-    override suspend fun lookupUrl(url: String): String {
-        return url
-    }
-
-    override fun urlNeedsLookup(url: String): Boolean {
-        return false
     }
 
     override val name: String
@@ -148,15 +139,6 @@ class VistaGuidePodcastSearcher : PodcastSearcher {
         } catch (e: Throwable) { Log.e("VistaGuidePodcastSearcher", "error: ${e.message}") }
         return listOf()
     }
-
-    override suspend fun lookupUrl(url: String): String {
-        return url
-    }
-
-    override fun urlNeedsLookup(url: String): Boolean {
-        return false
-    }
-
     override val name: String
         get() = "VistaGuide"
 }
@@ -167,7 +149,6 @@ class FyydPodcastSearcher : PodcastSearcher {
     override suspend fun search(query: String): List<PodcastSearchResult> {
         val response = withContext(Dispatchers.IO) { client.searchPodcasts(query, 10).blockingGet() }
         val searchResults = ArrayList<PodcastSearchResult>()
-
         if (response.data.isNotEmpty()) {
             for (searchHit in response.data) {
                 val podcast = PodcastSearchResult.fromFyyd(searchHit)
@@ -176,15 +157,6 @@ class FyydPodcastSearcher : PodcastSearcher {
         }
         return searchResults
     }
-
-    override suspend fun lookupUrl(url: String): String {
-        return url
-    }
-
-    override fun urlNeedsLookup(url: String): Boolean {
-        return false
-    }
-
     override val name: String
         get() = "fyyd"
 }
@@ -204,15 +176,6 @@ class GpodnetPodcastSearcher : PodcastSearcher {
             throw e
         }
     }
-
-    override suspend fun lookupUrl(url: String): String {
-        return url
-    }
-
-    override fun urlNeedsLookup(url: String): Boolean {
-        return false
-    }
-
     override val name: String
         get() = "Gpodder.net"
 }

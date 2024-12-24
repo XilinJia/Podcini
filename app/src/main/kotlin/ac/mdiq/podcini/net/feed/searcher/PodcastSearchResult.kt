@@ -63,11 +63,8 @@ class PodcastSearchResult private constructor(
             val feedUrl = "https://itunes.apple.com/lookup?id=" + json.getJSONObject("id").getJSONObject("attributes").getString("im:id")
 
             var author: String? = null
-            try {
-                author = json.getJSONObject("im:artist").getString("label")
-            } catch (e: Exception) {
-                // Some feeds have empty artist
-            }
+            try { author = json.getJSONObject("im:artist").getString("label")
+            } catch (e: Exception) {/* Some feeds have empty artist */ }
             return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, -1, "Toplist")
         }
 

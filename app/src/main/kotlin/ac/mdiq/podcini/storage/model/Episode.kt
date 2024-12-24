@@ -174,10 +174,10 @@ class Episode : RealmObject {
 
     var playedDuration: Int = 0 // How many ms of this file have been played
 
-    var timeSpentOnStart: Int = 0 // How many ms of this file have been played in actual time
+    var timeSpentOnStart: Long = 0 // How many ms of this file have been played in actual time
     var startTime: Long = 0 // time in ms when start playing
 
-    var timeSpent: Int = 0 // How many ms of this file have been played in actual time
+    var timeSpent: Long = 0 // How many ms of this file have been played in actual time
 
     // File size in Byte
     var size: Long = 0L
@@ -221,7 +221,6 @@ class Episode : RealmObject {
     var bitrate: Int = 0
 
     // above from EpisodeMedia
-
 
     constructor() {
         this.playState = PlayState.NEW.code
@@ -437,6 +436,7 @@ class Episode : RealmObject {
         this.mimeType = mimeType
         setfileUrlOrNull(null)
         this.downloadUrl = downloadUrl
+        Logd(TAG, "fillMedia downloadUrl: $downloadUrl")
     }
 
     // from EpisodeMedia
@@ -563,7 +563,7 @@ class Episode : RealmObject {
     fun onPlaybackPause() {
         Logd(TAG, "onPlaybackPause $position $duration")
         if (position > startPosition) playedDuration = playedDurationWhenStarted + position - startPosition
-        timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime).toInt()
+        timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime)
         startPosition = position
     }
 

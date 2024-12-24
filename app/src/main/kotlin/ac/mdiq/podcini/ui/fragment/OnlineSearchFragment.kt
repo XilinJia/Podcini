@@ -138,6 +138,7 @@ class OnlineSearchFragment : Fragment() {
     @Composable
     fun MainView() {
         val textColor = MaterialTheme.colorScheme.onSurface
+        val actionColor = MaterialTheme.colorScheme.tertiary
         val scrollState = rememberScrollState()
         ComfirmDialog(R.string.restore_subscriptions_label, stringResource(R.string.restore_subscriptions_summary), showOPMLRestoreDialog) {
             performRestore(requireContext())
@@ -147,24 +148,22 @@ class OnlineSearchFragment : Fragment() {
             Column(Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 10.dp).verticalScroll(scrollState)) {
                 QuickDiscoveryView()
                 Text(stringResource(R.string.advanced), color = textColor, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.add_podcast_by_url), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { showAddViaUrlDialog() }))
-                Text(stringResource(R.string.add_local_folder), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 4.dp).clickable(onClick = {
-                    try {
-                        addLocalFolderLauncher.launch(null)
+                Text(stringResource(R.string.add_podcast_by_url), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { showAddViaUrlDialog() }))
+                Text(stringResource(R.string.add_local_folder), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
+                    try { addLocalFolderLauncher.launch(null)
                     } catch (e: ActivityNotFoundException) {
                         e.printStackTrace()
                         mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
                     }
                 }))
-                Text(stringResource(R.string.search_vistaguide_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_itunes_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_fyyd_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.gpodnet_search_hint), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_podcastindex_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_vistaguide_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_itunes_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_fyyd_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
+//                Text(stringResource(R.string.gpodnet_search_hint), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_podcastindex_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
                 if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
-                Text(stringResource(R.string.opml_add_podcast_label), color = textColor, modifier = Modifier.padding(start = 10.dp, top = 5.dp).clickable(onClick = {
-                    try {
-                        chooseOpmlImportPathLauncher.launch("*/*")
+                Text(stringResource(R.string.opml_add_podcast_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
+                    try { chooseOpmlImportPathLauncher.launch("*/*")
                     } catch (e: ActivityNotFoundException) {
                         e.printStackTrace()
                         mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
@@ -204,11 +203,12 @@ class OnlineSearchFragment : Fragment() {
     fun QuickDiscoveryView() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val context = LocalContext.current
+        val actionColor = MaterialTheme.colorScheme.tertiary
         Column(modifier = Modifier.padding(vertical = 5.dp)) {
-            Row {
+            Row(modifier = Modifier.padding(vertical = 10.dp)) {
                 Text(stringResource(R.string.discover), color = textColor, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.weight(1f))
-                Text(stringResource(R.string.discover_more), color = textColor, modifier = Modifier.clickable(onClick = {(activity as MainActivity).loadChildFragment(DiscoveryFragment())}))
+                Text(stringResource(R.string.discover_more), color = actionColor, modifier = Modifier.clickable(onClick = {(activity as MainActivity).loadChildFragment(DiscoveryFragment())}))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
                 if (showGrid) NonlazyGrid(columns = numColumns, itemCount = searchResult.size, modifier = Modifier.fillMaxWidth()) { index ->

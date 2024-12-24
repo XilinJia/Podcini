@@ -189,22 +189,15 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
 
 class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     @StringRes
-    override fun getLabel(): Int {
-        return R.string.cancel_download_label
-    }
+    override fun getLabel(): Int = R.string.cancel_download_label
 
     @DrawableRes
-    override fun getDrawable(): Int {
-        return R.drawable.ic_cancel
-    }
-
+    override fun getDrawable(): Int = R.drawable.ic_cancel
     
     override fun onClick(context: Context) {
         DownloadServiceInterface.get()?.cancel(context, item)
         if (UserPreferences.isEnableAutodownload) {
-            val item_ = upsertBlk(item) {
-                it.disableAutoDownload()
-            }
+            val item_ = upsertBlk(item) { it.disableAutoDownload() }
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))
         }
         actionState.value = getLabel()
@@ -212,15 +205,10 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 }
 
 class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int {
-        return R.string.play_label
-    }
+    override fun getLabel(): Int = R.string.play_label
 
-    override fun getDrawable(): Int {
-        return R.drawable.ic_play_24dp
-    }
+    override fun getDrawable(): Int = R.drawable.ic_play_24dp
 
-    
     override fun onClick(context: Context) {
         Logd("PlayActionButton", "onClick called")
         if (!item.fileExists()) {
@@ -267,12 +255,8 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
             return (item.downloaded || item.feed?.isLocalFeed == true)
         }
 
-    override fun getLabel(): Int {
-        return R.string.delete_label
-    }
-    override fun getDrawable(): Int {
-        return R.drawable.ic_delete
-    }
+    override fun getLabel(): Int = R.string.delete_label
+    override fun getDrawable(): Int = R.drawable.ic_delete
     
     override fun onClick(context: Context) {
         deleteEpisodesWarnLocal(context, listOf(item))
@@ -281,23 +265,14 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
 }
 
 class NullActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int {
-        return R.string.null_label
-    }
-    override fun getDrawable(): Int {
-        return R.drawable.ic_questionmark
-    }
-    
+    override fun getLabel(): Int = R.string.null_label
+    override fun getDrawable(): Int = R.drawable.ic_questionmark
     override fun onClick(context: Context) {}
 }
 
 class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int {
-        return R.string.pause_label
-    }
-    override fun getDrawable(): Int {
-        return R.drawable.ic_pause
-    }
+    override fun getLabel(): Int = R.string.pause_label
+    override fun getDrawable(): Int = R.drawable.ic_pause
     
     override fun onClick(context: Context) {
         Logd("PauseActionButton", "onClick called")
@@ -311,13 +286,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
         get() = item.feed?.isLocalFeed != true
 
-    override fun getLabel(): Int {
-        return R.string.download_label
-    }
-
-    override fun getDrawable(): Int {
-        return R.drawable.ic_download
-    }
+    override fun getLabel(): Int = R.string.download_label
+    override fun getDrawable(): Int = R.drawable.ic_download
 
     override fun onClick(context: Context) {
         if (shouldNotDownload(item)) return

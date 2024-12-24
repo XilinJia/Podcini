@@ -822,7 +822,7 @@ class FeedHandler {
                     val url: String? = attributes.getValue(ENC_URL)
                     val mimeType: String? = getMimeType(attributes.getValue(ENC_TYPE), url)
                     val validUrl = !url.isNullOrBlank()
-                    if (state.currentItem == null && isMediaFile(mimeType) && validUrl) {
+                    if (isMediaFile(mimeType) && validUrl) {
                         var size: Long = 0
                         try {
                             size = attributes.getValue(ENC_LEN)?.toLong() ?: 0

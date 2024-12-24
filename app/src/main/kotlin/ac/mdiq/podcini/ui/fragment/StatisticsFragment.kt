@@ -83,12 +83,15 @@ class StatisticsFragment : Fragment() {
                             try {
                                 withContext(Dispatchers.IO) {
                                     val mediaAll = realm.query(Episode::class).find()
-                                    for (m in mediaAll) update(m) { m.playedDuration = 0 }
+                                    for (m in mediaAll) update(m) {
+                                        it.playedDuration = 0
+                                        it.timeSpent = 0
+                                        it.timeSpentOnStart = 0
+                                        it.startTime = 0
+                                    }
                                 }
                                 statisticsState++
-                            } catch (error: Throwable) {
-                                Log.e(TAG, Log.getStackTraceString(error))
-                            }
+                            } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
                         }
                     }
                     if (showFilter) DatesFilterDialogCompose(inclPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false), from = prefs.getLong(PREF_FILTER_FROM, 0), to = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE),
@@ -127,25 +130,7 @@ class StatisticsFragment : Fragment() {
         TopAppBar(title = { Text(stringResource(R.string.statistics_label)) },
             navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "Open Drawer") } },
             actions = {
-                if (selectedTabIndex.value == 0) IconButton(onClick = {
-                    showFilter = true
-//                    val dialog = object: DatesFilterDialog(requireContext(), statsResult.oldestDate) {
-//                        override fun initParams() {
-//                            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-//                            timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
-//                            timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
-//                        }
-//                        override fun callback(timeFilterFrom: Long, timeFilterTo: Long, includeMarkedAsPlayed_: Boolean) {
-//                            prefs.edit()
-//                                ?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)
-//                                ?.putLong(PREF_FILTER_FROM, timeFilterFrom)
-//                                ?.putLong(PREF_FILTER_TO, timeFilterTo)
-//                                ?.apply()
-//                            includeMarkedAsPlayed = includeMarkedAsPlayed_
-//                            statisticsState++
-//                        }
-//                    }
-//                    dialog.show()
+                if (selectedTabIndex.value == 0) IconButton(onClick = { showFilter = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

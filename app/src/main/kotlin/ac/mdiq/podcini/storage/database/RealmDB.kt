@@ -164,7 +164,6 @@ object RealmDB {
                                 set("timeSpent", media.getValue("timeSpent", Long::class))
                                 set("size", media.getValue("size", Long::class))
                                 set("playbackCompletionTime", media.getValue("playbackCompletionTime", Long::class))
-                                set("playbackCompletionTime", media.getValue("playbackCompletionTime", Long::class))
                                 Logd(TAG, "after all")
                             }
                         }

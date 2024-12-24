@@ -30,6 +30,7 @@ import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.showStackTrace
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -196,6 +197,7 @@ object Feeds {
     @Synchronized
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean = false, overwriteOld: Boolean = false): Feed? {
         Logd(TAG, "updateFeed called")
+        showStackTrace()
         var resultFeed: Feed?
 //        val unlistedItems: MutableList<Episode> = ArrayList()
 
@@ -402,7 +404,7 @@ object Feeds {
     }
 
     private fun addNewFeedsSync(context: Context, vararg feeds: Feed) {
-        Logd(TAG, "addNewFeeds called")
+        Logd(TAG, "addNewFeedsSync called")
         realm.writeBlocking {
             var idLong = Feed.newId()
             for (feed in feeds) {
@@ -413,8 +415,8 @@ object Feeds {
                 feed.totleDuration = 0
                 Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
-                    Logd(TAG, "addNewFeedsSync ${episode.playState} ${episode.title}")
                     episode.id = idLong++
+                    Logd(TAG, "addNewFeedsSync ${episode.id} ${episode.downloadUrl}")
                     episode.feedId = feed.id
                     feed.totleDuration += episode.duration
                 }

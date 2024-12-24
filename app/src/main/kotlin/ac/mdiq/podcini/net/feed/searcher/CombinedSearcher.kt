@@ -64,17 +64,9 @@ class CombinedSearcher : PodcastSearcher {
         return results
     }
 
-//    override fun lookupUrl(url: String): Single<String> {
-//        return PodcastSearcherRegistry.lookupUrl(url)
-//    }
+    override suspend fun lookupUrl(url: String): String = PodcastSearcherRegistry.lookupUrl1(url)
 
-    override suspend fun lookupUrl(url: String): String {
-        return PodcastSearcherRegistry.lookupUrl1(url)
-    }
-
-    override fun urlNeedsLookup(url: String): Boolean {
-        return PodcastSearcherRegistry.urlNeedsLookup(url)
-    }
+    override fun urlNeedsLookup(url: String): Boolean = PodcastSearcherRegistry.urlNeedsLookup(url)
 
     override val name: String
         get() {

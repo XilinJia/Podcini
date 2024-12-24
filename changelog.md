@@ -1,3 +1,10 @@
+# 7.0.3
+
+* added spacing and set actionable color in OnlineSearch
+* disabled GPodnet search in OnlineSearch
+* fixed reset statistics not being persisted
+* fixed the serious bug of new episodes having null downloadUrl
+
 # 7.0.1
 
 * some appearance adjustments, mainly borders

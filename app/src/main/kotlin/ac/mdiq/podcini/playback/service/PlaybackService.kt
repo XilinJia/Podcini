@@ -343,12 +343,13 @@ class PlaybackService : MediaLibraryService() {
                             if (it.playState < PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.playState = PlayState.PLAYED.code
                             it.startPosition = playable.startPosition
                             it.startTime = playable.startTime
+                            it.timeSpentOnStart = playable.timeSpentOnStart
                             it.playedDurationWhenStarted = playable.playedDurationWhenStarted
                             it.setPosition(playable.position)
                             it.lastPlayedTime = (System.currentTimeMillis())
                             if (it.startPosition >= 0 && it.position > it.startPosition)
                                 it.playedDuration = (it.playedDurationWhenStarted + it.position - it.startPosition)
-                            it.timeSpent = it.timeSpentOnStart + (System.currentTimeMillis() - it.startTime).toInt()
+                            it.timeSpent = it.timeSpentOnStart + (System.currentTimeMillis() - it.startTime)
                             if (ended || (skipped && smartMarkAsPlayed)) it.setPosition(0)
                             if (ended || skipped || playingNext) it.playbackCompletionDate = Date()
                         }
@@ -1129,24 +1130,25 @@ class PlaybackService : MediaLibraryService() {
             playable.setPosition(position)
             playable.lastPlayedTime = (System.currentTimeMillis())
 
-                var item = realm.query(Episode::class, "id == ${playable.id}").first().find()
-                if (item != null) {
-                    item = upsertBlk(item) {
-                        it.startPosition = playable.startPosition
-                        it.startTime = playable.startTime
-                        it.playedDurationWhenStarted = playable.playedDurationWhenStarted
-                        it.setPosition(position)
-                        it.lastPlayedTime = (System.currentTimeMillis())
-                        if (it.isNew) it.playState = PlayState.UNPLAYED.code
-                        if (it.startPosition >= 0 && it.position > it.startPosition)
-                            it.playedDuration = (it.playedDurationWhenStarted + it.position - it.startPosition)
-                        it.timeSpent = it.timeSpentOnStart + (System.currentTimeMillis() - it.startTime).toInt()
-                        Logd(TAG, "saveCurrentPosition ${it.startTime} timeSpent: ${it.timeSpent} playedDuration: ${it.playedDuration}")
-                    }
+            var item = realm.query(Episode::class, "id == ${playable.id}").first().find()
+            if (item != null) {
+                item = upsertBlk(item) {
+                    it.startPosition = playable.startPosition
+                    // TODO: on starting next one in queue, startTime is not set yet
+                    it.startTime = playable.startTime
+                    it.timeSpentOnStart = playable.timeSpentOnStart
+                    it.timeSpent = it.timeSpentOnStart + (System.currentTimeMillis() - it.startTime)
+                    it.playedDurationWhenStarted = playable.playedDurationWhenStarted
+                    it.setPosition(position)
+                    it.lastPlayedTime = (System.currentTimeMillis())
+                    if (it.isNew) it.playState = PlayState.UNPLAYED.code
+                    if (it.startPosition >= 0 && it.position > it.startPosition)
+                        it.playedDuration = (it.playedDurationWhenStarted + it.position - it.startPosition)
+                    Logd(TAG, "saveCurrentPosition ${it.startTime} timeSpent: ${it.timeSpent} playedDuration: ${it.playedDuration}")
+                }
 //                    This appears not too useful
 //                    EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
-                }
-
+            }
             prevPosition = position
         }
     }

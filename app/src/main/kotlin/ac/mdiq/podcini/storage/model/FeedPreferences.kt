@@ -90,7 +90,7 @@ class FeedPreferences : EmbeddedRealmObject {
 
     var filterString: String = ""
 
-    var sortOrderCode: Int = 0      // in EpisodeSortOrder
+    var sortOrderCode: Int = 2     // in EpisodeSortOrder
 
 //    seems not too useful
 //    var sortOrderAuxCode: Int = 0      // in EpisodeSortOrder

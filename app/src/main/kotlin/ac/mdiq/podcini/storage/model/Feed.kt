@@ -138,7 +138,7 @@ class Feed : RealmObject {
 
     @Ignore
     var sortOrder: EpisodeSortOrder? = null
-        get() = fromCode(preferences?.sortOrderCode ?: 0)
+        get() = fromCode(preferences?.sortOrderCode ?: 2)
         set(value) {
             if (value == null) return
             field = value

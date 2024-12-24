@@ -114,7 +114,8 @@ object AutoDownloads {
                             val allowedDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
                             Logd(TAG, "autoDownloadEpisodeMedia ${f.preferences?.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
                             if (allowedDLCount > 0) {
-                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND downloaded == false"
+//                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND downloaded == false"
+                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
                                     FeedPreferences.AutoDownloadPolicy.ONLY_NEW -> {
                                         queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"

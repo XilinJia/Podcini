@@ -23,11 +23,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
-
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
-import ac.mdiq.podcini.ui.fragment.QueuesFragment
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -48,6 +46,8 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.EditText
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -216,7 +216,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                     useController = true
                     setControllerVisibilityListener(
                         PlayerView.ControllerVisibilityListener { visibility ->
-                            showAcrionBar = if (visibility == View.VISIBLE) true else false
+                            showAcrionBar = visibility == View.VISIBLE
                         }
                     )
                 }
@@ -513,7 +513,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     @Composable
     fun PlaybackControlsDialog(onDismiss: ()-> Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
-        AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.audio_controls)) },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { Text(stringResource(R.string.audio_controls)) },
             text = {
                 LazyColumn {
                     items(audioTracks.size) {index ->

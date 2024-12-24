@@ -1,3 +1,9 @@
+# 7.0.1
+
+* some appearance adjustments, mainly borders
+* fixed issue of quality setter button out of screen in PlayerDetailed view
+* fixed some loading issue with episodes lists due to filtering on EpisodeMedia which has been removed
+
 # 7.0.0
 
 * largely improved responsiveness and efficiency in episodes list with progressive building

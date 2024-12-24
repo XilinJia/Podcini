@@ -10,16 +10,22 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
+import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.database.Episodes.prefDeleteRemovesFromQueue
 import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
+import ac.mdiq.podcini.storage.database.Feeds.addToSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
+import ac.mdiq.podcini.storage.database.Feeds.createYTSyndicates
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -32,10 +38,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
-import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
-import ac.mdiq.podcini.storage.database.Feeds.addToSyndicate
-import ac.mdiq.podcini.storage.database.Feeds.createYTSyndicates
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.NullActionButton
@@ -71,11 +75,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,6 +95,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -141,8 +146,8 @@ fun stopMonitor(vms: List<EpisodeVM>) {
 
 @Stable
 class EpisodeVM(var episode: Episode, val tag: String) {
-    var positionState by mutableStateOf(episode.position?:0)
-    var durationState by mutableStateOf(episode.duration?:0)
+    var positionState by mutableStateOf(episode.position)
+    var durationState by mutableStateOf(episode.duration)
     var playedState by mutableIntStateOf(episode.playState)
     var isPlayingState by mutableStateOf(false)
     var ratingState by mutableIntStateOf(episode.rating)
@@ -230,8 +235,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)
                             .clickable {
                                 for (item in selected) {
-//                                    var media: Episode? = item
-                                    val hasAlmostEnded = if (item != null) hasAlmostEnded(item) else false
+                                    val hasAlmostEnded = hasAlmostEnded(item)
                                     var item_ = runBlocking { setPlayStateSync(state.code, item, hasAlmostEnded, false) }
                                     when (state) {
                                         PlayState.UNPLAYED -> {
@@ -250,7 +254,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                             } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item_)
                                             if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                                                 // not all items have media, Gpodder only cares about those that do
-                                                if (isProviderConnected && item_ != null) {
+                                                if (isProviderConnected) {
                                                     val actionPlay: EpisodeAction = EpisodeAction.Builder(item_, EpisodeAction.PLAY)
                                                         .currentTimestamp()
                                                         .started(item_.duration / 1000)
@@ -749,7 +753,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         val textColor = MaterialTheme.colorScheme.onSurface
         if (vm.inProgressState || InTheatre.isCurMedia(vm.episode)) {
             val pos = vm.positionState
-            val dur = remember { vm.episode.duration ?: 0 }
+            val dur = remember { vm.episode.duration }
             val durText = remember { getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
 //            Logd(TAG, "$index vm.prog: ${vm.prog}")
@@ -1190,7 +1194,7 @@ fun DatesFilterDialogCompose(inclPlayed: Boolean = false, from: Long? = null, to
     var timeFilterFrom by remember { mutableLongStateOf(from ?: oldestDate) }
     var timeFilterTo by remember { mutableLongStateOf(to ?: Date().time) }
     var useAllTime by remember { mutableStateOf(false) }
-    AlertDialog(onDismissRequest = { onDismissRequest() },
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
         title = { Text(stringResource(R.string.share_label), style = CustomTextStyles.titleCustom) },
         text = {
             Column {
@@ -1254,7 +1258,7 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
     var isChecked by remember { mutableStateOf(false) }
     var ctx = LocalContext.current
 
-    AlertDialog(onDismissRequest = { onDismissRequest() },
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
         title = { Text(stringResource(R.string.share_label), style = CustomTextStyles.titleCustom) },
         text = {
             Column {
@@ -1290,4 +1294,78 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
         },
         dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
     )
+}
+
+@Composable
+fun SkipDialog(direction: SkipDirection, onDismissRequest: ()->Unit, callBack: (Int)->Unit) {
+    val titleRes = if (direction == SkipDirection.SKIP_FORWARD) R.string.pref_fast_forward else R.string.pref_rewind
+    var interval by remember { mutableStateOf((if (direction == SkipDirection.SKIP_FORWARD) UserPreferences.fastForwardSecs else UserPreferences.rewindSecs).toString()) }
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
+        title = { Text(stringResource(titleRes), style = CustomTextStyles.titleCustom) },
+        text = {
+            TextField(value = interval,  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number), label = { Text("seconds") }, singleLine = true,
+                onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) interval = it })
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (interval.isNotBlank()) {
+                    val value = interval.toInt()
+                    if (direction == SkipDirection.SKIP_FORWARD) UserPreferences.fastForwardSecs = value
+                    else UserPreferences.rewindSecs = value
+                    callBack(value)
+                    onDismissRequest()
+                }
+            }) { Text(text = "OK") }
+        },
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+    )
+}
+
+enum class SkipDirection {
+    SKIP_FORWARD, SKIP_REWIND
+}
+
+@Composable
+fun ChaptersDialog(media: Episode, onDismissRequest: () -> Unit) {
+    val lazyListState = rememberLazyListState()
+    val chapters = remember { media.chapters }
+    val textColor = MaterialTheme.colorScheme.onSurface
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+            Column(modifier = Modifier.Companion.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(stringResource(R.string.chapters_label))
+                var currentChapterIndex by remember { mutableIntStateOf(-1) }
+                LazyColumn(state = lazyListState, modifier = Modifier.Companion.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(chapters.size, key = { index -> chapters[index].start }) { index ->
+                        val ch = chapters[index]
+                        Row(verticalAlignment = Alignment.Companion.CenterVertically, modifier = Modifier.Companion.fillMaxWidth()) {
+//                            if (!ch.imageUrl.isNullOrEmpty()) {
+//                                val imgUrl = ch.imageUrl
+//                                AsyncImage(model = imgUrl, contentDescription = "imgvCover",
+//                                    placeholder = painterResource(R.mipmap.ic_launcher),
+//                                    error = painterResource(R.mipmap.ic_launcher),
+//                                    modifier = Modifier.width(56.dp).height(56.dp))
+//                            }
+                            Column(modifier = Modifier.Companion.weight(1f)) {
+                                Text(getDurationStringLong(ch.start.toInt()), color = textColor)
+                                Text(ch.title ?: "No title", color = textColor, fontWeight = FontWeight.Companion.Bold)
+//                                Text(ch.link?: "")
+                                val duration = if (index + 1 < chapters.size) chapters[index + 1].start - ch.start
+                                else media.duration - ch.start
+                                Text(stringResource(R.string.chapter_duration0) + DurationConverter.getDurationStringLocalized(LocalContext.current, duration), color = textColor)
+                            }
+                            val playRes = if (index == currentChapterIndex) R.drawable.ic_replay else R.drawable.ic_play_48dp
+                            Icon(imageVector = ImageVector.Companion.vectorResource(playRes), tint = textColor, contentDescription = "play button",
+                                modifier = Modifier.Companion.width(28.dp).height(32.dp).clickable {
+                                    if (status != PlayerStatus.PLAYING) PlaybackService.Companion.playPause()
+                                    PlaybackService.Companion.seekTo(ch.start.toInt())
+                                    currentChapterIndex = index
+                                })
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

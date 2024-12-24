@@ -17,6 +17,8 @@ import ac.mdiq.podcini.ui.compose.PlaybackSpeedDialog
 import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
 import ac.mdiq.podcini.ui.compose.TitleSummarySwitchPrefRow
 import ac.mdiq.podcini.ui.compose.VideoModeDialog
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -166,7 +168,7 @@ fun PlaybackPreferencesScreen() {
         var tempFFSelectedOption by remember { mutableStateOf(R.string.keycode_media_fast_forward) }
         TitleSummaryActionColumn(R.string.pref_hardware_forward_button_title, R.string.pref_hardware_forward_button_summary) { showHardwareForwardButtonOptions = true }
         if (showHardwareForwardButtonOptions) {
-            AlertDialog(onDismissRequest = { showHardwareForwardButtonOptions = false },
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showHardwareForwardButtonOptions = false },
                 title = { Text(stringResource(R.string.pref_hardware_forward_button_title), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {
@@ -191,7 +193,7 @@ fun PlaybackPreferencesScreen() {
         var tempPRSelectedOption by remember { mutableStateOf(R.string.keycode_media_rewind) }
         TitleSummaryActionColumn(R.string.pref_hardware_previous_button_title, R.string.pref_hardware_previous_button_summary) { showHardwarePreviousButtonOptions = true }
         if (showHardwarePreviousButtonOptions) {
-            AlertDialog(onDismissRequest = { showHardwarePreviousButtonOptions = false },
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showHardwarePreviousButtonOptions = false },
                 title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {
@@ -219,7 +221,7 @@ fun PlaybackPreferencesScreen() {
         var tempLocationOption by remember { mutableStateOf(EnqueueLocation.BACK.name) }
         TitleSummaryActionColumn(R.string.pref_enqueue_location_title, R.string.pref_enqueue_location_sum) { showEnqueueLocationOptions = true }
         if (showEnqueueLocationOptions) {
-            AlertDialog(onDismissRequest = { showEnqueueLocationOptions = false },
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showEnqueueLocationOptions = false },
                 title = { Text(stringResource(R.string.pref_hardware_previous_button_title), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {

@@ -29,6 +29,8 @@ import android.text.format.DateUtils
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -141,7 +143,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
             onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
         }
 
-        AlertDialog(onDismissRequest = { onDismissRequest() },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
             title = { Text(stringResource(R.string.gpodnetauth_login_butLabel), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {
@@ -175,7 +177,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
 
     @Composable
     fun ChooseProviderAndLoginDialog(onDismissRequest: ()->Unit) {
-        AlertDialog(onDismissRequest = { onDismissRequest() },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
             title = { Text(stringResource(R.string.dialog_choose_sync_service_title), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {

@@ -6,9 +6,7 @@ import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
-import android.provider.DocumentsContract
 import androidx.core.database.getStringOrNull
-import androidx.documentfile.provider.DocumentFile
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.ext.toRealmList
 import io.realm.kotlin.ext.toRealmSet

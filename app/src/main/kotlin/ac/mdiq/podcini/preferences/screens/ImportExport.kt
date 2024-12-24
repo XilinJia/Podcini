@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.preferences.screens
 
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.*
@@ -18,19 +17,16 @@ import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -51,7 +47,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -189,7 +184,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
     val comboDic = remember { mutableStateMapOf<String, Boolean>() }
     var showComboImportDialog by remember { mutableStateOf(false) }
     if (showComboImportDialog) {
-        AlertDialog(onDismissRequest = { showComboImportDialog = false },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showComboImportDialog = false },
             title = { Text(stringResource(R.string.pref_select_properties), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {
@@ -246,7 +241,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
     }
     var showComboExportDialog by remember { mutableStateOf(false) }
     if (showComboExportDialog) {
-        AlertDialog(onDismissRequest = { showComboExportDialog = false },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showComboExportDialog = false },
             title = { Text(stringResource(R.string.pref_select_properties), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {

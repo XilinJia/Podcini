@@ -17,6 +17,8 @@ import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
 import ac.mdiq.podcini.ui.compose.TitleSummarySwitchPrefRow
 import android.content.DialogInterface
 import android.util.Patterns
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -164,7 +166,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                 }
             }
         }
-        AlertDialog(onDismissRequest = { onDismissRequest() },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
             title = { Text(stringResource(R.string.pref_proxy_title), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {
@@ -299,7 +301,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
         var tempSelectedOptions by remember { mutableStateOf(appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, setOf("images"))!!) }
         TitleSummaryActionColumn(R.string.pref_metered_network_title, R.string.pref_mobileUpdate_sum) { showMeteredNetworkOptions = true }
         if (showMeteredNetworkOptions) {
-            AlertDialog(onDismissRequest = { showMeteredNetworkOptions = false },
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showMeteredNetworkOptions = false },
                 title = { Text(stringResource(R.string.pref_metered_network_title), style = CustomTextStyles.titleCustom) },
                 text = {
                     Column {
@@ -386,7 +388,7 @@ fun AutoDownloadPreferencesScreen() {
                 var tempCleanupOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
                 var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
                 if ((interval.toIntOrNull() ?: -1) > 0) tempCleanupOption = EpisodeCleanupOptions.LimitBy.num.toString()
-                AlertDialog(onDismissRequest = { showCleanupOptions = false },
+                AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showCleanupOptions = false },
                     title = { Text(stringResource(R.string.pref_episode_cleanup_title), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {

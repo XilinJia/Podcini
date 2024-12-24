@@ -5,7 +5,6 @@ import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
-import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
@@ -23,7 +22,10 @@ import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.FeedPreferences
+import ac.mdiq.podcini.storage.model.Rating
+import ac.mdiq.podcini.storage.model.SubscriptionLog
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
@@ -600,7 +602,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
 fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.OpmlElement>, onDismissRequest: () -> Unit) {
     val context = LocalContext.current
     val selectedItems = remember {  mutableStateMapOf<Int, Boolean>() }
-    AlertDialog(onDismissRequest = { onDismissRequest() },
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
         title = { Text("Import OPML file") },
         text = {
             var isSelectAllChecked by remember { mutableStateOf(false) }

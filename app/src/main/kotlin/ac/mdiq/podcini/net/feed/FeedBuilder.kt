@@ -23,6 +23,8 @@ import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -83,7 +85,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
 
     @Composable
     fun ConfirmYTChannelTabsDialog(onDismissRequest: () -> Unit, handleFeed: (Feed, Map<String, String>)->Unit) {
-        AlertDialog(onDismissRequest = { onDismissRequest() },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
             title = { Text(stringResource(R.string.choose_tab), style = CustomTextStyles.titleCustom) },
             text = {
                 Column {

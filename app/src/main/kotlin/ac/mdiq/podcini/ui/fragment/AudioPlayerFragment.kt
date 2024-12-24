@@ -36,21 +36,11 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-import ac.mdiq.podcini.ui.actions.PlayActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
-import ac.mdiq.podcini.ui.compose.ChaptersDialog
-import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
-import ac.mdiq.podcini.ui.compose.CustomTextStyles
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.MediaPlayerErrorDialog
-import ac.mdiq.podcini.ui.compose.PlaybackSpeedFullDialog
-import ac.mdiq.podcini.ui.compose.ShareDialog
-import ac.mdiq.podcini.ui.compose.SkipDialog
-import ac.mdiq.podcini.ui.compose.SkipDirection
-import ac.mdiq.podcini.ui.compose.Spinner
-import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.compose.*
+import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -73,7 +63,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -99,7 +88,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import coil.compose.AsyncImage
@@ -109,8 +97,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.Readability4J
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -522,11 +513,11 @@ class AudioPlayerFragment : Fragment() {
                     codecs.clear()
                     val lSet = mutableSetOf<String>()
                     val bSet = mutableSetOf<String>()
-                    val cSet = mutableSetOf<String>()
+                    val cSet = mutableSetOf<String>("Any")
                     for (s in ytMediaSpecs.audioStreamsList) {
                         lSet.add(s.audioLocale.toString())
                         bSet.add(s.averageBitrate.toString())
-                        if (s.codec != null) cSet.add(s.codec!!)
+                        if (s.codec != null) cSet.add(s.codec!!) else cSet.add("null")
                     }
                     locales.addAll(lSet)
                     bitRates.addAll(bSet)
@@ -535,10 +526,10 @@ class AudioPlayerFragment : Fragment() {
                     if (bitRates.isNotEmpty()) bitrate = bitRates[0].toInt()
                     if (codecs.isNotEmpty()) codec = codecs[0]
                 }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary))) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                     if (locales.size > 1) {
                         Text("Locale:", color = textColor, modifier = Modifier.padding(end = 10.dp))
-                        Spinner(items = locales, selectedItem = locale) { index ->
+                        Spinner(items = locales, modifier = Modifier.widthIn(max = 60.dp), selectedItem = locale) { index ->
                             Logd(TAG, "Locale selected: ${locales[index]}")
                             bitRates.clear()
                             locale = locales[index]
@@ -555,13 +546,14 @@ class AudioPlayerFragment : Fragment() {
                     Spacer(Modifier.weight(1f))
                     if (codecs.size > 1) {
                         Text("Codec:", color = textColor, modifier = Modifier.padding(end = 10.dp))
-                        Spinner(items = codecs, selectedItem = codec) { index ->
-                            Logd(TAG, "Locale selected: ${codecs[index]}")
+                        Spinner(items = codecs, modifier = Modifier.widthIn(max = 100.dp), selectedItem = codec) { index ->
+                            Logd(TAG, "Codec selected: ${codecs[index]}")
                             bitRates.clear()
                             codec = codecs[index]
                             val bSet = mutableSetOf<String>()
                             for (s in ytMediaSpecs.audioStreamsList) {
-                                if (s.codec == codec) bSet.add(s.averageBitrate.toString())
+                                Logd(TAG, "${s.codec} $codec ${s.averageBitrate}")
+                                if (s.audioLocale.toString() == locale && (codec == "Any" || s.codec == codec)) bSet.add(s.averageBitrate.toString())
                             }
                             bitRates.addAll(bSet)
                             bitrate = bitRates[0].toInt()
@@ -570,15 +562,14 @@ class AudioPlayerFragment : Fragment() {
                         }
                     }
                     Spacer(Modifier.weight(1f))
-                    if (bitRates.size > 1) {
-                        Text("BPS:", color = textColor, modifier = Modifier.padding(end = 10.dp))
-                        Spinner(items = bitRates, selectedItem = bitrate.toString()) { index ->
+                    Text("BPS:", color = textColor, modifier = Modifier.padding(end = 10.dp))
+                    if (bitRates.size > 1) {Spinner(items = bitRates, modifier = Modifier.widthIn(max = 50.dp), selectedItem = bitrate.toString()) { index ->
                             Logd(TAG, "BitRate selected: ${bitRates[index]}")
                             bitrate = bitRates[index].toInt()
                             ytMediaSpecs.setAudioStream(locale, codec, bitrate)
                             resetPlayer = true
                         }
-                    }
+                    } else Text(bitrate.toString(), color = textColor)
                     Spacer(Modifier.weight(1f))
                     if (resetPlayer) IconButton(onClick = {
                         playbackService?.mPlayer?.reinit()

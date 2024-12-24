@@ -355,6 +355,7 @@ class EpisodeInfoFragment : Fragment() {
 
         val media: Episode? = episode
         if (media == null) {
+            // TODO: what's this?
             if (episode != null) {
 //                actionButton1 = VisitWebsiteActionButton(episode!!)
 //                butAction1.visibility = View.INVISIBLE

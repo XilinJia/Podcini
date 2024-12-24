@@ -206,7 +206,7 @@ class Feed : RealmObject {
         fileUrl = null
         this.downloadUrl = url
         this.eigenTitle = title
-        preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
+        preferences = FeedPreferences(0, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
     }
 
 //    /**

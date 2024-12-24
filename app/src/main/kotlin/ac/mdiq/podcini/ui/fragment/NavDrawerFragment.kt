@@ -12,7 +12,6 @@ import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ARGUMENT_FEED_ID
 import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import android.R.attr
 import android.app.Activity

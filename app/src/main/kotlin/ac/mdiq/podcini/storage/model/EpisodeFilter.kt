@@ -88,10 +88,10 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             properties.contains(States.auto_downloadable.name) -> statements.add("isAutoDownloadEnabled == true ")
             properties.contains(States.not_auto_downloadable.name) -> statements.add("isAutoDownloadEnabled == false ")
         }
-        when {
-            properties.contains(States.has_media.name) -> statements.add("media != nil ")
-            properties.contains(States.no_media.name) -> statements.add("media == nil ")
-        }
+//        when {
+//            properties.contains(States.has_media.name) -> statements.add("media != nil ")
+//            properties.contains(States.no_media.name) -> statements.add("media == nil ")
+//        }
         when {
             properties.contains(States.has_chapters.name) -> statements.add("chapters.@count > 0 ")
             properties.contains(States.no_chapters.name) -> statements.add("chapters.@count == 0 ")
@@ -176,7 +176,7 @@ class EpisodeFilter(vararg properties_: String) : Serializable {
             ItemProperties(R.string.ignored, States.ignored.name),
         ),
         OPINION(R.string.has_comments, ItemProperties(R.string.yes, States.has_comments.name), ItemProperties(R.string.no, States.no_comments.name)),
-        MEDIA(R.string.has_media, ItemProperties(R.string.yes, States.has_media.name), ItemProperties(R.string.no, States.no_media.name)),
+//        MEDIA(R.string.has_media, ItemProperties(R.string.yes, States.has_media.name), ItemProperties(R.string.no, States.no_media.name)),
         DOWNLOADED(R.string.downloaded_label, ItemProperties(R.string.yes, States.downloaded.name), ItemProperties(R.string.no, States.not_downloaded.name)),
         CHAPTERS(R.string.has_chapters, ItemProperties(R.string.yes, States.has_chapters.name), ItemProperties(R.string.no, States.no_chapters.name)),
         MEDIA_TYPE(R.string.media_type, ItemProperties(R.string.unknown, States.unknown.name),

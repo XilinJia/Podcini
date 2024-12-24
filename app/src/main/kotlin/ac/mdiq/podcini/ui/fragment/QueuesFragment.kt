@@ -42,6 +42,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -592,7 +593,7 @@ class QueuesFragment : Fragment() {
     @Composable
     private fun ShowLockWarning(onDismiss: () -> Unit) {
         var dontAskAgain by remember { mutableStateOf(false) }
-        AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.lock_queue)) },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { Text(stringResource(R.string.lock_queue)) },
             text = {
                 Column {
                     Text(stringResource(R.string.queue_lock_warning))

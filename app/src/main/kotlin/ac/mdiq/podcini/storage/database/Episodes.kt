@@ -191,15 +191,15 @@ object Episodes {
             val queueItems = curQueue.episodes.toMutableList()
             for (episode in episodes) {
                 if (queueItems.remove(episode)) removedFromQueue.add(episode)
-                    if (episode?.id == curState.curMediaId) {
-                        // Applies to both downloaded and streamed media
-                        writeNoMediaPlaying()
-                        sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-                    }
-                    if (episode.feed != null && !episode.feed!!.isLocalFeed) {
-                        DownloadServiceInterface.get()?.cancel(context, episode)
-                        if (episode.downloaded) deleteMediaSync(context, episode)
-                    }
+                if (episode.id == curState.curMediaId) {
+                    // Applies to both downloaded and streamed media
+                    writeNoMediaPlaying()
+                    sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                }
+                if (episode.feed != null && !episode.feed!!.isLocalFeed) {
+                    DownloadServiceInterface.get()?.cancel(context, episode)
+                    if (episode.downloaded) deleteMediaSync(context, episode)
+                }
             }
             if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
             for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))

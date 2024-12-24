@@ -234,7 +234,6 @@ class PreferenceActivity : AppCompatActivity() {
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
                     appPrefs.edit().putBoolean(UserPreferences.Prefs.prefOPMLBackup.name, it).apply()
-                    // Restart the app
                     val intent = packageManager?.getLaunchIntentForPackage(packageName)
                     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     startActivity(intent)
@@ -436,7 +435,7 @@ class PreferenceActivity : AppCompatActivity() {
             var tempSelectedOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefDefaultPage.name, DefaultPages.SubscriptionsFragment.name)!!) }
             TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
             if (showDefaultPageOptions) {
-                AlertDialog(onDismissRequest = { showDefaultPageOptions = false },
+                AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDefaultPageOptions = false },
                     title = { Text(stringResource(R.string.pref_default_page), style = CustomTextStyles.titleCustom) },
                     text = {
                         Column {

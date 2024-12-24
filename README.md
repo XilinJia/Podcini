@@ -8,7 +8,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 [<img src="./images/external/getItGithub.png" alt="GitHub" height="50">](https://github.com/XilinJia/Podcini/releases/latest)
 [<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="50">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Google Play" height="50">](https://play.google.com/apps/testing/ac.mdiq.podcini.R)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Google Play" height="50">](https://play.google.com/store/apps/details?id=ac.mdiq.podcini.R)
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 

@@ -2,22 +2,18 @@ package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.ui.activity.MainActivity
 import android.app.Activity
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,7 +33,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +40,7 @@ import kotlinx.coroutines.delay
 fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var currentSelectedItem by remember { mutableStateOf(selectedItem) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+    ExposedDropdownMenuBox(expanded = expanded, modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onExpandedChange = { expanded = it }) {
         BasicTextField(readOnly = true, value = currentSelectedItem, onValueChange = { currentSelectedItem = it},
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
             modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
@@ -74,7 +69,7 @@ fun Spinner(items: List<String>, selectedItem: String, modifier: Modifier = Modi
 fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var curIndex by remember { mutableIntStateOf(selectedIndex) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+    ExposedDropdownMenuBox(expanded = expanded, modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onExpandedChange = { expanded = it }) {
         BasicTextField(readOnly = true, value = items.getOrNull(curIndex) ?: "Select Item", onValueChange = { },
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
             modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
@@ -102,7 +97,7 @@ fun Spinner(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifi
 @Composable
 fun SpinnerExternalSet(items: List<String>, selectedIndex: Int, modifier: Modifier = Modifier, onItemSelected: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+    ExposedDropdownMenuBox(expanded = expanded, modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onExpandedChange = { expanded = it }) {
         BasicTextField(readOnly = true, value = items.getOrNull(selectedIndex) ?: "Select Item", onValueChange = { },
             textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold),
             modifier = modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true), // Material3 requirement
@@ -190,7 +185,7 @@ fun NonlazyGrid(columns: Int, itemCount: Int, modifier: Modifier = Modifier, con
 fun SimpleSwitchDialog(title: String, text: String, onDismissRequest: ()->Unit, callback: (Boolean)-> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
     var isChecked by remember { mutableStateOf(false) }
-    AlertDialog(onDismissRequest = { onDismissRequest() },
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
         title = { Text(title, style = CustomTextStyles.titleCustom) },
         text = {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
@@ -247,8 +242,7 @@ fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String, 
 @Composable
 fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boolean>, cancellable: Boolean = true, onConfirm: () -> Unit) {
     if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDialog.value = false },
             title = { if (titleRes != 0) Text(stringResource(titleRes)) },
             text = {
                 val scrollState = rememberScrollState()
@@ -268,8 +262,7 @@ fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boole
 @Composable
 fun MediaPlayerErrorDialog(activity: Activity, message: String, showDialog: MutableState<Boolean>) {
     if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDialog.value = false },
             title = { Text(stringResource(R.string.error_label)) },
             text = {
                 val genericMessage: String = activity.getString(R.string.playback_error_generic)

@@ -288,11 +288,7 @@ class EpisodesFragment : Fragment() {
         Logd(TAG, "getHistory() called")
         val medias = realm.query(Episode::class).query("(playbackCompletionTime > 0) OR (lastPlayedTime > \$0 AND lastPlayedTime <= \$1)", start, end).find()
         var episodes: MutableList<Episode> = mutableListOf()
-        for (m in medias) {
-            val item_ = m
-            if (item_ != null) episodes.add(item_)
-            else Logd(TAG, "getHistory: media has null episode: ${m.id}")
-        }
+        for (m in medias) episodes.add(m)
         getPermutor(sortOrder).reorder(episodes)
         if (offset > 0 && episodes.size > offset) episodes = episodes.subList(offset, min(episodes.size, offset+limit))
         return episodes
@@ -469,7 +465,9 @@ class EpisodesFragment : Fragment() {
     }
 
     fun filtersDisabled(): MutableSet<EpisodeFilter.EpisodesFilterGroup> {
-        return if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA)
+        return if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
+//            mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA)
+            mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED)
         else mutableSetOf()
     }
 

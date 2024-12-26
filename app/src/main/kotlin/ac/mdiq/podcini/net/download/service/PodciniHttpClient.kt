@@ -281,8 +281,8 @@ object PodciniHttpClient {
         private fun getImageAuthentication(imageUrl: String): String {
             Logd(TAG, "getImageAuthentication() called with: imageUrl = [$imageUrl]")
             val episode = realm.query(Episode::class).query("imageUrl == $0", imageUrl).first().find() ?: return ""
-            val username = episode.feed?.preferences?.username
-            val password = episode.feed?.preferences?.password
+            val username = episode.feed?.username
+            val password = episode.feed?.password
             if (username != null && password != null) return "$username:$password"
             return ""
         }

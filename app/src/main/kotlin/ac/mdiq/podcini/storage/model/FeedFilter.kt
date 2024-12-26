@@ -2,7 +2,7 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
-import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.SPEED_USE_GLOBAL
+import ac.mdiq.podcini.storage.model.Feed.Companion.SPEED_USE_GLOBAL
 import ac.mdiq.podcini.util.Logd
 import java.io.Serializable
 
@@ -14,21 +14,21 @@ class FeedFilter(vararg properties_: String) : Serializable {
     fun queryString(): String {
         val statements: MutableList<String> = mutableListOf()
         when {
-            properties.contains(States.keepUpdated.name) -> statements.add("preferences.keepUpdated == true ")
-            properties.contains(States.not_keepUpdated.name) -> statements.add(" preferences.keepUpdated == false ")
+            properties.contains(States.keepUpdated.name) -> statements.add("keepUpdated == true ")
+            properties.contains(States.not_keepUpdated.name) -> statements.add(" keepUpdated == false ")
         }
         when {
-            properties.contains(States.pref_streaming.name) -> statements.add("preferences.prefStreamOverDownload == true ")
-            properties.contains(States.not_pref_streaming.name) -> statements.add(" preferences.prefStreamOverDownload == false ")
+            properties.contains(States.pref_streaming.name) -> statements.add("prefStreamOverDownload == true ")
+            properties.contains(States.not_pref_streaming.name) -> statements.add(" prefStreamOverDownload == false ")
         }
 
         when {
-            properties.contains(States.global_playSpeed.name) -> statements.add(" preferences.playSpeed == $SPEED_USE_GLOBAL ")
-            properties.contains(States.custom_playSpeed.name) -> statements.add(" preferences.playSpeed != $SPEED_USE_GLOBAL ")
+            properties.contains(States.global_playSpeed.name) -> statements.add(" playSpeed == $SPEED_USE_GLOBAL ")
+            properties.contains(States.custom_playSpeed.name) -> statements.add(" playSpeed != $SPEED_USE_GLOBAL ")
         }
         when {
-            properties.contains(States.has_skips.name) -> statements.add(" preferences.introSkip != 0 OR preferences.endingSkip != 0 ")
-            properties.contains(States.no_skips.name) -> statements.add(" preferences.introSkip == 0 AND preferences.endingSkip == 0 ")
+            properties.contains(States.has_skips.name) -> statements.add(" introSkip != 0 OR endingSkip != 0 ")
+            properties.contains(States.no_skips.name) -> statements.add(" introSkip == 0 AND endingSkip == 0 ")
         }
         when {
             properties.contains(States.has_comments.name) -> statements.add(" comment != '' ")
@@ -65,9 +65,9 @@ class FeedFilter(vararg properties_: String) : Serializable {
         }
 
         val audoDeleteQuerys = mutableListOf<String>()
-        if (properties.contains(States.global_auto_delete.name)) audoDeleteQuerys.add(" preferences.autoDelete == ${FeedPreferences.AutoDeleteAction.GLOBAL.code} ")
-        if (properties.contains(States.always_auto_delete.name)) audoDeleteQuerys.add(" preferences.autoDelete == ${FeedPreferences.AutoDeleteAction.ALWAYS.code} ")
-        if (properties.contains(States.never_auto_delete.name)) audoDeleteQuerys.add(" preferences.playSpeed == ${FeedPreferences.AutoDeleteAction.NEVER.code} ")
+        if (properties.contains(States.global_auto_delete.name)) audoDeleteQuerys.add(" autoDelete == ${Feed.AutoDeleteAction.GLOBAL.code} ")
+        if (properties.contains(States.always_auto_delete.name)) audoDeleteQuerys.add(" autoDelete == ${Feed.AutoDeleteAction.ALWAYS.code} ")
+        if (properties.contains(States.never_auto_delete.name)) audoDeleteQuerys.add(" playSpeed == ${Feed.AutoDeleteAction.NEVER.code} ")
         if (audoDeleteQuerys.isNotEmpty()) {
             val query = StringBuilder(" (" + audoDeleteQuerys[0])
             if (audoDeleteQuerys.size > 1) for (r in audoDeleteQuerys.subList(1, audoDeleteQuerys.size)) {
@@ -79,8 +79,8 @@ class FeedFilter(vararg properties_: String) : Serializable {
             statements.add(query.toString())
         }
         when {
-            properties.contains(States.autoDownload.name) -> statements.add(" preferences.autoDownload == true ")
-            properties.contains(States.not_autoDownload.name) -> statements.add(" preferences.autoDownload == false ")
+            properties.contains(States.autoDownload.name) -> statements.add(" autoDownload == true ")
+            properties.contains(States.not_autoDownload.name) -> statements.add(" autoDownload == false ")
         }
         if (statements.isEmpty()) return "id > 0"
 

@@ -7,16 +7,20 @@ import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
+import ac.mdiq.podcini.net.utils.getFinalRedirectedUrl
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedByTitleAndAuthor
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.isSubscribed
-import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating.Companion.fromCode
+import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.storage.model.SubscriptionLog.Companion.feedLogsMap
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
@@ -208,6 +212,7 @@ class OnlineFeedFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             urlToLog = url
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
+            Logd(TAG, "lookupUrlAndBuild: urlString: ${urlString}")
             try {
                 feeds = getFeedList()
                 if (feedBuilder.isYoutube(urlString)) {
@@ -216,7 +221,11 @@ class OnlineFeedFragment : Fragment() {
                         if (nTabs > 1) showYTChannelDialog = true
                         else feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
                     } else feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
-                } else feedBuilder.buildPodcast(urlString, username, password) { feed_, map -> handleFeed(feed_, map) }
+                } else {
+                    val urlFinal = getFinalRedirectedUrl(urlString)?:""
+                    Logd(TAG, "lookupUrlAndBuild: urlFinal: ${urlFinal}")
+                    feedBuilder.buildPodcast(urlFinal, username, password) { feed_, map -> handleFeed(feed_, map) }
+                }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -363,8 +372,8 @@ class OnlineFeedFragment : Fragment() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val feedLogsMap_ = feedLogsMap!!
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            if (showProgress) Box(contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(progress = {0.7f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.Center))
+            if (showProgress) Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.Center))
             }
             else Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(start = 10.dp, end = 10.dp)) {
                 if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(100.dp).background(MaterialTheme.colorScheme.surface)) {
@@ -498,23 +507,23 @@ class OnlineFeedFragment : Fragment() {
                 if (didPressSubscribe) {
                     didPressSubscribe = false
                     val feed1 = getFeed(feedId, true)?: return
-                    if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
-                        FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+//                    if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
+//                        FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                     if (feedSource == "VistaGuide") {
-                        feed1.preferences!!.prefStreamOverDownload = true
-                        feed1.preferences!!.autoDownload = false
+                        feed1.prefStreamOverDownload = true
+                        feed1.autoDownload = false
                     } else if (isEnableAutodownload) {
                         val autoDownload = autoDownloadChecked
-                        feed1.preferences!!.autoDownload = autoDownload
+                        feed1.autoDownload = autoDownload
                         val editor = prefs.edit()
                         editor?.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
                         editor?.apply()
                     }
                     if (username != null) {
-                        feed1.preferences!!.username = username
-                        feed1.preferences!!.password = password
+                        feed1.username = username
+                        feed1.password = password
                     }
-                    persistFeedPreferences(feed1)
+                    runOnIOScope { upsert(feed1) {} }
 //                    openFeed()
                 }
             }

@@ -5,16 +5,18 @@ import java.util.*
 import java.util.regex.Pattern
 
 // We're storing the strings and not the parsed terms because
-// 1. It's easier to show the user exactly what they typed in this way
-//    (we don't have to recreate it)
+// 1. It's easier to show the user exactly what they typed in this way (we don't have to recreate it)
 // 2. We don't know if we'll actually be asked to parse anything anyways.
 
-class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilterRaw: String? = "", val minimalDurationFilter: Int = -1, val markExcludedPlayed: Boolean = false) : Serializable {
+class FeedAutoDownloadFilter(
+        val includeFilterRaw: String? = "",
+        val excludeFilterRaw: String? = "",
+        val minimalDurationFilter: Int = -1,
+        val markExcludedPlayed: Boolean = false) : Serializable {
 
-    var includeTerms: List<String>? = null
-        get() = field ?: parseTerms(includeFilterRaw)
-    var excludeTerms: List<String>? = null
-        get() = field ?: parseTerms(excludeFilterRaw)
+    val includeTerms: List<String> by lazy { parseTerms(includeFilterRaw) }
+    val excludeTerms: List<String> by lazy { parseTerms(excludeFilterRaw) }
+
     /**
      * Parses the text in to a list of single words or quoted strings.
      * Example: "One "Two Three"" returns ["One", "Two Three"]
@@ -72,16 +74,6 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
         if (hasMinimalDurationFilter()) return true
 
         return false
-    }
-
-    fun getIncludeFilter(): List<String> {
-        return includeTerms!!
-//        return if (includeFilterRaw == null) ArrayList() else parseTerms(includeFilterRaw)
-    }
-
-    fun getExcludeFilter(): List<String> {
-        return excludeTerms!!
-//        return if (excludeFilterRaw == null) ArrayList() else parseTerms(excludeFilterRaw)
     }
 
     /**

@@ -22,9 +22,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
-import ac.mdiq.podcini.storage.model.FeedPreferences.AudioType
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
+import ac.mdiq.podcini.storage.model.Feed.AudioType
+import ac.mdiq.podcini.storage.model.Feed.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.util.EventFlow
@@ -57,18 +56,14 @@ object Feeds {
         else realm.query(Feed::class, queryString).find()
     }
 
-    fun getFeedCount(): Int {
-        return realm.query(Feed::class).count().find().toInt()
-    }
+    fun getFeedCount(): Int = realm.query(Feed::class).count().find().toInt()
 
-    fun getTags(): List<String> {
-        return tags
-    }
+    fun getTags(): List<String> = tags
 
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
         val feedsCopy = getFeedList()
-        for (feed in feedsCopy) if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
+        for (feed in feedsCopy) tagsSet.addAll(feed.tags.filter { it != TAG_ROOT })
         val newTags = tagsSet - tags.toSet()
         if (newTags.isNotEmpty()) {
             tags.clear()
@@ -117,24 +112,12 @@ object Feeds {
 
     private fun monitorFeed(feed: Feed) {
         CoroutineScope(Dispatchers.Default).launch {
-            val feedPrefsFlow = feed.asFlow(listOf("preferences.*"))
-            feedPrefsFlow.collect { changes: SingleQueryChange<Feed> ->
-                when (changes) {
-                    is UpdatedObject -> {
-                        Logd(TAG, "monitorFeed UpdatedObject0 ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                        if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
-                    }
-                    else -> {}
-                }
-            }
-        }
-        CoroutineScope(Dispatchers.Default).launch {
             val feedFlow = feed.asFlow()
             feedFlow.collect { changes: SingleQueryChange<Feed> ->
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                        if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
+                        EventFlow.postEvent(FlowEvent.FeedChangeEvent(changes.obj))
                     }
 //                    is DeletedObject -> {
 //                        Logd(TAG, "monitorFeed DeletedObject ${feed.title}")
@@ -286,8 +269,8 @@ object Feeds {
                 if (priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                     Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                     episode.playState = PlayState.NEW.code
-                    if (savedFeed.preferences?.autoAddNewToQueue == true) {
-                        val q = savedFeed.preferences?.queue
+                    if (savedFeed.autoAddNewToQueue == true) {
+                        val q = savedFeed.queue
                         if (q != null) runOnIOScope {  addToQueueSync(episode, q) }
                     }
                 }
@@ -366,8 +349,8 @@ object Feeds {
             if (priorMostRecentDate < pubDate) {
                 Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                 episode.playState = PlayState.NEW.code
-                if (savedFeed.preferences?.autoAddNewToQueue == true) {
-                    val q = savedFeed.preferences?.queue
+                if (savedFeed.autoAddNewToQueue == true) {
+                    val q = savedFeed.queue
                     if (q != null) runOnIOScope {  addToQueueSync(episode, q) }
                 }
             }
@@ -409,9 +392,9 @@ object Feeds {
             var idLong = Feed.newId()
             for (feed in feeds) {
                 feed.id = idLong
-                if (feed.preferences == null)
-                    feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-                else feed.preferences!!.feedID = feed.id
+//                if (feed.preferences == null)
+//                    feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+//                else feed.preferences!!.feedID = feed.id
                 feed.totleDuration = 0
                 Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
@@ -428,15 +411,6 @@ object Feeds {
         }
         val backupManager = BackupManager(context)
         backupManager.dataChanged()
-    }
-
-    fun persistFeedPreferences(feed: Feed) : Job {
-        Logd(TAG, "persistFeedPreferences called")
-        return runOnIOScope {
-            val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-            if (feed_ != null) upsert(feed_) { it.preferences = feed.preferences }
-            else upsert(feed) {}
-        }
     }
 
     /**
@@ -497,8 +471,8 @@ object Feeds {
         feed = createSynthetic(feedId, name)
         feed.type = Feed.FeedType.YOUTUBE.name
         feed.hasVideoMedia = video
-        feed.preferences!!.audioTypeSetting = if (music) AudioType.MUSIC else AudioType.SPEECH
-        feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+        feed.audioTypeSetting = if (music) AudioType.MUSIC else AudioType.SPEECH
+        feed.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
         EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
         return feed
@@ -535,9 +509,9 @@ object Feeds {
         feed.downloadUrl = null
         feed.hasVideoMedia = video
         feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
-        feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-        feed.preferences!!.keepUpdated = false
-        feed.preferences!!.queueId = -2L
+//        feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+        feed.keepUpdated = false
+        feed.queueId = -2L
         return feed
     }
 
@@ -660,9 +634,7 @@ object Feeds {
                                             ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
                                             """.trimIndent()))
         }
-        fun getEpisodeByIdentifyingValue(item: Episode): Episode? {
-            return map[item.identifyingValue]
-        }
+        fun getEpisodeByIdentifyingValue(item: Episode): Episode? = map[item.identifyingValue]
         fun guessDuplicate(item: Episode): Episode? {
             var episode = map[item.identifier]
             if (episode != null) return episode
@@ -680,16 +652,12 @@ object Feeds {
             }
             return null
         }
-        fun clear() {
-            map.clear()
-        }
+        fun clear() = map.clear()
     }
     private object EpisodeAssistant {
         fun searchEpisodeByIdentifyingValue(episodes: List<Episode>?, searchItem: Episode): Episode? {
             if (episodes.isNullOrEmpty()) return null
-            for (episode in episodes) {
-                if (episode.identifyingValue == searchItem.identifyingValue) return episode
-            }
+            for (episode in episodes) if (episode.identifyingValue == searchItem.identifyingValue) return episode
             return null
         }
         /**

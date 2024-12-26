@@ -1,17 +1,21 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.media3.common.C
 import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.FullText
+import io.realm.kotlin.types.RealmSet
 import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
@@ -31,23 +35,19 @@ class Feed : RealmObject {
     /**
      * title as defined by the feed.
      */
-    @FullText
     var eigenTitle: String? = null
 
     /**
      * custom title set by the user.
      */
-    @FullText
     var customTitle: String? = null
 
     var link: String? = null
 
-    @FullText
     var description: String? = null
 
     var language: String? = null
 
-    @FullText
     var author: String? = null
 
     var imageUrl: String? = null
@@ -89,18 +89,12 @@ class Feed : RealmObject {
 
     var lastUpdateFailed = false
 
-    var preferences: FeedPreferences? = null
-
     var totleDuration: Long = 0L
-
-    // TODO: this might not be needed
-    var measures: FeedMeasures? = null
 
     var hasVideoMedia: Boolean = false
 
     var rating: Int =  Rating.OK.code
 
-    @FullText
     var comment: String = ""
 
     var commentTime: Long = 0L
@@ -134,15 +128,15 @@ class Feed : RealmObject {
     @Ignore
     var episodeFilter: EpisodeFilter = EpisodeFilter("")
         private set
-        get() = EpisodeFilter(preferences?.filterString ?: "")
+        get() = EpisodeFilter(filterString ?: "")
 
     @Ignore
     var sortOrder: EpisodeSortOrder? = null
-        get() = fromCode(preferences?.sortOrderCode ?: 2)
+        get() = fromCode(sortOrderCode ?: 2)
         set(value) {
             if (value == null) return
             field = value
-            preferences?.sortOrderCode = value.code
+            sortOrderCode = value.code
         }
 
     @Ignore
@@ -166,35 +160,158 @@ class Feed : RealmObject {
     @Ignore
     var isBuilding by mutableStateOf(false)
 
-    /**
-     * This constructor is used for test purposes.
-     */
-    constructor(id: Long, lastUpdate: String?, title: String?, link: String?, description: String?, paymentLink: String?,
-                author: String?, language: String?, type: String?, feedIdentifier: String?, imageUrl: String?, fileUrl: String?,
-                downloadUrl: String?) {
-        this.id = id
-        this.fileUrl = fileUrl
-        this.downloadUrl = downloadUrl
-        this.eigenTitle = title
-        setCustomTitle1(customTitle)
-        this.lastUpdate = lastUpdate
-        this.link = link
-        this.description = description
-        this.paymentLinks = extractPaymentLinks(paymentLink)
-        this.author = author
-        this.language = language
-        this.type = type
-        this.identifier = feedIdentifier
-        this.imageUrl = imageUrl
-        this.isPaged = false
-        this.preferences?.filterString = ""
-        this.sortOrder = sortOrder
-        this.preferences?.sortOrderCode = sortOrder?.code ?: 0
+    // from FeedPreferences
+    var useWideLayout: Boolean = false
+
+    var keepUpdated: Boolean = true
+
+    var username: String? = null
+    var password: String? = null
+
+    @Ignore
+    var videoModePolicy: VideoMode = VideoMode.NONE
+        get() = VideoMode.fromCode(videoMode)
+        set(value) {
+            field = value
+            videoMode = field.code
+        }
+    var videoMode: Int = VideoMode.NONE.code
+
+    var playSpeed: Float = SPEED_USE_GLOBAL
+
+    var introSkip: Int = 0
+    var endingSkip: Int = 0
+
+    @Ignore
+    var autoDeleteAction: AutoDeleteAction = AutoDeleteAction.GLOBAL
+        get() = AutoDeleteAction.fromCode(autoDelete)
+        set(value) {
+            field = value
+            autoDelete = field.code
+        }
+    var autoDelete: Int = AutoDeleteAction.GLOBAL.code
+
+    @Ignore
+    var audioTypeSetting: AudioType = AudioType.SPEECH
+        get() = AudioType.fromCode(audioType)
+        set(value) {
+            field = value
+            audioType = field.code
+        }
+    var audioType: Int = AudioType.SPEECH.code
+
+    @Ignore
+    var volumeAdaptionSetting: VolumeAdaptionSetting = VolumeAdaptionSetting.OFF
+        get() = fromInteger(volumeAdaption)
+        set(value) {
+            field = value
+            volumeAdaption = field.toInteger()
+        }
+    var volumeAdaption: Int = VolumeAdaptionSetting.OFF.value
+
+    @Ignore
+    var audioQualitySetting: AVQuality = AVQuality.GLOBAL
+        get() = AVQuality.fromCode(audioQuality)
+        set(value) {
+            field = value
+            audioQuality = field.code
+        }
+    var audioQuality: Int = AVQuality.GLOBAL.code
+
+    @Ignore
+    var videoQualitySetting: AVQuality = AVQuality.GLOBAL
+        get() = AVQuality.fromCode(videoQuality)
+        set(value) {
+            field = value
+            videoQuality = field.code
+        }
+    var videoQuality: Int = AVQuality.GLOBAL.code
+
+    var prefStreamOverDownload: Boolean = false
+
+    var filterString: String = ""
+
+    var sortOrderCode: Int = 2     // in EpisodeSortOrder
+
+    @Ignore
+    val tagsAsString: String
+        get() = tags.joinToString(TAG_SEPARATOR)
+    var tags: RealmSet<String> = realmSetOf()
+
+    var autoDownload: Boolean = false
+
+    @Ignore
+    var queue: PlayQueue? = null
+        get() = when {
+            queueId >= 0 -> realm.query(PlayQueue::class).query("id == $queueId").first().find()
+            queueId == -1L -> curQueue
+            queueId == -2L -> null
+            else -> null
+        }
+        set(value) {
+            field = value
+            queueId = value?.id ?: -1L
+        }
+    @Ignore
+    var queueText: String = "Default"
+        get() = when (queueId) {
+            0L -> "Default"
+            -1L -> "Active"
+            -2L -> "None"
+            else -> "Custom"
+        }
+    @Ignore
+    val queueTextExt: String
+        get() = when (queueId) {
+            -1L -> "Active"
+            -2L -> "None"
+            else -> queue?.name ?: "Default"
+        }
+    var queueId: Long = 0L
+
+    var autoAddNewToQueue: Boolean = false
+
+    @Ignore
+    var autoDownloadFilter: FeedAutoDownloadFilter? = null
+        get() = field ?: FeedAutoDownloadFilter(autoDLInclude, autoDLExclude, autoDLMinDuration, markExcludedPlayed)
+        set(value) {
+            field = value
+            autoDLInclude = value?.includeFilterRaw ?: ""
+            autoDLExclude = value?.excludeFilterRaw ?: ""
+            autoDLMinDuration = value?.minimalDurationFilter ?: -1
+            markExcludedPlayed = value?.markExcludedPlayed == true
+        }
+    var autoDLInclude: String? = ""
+    var autoDLExclude: String? = ""
+    var autoDLMinDuration: Int = -1
+    var markExcludedPlayed: Boolean = false
+
+    var autoDLMaxEpisodes: Int = 3
+    var countingPlayed: Boolean = true      // relates to autoDLMaxEpisodes
+
+    @Ignore
+    var autoDLPolicy: AutoDownloadPolicy = AutoDownloadPolicy.ONLY_NEW
+        get() = AutoDownloadPolicy.fromCode(autoDLPolicyCode)
+        set(value) {
+            field = value
+            autoDLPolicyCode = value.code
+        }
+    var autoDLPolicyCode: Int = AutoDownloadPolicy.ONLY_NEW.code
+
+    fun fillPreferences(autoDownload: Boolean, autoDeleteAction: AutoDeleteAction,
+                volumeAdaptionSetting: VolumeAdaptionSetting?, username: String?, password: String?) {
+        this.autoDownload = autoDownload
+        this.autoDeleteAction = autoDeleteAction
+        if (volumeAdaptionSetting != null) this.volumeAdaptionSetting = volumeAdaptionSetting
+        this.username = username
+        this.password = password
+        this.autoDelete = autoDeleteAction.code
+        this.volumeAdaption = volumeAdaptionSetting?.toInteger() ?: 0
     }
 
-    /**
-     * This constructor can be used when parsing feed data. Only the 'lastUpdate' and 'items' field are initialized.
-     */
+    // above from FeedPreferences
+
+
     constructor() : super()
 
     /**
@@ -206,24 +323,8 @@ class Feed : RealmObject {
         fileUrl = null
         this.downloadUrl = url
         this.eigenTitle = title
-        preferences = FeedPreferences(0, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
+        fillPreferences(false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
     }
-
-//    /**
-//     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
-//     * used if the title of the feed is already known.
-//     */
-//    constructor(url: String?, lastUpdate: String?, title: String?) : this(url, lastUpdate) {
-//        this.eigenTitle = title
-//    }
-//
-//    /**
-//     * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
-//     * used if the title of the feed is already known.
-//     */
-//    constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url, lastUpdate, title) {
-//        preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
-//    }
 
     fun setCustomTitle1(value: String?) {
         customTitle = if (value == null || value == eigenTitle) null else value
@@ -256,14 +357,14 @@ class Feed : RealmObject {
             this.nextPageLink = other.nextPageLink
         }
 
-        if (includingPrefs && other.preferences != null) {
-            if (this.preferences == null) this.preferences = FeedPreferences(id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-            this.preferences?.tags = other.preferences!!.tags
-            this.preferences?.keepUpdated = other.preferences!!.keepUpdated
-            this.preferences?.username = other.preferences!!.username
-            this.preferences?.password = other.preferences!!.password
-            this.preferences?.playSpeed = other.preferences!!.playSpeed
-            this.preferences?.autoDownload = other.preferences!!.autoDownload
+        if (includingPrefs) {
+//            if (this.preferences == null) this.preferences = FeedPreferences(id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+            this.tags = other.tags
+            this.keepUpdated = other.keepUpdated
+            this.username = other.username
+            this.password = other.password
+            this.playSpeed = other.playSpeed
+            this.autoDownload = other.autoDownload
         }
     }
 
@@ -310,7 +411,7 @@ class Feed : RealmObject {
     fun getVirtualQueueItems():  List<Episode> {
         var qString = "feedId == $id AND (playState < ${PlayState.SKIPPED.code} OR playState == ${PlayState.AGAIN.code} OR playState == ${PlayState.FOREVER.code})"
 //        TODO: perhaps need to set prefStreamOverDownload for youtube feeds
-        if (type != FeedType.YOUTUBE.name && preferences?.prefStreamOverDownload != true) qString += " AND downloaded == true"
+        if (type != FeedType.YOUTUBE.name && prefStreamOverDownload != true) qString += " AND downloaded == true"
         val eList_ = realm.query(Episode::class, qString).query(episodeFilter.queryString()).find().toMutableList()
         if (sortOrder != null) getPermutor(sortOrder!!).reorder(eList_)
         return eList_
@@ -322,6 +423,66 @@ class Feed : RealmObject {
         YOUTUBE("YouTube")
     }
 
+    enum class AutoDownloadPolicy(val code: Int, val resId: Int) {
+        ONLY_NEW(0, R.string.feed_auto_download_new),
+        NEWER(1, R.string.feed_auto_download_newer),
+        OLDER(2, R.string.feed_auto_download_older),
+        SOON(3, R.string.feed_auto_download_soon);
+
+        companion object {
+            fun fromCode(code: Int): AutoDownloadPolicy {
+                return enumValues<AutoDownloadPolicy>().firstOrNull { it.code == code } ?: ONLY_NEW
+            }
+        }
+    }
+
+    enum class AutoDeleteAction(val code: Int, val tag: String) {
+        GLOBAL(0, "global"),
+        ALWAYS(1, "always"),
+        NEVER(2, "never");
+
+        companion object {
+            fun fromCode(code: Int): AutoDeleteAction {
+                return enumValues<AutoDeleteAction>().firstOrNull { it.code == code } ?: NEVER
+            }
+            fun fromTag(tag: String): AutoDeleteAction {
+                return enumValues<AutoDeleteAction>().firstOrNull { it.tag == tag } ?: NEVER
+            }
+        }
+    }
+
+    enum class AudioType(val code: Int, val tag: String) {
+        UNKNOWN(C.AUDIO_CONTENT_TYPE_UNKNOWN, "Unknown"),
+        SPEECH(C.AUDIO_CONTENT_TYPE_SPEECH, "Speech"),
+        MUSIC(C.AUDIO_CONTENT_TYPE_MUSIC, "Music"),
+        MOVIE(C.AUDIO_CONTENT_TYPE_MOVIE, "Movie");
+
+        companion object {
+            fun fromCode(code: Int): AudioType {
+                return enumValues<AudioType>().firstOrNull { it.code == code } ?: SPEECH
+            }
+            fun fromTag(tag: String): AudioType {
+                return enumValues<AudioType>().firstOrNull { it.tag == tag } ?: SPEECH
+            }
+        }
+    }
+
+    enum class AVQuality(val code: Int, val tag: String) {
+        GLOBAL(0, "Global"),
+        LOW(1, "Low"),
+        MEDIUM(5, "Medium"),
+        HIGH(10, "High");
+
+        companion object {
+            fun fromCode(code: Int): AVQuality {
+                return enumValues<AVQuality>().firstOrNull { it.code == code } ?: GLOBAL
+            }
+            fun fromTag(tag: String): AVQuality {
+                return enumValues<AVQuality>().firstOrNull { it.tag == tag } ?: GLOBAL
+            }
+        }
+    }
+
     companion object {
         val TAG: String = Feed::class.simpleName ?: "Anonymous"
 
@@ -331,6 +492,12 @@ class Feed : RealmObject {
 
         const val MAX_NATURAL_SYNTHETIC_ID: Long = 100L
         const val MAX_SYNTHETIC_ID: Long = 1000L
+
+        const val SPEED_USE_GLOBAL: Float = -1f
+        const val TAG_ROOT: String = "#root"
+        const val TAG_SEPARATOR: String = "\u001e"
+
+        val FeedAutoDeleteOptions = AutoDeleteAction.entries.map { it.tag }
 
         fun newId(): Long {
             return Date().time * 100

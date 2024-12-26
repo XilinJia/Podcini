@@ -2,28 +2,43 @@ package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Rating
+import ac.mdiq.podcini.storage.utils.DurationConverter
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
+import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
+import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -33,7 +48,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import kotlinx.coroutines.delay
+import java.text.NumberFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

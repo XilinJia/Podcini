@@ -7,7 +7,9 @@ import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.PAFeed
 import ac.mdiq.podcini.storage.model.Rating
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
@@ -17,26 +19,27 @@ import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.util.Pair
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,10 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
@@ -59,12 +64,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
+import kotlin.math.min
 
 class SearchFragment : Fragment() {
     private lateinit var automaticSearchDebouncer: Handler
 
-    private val resultFeeds = mutableStateListOf<Feed>()
-    private val results = mutableListOf<Episode>()
+    private val pafeeds = mutableStateListOf<PAFeed>()
+
+    private val feeds = mutableStateListOf<Feed>()
+    private val episodes = mutableListOf<Episode>()
     private val vms = mutableStateListOf<EpisodeVM>()
     private var infoBarText = mutableStateOf("")
     private var searchInFeed by mutableStateOf(false)
@@ -101,6 +109,9 @@ class SearchFragment : Fragment() {
                         refreshSwipeTelltale()
                     }
                     swipeActions.ActionOptionsDialog()
+                    val tabTitles = listOf(R.string.episodes_label, R.string.feeds, R.string.pafeeds)
+                    val tabCounts = listOf<Int>(episodes.size, feeds.size, pafeeds.size)
+                    val selectedTabIndex = remember { mutableIntStateOf(0) }
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             if (searchInFeed) FilterChip(onClick = { }, label = { Text(feedName) }, selected = searchInFeed,
@@ -112,18 +123,30 @@ class SearchFragment : Fragment() {
                                 }
                             )
                             CriteriaList()
-                            FeedsRow()
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                                leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it)
-                                },
-                                rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it)
-                                },
-                            )
+                            TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
+                                Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
+                            }) {
+                                tabTitles.forEachIndexed { index, titleRes ->
+                                    Tab(text = { Text(stringResource(titleRes)+"(${tabCounts[index]})") }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
+                                }
+                            }
+                            when (selectedTabIndex.value) {
+                                0 -> {
+                                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
+                                    EpisodeLazyColumn(activity as MainActivity, vms = vms, buildMoreItems = { buildMoreItems(it) },
+                                        leftSwipeCB = {
+                                            if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
+                                            else leftActionState.value.performAction(it)
+                                        },
+                                        rightSwipeCB = {
+                                            if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
+                                            else rightActionState.value.performAction(it)
+                                        },
+                                    )
+                                }
+                                1 -> FeedsColumn()
+                                2 -> PAFeedsColumn()
+                            }
                         }
                     }
                 }
@@ -147,11 +170,16 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        results.clear()
-        resultFeeds.clear()
+        episodes.clear()
+        feeds.clear()
         stopMonitor(vms)
         vms.clear()
         super.onDestroyView()
+    }
+
+    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
+        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
+        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
     }
 
     private fun refreshSwipeTelltale() {
@@ -202,10 +230,12 @@ class SearchFragment : Fragment() {
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
-            val pos: Int = Episodes.indexOfItemWithDownloadUrl(results, url)
+            val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
             if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
+
+    data class Triplet(val episodes: List<Episode>, val feeds: List<Feed>, val pafeeds: List<PAFeed>)
 
     private var searchJob: Job? = null
     @SuppressLint("StringFormatMatches")
@@ -219,33 +249,32 @@ class SearchFragment : Fragment() {
         searchJob = lifecycleScope.launch {
             try {
                 val results_ = withContext(Dispatchers.IO) {
-                    if (query.isEmpty()) Pair<List<Episode>, List<Feed>>(emptyList(), emptyList())
+                    if (query.isEmpty()) Triplet(listOf(), listOf(), listOf())
                     else {
                         val feedID = requireArguments().getLong(ARG_FEED)
                         val items: List<Episode> = searchEpisodes(feedID, query)
                         val feeds: List<Feed> = searchFeeds(query)
-                        Logd(TAG, "performSearch items: ${items.size} feeds: ${feeds.size}")
-                        Pair<List<Episode>, List<Feed>>(items, feeds)
+                        val pafeeds = searchPAFeeds(query)
+                        Logd(TAG, "performSearch items: ${items.size} feeds: ${feeds.size} pafeeds: ${pafeeds.size}")
+                        Triplet(items, feeds, pafeeds)
                     }
                 }
                 withContext(Dispatchers.Main) {
-                    if (results_.first != null) {
-                        val first_ = results_.first!!.toMutableList()
-                        results.clear()
-                        infoBarText.value = "${results.size} episodes"
-                        stopMonitor(vms)
-                        vms.clear()
-                        if (first_.isNotEmpty()) {
-                            results.addAll(first_)
-                            for (e in first_) { vms.add(EpisodeVM(e, TAG)) }
-                        }
+                    val first_ = results_.episodes
+                    episodes.clear()
+                    stopMonitor(vms)
+                    vms.clear()
+                    if (first_.isNotEmpty()) {
+                        episodes.addAll(first_)
+                        buildMoreItems(vms)
                     }
+                    infoBarText.value = "${episodes.size} episodes"
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                        if (results_.second != null) {
-                            resultFeeds.clear()
-                            if (results_.second.isNotEmpty()) resultFeeds.addAll(results_.second!!)
-                        }
-                    } else resultFeeds.clear()
+                        feeds.clear()
+                        if (results_.feeds.isNotEmpty()) feeds.addAll(results_.feeds)
+                    } else feeds.clear()
+                    pafeeds.clear()
+                    if (results_.pafeeds.isNotEmpty()) pafeeds.addAll(results_.pafeeds)
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { searchJob = null } }
@@ -286,47 +315,85 @@ class SearchFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun FeedsRow() {
+    fun FeedsColumn() {
         val context = LocalContext.current
-        val lazyGridState = rememberLazyListState()
-        LazyRow (state = lazyGridState, horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp))  {
-            items(resultFeeds.size, key = {index -> resultFeeds[index].id}) { index ->
-                val feed by remember { mutableStateOf(resultFeeds[index]) }
-                ConstraintLayout {
-                    val (coverImage, episodeCount, rating, error) = createRefs()
+        val lazyListState = rememberLazyListState()
+        LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            itemsIndexed(feeds, key = { _, feed -> feed.id }) { index, feed ->
+                Row(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     val imgLoc = remember(feed) { feed.imageUrl }
                     AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                         .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                        contentDescription = "coverImage",
-                        modifier = Modifier.height(100.dp).aspectRatio(1f)
-                            .constrainAs(coverImage) {
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                            }.combinedClickable(onClick = {
-                                Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
-                                (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-                            }, onLongClick = {
-                                Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
-//                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
-//                                inflater.inflate(R.menu.feed_context, contextMenu)
-//                                contextMenu.setHeaderTitle(feed.title)
-                            })
-                    )
-                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
-                        modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
-                            end.linkTo(parent.end)
-                            top.linkTo(coverImage.top)
+                        contentDescription = "imgvCover",
+                        placeholder = painterResource(R.mipmap.ic_launcher),
+                        error = painterResource(R.mipmap.ic_launcher),
+                        modifier = Modifier.width(80.dp).height(80.dp).clickable(onClick = {
+                            Logd(TAG, "icon clicked!")
+                            if (!feed.isBuilding) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
                         })
-                    if (feed.rating != Rating.UNRATED.code)
-                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                start.linkTo(parent.start)
-                                centerVerticallyTo(coverImage)
-                            })
+                    )
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    Column(Modifier.weight(1f).padding(start = 10.dp).clickable(onClick = {
+                        Logd(TAG, "clicked: ${feed.title}")
+                        if (!feed.isBuilding) (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                    })) {
+                        Row {
+                            if (feed.rating != Rating.UNRATED.code)
+                                Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                                    modifier = Modifier.width(20.dp).height(20.dp).background(MaterialTheme.colorScheme.tertiaryContainer))
+                            Text(feed.title ?: "No title", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                        }
+                        Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
+                        Row(Modifier.padding(top = 5.dp)) {
+                            val measureString = remember {
+                                NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
+                                        DurationConverter.shortLocalizedDuration(requireActivity(), feed.totleDuration / 1000)
+                            }
+                            Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.weight(1f))
+                            var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }
+                            Text(feedSortInfo, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                    //                                TODO: need to use state
+                    if (feed.lastUpdateFailed) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error")
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun PAFeedsColumn() {
+        val context = LocalContext.current
+        val lazyListState = rememberLazyListState()
+        LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            itemsIndexed(pafeeds, key = { _, feed -> feed.id }) { index, feed ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val imgLoc = remember(feed) { feed.imageUrl }
+                    AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                        contentDescription = "imgvCover",
+                        placeholder = painterResource(R.mipmap.ic_launcher),
+                        error = painterResource(R.mipmap.ic_launcher),
+                        modifier = Modifier.width(60.dp).height(60.dp).clickable(onClick = {
+                            Logd(TAG, "feedUrl: ${feed.name} [${feed.feedUrl}] [$]")
+                            if (feed.feedUrl.isNotBlank()) (activity as MainActivity).loadChildFragment(OnlineFeedFragment.newInstance(feed.feedUrl))
+                        })
+                    )
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    Column(Modifier.weight(1f).padding(start = 10.dp).clickable(onClick = {
+                        Logd(TAG, "feedUrl: ${feed.name} [${feed.feedUrl}]")
+                        if (feed.feedUrl.isNotBlank()) (activity as MainActivity).loadChildFragment(OnlineFeedFragment.newInstance(feed.feedUrl))
+                    })) {
+                        Text(feed.name, color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(feed.author, color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
+                        Text(feed.category.joinToString(","), color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("Episodes: ${feed.episodesNb} Average duration: ${feed.aveDuration} minutes", color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(MiscFormatter.formatLargeInteger(feed.subscribers) + " subscribers", color = textColor, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 }
             }
         }
@@ -340,24 +407,24 @@ class SearchFragment : Fragment() {
             var isStart = true
             val sb1 = StringBuilder()
             if (SearchBy.TITLE.selected) {
-                sb1.append("eigenTitle TEXT '${queryWords[i]}'")
+                sb1.append("eigenTitle contains[c] '${queryWords[i]}'")
                 sb1.append(" OR ")
-                sb1.append("customTitle TEXT '${queryWords[i]}'")
+                sb1.append("customTitle contains[c] '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.AUTHOR.selected) {
                 if (!isStart) sb1.append(" OR ")
-                sb1.append("author TEXT '${queryWords[i]}'")
+                sb1.append("author contains[c] '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.DESCRIPTION.selected) {
                 if (!isStart) sb1.append(" OR ")
-                sb1.append("description TEXT '${queryWords[i]}'")
+                sb1.append("description contains[c] '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.COMMENT.selected) {
                 if (!isStart) sb1.append(" OR ")
-                sb1.append("comment TEXT '${queryWords[i]}'")
+                sb1.append("comment contains[c] '${queryWords[i]}'")
             }
             if (sb1.isEmpty()) continue
             sb.append("(")
@@ -369,6 +436,43 @@ class SearchFragment : Fragment() {
         val queryString = sb.toString()
         Logd(TAG, "searchFeeds queryString: $queryString")
         return realm.query(Feed::class).query(queryString).find()
+    }
+
+    private fun searchPAFeeds(query: String): List<PAFeed> {
+        Logd(TAG, "searchFeeds called ${SearchBy.AUTHOR.selected}")
+        val queryWords = query.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val sb = StringBuilder()
+        for (i in queryWords.indices) {
+            var isStart = true
+            val sb1 = StringBuilder()
+            if (SearchBy.TITLE.selected) {
+                sb1.append("name contains[c] '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.AUTHOR.selected) {
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("author contains[c] '${queryWords[i]}'")
+                isStart = false
+            }
+            if (SearchBy.DESCRIPTION.selected) {
+                if (!isStart) sb1.append(" OR ")
+                sb1.append("description contains[c] '${queryWords[i]}'")
+                isStart = false
+            }
+//            if (SearchBy.COMMENT.selected) {
+//                if (!isStart) sb1.append(" OR ")
+//                sb1.append("comment contains[c] '${queryWords[i]}'")
+//            }
+            if (sb1.isEmpty()) continue
+            sb.append("(")
+            sb.append(sb1)
+            sb.append(") ")
+            if (i != queryWords.size - 1) sb.append("AND ")
+        }
+        if (sb.isEmpty()) return listOf()
+        val queryString = sb.toString()
+        Logd(TAG, "searchFeeds queryString: $queryString")
+        return realm.query(PAFeed::class).query(queryString).find()
     }
 
     /**
@@ -386,19 +490,19 @@ class SearchFragment : Fragment() {
             val sb1 = StringBuilder()
             var isStart = true
             if (SearchBy.TITLE.selected) {
-                sb1.append("title TEXT '${queryWords[i]}'" )
+                sb1.append("title contains[c] '${queryWords[i]}'" )
                 isStart = false
             }
             if (SearchBy.DESCRIPTION.selected) {
                 if (!isStart) sb1.append(" OR ")
-                sb1.append("description TEXT '${queryWords[i]}'")
+                sb1.append("description contains[c] '${queryWords[i]}'")
                 sb1.append(" OR ")
-                sb1.append("transcript TEXT '${queryWords[i]}'")
+                sb1.append("transcript contains[c] '${queryWords[i]}'")
                 isStart = false
             }
             if (SearchBy.COMMENT.selected) {
                 if (!isStart) sb1.append(" OR ")
-                sb1.append("comment TEXT '${queryWords[i]}'")
+                sb1.append("comment contains[c] '${queryWords[i]}'")
             }
             if (sb1.isEmpty()) continue
             sb.append("(")

@@ -354,7 +354,7 @@ class FeedInfoFragment : Fragment() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedPrefsChangeEvent -> {
+                    is FlowEvent.FeedChangeEvent -> {
                         setFeed(feed)
 //                        feed = event.feed
                     }

@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences.screens
 
+import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.*
@@ -17,6 +18,7 @@ import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,6 +45,7 @@ import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,6 +53,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import kotlin.collections.set
 
 @Composable
 fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
@@ -338,10 +342,13 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             }
         } }
 
+    var importPADB by remember { mutableStateOf(false) }
+    var importPADirectory by remember { mutableStateOf(false) }
     val choosePAImportPathLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             showProgress = true
-            importPA(uri, activity = activity) {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (importPADB) importPA(uri, activity = activity, importPADB, importPADirectory) {}
                 showImporSuccessDialog.value = true
                 showProgress = false
             }
@@ -373,7 +380,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         Dialog(onDismissRequest = { showProgress = false }) {
             Surface(modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)) {
                 Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(progress = {0.7f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.TopCenter))
+                    CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.TopCenter))
                     Text("Loading...", color = textColor, modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
@@ -465,8 +472,32 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         TitleSummaryActionColumn(R.string.import_AP_label, 0) { showAPImportDialog.value = true }
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
         val showPAImportDialog = remember { mutableStateOf(false) }
-        ComfirmDialog(titleRes = R.string.import_PA_label, message = stringResource(R.string.import_SQLite_message), showDialog = showPAImportDialog) {
-            try { choosePAImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+        if (showPAImportDialog.value) {
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showPAImportDialog.value = false },
+                title = { Text(stringResource(R.string.import_PA_label)) },
+                text = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = importPADB, onCheckedChange = { importPADB = it })
+                            Text(text = stringResource(R.string.import_PA_DB_label), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+                        }
+                        Text(stringResource(R.string.import_PA_DB_message), color = textColor, style = MaterialTheme.typography.bodySmall)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = importPADirectory, onCheckedChange = { importPADirectory = it })
+                            Text(text = stringResource(R.string.import_PA_directory_label), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+                        }
+                        Text(stringResource(R.string.import_PA_directory_message), color = textColor, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.import_PA_message), color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 10.dp))
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        try { choosePAImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+                        showPAImportDialog.value = false
+                    }) { Text("Confirm") }
+                },
+                dismissButton = { TextButton(onClick = { showPAImportDialog.value = false }) { Text("Cancel") } }
+            )
         }
         TitleSummaryActionColumn(R.string.import_PA_label, 0) { showPAImportDialog.value = true }
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))

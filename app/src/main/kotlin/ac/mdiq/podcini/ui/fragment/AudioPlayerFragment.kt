@@ -261,7 +261,7 @@ class AudioPlayerFragment : Fragment() {
                             if (media != null) {
                                 val mediaType = media.getMediaType()
                                 if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
-                                        || (media.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                                        || (media.feed?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
                                     Logd(TAG, "popping as audio episode")
                                     ensureService()
                                     (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
@@ -299,7 +299,7 @@ class AudioPlayerFragment : Fragment() {
                             val media = curEpisode!!
                             setIsShowPlay(!isShowPlay)
                             if (media.getMediaType() == MediaType.VIDEO && status != PlayerStatus.PLAYING &&
-                                    (media.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
+                                    (media.feed?.videoModePolicy != VideoMode.AUDIO_ONLY)) {
                                 playPause()
                                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), curEpisode!!.getMediaType()))
                             } else {
@@ -427,7 +427,7 @@ class AudioPlayerFragment : Fragment() {
 //        val feedItem = media.episodeOrFetch()
         val textColor = MaterialTheme.colorScheme.onSurface
         val mediaType = curEpisode?.getMediaType()
-        val notAudioOnly = curEpisode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+        val notAudioOnly = curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY
         var showVolumeDialog by remember { mutableStateOf(false) }
         if (showVolumeDialog) VolumeAdaptionDialog { showVolumeDialog = false }
         var showShareDialog by remember { mutableStateOf(false) }
@@ -690,7 +690,7 @@ class AudioPlayerFragment : Fragment() {
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.position, media.duration))
-        if (isPlayingVideoLocally && curEpisode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+        if (isPlayingVideoLocally && curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) {
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
         }
         prevItem = media

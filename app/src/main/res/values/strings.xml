@@ -6,6 +6,8 @@
     <!-- Activity and fragment titles -->
     <string name="provider_authority" translatable="false">ac.mdiq.podcini.provider</string>
     <string name="feed_update_receiver_name">Update subscriptions</string>
+    <string name="feeds">Feeds</string>
+    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Statistics</string>
     <string name="add_feed_label">Add podcast</string>
@@ -19,6 +21,7 @@
     <string name="logs_label">Logs</string>
     
     <string name="subscriptions_label">Subscriptions</string>
+    <string name="unsubscribed_label">Unsubscribed</string>
 
     <string name="cancel_download_label">Cancel download</string>
     <string name="playback_history_label">History</string>
@@ -668,7 +671,12 @@
     <string name="combo_export_label">Combo export</string>
     <string name="combo_import_label">Combo import</string>
     <string name="import_AP_label">Import AntennaPod database</string>
-    <string name="import_PA_label">Import PodcastAddict database</string>
+    <string name="import_PA_label">Import from Podcast Addict backup</string>
+    <string name="import_PA_DB_label">Import subscriptions</string>
+    <string name="import_PA_DB_message">Imported subscriptions together with episodes and play history will be added to podcini\'s DB. "</string>
+    <string name="import_PA_directory_label">Import directory</string>
+    <string name="import_PA_directory_message">Import a podcasts direcory for offline search. "</string>
+    <string name="import_PA_message">If confirmed, choose a previously exported backup archive from Podcast Addict app."</string>
     <string name="database_export_label">Database export</string>
     <string name="database_import_label">Database import</string>
     <string name="realm_database_import_label">Realm database import</string>

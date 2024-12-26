@@ -17,7 +17,7 @@ class CurrentState : RealmObject {
 
     var curPlayerStatus: Int = PLAYER_STATUS_OTHER
 
-    var curTempSpeed: Float = FeedPreferences.SPEED_USE_GLOBAL
+    var curTempSpeed: Float = Feed.SPEED_USE_GLOBAL
 
     constructor() {}
 

@@ -11,7 +11,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.storage.model.Episode
 
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -279,14 +278,14 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
                 val streamInfo = media.streamInfo ?: return
-                if (!media.forceVideo && media.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY) {
+                if (!media.forceVideo && media.feed?.videoModePolicy == VideoMode.AUDIO_ONLY) {
                     val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
                     Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
-                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
-                        when (media.feed?.preferences?.audioQualitySetting) {
-                            FeedPreferences.AVQuality.LOW -> 0
-                            FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
-                            FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
+                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.audioQualitySetting == Feed.AVQuality.GLOBAL) 0 else {
+                        when (media.feed?.audioQualitySetting) {
+                            Feed.AVQuality.LOW -> 0
+                            Feed.AVQuality.MEDIUM -> audioStreamsList.size / 2
+                            Feed.AVQuality.HIGH -> audioStreamsList.size - 1
                             else -> audioStreamsList.size - 1
                         }
                     }
@@ -297,11 +296,11 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                 } else {
                     val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, listOf(), true, false)
                     Logd(TAG, "setDataSource1 videoStreamsList ${videoStreamsList.size}")
-                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0 else {
-                        when (media.feed?.preferences?.videoQualitySetting) {
-                            FeedPreferences.AVQuality.LOW -> 0
-                            FeedPreferences.AVQuality.MEDIUM -> videoStreamsList.size / 2
-                            FeedPreferences.AVQuality.HIGH -> videoStreamsList.size - 1
+                    val videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.videoQualitySetting == Feed.AVQuality.GLOBAL) 0 else {
+                        when (media.feed?.videoQualitySetting) {
+                            Feed.AVQuality.LOW -> 0
+                            Feed.AVQuality.MEDIUM -> videoStreamsList.size / 2
+                            Feed.AVQuality.HIGH -> videoStreamsList.size - 1
                             else -> 0
                         }
                     }
@@ -435,17 +434,15 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
         }
     }
 
-    override fun isCasting(): Boolean {
-        return true
-    }
+    override fun isCasting(): Boolean = true
 
     companion object {
         /**
-         * Converts [EpisodeMedia] objects into a format suitable for sending to a Cast Device.
+         * Converts [Episode] objects into a format suitable for sending to a Cast Device.
          * Before using this method, one should make sure isCastable(EpisodeMedia) returns
          * `true`. This method should not run on the main thread.
          *
-         * @param media The [EpisodeMedia] object to be converted.
+         * @param media The [Episode] object to be converted.
          * @return [MediaInfo] object in a format proper for casting.
          */
         fun from(media: Episode?): MediaInfo? {
@@ -482,7 +479,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             metadata.putInt(KEY_FORMAT_VERSION, FORMAT_VERSION_VALUE)
             metadata.putString(KEY_STREAM_URL, media.downloadUrl!!)
 
-            Logd("MediaInfoCreator", "media: ${media.id} ${feedItem?.title}")
+            Logd("MediaInfoCreator", "media: ${media.id} ${feedItem.title}")
             Logd("MediaInfoCreator", "url: ${media.getMediaType()} $media.effectUrl")
             val builder = MediaInfo.Builder(media.effectUrl)
                 .setEntity(media.id.toString())
@@ -524,7 +521,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
             return when (media.getMediaType()) {
                 MediaType.AUDIO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
                 MediaType.VIDEO -> {
-                    if (media.feed?.preferences?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
+                    if (media.feed?.videoModePolicy ==  VideoMode.AUDIO_ONLY)
                         castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
                     else castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
                 }

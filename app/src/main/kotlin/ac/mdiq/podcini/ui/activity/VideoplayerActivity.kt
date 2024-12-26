@@ -107,7 +107,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         var vmCode = 0
         if (curEpisode != null) {
             val media_ = curEpisode!!
-            var vPol = media_.feed?.preferences?.videoModePolicy
+            var vPol = media_.feed?.videoModePolicy
             if (vPol != null) {
                 if (vPol == VideoMode.AUDIO_ONLY && media_.forceVideo) vPol = VideoMode.WINDOW_VIEW
                 if (vPol != VideoMode.NONE) vmCode = vPol.code

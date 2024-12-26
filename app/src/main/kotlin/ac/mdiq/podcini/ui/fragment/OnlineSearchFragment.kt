@@ -11,6 +11,8 @@ import ac.mdiq.podcini.preferences.OpmlTransporter
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.model.PAFeed
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -130,6 +132,11 @@ class OnlineSearchFragment : Fragment() {
         for (i in 0 until NUM_SUGGESTIONS) searchResult.add(PodcastSearchResult.dummy())
         val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
 
+        val PAFeed = realm.query(PAFeed::class).find()
+//        for (p in directory) {
+//            Logd(TAG, "in directory: ${p.name}")
+//        }
+        Logd(TAG, "size of directory: ${PAFeed.size}")
         loadToplist()
         if (isOPMLRestored && feedCount == 0) showOPMLRestoreDialog.value = true
         return composeView

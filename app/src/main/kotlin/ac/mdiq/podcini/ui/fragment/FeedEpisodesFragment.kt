@@ -138,7 +138,7 @@ class FeedEpisodesFragment : Fragment() {
                         filterButtonColor.value = Color.Red
                         eListTmp.addAll(feed!!.episodes)
                     }
-                    getPermutor(fromCode(feed?.preferences?.sortOrderCode ?: 0)).reorder(eListTmp)
+                    getPermutor(fromCode(feed?.sortOrderCode ?: 0)).reorder(eListTmp)
                     episodes.clear()
                     episodes.addAll(eListTmp)
                     ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
@@ -152,7 +152,7 @@ class FeedEpisodesFragment : Fragment() {
             }.apply { invokeOnCompletion { filterJob = null } }
         }
 
-        layoutModeIndex = if (feed?.preferences?.useWideLayout == true) 1 else 0
+        layoutModeIndex = if (feed?.useWideLayout == true) 1 else 0
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
@@ -170,7 +170,7 @@ class FeedEpisodesFragment : Fragment() {
                             runOnIOScope {
                                 val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
                                 if (feed_ != null) {
-                                    feed = upsert(feed_) { it.preferences?.filterString = filterValues.joinToString() }
+                                    feed = upsert(feed_) { it.filterString = filterValues.joinToString() }
 //                                loadFeed()
                                 }
                             }
@@ -454,7 +454,7 @@ class FeedEpisodesFragment : Fragment() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
+                    is FlowEvent.FeedChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
 //                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
                     is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadFeed()
 //                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
@@ -498,7 +498,7 @@ class FeedEpisodesFragment : Fragment() {
         }
         if (!headerCreated) headerCreated = true
         infoTextFiltered = ""
-        if (!feed?.preferences?.filterString.isNullOrEmpty()) {
+        if (!feed?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter
             if (filter.properties.isNotEmpty()) infoTextFiltered = this.getString(R.string.filtered_label)
         }
@@ -506,7 +506,7 @@ class FeedEpisodesFragment : Fragment() {
     }
 
     private fun isFilteredOut(episode: Episode): Boolean {
-        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
+        if (enableFilter && !feed?.filterString.isNullOrEmpty()) {
             val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
             if (!episodes_.contains(episode)) {
                 episodes.remove(episode)
@@ -534,7 +534,7 @@ class FeedEpisodesFragment : Fragment() {
                     if (feed_ != null) {
                         Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                         val eListTmp = mutableListOf<Episode>()
-                        if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
+                        if (enableFilter && !feed_.filterString.isNullOrEmpty()) {
                             Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                             val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
                             eListTmp.addAll(episodes_)
@@ -546,7 +546,7 @@ class FeedEpisodesFragment : Fragment() {
                         ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                         ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                         withContext(Dispatchers.Main) {
-                            layoutModeIndex = if (feed_.preferences?.useWideLayout == true) 1 else 0
+                            layoutModeIndex = if (feed_.useWideLayout == true) 1 else 0
                             stopMonitor(vms)
                             vms.clear()
                             buildMoreItems(vms)

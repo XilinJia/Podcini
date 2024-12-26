@@ -3,8 +3,7 @@ package ac.mdiq.podcini.preferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_SEPARATOR
+import ac.mdiq.podcini.storage.model.Feed.Companion.TAG_SEPARATOR
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.util.Logd
@@ -89,7 +88,7 @@ fun importAP(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
             val columnCount = cursor.columnCount
             while (cursor.moveToNext()) {
                 val feed = Feed()
-                val pref = FeedPreferences()
+//                val pref = FeedPreferences()
                 for (i in 0 until columnCount) {
                     val columnName = cursor.getColumnName(i)
                     when (columnName) {
@@ -108,16 +107,16 @@ fun importAP(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
                         "image_url" -> feed.imageUrl = cursor.getStringOrNull(i)
                         "type" -> feed.type = cursor.getStringOrNull(i)
                         "feed_identifier" -> feed.identifier = cursor.getStringOrNull(i)
-                        "auto_download" -> pref.autoDownload = cursor.getInt(i) == 1
-                        "username" -> pref.username = cursor.getStringOrNull(i)
-                        "password" -> pref.password = cursor.getStringOrNull(i)
-                        "keep_update" -> pref.keepUpdated = cursor.getInt(i) == 1
-                        "feed_playback_speed" -> pref.playSpeed = cursor.getFloat(i)
-                        "tags" -> pref.tags = cursor.getStringOrNull(i)?.split(TAG_SEPARATOR)?.toRealmSet() ?: realmSetOf()
+                        "auto_download" -> feed.autoDownload = cursor.getInt(i) == 1
+                        "username" -> feed.username = cursor.getStringOrNull(i)
+                        "password" -> feed.password = cursor.getStringOrNull(i)
+                        "keep_update" -> feed.keepUpdated = cursor.getInt(i) == 1
+                        "feed_playback_speed" -> feed.playSpeed = cursor.getFloat(i)
+                        "tags" -> feed.tags = cursor.getStringOrNull(i)?.split(TAG_SEPARATOR)?.toRealmSet() ?: realmSetOf()
                     }
                 }
                 Logd(TAG, "feed title: ${feed.title}")
-                feed.preferences = pref
+//                feed.preferences = pref
                 buildEpisodes(db, feed)
 
                 feed.id = 0L

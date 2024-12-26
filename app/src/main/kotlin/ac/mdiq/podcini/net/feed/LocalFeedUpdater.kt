@@ -87,7 +87,7 @@ object LocalFeedUpdater {
             if (!mediaFileNames.contains(feedItem.link)) it.remove()
         }
         if (folderUri != null) feed.imageUrl = getImageUrl(allFiles, folderUri)
-        if (feed.preferences != null) feed.preferences!!.autoDownload = false
+        feed.autoDownload = false
         feed.description = context.getString(R.string.local_feed_description)
         feed.author = context.getString(R.string.local_folder)
         Feeds.updateFeed(context, feed, true)

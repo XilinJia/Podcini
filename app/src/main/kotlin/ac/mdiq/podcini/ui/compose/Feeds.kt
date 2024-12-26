@@ -23,7 +23,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.model.SubscriptionLog
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -275,7 +274,7 @@ fun RenameOrCreateSyntheticFeed(feed_: Feed? = null, onDismissRequest: () -> Uni
                         val feed = feed_ ?: createSynthetic(0, name, hasVideo)
                         if (feed_ == null) {
                             feed.type = if (isYoutube) Feed.FeedType.YOUTUBE.name else Feed.FeedType.RSS.name
-                            if (hasVideo) feed.preferences!!.videoModePolicy = VideoMode.WINDOW_VIEW
+                            if (hasVideo) feed.videoModePolicy = VideoMode.WINDOW_VIEW
                         }
                         upsertBlk(feed) { if (feed_ != null) it.setCustomTitle1(name) }
                         onDismissRequest()
@@ -293,10 +292,10 @@ fun TagSettingDialog(feeds_: List<Feed>, onDismiss: () -> Unit) {
         val feeds = realm.query(Feed::class).query("id IN $0", feeds_.map {it.id}).find()
         val suggestions = remember { getTags() }
         val commonTags = remember {
-            if (feeds.size == 1) feeds[0].preferences?.tags?.toMutableStateList()?: mutableStateListOf<String>()
+            if (feeds.size == 1) feeds[0].tags.toMutableStateList()
             else {
-                val commons = feeds[0].preferences?.tags?.toMutableSet()?: mutableSetOf()
-                if (commons.isNotEmpty()) for (f in feeds) if (f.preferences != null) commons.retainAll(f.preferences!!.tags)
+                val commons = feeds[0].tags.toMutableSet()
+                if (commons.isNotEmpty()) for (f in feeds) commons.retainAll(f.tags)
                 commons.toMutableStateList()
             }
         }
@@ -358,9 +357,9 @@ fun TagSettingDialog(feeds_: List<Feed>, onDismiss: () -> Unit) {
                         Logd("TagsSettingDialog", "tags: [${tags.joinToString()}] commonTags: [${commonTags.joinToString()}]")
                         if ((tags.toSet() + commonTags.toSet()).isNotEmpty() || text.isNotBlank()) {
                             for (f in feeds) upsertBlk(f) {
-                                if (commonTags.isNotEmpty()) it.preferences?.tags?.removeAll(commonTags)
-                                if (tags.isNotEmpty()) it.preferences?.tags?.addAll(tags)
-                                if (text.isNotBlank()) it.preferences?.tags?.add(text)
+                                if (commonTags.isNotEmpty()) it.tags.removeAll(commonTags)
+                                if (tags.isNotEmpty()) it.tags.addAll(tags)
+                                if (text.isNotBlank()) it.tags.add(text)
                             }
                             buildTags()
                         }
@@ -386,17 +385,17 @@ fun PlaybackSpeedDialog(feeds: List<Feed>, initSpeed: Float, maxSpeed: Float, is
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column {
                 Text(stringResource(R.string.playback_speed), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
-//                var speed by remember { mutableStateOf(if (isGlobal) prefPlaybackSpeed else if (feeds.size == 1) feeds[0].preferences!!.playSpeed else 1f) }
+//                var speed by remember { mutableStateOf(if (isGlobal) prefPlaybackSpeed else if (feeds.size == 1) feeds[0].playSpeed else 1f) }
                 var speed by remember { mutableStateOf(initSpeed) }
-                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)) }
-                var useGlobal by remember { mutableStateOf(!isGlobal && speed == FeedPreferences.SPEED_USE_GLOBAL) }
+                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == Feed.SPEED_USE_GLOBAL) 1f else speed)) }
+                var useGlobal by remember { mutableStateOf(!isGlobal && speed == Feed.SPEED_USE_GLOBAL) }
                 if (!isGlobal) Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = useGlobal, onCheckedChange = { isChecked ->
                         useGlobal = isChecked
-                        speed = if (useGlobal) FeedPreferences.SPEED_USE_GLOBAL
+                        speed = if (useGlobal) Feed.SPEED_USE_GLOBAL
                         else if (feeds.size == 1) {
-                            if (feeds[0].preferences!!.playSpeed == FeedPreferences.SPEED_USE_GLOBAL) prefPlaybackSpeed
-                            else feeds[0].preferences!!.playSpeed
+                            if (feeds[0].playSpeed == Feed.SPEED_USE_GLOBAL) prefPlaybackSpeed
+                            else feeds[0].playSpeed
                         } else 1f
                         if (!useGlobal) sliderPosition = speed2Slider(speed)
                     })
@@ -436,7 +435,7 @@ fun PlaybackSpeedDialog(feeds: List<Feed>, initSpeed: Float, maxSpeed: Float, is
                     Button(onClick = { onDismiss() }) { Text("Cancel") }
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
-                        val newSpeed = if (useGlobal) FeedPreferences.SPEED_USE_GLOBAL else speed
+                        val newSpeed = if (useGlobal) Feed.SPEED_USE_GLOBAL else speed
                         speedCB(newSpeed)
                         onDismiss()
                     }) { Text("Confirm") }
@@ -504,7 +503,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                     } }, label = { Text(String.format(Locale.getDefault(), "%.2f", speed)) }, selected = false,
                         trailingIcon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add icon", modifier = Modifier.size(FilterChipDefaults.IconSize)) })
                 }
-                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)) }
+                var sliderPosition by remember { mutableFloatStateOf(speed2Slider(if (speed == Feed.SPEED_USE_GLOBAL) 1f else speed)) }
                 val stepSize = 0.05f
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("-", fontSize = MaterialTheme.typography.headlineLarge.fontSize, fontWeight = FontWeight.Bold,
@@ -561,7 +560,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                                     if (settingCode[2]) UserPreferences.setPlaybackSpeed(chipSpeed)
                                     if (settingCode[1]) {
                                         val episode = curEpisode ?: curEpisode
-                                        if (episode?.feed?.preferences != null) upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = chipSpeed }
+                                        if (episode?.feed != null) upsertBlk(episode.feed!!) { it.playSpeed = chipSpeed }
                                     }
                                     if (settingCode[0]) {
                                         setCurTempSpeed(chipSpeed)

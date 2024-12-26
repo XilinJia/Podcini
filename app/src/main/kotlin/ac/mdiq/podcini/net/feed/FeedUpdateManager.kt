@@ -157,7 +157,7 @@ object FeedUpdateManager {
                 val itr = feedsToUpdate.iterator()
                 while (itr.hasNext()) {
                     val feed = itr.next()
-                    if (feed.preferences?.keepUpdated == false) itr.remove()
+                    if (feed.keepUpdated == false) itr.remove()
                     if (!feed.isLocalFeed) allAreLocal = false
                 }
                 feedsToUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
@@ -447,8 +447,9 @@ object FeedUpdateManager {
                 val feed = Feed(request.source, request.lastModified)
                 feed.fileUrl = request.destination
                 feed.id = request.feedfileId
-                if (feed.preferences == null) feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL,
-                    VolumeAdaptionSetting.OFF, request.username, request.password)
+                feed.fillPreferences(false, Feed.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, request.username, request.password)
+//                if (feed.preferences == null) feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL,
+//                    VolumeAdaptionSetting.OFF, request.username, request.password)
                 if (request.arguments != null) feed.pageNr = request.arguments.getInt(DownloadRequest.REQUEST_ARG_PAGE_NR, 0)
                 var reason: DownloadError? = null
                 var reasonDetailed: String? = null

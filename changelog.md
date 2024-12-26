@@ -1,3 +1,17 @@
+# 7.1.0
+
+* likely fixed the timeSpent number seen on Statistics
+* another structural change: flattened FeedPreferences class into Feed
+* changed message texts when importing DB
+* added ability to import podcast directory from Podcast Addict for offline search
+* removed fulltext search to reduce DB size and support double-byte language searches, search appears fast enough
+* SearchFragment shows results in tabs: Episodes, Feeds, and PAFeeds 
+	* items appear in PAFeeds if you have imported a local directory from Podcast Addict
+	* PAFeeds is nice, but it's experimental, let me know your experiences
+* in SearchFragment fixed number of episodes in infobar
+* in SearchFragment, subscriptions are shown in a column
+* added url re-direct ability in OnlineFeed fragment
+
 # 7.0.3
 
 * fixed the serious bug of new episodes having null downloadUrl

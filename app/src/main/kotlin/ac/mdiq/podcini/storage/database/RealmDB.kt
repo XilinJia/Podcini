@@ -12,6 +12,7 @@ import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.dynamic.DynamicMutableRealmObject
 import io.realm.kotlin.dynamic.DynamicRealmObject
 import io.realm.kotlin.dynamic.getValue
+import io.realm.kotlin.dynamic.getValueSet
 import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
@@ -29,18 +30,17 @@ object RealmDB {
         val config = RealmConfiguration.Builder(
             schema = setOf(
                 Feed::class,
-                FeedPreferences::class,
-                FeedMeasures::class,
                 Episode::class,
-//                EpisodeMedia::class,
                 CurrentState::class,
                 PlayQueue::class,
                 DownloadResult::class,
                 ShareLog::class,
                 SubscriptionLog::class,
-                Chapter::class))
+                Chapter::class,
+                PAFeed::class,
+            ))
             .name("Podcini.realm")
-            .schemaVersion(37)
+            .schemaVersion(38)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
@@ -62,47 +62,6 @@ object RealmDB {
                             if (oldObject.getValue<Long>(fieldName = "rating") == 0L) set("rating", -3L)
                         }
                     }
-//                    val feeds = oldRealm.query(className = "Feed").query("id > 10000").find()
-//                    for (f in feeds) {
-//                        val id = f.getValue(propertyName = "id", Long::class)
-//                        val url = f.getNullableValue(propertyName = "downloadUrl", String::class)
-//                        val link = f.getNullableValue(propertyName = "link", String::class)
-//                        val title = f.getNullableValue(propertyName = "eigenTitle", String::class)
-//                        val subLog = newRealm.copyToRealm(
-//                            DynamicMutableRealmObject.create(
-//                                type = "SubscriptionLog",
-//                                mapOf(
-//                                    "id" to id/100,
-//                                    "itemId" to id,
-//                                    "url" to url,
-//                                    "link" to link,
-//                                    "type" to "Feed",
-//                                    "title" to title,
-//                                )
-//                            )
-//                        )
-//                    }
-//                    val episodes = oldRealm.query(className = "Episode").query("feedId < 100").find()
-//                    for (e in episodes) {
-//                        val id = e.getValue(propertyName = "id", Long::class)
-//                        val media = oldRealm.query(className = "EpisodeMedia").query("id == $id").first().find()
-//                        val url = media?.getNullableValue(propertyName = "downloadUrl", String::class) ?:""
-//                        val link = e.getNullableValue(propertyName = "link", String::class)
-//                        val title = e.getNullableValue(propertyName = "title", String::class)
-//                        val subLog = newRealm.copyToRealm(
-//                            DynamicMutableRealmObject.create(
-//                                type = "SubscriptionLog",
-//                                mapOf(
-//                                    "id" to id/100,
-//                                    "itemId" to id,
-//                                    "url" to url,
-//                                    "link" to link,
-//                                    "type" to "Media",
-//                                    "title" to title,
-//                                )
-//                            )
-//                        )
-//                    }
                 }
                 if (oldRealm.schemaVersion() < 28) {
                     Logd(TAG, "migrating DB from below 28")
@@ -142,7 +101,6 @@ object RealmDB {
                         newObject?.run {
                             Logd(TAG, "start: ${getNullableValue("title", String::class)}")
                             val media = oldObject.getObject(propertyName = "media")
-                            var playedDuration = 0L
                             if (media != null) {
                                 set("fileUrl", media.getNullableValue("fileUrl", String::class))
                                 set("downloadUrl", media.getNullableValue("downloadUrl", String::class))
@@ -164,6 +122,50 @@ object RealmDB {
                                 set("timeSpent", media.getValue("timeSpent", Long::class))
                                 set("size", media.getValue("size", Long::class))
                                 set("playbackCompletionTime", media.getValue("playbackCompletionTime", Long::class))
+                                Logd(TAG, "after all")
+                            }
+                        }
+                    }
+                }
+                if (oldRealm.schemaVersion() < 38) {
+                    Logd(TAG, "migrating DB from below 38")
+                    mContext.enumerate(className = "Feed") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            val pref = oldObject.getObject(propertyName = "preferences")
+                            if (pref != null) {
+                                set("useWideLayout", pref.getValue("useWideLayout", Boolean::class))
+                                set("keepUpdated", pref.getValue("keepUpdated", Boolean::class))
+                                set("username", pref.getNullableValue("username", String::class))
+                                set("password", pref.getNullableValue("password", String::class))
+                                Logd(TAG, "after password")
+                                set("videoMode", pref.getValue("videoMode", Long::class))
+                                set("playSpeed", pref.getValue("playSpeed", Float::class))
+                                set("introSkip", pref.getValue("introSkip", Long::class))
+                                set("endingSkip", pref.getValue("endingSkip", Long::class))
+                                set("autoDelete", pref.getValue("autoDelete", Long::class))
+                                Logd(TAG, "after autoDelete")
+                                set("audioType", pref.getValue("audioType", Long::class))
+                                set("volumeAdaption", pref.getValue("volumeAdaption", Long::class))
+                                set("audioQuality", pref.getValue("audioQuality", Long::class))
+                                set("videoQuality", pref.getValue("videoQuality", Long::class))
+                                set("prefStreamOverDownload", pref.getValue("prefStreamOverDownload", Boolean::class))
+                                set("filterString", pref.getValue("filterString", String::class))
+                                Logd(TAG, "after filterString")
+                                set("sortOrderCode", pref.getValue("sortOrderCode", Long::class))
+                                val tagsSet = getValueSet<String>("tags")
+                                tagsSet.addAll(pref.getValueSet<String>("tags"))
+                                set("autoDownload", pref.getValue("autoDownload", Boolean::class))
+                                set("queueId", pref.getValue("queueId", Long::class))
+                                Logd(TAG, "after queueId")
+                                set("autoAddNewToQueue", pref.getValue("autoAddNewToQueue", Boolean::class))
+                                set("autoDLInclude", pref.getNullableValue("autoDLInclude", String::class))
+                                set("autoDLExclude", pref.getNullableValue("autoDLExclude", String::class))
+                                set("autoDLMinDuration", pref.getValue("autoDLMinDuration", Long::class))
+                                Logd(TAG, "after autoDLMinDuration")
+                                set("markExcludedPlayed", pref.getValue("markExcludedPlayed", Boolean::class))
+                                set("autoDLMaxEpisodes", pref.getValue("autoDLMaxEpisodes", Long::class))
+                                set("countingPlayed", pref.getValue("countingPlayed", Boolean::class))
+                                set("autoDLPolicyCode", pref.getValue("autoDLPolicyCode", Long::class))
                                 Logd(TAG, "after all")
                             }
                         }

@@ -161,7 +161,7 @@ class EpisodeHomeFragment : Fragment() {
                         if (!ttsPlaying) {
                             ttsPlaying = true
                             if (!readerText.isNullOrEmpty()) {
-                                ttsSpeed = episode?.feed?.preferences?.playSpeed ?: 1.0f
+                                ttsSpeed = episode?.feed?.playSpeed ?: 1.0f
                                 tts?.setSpeechRate(ttsSpeed)
                                 while (startIndex < readerText!!.length) {
                                     val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)

@@ -52,9 +52,12 @@ The project aims to profit from modern frameworks, improve efficiency and provid
 * On a fresh install of Podcini, do any of the following to get started enjoying the power of Podcini:
   * Open the drawer by right-swipe from the left edge of the phone
   * Tap "Add Podcast", in the new view, enter any key words to search for desired podcasts, see "Online feed" section below
+  * Or, from the drawer -> Settings -> Import/Export, tap either "Import AntennaPod DB" or "Import Podcast Addict DB" to import the DB you have exported from the other apps.
   * Or, from the drawer -> Settings -> Import/Export, tap OPML import to import your opml file containing a set of podcast
   * Or, open YouTube or YT Music app on the phone, select a channel/playlist or a single media, and share it to Podcini, see "Youtube & YT Music" section below
 
+Note, if you already have subscriptions in Podcini, importing the OPML file or the DB from the other apps will not erase your existing data in Podcini, except if the imported DB contains common podcasts you have in Podcini, the imported data will overwrite on those in the existing subscriptions in Podcini.
+  
 ### Podcast (Feed)
 
 * Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue

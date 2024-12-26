@@ -22,8 +22,8 @@ object DownloadRequestCreator {
         val dest = File(feedfilePath, getFeedfileName(feed))
         if (dest.exists()) dest.delete()
         Logd(TAG, "Requesting download feed from url " + feed.downloadUrl)
-        val username = feed.preferences?.username
-        val password = feed.preferences?.password
+        val username = feed.username
+        val password = feed.password
         return DownloadRequest.Builder(dest.toString(), feed).withAuthentication(username, password).lastModified(feed.lastUpdate)
     }
 
@@ -37,8 +37,8 @@ object DownloadRequestCreator {
         if (dest.exists() && !partiallyDownloadedFileExists) dest = findUnusedFile(dest)!!
         Logd(TAG, "Requesting download media from url " + media.downloadUrl)
         val feed = media.feed
-        val username = feed?.preferences?.username
-        val password = feed?.preferences?.password
+        val username = feed?.username
+        val password = feed?.password
         return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)
     }
 }

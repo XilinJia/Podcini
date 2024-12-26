@@ -15,8 +15,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
+import ac.mdiq.podcini.storage.model.Feed.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.Feed.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
@@ -74,7 +74,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
@@ -240,10 +239,10 @@ class SubscriptionsFragment : Fragment() {
         return when (tagFilterIndex) {
             0 ->  ""    // All feeds
 //            TODO: #root appears not used in RealmDB, is it a SQLite specialty
-            1 ->  " (preferences.tags.@count == 0 OR (preferences.tags.@count != 0 AND ALL preferences.tags == '#root' )) "
+            1 ->  " (tags.@count == 0 OR (tags.@count != 0 AND ALL tags == '#root' )) "
             else -> {   // feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
-                " ANY preferences.tags == '$tag' "
+                " ANY tags == '$tag' "
             }
         }
     }
@@ -251,10 +250,10 @@ class SubscriptionsFragment : Fragment() {
     private fun queryStringOfQueues() : String {
         return when (queueFilterIndex) {
             0 ->  ""    // All feeds
-            1 -> " preferences.queueId == -2 "
+            1 -> " queueId == -2 "
             else -> {   // feeds associated with the chosen queue
                 val qid = queueIds[queueFilterIndex-2]
-                " preferences.queueId == '$qid' "
+                " queueId == '$qid' "
             }
         }
     }
@@ -282,7 +281,7 @@ class SubscriptionsFragment : Fragment() {
                     is FlowEvent.FeedListEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
-                    is FlowEvent.FeedPrefsChangeEvent -> loadSubscriptions()
+                    is FlowEvent.FeedChangeEvent -> loadSubscriptions()
                     else -> {}
                 }
             }
@@ -406,13 +405,8 @@ class SubscriptionsFragment : Fragment() {
         var showRemoveFeedDialog by remember { mutableStateOf(false) }
         if (showRemoveFeedDialog) RemoveFeedDialog(selected, onDismissRequest = {showRemoveFeedDialog = false}, null)
 
-        fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
-            runOnIOScope {
-                for (feed in selected) {
-                    if (feed.preferences == null) continue
-                    upsert(feed) { preferencesConsumer.accept(it.preferences!!) }
-                }
-            }
+        fun saveFeed(cbBlock: (Feed)->Unit) {
+            runOnIOScope { for (feed in selected) upsert(feed) { cbBlock(it) } }
             val numItems = selected.size
             (activity as MainActivity).showSnackbarAbovePlayer(activity!!.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
         }
@@ -427,7 +421,7 @@ class SubscriptionsFragment : Fragment() {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(selected = (text == selectedOption), onClick = {
                                 if (text != selectedOption) {
                                     val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
-                                    saveFeedPreferences { it: FeedPreferences -> it.autoDeleteAction = autoDeleteAction }
+                                    saveFeed { it: Feed -> it.autoDeleteAction = autoDeleteAction }
                                     onDismissRequest()
                                 }
                             })) {
@@ -454,15 +448,15 @@ class SubscriptionsFragment : Fragment() {
                                         if (isChecked) Logd(TAG, "$option is checked")
                                         when (selectedOption) {
                                             "Default" -> {
-                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = 0L }
+                                                saveFeed { it: Feed -> it.queueId = 0L }
                                                 onDismissRequest()
                                             }
                                             "Active" -> {
-                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = -1L }
+                                                saveFeed { it: Feed -> it.queueId = -1L }
                                                 onDismissRequest()
                                             }
                                             "None" -> {
-                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = -2L }
+                                                saveFeed { it: Feed -> it.queueId = -2L }
                                                 onDismissRequest()
                                             }
                                             "Custom" -> {}
@@ -476,7 +470,7 @@ class SubscriptionsFragment : Fragment() {
                             val queues = realm.query(PlayQueue::class).find()
                             SpinnerExternalSet(items = queues.map { it.name }, selectedIndex = 0) { index ->
                                 Logd(TAG, "Queue selected: ${queues[index]}")
-                                saveFeedPreferences { it: FeedPreferences -> it.queueId = queues[index].id }
+                                saveFeed { it: Feed -> it.queueId = queues[index].id }
                                 onDismissRequest()
                             }
                         }
@@ -498,7 +492,7 @@ class SubscriptionsFragment : Fragment() {
                             var checked by remember { mutableStateOf(false) }
                             Switch(checked = checked, onCheckedChange = {
                                 checked = it
-                                saveFeedPreferences { pref: FeedPreferences -> pref.keepUpdated = checked }
+                                saveFeed { pref: Feed -> pref.keepUpdated = checked }
                             })
                         }
                         Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium)
@@ -538,11 +532,11 @@ class SubscriptionsFragment : Fragment() {
         if (showTagsSettingDialog) TagSettingDialog(selected) { showTagsSettingDialog = false }
         var showSpeedDialog by remember { mutableStateOf(false) }
         if (showSpeedDialog) PlaybackSpeedDialog(selected, initSpeed = 1f, maxSpeed = 3f, onDismiss = {showSpeedDialog = false}) { newSpeed ->
-            saveFeedPreferences { it: FeedPreferences -> it.playSpeed = newSpeed }
+            saveFeed { it: Feed -> it.playSpeed = newSpeed }
         }
         var showAutoDownloadSwitchDialog by remember { mutableStateOf(false) }
         if (showAutoDownloadSwitchDialog) SimpleSwitchDialog(stringResource(R.string.auto_download_settings_label), stringResource(R.string.auto_download_label), onDismissRequest = { showAutoDownloadSwitchDialog = false }) { enabled ->
-            saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
+            saveFeed { it: Feed -> it.autoDownload = enabled }
         }
 
         @Composable
@@ -732,8 +726,7 @@ class SubscriptionsFragment : Fragment() {
                 }
             } else {
                 val lazyListState = rememberLazyListState()
-                LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(feedListFiltered, key = { _, feed -> feed.id}) { index, feed ->
                         var isSelected by remember { mutableStateOf(false) }
                         LaunchedEffect(key1 = selectMode, key2 = selectedSize) {

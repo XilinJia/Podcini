@@ -1,7 +1,12 @@
 package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.PAFeed
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.PlayState
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.database.sqlite.SQLiteDatabase
@@ -10,16 +15,12 @@ import androidx.core.database.getStringOrNull
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.ext.toRealmList
 import io.realm.kotlin.ext.toRealmSet
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
+fun importPA(uri: Uri, activity: Activity, importDb: Boolean, importDirectory: Boolean, onDismiss: ()->Unit) {
     val TAG = "importPA"
 
     val idImageMap = mutableMapOf<Int, String>()
@@ -175,23 +176,20 @@ fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
             val columnCount = cursor.columnCount
             while (cursor.moveToNext()) {
                 val feed = Feed()
-                val pref = FeedPreferences()
                 for (i in 0 until columnCount) {
                     val columnName = cursor.getColumnName(i)
                     when (columnName) {
                         "_id" -> feed.id = cursor.getLong(i)
                         "name" -> feed.eigenTitle = cursor.getString(i)
                         "custom_name" -> feed.customTitle = cursor.getStringOrNull(i)
-//                        "file_url" -> feed.fileUrl = cursor.getStringOrNull(i)
                         "feed_url" -> feed.downloadUrl = cursor.getString(i)
-//                        "topic_url" -> feed.link = cursor.getStringOrNull(i)
                         "homepage" -> feed.link = cursor.getStringOrNull(i)
                         "language" -> feed.language = cursor.getStringOrNull(i)
                         "author" -> feed.author = cursor.getStringOrNull(i)
                         "description" -> feed.description = cursor.getStringOrNull(i)
-                        "login" -> pref.username = cursor.getStringOrNull(i)
-                        "password" -> pref.password = cursor.getStringOrNull(i)
-                        "automaticRefresh" -> pref.keepUpdated = cursor.getInt(i) == 1
+                        "login" -> feed.username = cursor.getStringOrNull(i)
+                        "password" -> feed.password = cursor.getStringOrNull(i)
+                        "automaticRefresh" -> feed.keepUpdated = cursor.getInt(i) == 1
                         "last_played_episode_date" -> {
                             val d = cursor.getLong(i)
                             feed.lastPlayed = if (d >= 0) d else 0
@@ -201,18 +199,10 @@ fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
                             val id = cursor.getInt(i)
                             if (id >= 0) feed.imageUrl = idImageMap[id]
                         }
-
-//                        "payment_link" -> feed.payment_link = cursor.getStringOrNull(i)
-//                        "last_update" -> feed.lastUpdate = cursor.getStringOrNull(i)
-//                        "type" -> feed.type = cursor.getStringOrNull(i)
-//                        "feed_identifier" -> feed.identifier = cursor.getStringOrNull(i)
-//                        "auto_download" -> pref.autoDownload = cursor.getInt(i) == 1
-//                        "feed_playback_speed" -> pref.playSpeed = cursor.getFloat(i)
                     }
                 }
                 Logd(TAG, "feed title: ${feed.title}")
-                pref.tags = pIdTagMap[feed.id.toInt()]?.toRealmSet() ?: realmSetOf()
-                feed.preferences = pref
+                feed.tags = pIdTagMap[feed.id.toInt()]?.toRealmSet() ?: realmSetOf()
                 buildEpisodes(db, feed)
 
                 feed.id = 0L
@@ -222,6 +212,110 @@ fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
                     item.feed = feed
                 }
                 updateFeed(activity, feed, false, true)
+            }
+        }
+    }
+
+    data class TeamInfo(val name: String, val homepage: String, val thumbId: Int, val store: String?)
+
+    val idTeamInfoMap = mutableMapOf<Int, TeamInfo>()
+
+    fun buildTeamMap(db: SQLiteDatabase) {
+        val cursor0 = db.rawQuery("SELECT _id, home_page, thumbnail_id, store_url FROM teams", null)
+        cursor0.use {
+            val columnCount = cursor0.columnCount
+            while (cursor0.moveToNext()) {
+                var id = 0
+                var name = ""
+                var homepage = ""
+                var thumbId = 0
+                var store: String? = null
+                for (i in 0 until columnCount) {
+                    val columnName = cursor0.getColumnName(i)
+                    when (columnName) {
+                        "_id" -> id = cursor0.getInt(i)
+                        "name" -> name = cursor0.getString(i)
+                        "home_page" -> homepage = cursor0.getString(i)
+                        "thumbnail_id" -> thumbId = cursor0.getInt(i)
+                        "store_url" -> store = cursor0.getStringOrNull(i)
+                    }
+                }
+                idTeamInfoMap[id] = TeamInfo(name, homepage, thumbId, store)
+            }
+        }
+    }
+
+    fun buildRelations(db: SQLiteDatabase, PAFeed: PAFeed) {
+        val cursor = db.rawQuery("SELECT similar_id FROM relatedPodcasts WHERE url = '${PAFeed.feedUrl}'", null)
+        cursor.use {
+            val columnCount = cursor.columnCount
+            while (cursor.moveToNext()) {
+                for (i in 0 until columnCount) {
+                    val columnName = cursor.getColumnName(i)
+                    when (columnName) {
+                        "similar_id" -> PAFeed.related.add(cursor.getInt(i))
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun buildDirectory(db: SQLiteDatabase) {
+        buildImageMap(db)
+        buildTeamMap(db)
+
+        val cursor = db.rawQuery("SELECT * FROM podcasts", null)
+        cursor.use {
+            val columnCount = cursor.columnCount
+            while (cursor.moveToNext()) {
+                val PAFeed = PAFeed()
+                for (i in 0 until columnCount) {
+                    val columnName = cursor.getColumnName(i)
+                    when (columnName) {
+                        "_id" -> PAFeed.id = cursor.getInt(i)
+                        "name" -> PAFeed.name = cursor.getString(i)
+                        "team_id" -> {
+                            val id = cursor.getInt(i)
+                            if (id > 0) {
+                                val ti = idTeamInfoMap[id]
+                                if (ti != null) {
+                                    PAFeed.teamName = ti.name
+//                                    directory.teamhomepage = ti.homepage
+//                                    directory.teamImageUrl = idImageMap[ti.thumbId]
+//                                    directory.topicUrl = ti.store
+                                }
+                            }
+                        }
+                        "category" -> {
+                            val cat = cursor.getStringOrNull(i)
+                            if (!cat.isNullOrBlank()) PAFeed.category.addAll(cat.split(",").map { it.trim() }.filter { it.isNotEmpty() })
+                        }
+                        "type" -> PAFeed.type = cursor.getString(i)
+                        "homepage" -> PAFeed.homepage = cursor.getStringOrNull(i)
+                        "latest_publication_date" -> PAFeed.lastPubDate = cursor.getLong(i)
+                        "feed_url" -> PAFeed.feedUrl = cursor.getStringOrNull(i) ?:""
+                        "language" -> PAFeed.language = cursor.getStringOrNull(i) ?: ""
+                        "author" -> PAFeed.author = cursor.getStringOrNull(i) ?: ""
+                        "description" -> PAFeed.description = cursor.getStringOrNull(i) ?:""
+                        "subscribers" -> PAFeed.subscribers = cursor.getInt(i)
+                        "thumbnail_id" -> {
+                            val id = cursor.getInt(i)
+                            if (id >= 0) PAFeed.imageUrl = idImageMap[id]
+                        }
+//                        "custom_name" -> directory.customName = cursor.getStringOrNull(i) ?:""
+//                        "iTunesId" -> directory.iTunesId = cursor.getStringOrNull(i)
+                        "averageDuration" -> PAFeed.aveDuration = cursor.getInt(i)
+                        "frequency" -> PAFeed.frequency = cursor.getInt(i)
+                        "episodesNb" -> PAFeed.episodesNb = cursor.getInt(i)
+                        "reviews" -> PAFeed.reviews = cursor.getInt(i)
+                        "hub_url" -> PAFeed.hubUrl = cursor.getStringOrNull(i)
+                        "topic_url" -> PAFeed.topicUrl = cursor.getStringOrNull(i)
+                    }
+                }
+                Logd(TAG, "feed title: ${PAFeed.name}")
+                buildRelations(db, PAFeed)
+                upsertBlk(PAFeed) {}
             }
         }
     }
@@ -250,7 +344,7 @@ fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
 
     var unzipDir: File? = null
 
-    suspend fun unzipArchive(): File? = withContext(Dispatchers.IO) {
+    fun unzipArchive(): File? {
         val internalDir = activity.filesDir
         val zipFileName = "tempArchive.zip"
         val zipFile = File(internalDir, zipFileName)
@@ -259,28 +353,27 @@ fun importPA(uri: Uri, activity: Activity, onDismiss: ()->Unit) {
 
         unzipDir = File(internalDir, "UnzippedFiles")
         if (unzipDir.exists()) deleteDirectory(unzipDir)
-
         unzipDir.mkdir()
-
         unzip(zipFile, unzipDir)
         zipFile.delete()
-
         val targetFile = File(unzipDir, "podcastAddict.db")
-        return@withContext if (targetFile.exists()) targetFile else null
+        return if (targetFile.exists()) targetFile else null
     }
 
     Logd(TAG, "chooseAPImportPathLauncher: uri: $uri")
 
-    CoroutineScope(Dispatchers.IO).launch {
-        val dbFile = unzipArchive() ?: return@launch
-        Logd(TAG, "chooseAPImportPathLauncher: dbFile: $dbFile")
+    val dbFile = unzipArchive() ?: return
+    Logd(TAG, "chooseAPImportPathLauncher: dbFile: $dbFile")
 
-        val database = SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY)
+    val database = SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY)
 
-        buildFeeds(database)
-        database.close()
+    if (importDb) buildFeeds(database)
 
-        if (unzipDir != null) deleteDirectory(unzipDir)
-        onDismiss()
-    }
+    if (importDirectory) buildDirectory(database)
+
+    database.close()
+
+    if (unzipDir != null) deleteDirectory(unzipDir)
+    onDismiss()
+
 }

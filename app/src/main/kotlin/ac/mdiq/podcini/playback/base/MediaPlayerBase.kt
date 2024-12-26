@@ -11,7 +11,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
@@ -44,7 +43,6 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.Throws
 import kotlin.math.max
 
 abstract class MediaPlayerBase protected constructor(protected val context: Context, protected val callback: MediaPlayerCallback) {
@@ -88,9 +86,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         if (playable != null && playable !== curEpisode) curEpisode = playable
     }
 
-    open fun getVideoSize(): Pair<Int, Int>? {
-        return null
-    }
+    open fun getVideoSize(): Pair<Int, Int>? = null
 
     abstract fun getPlaybackSpeed(): Float
 
@@ -98,13 +94,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
     abstract fun getPosition(): Int
 
-    open fun getAudioTracks(): List<String?>? {
-        return emptyList()
-    }
+    open fun getAudioTracks(): List<String> = emptyList()
 
-    open fun getSelectedAudioTrack(): Int {
-        return -1
-    }
+    open fun getSelectedAudioTrack(): Int = -1
 
     open fun createMediaPlayer() {}
 
@@ -120,9 +112,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     protected open fun setDataSource(metadata: MediaMetadata, media: Episode) {
         Logd(TAG, "setDataSource1 called")
         val url = media.downloadUrl ?: return
-        val preferences = media.feed?.preferences
-        val user = preferences?.username
-        val password = preferences?.password
+        val feed = media.feed
+        val user = feed?.username
+        val password = feed?.password
         if (media.feed?.type == Feed.FeedType.YOUTUBE.name) {
             isYoutubeMedia = true
             if (ytMediaSpecs.media.id != media.id) ytMediaSpecs = YoutubeMediaSpecs(media)
@@ -137,7 +129,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(
                     MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.audioStream!!.content)).build())
                 
-                if (media.forceVideo || media.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
+                if (media.forceVideo || media.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                     ytMediaSpecs.buildVideoStreams()
                     if (ytMediaSpecs.videoStreamsList.isEmpty()) throw IllegalStateException()
                     ytMediaSpecs.setVideoStream()
@@ -225,8 +217,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     abstract fun pause(reinit: Boolean)
 
     /**
-     * Prepared media player for playback if the service is in the INITALIZED
-     * state.
+     * Prepared media player for playback if the service is in the INITALIZED state.
      * This method is executed on an internal executor service.
      */
     abstract fun prepare()
@@ -315,11 +306,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     /**
      * @return `true` if the WifiLock feature should be used, `false` otherwise.
      */
-    protected open fun shouldLockWifi(): Boolean {
-        return false
-    }
+    protected open fun shouldLockWifi(): Boolean = false
 
-    abstract fun isCasting(): Boolean
+    open fun isCasting(): Boolean = false
 
     @Synchronized
     protected fun acquireWifiLockIfNecessary() {
@@ -410,12 +399,12 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         fun setAudioStream() {
             if (audioIndex < 0) {
-                audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.audioQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0
+                audioIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.audioQualitySetting == Feed.AVQuality.GLOBAL) 0
                 else {
-                    when (media.feed?.preferences?.audioQualitySetting) {
-                        FeedPreferences.AVQuality.LOW -> 0
-                        FeedPreferences.AVQuality.MEDIUM -> audioStreamsList.size / 2
-                        FeedPreferences.AVQuality.HIGH -> audioStreamsList.size - 1
+                    when (media.feed?.audioQualitySetting) {
+                        Feed.AVQuality.LOW -> 0
+                        Feed.AVQuality.MEDIUM -> audioStreamsList.size / 2
+                        Feed.AVQuality.HIGH -> audioStreamsList.size - 1
                         else -> audioStreamsList.size - 1
                     }
                 }
@@ -437,12 +426,12 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         fun setVideoStream() {
             if (videoIndex < 0) {
-                videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.preferences?.videoQualitySetting == FeedPreferences.AVQuality.GLOBAL) 0
+                videoIndex = if (isNetworkRestricted && prefLowQualityMedia && media.feed?.videoQualitySetting == Feed.AVQuality.GLOBAL) 0
                 else {
-                    when (media.feed?.preferences?.videoQualitySetting) {
-                        FeedPreferences.AVQuality.LOW -> 0
-                        FeedPreferences.AVQuality.MEDIUM -> videoStreamsList.size / 2
-                        FeedPreferences.AVQuality.HIGH -> videoStreamsList.size - 1
+                    when (media.feed?.videoQualitySetting) {
+                        Feed.AVQuality.LOW -> 0
+                        Feed.AVQuality.MEDIUM -> videoStreamsList.size / 2
+                        Feed.AVQuality.HIGH -> videoStreamsList.size - 1
                         else -> 0
                     }
                 }
@@ -574,16 +563,16 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
          */
         @JvmStatic
         fun getCurrentPlaybackSpeed(media: Episode?): Float {
-            var playbackSpeed = FeedPreferences.SPEED_USE_GLOBAL
+            var playbackSpeed = Feed.SPEED_USE_GLOBAL
             if (media != null) {
                 playbackSpeed = curState.curTempSpeed
                 // TODO: something strange here?
-                if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) {
-                    val prefs_ = media.feed?.preferences
-                    if (prefs_ != null) playbackSpeed = prefs_.playSpeed
+                if (playbackSpeed == Feed.SPEED_USE_GLOBAL) {
+                    val feed = media.feed
+                    if (feed != null) playbackSpeed = feed.playSpeed
                 }
             }
-            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = prefPlaybackSpeed
+            if (playbackSpeed == Feed.SPEED_USE_GLOBAL) playbackSpeed = prefPlaybackSpeed
             return playbackSpeed
         }
     }

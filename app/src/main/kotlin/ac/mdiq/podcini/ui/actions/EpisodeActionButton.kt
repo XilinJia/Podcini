@@ -100,7 +100,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
             item.downloaded -> PlayActionButton(item)
             isDownloadingMedia -> CancelDownloadActionButton(item)
             isStreamOverDownload || item.feed == null || item.feedId == null || item.feed?.type == Feed.FeedType.YOUTUBE.name
-                    || item.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(item)
+                    || item.feed?.prefStreamOverDownload == true -> StreamActionButton(item)
             else -> DownloadActionButton(item)
         }
     }
@@ -156,7 +156,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     
     companion object {
         fun playVideoIfNeeded(context: Context, item: Episode) {
-            if (item.forceVideo == true || (item.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+            if (item.forceVideo == true || (item.feed?.videoModePolicy != VideoMode.AUDIO_ONLY
                     && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
                     && item.getMediaType() == MediaType.VIDEO))
                 context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))

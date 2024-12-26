@@ -305,7 +305,7 @@ class QueuesFragment : Fragment() {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
 //                    is FlowEvent.PlayerSettingsEvent -> onPlayerSettingsEvent(event)
-                    is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
+                    is FlowEvent.FeedChangeEvent -> onFeedPrefsChanged(event)
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
 //                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
@@ -415,7 +415,7 @@ class QueuesFragment : Fragment() {
         if (event.episode == null && !showBin) loadCurQueue(false)
     }
 
-    private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
+    private fun onFeedPrefsChanged(event: FlowEvent.FeedChangeEvent) {
         Logd(TAG,"speedPresetChanged called")
         for (item in queueItems) if (item.feed?.id == event.feed.id) item.feed = null
     }
@@ -651,7 +651,7 @@ class QueuesFragment : Fragment() {
             Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
 //            if (queueItems.isNotEmpty()) emptyViewHandler.hide()
-            feedsAssociated = realm.query(Feed::class).query("preferences.queueId == ${curQueue.id}").find()
+            feedsAssociated = realm.query(Feed::class).query("queueId == ${curQueue.id}").find()
             queueItems.clear()
             stopMonitor(vms)
             vms.clear()

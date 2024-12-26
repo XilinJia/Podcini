@@ -14,7 +14,6 @@ import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.RealmSet
-import io.realm.kotlin.types.annotations.FullText
 import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
@@ -35,16 +34,16 @@ class Episode : RealmObject {
     @Index
     var identifier: String? = null
 
-    @FullText
+//    @FullText
     var title: String? = null
 
-    @FullText
+//    @FullText
     var shortDescription: String? = null
 
-    @FullText
+//    @FullText
     var description: String? = null
 
-    @FullText
+//    @FullText
     var transcript: String? = null
 
     var link: String? = null
@@ -99,7 +98,7 @@ class Episode : RealmObject {
     var isSUPER: Boolean = (rating == Rating.SUPER.code)
         private set
 
-    @FullText
+//    @FullText
     var comment: String = ""
 
     var commentTime: Long = 0L
@@ -161,10 +160,10 @@ class Episode : RealmObject {
 
     var downloadTime: Long = 0
 
-    var duration = 0    // in milliseconds
+    var duration: Int = 0    // in milliseconds
 
     @set:JvmName("setPositionProperty")
-    var position = 0 // Current position in file, in milliseconds
+    var position: Int = 0 // Current position in file, in milliseconds
 
     var lastPlayedTime: Long = 0 // Last time this media was played (in ms)
 
@@ -457,17 +456,17 @@ class Episode : RealmObject {
 //        if (other.mimeType != null) mimeType = other.mimeType
 //    }
 
-    fun compareWithOther(other: Episode): Boolean {
-        if (downloadUrl != other.downloadUrl) return true
-
-        if (other.mimeType != null) {
-            if (mimeType == null || mimeType != other.mimeType) return true
-        }
-        if (other.size > 0 && other.size != size) return true
-        if (other.duration > 0 && duration <= 0) return true
-
-        return false
-    }
+//    fun compareWithOther(other: Episode): Boolean {
+//        if (downloadUrl != other.downloadUrl) return true
+//
+//        if (other.mimeType != null) {
+//            if (mimeType == null || mimeType != other.mimeType) return true
+//        }
+//        if (other.size > 0 && other.size != size) return true
+//        if (other.duration > 0 && duration <= 0) return true
+//
+//        return false
+//    }
 
     fun setIsDownloaded() {
         downloaded = true
@@ -563,15 +562,20 @@ class Episode : RealmObject {
     fun onPlaybackPause() {
         Logd(TAG, "onPlaybackPause $position $duration")
         if (position > startPosition) playedDuration = playedDurationWhenStarted + position - startPosition
-        timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime)
+        if (startTime > 0) timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime)
         startPosition = position
+        startTime = 0
     }
 
     /**
      * This method should be called when playback completes for this object.
      */
     fun onPlaybackCompleted() {
+        Logd(TAG, "onPlaybackCompleted $position $duration")
+        if (position > startPosition && position > playedDuration) playedDuration = playedDurationWhenStarted + position - startPosition
+        if (startTime > 0) timeSpent = timeSpentOnStart + (System.currentTimeMillis() - startTime)
         startPosition = -1
+        startTime = 0
     }
 
     fun setChapters(chapters_: List<Chapter>) {
@@ -642,6 +646,5 @@ class Episode : RealmObject {
          * so this won't conflict with existing practice.
          */
         private const val CHECKED_ON_SIZE_BUT_UNKNOWN = Int.MIN_VALUE
-
     }
 }

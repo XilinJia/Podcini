@@ -266,7 +266,7 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                                             }
                                         }
                                         PlayState.QUEUE -> {
-                                            if (item_.feed?.preferences?.queue != null) runBlocking { addToQueueSync(item, item.feed?.preferences?.queue) }
+                                            if (item_.feed?.queue != null) runBlocking { addToQueueSync(item, item.feed?.queue) }
                                         }
                                         else -> {}
                                     }

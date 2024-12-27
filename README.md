@@ -21,9 +21,7 @@ That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 
 Podcini.R requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
 
-If you intend to sync through a server, be cautious as it's not well tested with Podcini. Welcome any ideas and contribution on this.
-
-If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
+If you intend to sync through a server, NextCloud server has been tested, but caution is advised. 
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 

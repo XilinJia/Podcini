@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.preferences.screens
 
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.*
@@ -18,7 +17,6 @@ import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,7 +41,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +50,6 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import kotlin.collections.set
 
 @Composable
 fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
@@ -73,7 +69,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
     }
     fun isComboDir(uri: Uri): Boolean {
         val fileName = uri.lastPathSegment ?: return false
-        return fileName.contains(backupDirName, ignoreCase = true)
+        return fileName.contains(backupDirName, ignoreCase = true) || fileName.contains(autoBackupDirName, ignoreCase = true)
     }
     fun showExportSuccessSnackbar(uri: Uri?, mimeType: String?) {
         Snackbar.make(activity.findViewById(android.R.id.content), R.string.export_success_title, Snackbar.LENGTH_LONG)
@@ -313,7 +309,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             comboRootUri = uri
             showComboImportDialog = true
         } else {
-            val message = activity.getString(R.string.import_directory_toast) + backupDirName
+            val message = activity.getString(R.string.import_directory_toast) + backupDirName + " or " + autoBackupDirName
             showProgress = false
             importErrorMessage = message
             showImporErrortDialog.value = true

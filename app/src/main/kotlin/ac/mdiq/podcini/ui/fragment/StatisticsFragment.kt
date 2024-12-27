@@ -83,13 +83,19 @@ class StatisticsFragment : Fragment() {
                         prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
-                                withContext(Dispatchers.IO) {
-                                    val mediaAll = realm.query(Episode::class).find()
-                                    for (m in mediaAll) update(m) {
-                                        it.playedDuration = 0
-                                        it.timeSpent = 0
-                                        it.timeSpentOnStart = 0
-                                        it.startTime = 0
+                                while (realm.query(Episode::class).query("playedDuration != 0 || timeSpent != 0").count().find() > 0) {
+                                    realm.write {
+                                        var mediaAll = query(Episode::class).query("playedDuration != 0 || timeSpent != 0").find()
+                                        if (mediaAll.isNotEmpty()) {
+                                            Logd(TAG, "mediaAll: ${mediaAll.size}")
+                                            for (m in mediaAll) {
+                                                Logd(TAG, "m: ${m.title}")
+                                                m.playedDuration = 0
+                                                m.timeSpent = 0
+                                                m.timeSpentOnStart = 0
+                                                m.startTime = 0
+                                            }
+                                        }
                                     }
                                 }
                                 statisticsState++

@@ -1,7 +1,11 @@
 # 7.1.1
 
 * made reset statistics data in a lasting coroutine
+* largely improved slow performance of resetting statistics
+* likewise improved performance of clear history
 * changed a few other lifecycle coroutines to lasting ones, which may or may not make any difference
+* changed name of auto-backup directory
+* made ComboImport accept auto-backup directory
 * minor functions relocation
 
 # 7.1.0

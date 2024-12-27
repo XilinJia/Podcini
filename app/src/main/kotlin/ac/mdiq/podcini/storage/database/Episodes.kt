@@ -59,7 +59,8 @@ object Episodes {
         val queryString = filter?.queryString()?:"id > 0"
         var episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
         if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-        if (offset < episodes.size) episodes = episodes.subList(offset, min(episodes.size, offset + limit))
+        val size = episodes.size
+        if (offset < size && offset + limit < size) episodes = episodes.subList(offset, min(size, offset + limit))
         return if (copy) realm.copyFromRealm(episodes) else episodes
     }
 

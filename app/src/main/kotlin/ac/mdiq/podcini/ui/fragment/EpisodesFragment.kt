@@ -435,11 +435,13 @@ class EpisodesFragment : Fragment() {
         Logd(TAG, "clearHistory called")
         return runOnIOScope {
             progressing = true
-            val episodes = realm.query(Episode::class).query("playbackCompletionTime > 0 || lastPlayedTime > 0").find()
-            for (e in episodes) {
-                upsert(e) {
-                    it.playbackCompletionDate = null
-                    it.lastPlayedTime = 0
+            while (realm.query(Episode::class).query("playbackCompletionTime > 0 || lastPlayedTime > 0").count().find() > 0) {
+                realm.write {
+                    val episodes = query(Episode::class).query("playbackCompletionTime > 0 || lastPlayedTime > 0").find()
+                    for (e in episodes) {
+                        e.playbackCompletionDate = null
+                        e.lastPlayedTime = 0
+                    }
                 }
             }
             withContext(Dispatchers.Main) {

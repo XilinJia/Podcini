@@ -13,6 +13,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### Note:
 
+#### Podcini is no longer listed on Google Play, as apparently Google doesn't like accessing Youtube.
 #### Podcini.R 7.0 supports importing databases from AntennaPod and Podcast Addict.
 #### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)

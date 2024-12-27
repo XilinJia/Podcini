@@ -12,10 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+val autoBackupDirName = "Podcini-AutoBackups"
+
 fun autoBackup(activity: Activity) {
     val TAG = "autoBackup"
 
-    val backupDirName = "Podcini-AudoBackups"
     val prefsDirName = "Podcini-Prefs"
 
     val isAutoBackup = appPrefs.getBoolean(UserPreferences.Prefs.prefAutoBackup.name, false)
@@ -51,7 +52,7 @@ fun autoBackup(activity: Activity) {
                         if (chosenDir.isDirectory) {
                             chosenDir.listFiles().forEach { file ->
                                 Logd(TAG, "file: $file")
-                                if (file.isDirectory && file.name?.startsWith(backupDirName, ignoreCase = true) == true) backupDirs.add(file)
+                                if (file.isDirectory && file.name?.startsWith(autoBackupDirName, ignoreCase = true) == true) backupDirs.add(file)
                             }
                         }
                         Logd(TAG, "backupDirs: ${backupDirs.size}")
@@ -61,7 +62,7 @@ fun autoBackup(activity: Activity) {
                             for (i in 0..(backupDirs.size - limit)) deleteDirectoryAndContents(backupDirs[i])
                         }
 
-                        val dirName = dateStampFilename("$backupDirName-%s")
+                        val dirName = dateStampFilename("$autoBackupDirName-%s")
                         val exportSubDir = chosenDir.createDirectory(dirName) ?: throw IOException("Error creating subdirectory $dirName")
                         val subUri: Uri = exportSubDir.uri
                         PreferencesTransporter(prefsDirName).exportToDocument(subUri, activity)

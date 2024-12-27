@@ -28,6 +28,7 @@ import android.widget.ViewFlipper
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,7 +105,7 @@ class GpodderAuthenticationFragment : DialogFragment() {
             val inputManager = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             inputManager.hideSoftInputFromWindow(login.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 
-            lifecycleScope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 try {
                     withContext(Dispatchers.IO) {
                         service?.setCredentials(usernameStr, passwordStr)
@@ -161,7 +162,7 @@ class GpodderAuthenticationFragment : DialogFragment() {
         txtvError.visibility = View.GONE
         deviceName.isEnabled = false
 
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 val device = withContext(Dispatchers.IO) {
                     val deviceId = generateDeviceId(deviceNameStr)

@@ -125,8 +125,8 @@ class NavDrawerFragment : Fragment() {
                 }
             }
             Spacer(Modifier.weight(1f))
-            Text("Formal listing on Google Play has been approved - many thanks to all for the kind support!", color = textColor,
-                modifier = Modifier.clickable(onClick = {}))
+//            Text("Formal listing on Google Play has been approved - many thanks to all for the kind support!", color = textColor,
+//                modifier = Modifier.clickable(onClick = {}))
             HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
                 startActivity(Intent(activity, PreferenceActivity::class.java))

@@ -785,7 +785,7 @@ class SubscriptionsFragment : Fragment() {
                                 Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
                                 Row(Modifier.padding(top = 5.dp)) {
                                     val measureString = remember { NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
-                                            DurationConverter.shortLocalizedDuration(requireActivity(), feed.totleDuration/1000) }
+                                            DurationConverter.durationInHours(requireActivity(), feed.totleDuration/1000) }
                                     Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.weight(1f))
                                     var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }

@@ -91,7 +91,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         val context: Context? = activity
         showProgress = true
         if (uri == null) {
-            activity.lifecycleScope.launch(Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val output = ExportWorker(exportWriter, activity).exportFile()
                     withContext(Dispatchers.Main) {
@@ -105,7 +105,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 } finally { showProgress = false }
             }
         } else {
-            activity.lifecycleScope.launch(Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch {
                 val worker = DocumentFileExportWorker(exportWriter, context!!, uri)
                 try {
                     val output = worker.exportFile()
@@ -145,7 +145,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         uri?.let {
             if (isJsonFile(uri)) {
                 showProgress = true
-                activity.lifecycleScope.launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     try {
                         withContext(Dispatchers.IO) {
                             val inputStream: InputStream? = activity.contentResolver.openInputStream(uri)
@@ -208,7 +208,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 TextButton(onClick = {
                     val uri = comboRootUri!!
                     showProgress = true
-                    activity.lifecycleScope.launch {
+                    CoroutineScope(Dispatchers.IO).launch {
                         try {
                             withContext(Dispatchers.IO) {
                                 val rootFile = DocumentFile.fromTreeUri(activity, uri)
@@ -261,7 +261,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 TextButton(onClick = {
                     val uri = comboRootUri!!
                     showProgress = true
-                    activity.lifecycleScope.launch {
+                    CoroutineScope(Dispatchers.IO).launch {
                         withContext(Dispatchers.IO) {
                             val chosenDir = DocumentFile.fromTreeUri(activity, uri) ?: throw IOException("Destination directory is not valid")
                             val exportSubDir = chosenDir.createDirectory(dateStampFilename("$backupDirName-%s")) ?: throw IOException("Error creating subdirectory $backupDirName")

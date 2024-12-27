@@ -297,7 +297,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     it.setfileUrlOrNull(request.destination)
                     if (request.destination != null) it.size = File(request.destination).length()
                     it.checkEmbeddedPicture(false) // enforce check
-                    if (it.chapters.isEmpty()) it.setChapters(ChapterUtils.loadChaptersFromMediaFile(it, context))
+                    if (it.chapters.isEmpty()) it.setChapters(it.loadChaptersFromMediaFile(context))
                     if (it.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(it.podcastIndexChapterUrl!!, false)
                     var durationStr: String? = null
                     try {

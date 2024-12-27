@@ -1304,7 +1304,7 @@ class PlaybackService : MediaLibraryService() {
             val scope = CoroutineScope(Dispatchers.Main)
             scope.launch(Dispatchers.IO) {
                 try {
-                    ChapterUtils.loadChapters(media, context, false)
+                    media.loadChapters(context, false)
                     withContext(Dispatchers.Main) { callback.onChapterLoaded(media) }
                 } catch (e: Throwable) { Logd(TAG, "Error loading chapters: ${Log.getStackTraceString(e)}") }
             }

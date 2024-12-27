@@ -1,11 +1,25 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
+import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
+import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
+import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
+import ac.mdiq.podcini.storage.utils.ChapterUtils.ChapterStartTimeComparator
+import ac.mdiq.podcini.storage.utils.ChapterUtils.loadChaptersFromUrl
+import ac.mdiq.podcini.storage.utils.ChapterUtils.merge
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
+import android.content.ContentResolver
+import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,11 +31,14 @@ import io.realm.kotlin.types.RealmSet
 import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
+import okhttp3.Request
+import okhttp3.Request.Builder
+import org.apache.commons.io.input.CountingInputStream
 import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
-import java.io.File
-import java.io.IOException
+import java.io.*
 import java.util.*
+import kotlin.Throws
 import kotlin.math.max
 
 class Episode : RealmObject {
@@ -602,6 +619,109 @@ class Episode : RealmObject {
 //        }
 //    }
 
+    fun getCurrentChapterIndex(position: Int): Int {
+//        val chapters = chapters
+        if (chapters.isEmpty()) return -1
+        for (i in chapters.indices) if (chapters[i].start > position) return i - 1
+        return chapters.size - 1
+    }
+
+    fun loadChapters(context: Context, forceRefresh: Boolean) {
+        // Already loaded
+        if (!forceRefresh) return
+        var chaptersFromDatabase: List<Chapter>? = null
+        var chaptersFromPodcastIndex: List<Chapter>? = null
+        val item = this
+        if (item.chapters.isNotEmpty()) chaptersFromDatabase = item.chapters
+        if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
+
+        val chaptersFromMediaFile = loadChaptersFromMediaFile(context)
+        val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
+        val chapters = merge(chaptersMergePhase1, chaptersFromPodcastIndex)
+        Logd(TAG, "loadChapters chapters size: ${chapters?.size?:0} ${getEpisodeTitle()}")
+        if (chapters == null) setChapters(listOf())    // Do not try loading again. There are no chapters.
+        else setChapters(chapters)
+    }
+
+    fun loadChaptersFromMediaFile(context: Context): List<Chapter> {
+        try {
+            openStream(context).use { inVal ->
+                val chapters = readId3ChaptersFrom(inVal)
+                if (chapters.isNotEmpty()) return chapters
+            }
+        } catch (e: IOException) { Log.e(TAG, "Unable to load ID3 chapters: " + e.message)
+        } catch (e: ID3ReaderException) { Log.e(TAG, "Unable to load ID3 chapters: " + e.message) }
+
+        try {
+            openStream(context).use { inVal ->
+                val chapters = readOggChaptersFromInputStream(inVal)
+                if (chapters.isNotEmpty()) return chapters
+            }
+        } catch (e: IOException) { Log.e(TAG, "Unable to load vorbis chapters: " + e.message)
+        } catch (e: VorbisCommentReaderException) { Log.e(TAG, "Unable to load vorbis chapters: " + e.message) }
+        return listOf()
+    }
+
+    @Throws(IOException::class)
+    private fun openStream(context: Context): CountingInputStream {
+        if (localFileAvailable()) {
+            if (fileUrl == null) throw IOException("No local url")
+            val source = File(fileUrl ?: "")
+            if (!source.exists()) throw IOException("Local file does not exist")
+            return CountingInputStream(BufferedInputStream(FileInputStream(source)))
+        } else {
+            val streamurl = downloadUrl
+            if (streamurl != null && streamurl.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                val uri = Uri.parse(streamurl)
+                return CountingInputStream(BufferedInputStream(context.contentResolver.openInputStream(uri)))
+            } else {
+                if (streamurl.isNullOrEmpty()) throw IOException("stream url is null of empty")
+                val request: Request = Builder().url(streamurl).build()
+                val response = getHttpClient().newCall(request).execute()
+                if (response.body == null) throw IOException("Body is null")
+                return CountingInputStream(BufferedInputStream(response.body!!.byteStream()))
+            }
+        }
+    }
+
+    @Throws(IOException::class, ID3ReaderException::class)
+    private fun readId3ChaptersFrom(inVal: CountingInputStream): List<Chapter> {
+        val reader = ChapterReader(inVal)
+        reader.readInputStream()
+        var chapters = reader.getChapters()
+        chapters = chapters.sortedWith(ChapterStartTimeComparator())
+        enumerateEmptyChapterTitles(chapters)
+        if (!chaptersValid(chapters)) {
+            Logd(TAG, "Chapter data was invalid")
+            return emptyList()
+        }
+        return chapters
+    }
+
+    @Throws(VorbisCommentReaderException::class)
+    private fun readOggChaptersFromInputStream(input: InputStream): List<Chapter> {
+        val reader = VorbisCommentChapterReader(BufferedInputStream(input))
+        reader.readInputStream()
+        var chapters = reader.getChapters()
+        chapters = chapters.sortedWith(ChapterStartTimeComparator())
+        enumerateEmptyChapterTitles(chapters)
+        if (chaptersValid(chapters)) return chapters
+        return emptyList()
+    }
+
+    private fun enumerateEmptyChapterTitles(chapters: List<Chapter>) {
+        for (i in chapters.indices) {
+            val c = chapters[i]
+            if (c.title == null) c.title = i.toString()
+        }
+    }
+
+    private fun chaptersValid(chapters: List<Chapter>): Boolean {
+        if (chapters.isEmpty()) return false
+        for (c in chapters) if (c.start < 0) return false
+        return true
+    }
+
     fun checkEmbeddedPicture(persist: Boolean = true) {
         if (!localFileAvailable()) hasEmbeddedPicture = false
         else {
@@ -619,6 +739,12 @@ class Episode : RealmObject {
 //        if (persist && episode != null) upsertBlk(episode!!) {}
     }
 
+    fun getEpisodeListImageLocation(): String? {
+        Logd("ImageResourceUtils", "getEpisodeListImageLocation called")
+        return if (useEpisodeCoverSetting) imageLocation
+        else feed?.imageUrl
+    }
+
     /**
      * On SDK<29, this class does not have a close method yet, so the app crashes when using try-with-resources.
      */
@@ -632,6 +758,9 @@ class Episode : RealmObject {
 
     companion object {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
+
+        val useEpisodeCoverSetting: Boolean
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefEpisodeCover.name, true)
 
         // from EpisodeMedia
         const val INVALID_TIME: Int = -1

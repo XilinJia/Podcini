@@ -6,7 +6,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
-import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationInHours
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ComfirmDialog
@@ -35,6 +35,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
@@ -45,10 +47,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,7 +81,7 @@ class StatisticsFragment : Fragment() {
                 CustomTheme(requireContext()) {
                     ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = showResetDialog) {
                         prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
-                        lifecycleScope.launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             try {
                                 withContext(Dispatchers.IO) {
                                     val mediaAll = realm.query(Episode::class).find()
@@ -205,13 +207,13 @@ class StatisticsFragment : Fragment() {
             }
             Text(headerCaption, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 20.dp))
             Row {
-                Text(stringResource(R.string.duration) + ": " + shortLocalizedDuration(context, chartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.duration) + ": " + durationInHours(context, chartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(20.dp))
-                Text( stringResource(R.string.spent) + ": " + shortLocalizedDuration(context, timeSpentSum), color = MaterialTheme.colorScheme.onSurface)
+                Text( stringResource(R.string.spent) + ": " + durationInHours(context, timeSpentSum), color = MaterialTheme.colorScheme.onSurface)
             }
             HorizontalLineChart(chartData)
             StatsList(statsResult, chartData) { item ->
-                context.getString(R.string.duration) + ": " + shortLocalizedDuration(context, item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + shortLocalizedDuration(context, item.timeSpent)
+                context.getString(R.string.duration) + ": " + durationInHours(context, item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + durationInHours(context, item.timeSpent)
             }
         }
     }
@@ -274,10 +276,7 @@ class StatisticsFragment : Fragment() {
                     val barHeight = (monthlyStats[index].timePlayed / monthlyMaxDataValue) * canvasHeight // Normalize height
                     Logd(TAG, "index: $index barHeight: $barHeight")
                     val xOffset = spaceBetweenBars + index * (barWidth + spaceBetweenBars) // Calculate x position
-                    drawRect(color = Color.Cyan,
-                        topLeft = androidx.compose.ui.geometry.Offset(xOffset, canvasHeight - barHeight),
-                        size = androidx.compose.ui.geometry.Size(barWidth, barHeight)
-                    )
+                    drawRect(color = Color.Cyan, topLeft = Offset(xOffset, canvasHeight - barHeight), size = Size(barWidth, barHeight))
                 }
             }
         }
@@ -330,8 +329,7 @@ class StatisticsFragment : Fragment() {
             Text(Formatter.formatShortFileSize(context, downloadChartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
             HorizontalLineChart(downloadChartData)
             StatsList(downloadstatsData, downloadChartData) { item ->
-                ("${Formatter.formatShortFileSize(context, item.totalDownloadSize)} • "
-                        + String.format(Locale.getDefault(), "%d%s", item.episodesDownloadCount, context.getString(R.string.episodes_suffix)))
+                ("${Formatter.formatShortFileSize(context, item.totalDownloadSize)} • " + String.format(Locale.getDefault(), "%d%s", item.episodesDownloadCount, context.getString(R.string.episodes_suffix)))
             }
         }
     }
@@ -347,10 +345,7 @@ class StatisticsFragment : Fragment() {
             var startX = 0f
             for (index in data.indices) {
                 val segmentWidth = (data[index] / total) * canvasWidth
-//                    Logd(TAG, "index: $index segmentWidth: $segmentWidth")
-                drawRect(color = lineChartData.getComposeColorOfItem(index),
-                    topLeft = androidx.compose.ui.geometry.Offset(startX, lineY - 10),
-                    size = androidx.compose.ui.geometry.Size(segmentWidth, 20f))
+                drawRect(color = lineChartData.getComposeColorOfItem(index), topLeft = Offset(startX, lineY - 10), size = Size(segmentWidth, 20f))
                 startX += segmentWidth
             }
         }
@@ -502,19 +497,19 @@ class StatisticsFragment : Fragment() {
                         }
                         Row {
                             Text(stringResource(R.string.statistics_length_played), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(shortLocalizedDuration(context, statisticsData?.durationOfStarted ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(context, statisticsData?.durationOfStarted ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_time_played), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(shortLocalizedDuration(context, statisticsData?.timePlayed ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(context, statisticsData?.timePlayed ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_time_spent), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(shortLocalizedDuration(context, statisticsData?.timeSpent ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(context, statisticsData?.timeSpent ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_total_duration), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(shortLocalizedDuration(context, statisticsData?.time ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(context, statisticsData?.time ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_episodes_on_device), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))

@@ -1,3 +1,9 @@
+# 7.1.1
+
+* made reset statistics data in a lasting coroutine
+* changed a few other lifecycle coroutines to lasting ones, which may or may not make any difference
+* minor functions relocation
+
 # 7.1.0
 
 * likely fixed the timeSpent number seen on Statistics

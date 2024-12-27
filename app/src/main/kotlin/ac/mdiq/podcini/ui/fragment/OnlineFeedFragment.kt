@@ -209,7 +209,7 @@ class OnlineFeedFragment : Fragment() {
     }
 
     private fun lookupUrlAndBuild(url: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             urlToLog = url
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
             Logd(TAG, "lookupUrlAndBuild: urlString: ${urlString}")
@@ -237,7 +237,7 @@ class OnlineFeedFragment : Fragment() {
     private fun tryToRetrieveFeedUrlBySearch(error: FeedUrlNotFoundException) {
         Logd(TAG, "Unable to retrieve feed url, trying to retrieve feed url from search")
 //        val url = searchFeedUrlByTrackName(error.trackName, error.artistName)
-        lifecycleScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             var url: String? = null
             val searcher = CombinedSearcher()
             val query = "${error.trackName} ${error.artistName}"

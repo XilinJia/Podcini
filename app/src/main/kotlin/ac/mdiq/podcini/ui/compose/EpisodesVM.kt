@@ -40,7 +40,6 @@ import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.newId
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.NullActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
@@ -697,7 +696,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                             onDragStopped = { onDragEnd() }
                         ))
             }
-            val imgLoc = remember(vm) { ImageResourceUtils.getEpisodeListImageLocation(vm.episode) }
+            val imgLoc = remember(vm) { vm.episode.getEpisodeListImageLocation() }
             AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                 contentDescription = "imgvCover",

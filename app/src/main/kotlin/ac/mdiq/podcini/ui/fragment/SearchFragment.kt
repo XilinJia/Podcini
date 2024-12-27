@@ -28,7 +28,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -349,7 +348,7 @@ class SearchFragment : Fragment() {
                         Row(Modifier.padding(top = 5.dp)) {
                             val measureString = remember {
                                 NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
-                                        DurationConverter.shortLocalizedDuration(requireActivity(), feed.totleDuration / 1000)
+                                        DurationConverter.durationInHours(requireActivity(), feed.totleDuration / 1000)
                             }
                             Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             Spacer(modifier = Modifier.weight(1f))

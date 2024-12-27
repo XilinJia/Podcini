@@ -330,7 +330,7 @@ class FeedInfoFragment : Fragment() {
 
     private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 withContext(Dispatchers.IO) {
                     requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)

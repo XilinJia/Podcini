@@ -34,7 +34,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
@@ -192,7 +191,7 @@ class AudioPlayerFragment : Fragment() {
                         cleanedNotes = null
                         if (curEpisode != null) {
                             updateUi(curEpisode!!)
-                            imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curEpisode!!)
+                            imgLoc = curEpisode!!.getEpisodeListImageLocation()
                             currentItem = curEpisode
                         }
                     }
@@ -736,7 +735,7 @@ class AudioPlayerFragment : Fragment() {
                     episodeDate = pubDateStr.trim()
                     titleText = currentItem?.title ?:""
                     displayedChapterIndex = -1
-                    refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.position)) //calls displayCoverImage
+                    refreshChapterData(media.getCurrentChapterIndex(media.position))
                 }
                 Logd(TAG, "Webview loaded")
             }
@@ -839,7 +838,7 @@ class AudioPlayerFragment : Fragment() {
             if (!isCollapsed && curMediaChanged) {
                 Logd(TAG, "loadMediaInfo loading details ${curEpisode?.id}")
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { curEpisode?.apply { ChapterUtils.loadChapters(this, requireContext(), false) } }
+                    withContext(Dispatchers.IO) { curEpisode?.apply { this.loadChapters(requireContext(), false) } }
                     currentItem = curEpisode
                     val item = currentItem
 //                    val item = currentItem?.episodeOrFetch()
@@ -954,7 +953,7 @@ class AudioPlayerFragment : Fragment() {
         onPositionUpdate(event)
         if (!isCollapsed) {
             if (currentItem?.id != event.episode.id) return
-            val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(currentItem, event.position)
+            val newChapterIndex: Int = currentItem!!.getCurrentChapterIndex(event.position)
             if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) refreshChapterData(newChapterIndex)
         }
     }

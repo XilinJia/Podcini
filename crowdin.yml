@@ -1,0 +1,8 @@
+files:
+  - source: /app/src/main/res/values/strings.xml
+    translation: /app/src/main/res/values-%two_letters_code%/%original_file_name%
+    languages_mapping:
+      two_letters_code:
+        id: in
+    translate_attributes: 0
+    update_option: update_as_unapproved

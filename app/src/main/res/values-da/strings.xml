@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Erstat</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -190,7 +191,6 @@
     <string name="delete_local_failed">Kan ikke slette filen. Prøv at forbinde den lokale mappe igen fra podcast-infoskærmen.</string>
     <string name="delete_episode_label">Slet afsnit</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -376,6 +376,11 @@
     <string name="button_action_skip_episode">Spring afsnit over</string>
     <string name="button_action_restart_episode">Genstart afsnit</string>
     <string name="pref_followQueue_sum">Gå til næste element i køen når afspilningen er færdig</string>
+    <string name="pref_pick_custom_media_dir">Angiv en brugerdefineret mappe</string>
+    <string name="pref_custom_media_dir_title">Brug brugerdefineret mediemappe</string>
+    <string name="pref_custom_media_dir_sum">Vælg en brugerdefineret mappe til downloadede medier. Du kan altid nulstille. En genstart er nødvendig.</string>
+    <string name="pref_custom_media_dir_sum1">Brugerdefineret mediemappe er indstillet. Vil du ændre?</string>
+    <string name="pref_custom_media_dir_sum2">Brugerdefineret mediemappe er indstillet. Vil du nulstille til standard?</string>
     <string name="pref_auto_delete_sum">Slet afsnit når afspilningen er færdig</string>
     <string name="pref_auto_delete_title">Slet automatisk</string>
     <string name="pref_auto_local_delete_title">Slet automatisk fra lokale mapper</string>

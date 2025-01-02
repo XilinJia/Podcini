@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Replace</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -196,7 +197,6 @@
     <string name="delete_local_failed">Súbor sa nepodarilo zmazať. Skúste znova pripojiť lokálny priečinok z obrazovky s informáciami o podcaste.</string>
     <string name="delete_episode_label">Zmazať epizódu</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -386,6 +386,11 @@
     <string name="button_action_skip_episode">Preskočiť epizódu</string>
     <string name="button_action_restart_episode">Znovu spustiť epizódu</string>
     <string name="pref_followQueue_sum">Po prehraní položky z poradia automaticky prejsť na dalšiu</string>
+    <string name="pref_pick_custom_media_dir">Specify a custom folder</string>
+    <string name="pref_custom_media_dir_title">Use custom media folder</string>
+    <string name="pref_custom_media_dir_sum">Choose a custom folder for downloaded media. You can always reset. A restart is needed.</string>
+    <string name="pref_custom_media_dir_sum1">Custom media folder is set. Want to change?</string>
+    <string name="pref_custom_media_dir_sum2">Custom media folder is set. Want to reset to default?</string>
     <string name="pref_auto_delete_sum">Zmazať epizódu po dokončení prehrávania</string>
     <string name="pref_auto_delete_title">Automatické mazanie</string>
     <string name="pref_auto_local_delete_title">Automatické mazanie z lokálnych priečinkov</string>

@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Vervangen</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -190,7 +191,6 @@
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Aflevering verwijderen</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -376,6 +376,11 @@
     <string name="button_action_skip_episode">Aflevering overslaan</string>
     <string name="button_action_restart_episode">Afleveringen herstarten</string>
     <string name="pref_followQueue_sum">Als afspelen is voltooid naar volgend item in de wachtrij gaan</string>
+    <string name="pref_pick_custom_media_dir">Specificeer een aangepaste map</string>
+    <string name="pref_custom_media_dir_title">Aangepaste mediamap gebruiken</string>
+    <string name="pref_custom_media_dir_sum">Kies een aangepaste map voor gedownloade media. U kunt altijd opnieuw instellen. Een herstart is nodig.</string>
+    <string name="pref_custom_media_dir_sum1">Aangepaste mediamap is ingesteld. Wilt u wijzigen?</string>
+    <string name="pref_custom_media_dir_sum2">Aangepaste mediamap is ingesteld. Wil je terugzetten naar standaard?</string>
     <string name="pref_auto_delete_sum">Afleveringen verwijderen als ze zijn afgespeeld</string>
     <string name="pref_auto_delete_title">Automatisch verwijderen</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>

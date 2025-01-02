@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Заменить</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -196,7 +197,6 @@
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Удалить выпуск</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -386,6 +386,11 @@
     <string name="button_action_skip_episode">Пропустить выпуск</string>
     <string name="button_action_restart_episode">Выпуск с начала</string>
     <string name="pref_followQueue_sum">После завершения воспроизведения перейти к следующему в очереди</string>
+    <string name="pref_pick_custom_media_dir">Укажите пользовательскую папку</string>
+    <string name="pref_custom_media_dir_title">Использовать пользовательскую папку</string>
+    <string name="pref_custom_media_dir_sum">Выберите пользовательскую папку для загруженного носителя. Вы всегда можете сбросить. Требуется перезапуск.</string>
+    <string name="pref_custom_media_dir_sum1">Пользовательская папка установлена. Хотите изменить?</string>
+    <string name="pref_custom_media_dir_sum2">Пользовательская папка установлена. Хотите сбросить настройки по умолчанию?</string>
     <string name="pref_auto_delete_sum">Удалять выпуск по окончании воспроизведения</string>
     <string name="pref_auto_delete_title">Автоматическое удаление</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>

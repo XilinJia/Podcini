@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Заміняти</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -196,7 +197,6 @@
     <string name="delete_local_failed">Не вдалося видалити файл. Спробуйте перепід\'єднати локальну теку з екрана інформації про подкаст.</string>
     <string name="delete_episode_label">Видалити епізод</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -386,6 +386,11 @@
     <string name="button_action_skip_episode">Пропустити епізод</string>
     <string name="button_action_restart_episode">Перезапустити епізод</string>
     <string name="pref_followQueue_sum">Перейти до наступного епізода в черзі коли поточний закінчено</string>
+    <string name="pref_pick_custom_media_dir">Вкажіть спеціальну папку</string>
+    <string name="pref_custom_media_dir_title">Використовувати власну папку для медіа</string>
+    <string name="pref_custom_media_dir_sum">Оберіть користувацьку теку для завантажених медіа. Вам завжди можна скинути. Необхідно перезапустити програму.</string>
+    <string name="pref_custom_media_dir_sum1">Користувальницька папка вибрана. Хочете змінити?</string>
+    <string name="pref_custom_media_dir_sum2">Користувальницька папка вибрана. Хочете скинути до типових?</string>
     <string name="pref_auto_delete_sum">Видалити епізод після повного відтворення</string>
     <string name="pref_auto_delete_title">Автовидалення</string>
     <string name="pref_auto_local_delete_title">Автовидалення з локальних тек</string>

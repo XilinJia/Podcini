@@ -124,6 +124,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">置換</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -189,7 +190,6 @@
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Delete episode media</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -373,6 +373,11 @@
     <string name="button_action_skip_episode">Skip episode</string>
     <string name="button_action_restart_episode">Restart episode</string>
     <string name="pref_followQueue_sum">再生が完了した時に次のキューのアイテムに移動します</string>
+    <string name="pref_pick_custom_media_dir">カスタムフォルダを指定してください</string>
+    <string name="pref_custom_media_dir_title">カスタムメディアフォルダを使用</string>
+    <string name="pref_custom_media_dir_sum">ダウンロードしたメディアのカスタムフォルダを選択してください。いつでもリセットできます。再起動が必要です。</string>
+    <string name="pref_custom_media_dir_sum1">カスタムメディアフォルダが設定されています。変更しますか？</string>
+    <string name="pref_custom_media_dir_sum2">カスタムメディアフォルダが設定されています。既定にリセットしますか？</string>
     <string name="pref_auto_delete_sum">再生が完了した時にエピソードを削除します</string>
     <string name="pref_auto_delete_title">Auto delete</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>

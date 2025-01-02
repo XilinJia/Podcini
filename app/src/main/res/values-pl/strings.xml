@@ -124,6 +124,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Zamień</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -198,7 +199,6 @@
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>
     <string name="delete_episode_label">Usuń odcinek</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -388,6 +388,11 @@
     <string name="button_action_skip_episode">Pomiń odcinek</string>
     <string name="button_action_restart_episode">Otwórz ponownie odcinek</string>
     <string name="pref_followQueue_sum">Przeskocz do następnego elementu kolejki po zakończeniu odtwarzania</string>
+    <string name="pref_pick_custom_media_dir">Określ folder niestandardowy</string>
+    <string name="pref_custom_media_dir_title">Użyj niestandardowego folderu multimediów</string>
+    <string name="pref_custom_media_dir_sum">Wybierz folder niestandardowy dla pobranych multimediów. Zawsze możesz zresetować. Wymagany jest restart</string>
+    <string name="pref_custom_media_dir_sum1">Własny folder mediów jest ustawiony. Chcesz zmienić?</string>
+    <string name="pref_custom_media_dir_sum2">Własny folder mediów jest ustawiony. Chcesz przywrócić domyślne?</string>
     <string name="pref_auto_delete_sum">Usuń odcinek kiedy jego odtwarzanie zostanie zakończone</string>
     <string name="pref_auto_delete_title">Automatyczne usuwanie</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>

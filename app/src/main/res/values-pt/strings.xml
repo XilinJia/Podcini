@@ -124,6 +124,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Substituir</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -192,7 +193,6 @@
     <string name="delete_local_failed">Não foi possível eliminar o episódio. Experimente conectar novamente a pasta local no ecrã de informação do podcast.</string>
     <string name="delete_episode_label">Eliminar episódio</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -378,6 +378,11 @@
     <string name="button_action_skip_episode">Ignorar episódio</string>
     <string name="button_action_restart_episode">Reiniciar episódio</string>
     <string name="pref_followQueue_sum">Ir para a episódio seguinte ao terminar a reprodução</string>
+    <string name="pref_pick_custom_media_dir">Especifique uma pasta personalizada</string>
+    <string name="pref_custom_media_dir_title">Usar pasta de mídia personalizada</string>
+    <string name="pref_custom_media_dir_sum">Escolha uma pasta personalizada para a mídia baixada. Você sempre pode reiniciar. É necessário reiniciar.</string>
+    <string name="pref_custom_media_dir_sum1">Pasta de mídia personalizada foi definida. Deseja alterar?</string>
+    <string name="pref_custom_media_dir_sum2">Pasta de mídia personalizada foi definida. Deseja redefinir para o padrão?</string>
     <string name="pref_auto_delete_sum">Eliminar episódio ao terminar a reprodução</string>
     <string name="pref_auto_delete_title">Eliminação automática</string>
     <string name="pref_auto_local_delete_title">Eliminação automática para pastas locais</string>

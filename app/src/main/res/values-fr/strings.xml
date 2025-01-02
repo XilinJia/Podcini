@@ -125,6 +125,7 @@
     <string name="feed_video_mode_audioonly">Audio uniquement</string>
     <string name="feed_auto_download_policy">Politique de téléchargement automatique</string>
     <string name="feed_auto_download_new">Seulement les nouveaux éléments</string>
+    <string name="replace">Remplacer</string>
     <string name="feed_auto_download_newer">Les plus récents non joués</string>
     <string name="feed_auto_download_older">Les plus anciens non joués</string>
     <string name="feed_auto_download_soon">Marqué comme bientôt</string>
@@ -193,7 +194,6 @@
     <string name="delete_local_failed">Impossible de supprimer le fichier. Essayer de reconnecter le dossier local à partir de l\'écran des infos du podcast.</string>
     <string name="delete_episode_label">Suppression de l\'épisode</string>
     <string name="show_hidden">Afficher les caches placées</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">Aucune action</string>
     <string name="my_opinion_label">Mon opinion</string>
     <string name="add_opinion_label">Ajouter une opinion</string>
@@ -379,6 +379,11 @@
     <string name="button_action_skip_episode">Passer l\'épisode</string>
     <string name="button_action_restart_episode">Redémarrer l\'épisode</string>
     <string name="pref_followQueue_sum">Après la fin d\'un épisode, lire le suivant dans la liste de lecture</string>
+    <string name="pref_pick_custom_media_dir">Spécifier un dossier personnalisé</string>
+    <string name="pref_custom_media_dir_title">Utiliser un dossier média personnalisé</string>
+    <string name="pref_custom_media_dir_sum">Choisissez un dossier personnalisé pour les médias téléchargés. Vous pouvez toujours réinitialiser. Un redémarrage est nécessaire.</string>
+    <string name="pref_custom_media_dir_sum1">Le dossier de médias personnalisé est défini. Voulez-vous le modifier?</string>
+    <string name="pref_custom_media_dir_sum2">Le dossier de médias personnalisé est défini. Voulez-vous réinitialiser à la valeur par défaut ?</string>
     <string name="pref_auto_delete_sum">Supprimer l\'épisode quand la lecture est finie</string>
     <string name="pref_auto_delete_title">Suppression automatique</string>
     <string name="pref_auto_local_delete_title">Suppression automatique pour dossiers locaux</string>

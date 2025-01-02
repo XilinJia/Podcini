@@ -122,6 +122,7 @@
     <string name="feed_video_mode_audioonly">Audio only</string>
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
+    <string name="replace">Ersätt</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
     <string name="feed_auto_download_soon">Marked as Soon</string>
@@ -190,7 +191,6 @@
     <string name="delete_local_failed">Kunde inte rader filen. Försök att återansluta den lokala katalogen från podcastens infoskärm.</string>
     <string name="delete_episode_label">Radera episod</string>
     <string name="show_hidden">Show hidden</string>
-    <string name="javasript_label">JavaScript</string>
     <string name="no_action_label">No action</string>
     <string name="my_opinion_label">My opinion</string>
     <string name="add_opinion_label">Add opinion</string>
@@ -376,6 +376,11 @@
     <string name="button_action_skip_episode">Hoppa över episod</string>
     <string name="button_action_restart_episode">Starta om episod</string>
     <string name="pref_followQueue_sum">Hoppa till nästa i kön när uppspelningen är klar</string>
+    <string name="pref_pick_custom_media_dir">Ange en anpassad mapp</string>
+    <string name="pref_custom_media_dir_title">Använd anpassad mediamapp</string>
+    <string name="pref_custom_media_dir_sum">Välj en anpassad mapp för nedladdade medier. Du kan alltid återställa. En omstart behövs.</string>
+    <string name="pref_custom_media_dir_sum1">Anpassad mediamapp är inställd. Vill du ändra?</string>
+    <string name="pref_custom_media_dir_sum2">Anpassad mediamapp är inställd. Vill du återställa till standard?</string>
     <string name="pref_auto_delete_sum">Ta bort episoden när uppspelningen är klar</string>
     <string name="pref_auto_delete_title">Automatisk borttagning</string>
     <string name="pref_auto_local_delete_title">Radera automatiskt från lokala kataloger</string>

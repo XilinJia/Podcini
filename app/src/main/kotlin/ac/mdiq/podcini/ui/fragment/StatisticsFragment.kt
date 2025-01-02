@@ -3,10 +3,9 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
 import ac.mdiq.podcini.storage.utils.DurationConverter.durationInHours
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.ComfirmDialog
@@ -53,7 +52,6 @@ import coil.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
@@ -213,13 +211,13 @@ class StatisticsFragment : Fragment() {
             }
             Text(headerCaption, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 20.dp))
             Row {
-                Text(stringResource(R.string.duration) + ": " + durationInHours(context, chartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.duration) + ": " + durationInHours(chartData.sum.toLong()), color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.width(20.dp))
-                Text( stringResource(R.string.spent) + ": " + durationInHours(context, timeSpentSum), color = MaterialTheme.colorScheme.onSurface)
+                Text( stringResource(R.string.spent) + ": " + durationInHours(timeSpentSum), color = MaterialTheme.colorScheme.onSurface)
             }
             HorizontalLineChart(chartData)
             StatsList(statsResult, chartData) { item ->
-                context.getString(R.string.duration) + ": " + durationInHours(context, item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + durationInHours(context, item.timeSpent)
+                context.getString(R.string.duration) + ": " + durationInHours(item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + durationInHours(item.timeSpent)
             }
         }
     }
@@ -503,19 +501,19 @@ class StatisticsFragment : Fragment() {
                         }
                         Row {
                             Text(stringResource(R.string.statistics_length_played), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(durationInHours(context, statisticsData?.durationOfStarted ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(statisticsData?.durationOfStarted ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_time_played), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(durationInHours(context, statisticsData?.timePlayed ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(statisticsData?.timePlayed ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_time_spent), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(durationInHours(context, statisticsData?.timeSpent ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(statisticsData?.timeSpent ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_total_duration), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            Text(durationInHours(context, statisticsData?.time ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
+                            Text(durationInHours(statisticsData?.time ?: 0), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(0.4f))
                         }
                         Row {
                             Text(stringResource(R.string.statistics_episodes_on_device), color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))

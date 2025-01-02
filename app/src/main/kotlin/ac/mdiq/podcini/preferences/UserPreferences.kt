@@ -2,8 +2,7 @@ package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.ProxyConfig
-import ac.mdiq.podcini.storage.utils.FilesUtils
-import ac.mdiq.podcini.storage.utils.FilesUtils.createNoMediaFile
+import ac.mdiq.podcini.storage.utils.StorageUtils.createNoMediaFile
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.Context
@@ -26,41 +25,41 @@ object UserPreferences {
 
     const val EPISODE_CACHE_SIZE_UNLIMITED: Int = 0
 
-    private lateinit var context: Context
     lateinit var appPrefs: SharedPreferences
+    val cachedPrefs = mutableMapOf<String, Any?>()
 
     var theme: ThemePreference
-        get() = when (appPrefs.getString(Prefs.prefTheme.name, "system")) {
+        get() = when (getPref(Prefs.prefTheme, "system")) {
             "0" -> ThemePreference.LIGHT
             "1" -> ThemePreference.DARK
             else -> ThemePreference.SYSTEM
         }
         set(theme) {
             when (theme) {
-                ThemePreference.LIGHT -> appPrefs.edit().putString(Prefs.prefTheme.name, "0").apply()
-                ThemePreference.DARK -> appPrefs.edit().putString(Prefs.prefTheme.name, "1").apply()
-                else -> appPrefs.edit().putString(Prefs.prefTheme.name, "system").apply()
+                ThemePreference.LIGHT -> putPref(Prefs.prefTheme, "0")
+                ThemePreference.DARK -> putPref(Prefs.prefTheme, "1")
+                else -> putPref(Prefs.prefTheme, "system")
             }
         }
 
     val isBlackTheme: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefThemeBlack.name, false)
+        get() = getPref(Prefs.prefThemeBlack, false)
 
     val isThemeColorTinted: Boolean
-        get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(Prefs.prefTintedColors.name, false)
+        get() = Build.VERSION.SDK_INT >= 31 && getPref(Prefs.prefTintedColors, false)
 
     val showSkipOnNotification: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefShowSkip.name, true)
+        get() = getPref(Prefs.prefShowSkip, true)
 
     val isAutoDelete: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefAutoDelete.name, false)
+        get() = getPref(Prefs.prefAutoDelete, false)
 
     val isAutoDeleteLocal: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefAutoDeleteLocal.name, false)
+        get() = getPref(Prefs.prefAutoDeleteLocal, false)
 
     val videoPlayMode: Int
         get() {
-            try { return appPrefs.getString(Prefs.prefVideoPlaybackMode.name, "1")!!.toInt()
+            try { return getPref(Prefs.prefVideoPlaybackMode, "1").toInt()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 setVideoMode(1)
@@ -69,9 +68,9 @@ object UserPreferences {
         }
 
     var isSkipSilence: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefSkipSilence.name, false)
+        get() = getPref(Prefs.prefSkipSilence, false)
         set(skipSilence) {
-            appPrefs.edit().putBoolean(Prefs.prefSkipSilence.name, skipSilence).apply()
+            putPref(Prefs.prefSkipSilence, skipSilence)
         }
 
     /**
@@ -79,21 +78,21 @@ object UserPreferences {
      * EPISODE_CACHE_SIZE_UNLIMITED (0) if the cache size is set to 'unlimited'.
      */
     val episodeCacheSize: Int
-        get() = appPrefs.getString(Prefs.prefEpisodeCacheSize.name, "20")!!.toInt()
+        get() = getPref(Prefs.prefEpisodeCacheSize, "20").toInt()
 
     @set:VisibleForTesting
     var isEnableAutodownload: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefEnableAutoDl.name, false)
+        get() = getPref(Prefs.prefEnableAutoDl, false)
         set(enabled) {
-            appPrefs.edit().putBoolean(Prefs.prefEnableAutoDl.name, enabled).apply()
+            putPref(Prefs.prefEnableAutoDl, enabled)
         }
 
     val isEnableAutodownloadOnBattery: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefEnableAutoDownloadOnBattery.name, true)
+        get() = getPref(Prefs.prefEnableAutoDownloadOnBattery, true)
 
     var speedforwardSpeed: Float
         get() {
-            try { return appPrefs.getString(Prefs.prefSpeedforwardSpeed.name, "0.00")!!.toFloat()
+            try { return getPref(Prefs.prefSpeedforwardSpeed, "0.00").toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 speedforwardSpeed = 0.0f
@@ -101,12 +100,12 @@ object UserPreferences {
             }
         }
         set(speed) {
-            appPrefs.edit().putString(Prefs.prefSpeedforwardSpeed.name, speed.toString()).apply()
+            putPref(Prefs.prefSpeedforwardSpeed, speed.toString())
         }
 
     var fallbackSpeed: Float
         get() {
-            try { return appPrefs.getString(Prefs.prefFallbackSpeed.name, "0.00")!!.toFloat()
+            try { return getPref(Prefs.prefFallbackSpeed, "0.00").toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 fallbackSpeed = 0.0f
@@ -114,28 +113,28 @@ object UserPreferences {
             }
         }
         set(speed) {
-            appPrefs.edit().putString(Prefs.prefFallbackSpeed.name, speed.toString()).apply()
+            putPref(Prefs.prefFallbackSpeed, speed.toString())
         }
 
     var fastForwardSecs: Int
-        get() = appPrefs.getInt(Prefs.prefFastForwardSecs.name, 30)
+        get() = getPref(Prefs.prefFastForwardSecs, 30)
         set(secs) {
-            appPrefs.edit().putInt(Prefs.prefFastForwardSecs.name, secs).apply()
+            putPref(Prefs.prefFastForwardSecs, secs)
         }
 
     var rewindSecs: Int
-        get() = appPrefs.getInt(Prefs.prefRewindSecs.name, 10)
+        get() = getPref(Prefs.prefRewindSecs, 10)
         set(secs) {
-            appPrefs.edit().putInt(Prefs.prefRewindSecs.name, secs).apply()
+            putPref(Prefs.prefRewindSecs, secs)
         }
 
     var proxyConfig: ProxyConfig
         get() {
-            val type = Proxy.Type.valueOf(appPrefs.getString(Prefs.prefProxyType.name, Proxy.Type.DIRECT.name)!!)
-            val host = appPrefs.getString(Prefs.prefProxyHost.name, null)
-            val port = appPrefs.getInt(Prefs.prefProxyPort.name, 0)
-            val username = appPrefs.getString(Prefs.prefProxyUser.name, null)
-            val password = appPrefs.getString(Prefs.prefProxyPassword.name, null)
+            val type = Proxy.Type.valueOf(getPref(Prefs.prefProxyType, Proxy.Type.DIRECT.name))
+            val host = getPrefOrNull<String>(Prefs.prefProxyHost, null)
+            val port = getPref(Prefs.prefProxyPort, 0)
+            val username = getPrefOrNull<String>(Prefs.prefProxyUser, null)
+            val password = getPrefOrNull<String>(Prefs.prefProxyPassword, null)
             return ProxyConfig(type, host, port, username, password)
         }
         set(config) {
@@ -157,28 +156,33 @@ object UserPreferences {
         }
 
     var defaultPage: String?
-        get() = appPrefs.getString(Prefs.prefDefaultPage.name, "SubscriptionsFragment")
+        get() = getPref(Prefs.prefDefaultPage, "SubscriptionsFragment")
         set(defaultPage) {
-            appPrefs.edit().putString(Prefs.prefDefaultPage.name, defaultPage).apply()
+            putPref(Prefs.prefDefaultPage, defaultPage)
         }
 
     var isStreamOverDownload: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefStreamOverDownload.name, false)
+        get() = getPref(Prefs.prefStreamOverDownload, false)
         set(stream) {
-            appPrefs.edit().putBoolean(Prefs.prefStreamOverDownload.name, stream).apply()
+            putPref(Prefs.prefStreamOverDownload, stream)
         }
 
     var prefLowQualityMedia: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefLowQualityOnMobile.name, false)
+        get() = getPref(Prefs.prefLowQualityOnMobile, false)
         set(stream) {
-            appPrefs.edit().putBoolean(Prefs.prefLowQualityOnMobile.name, stream).apply()
+            putPref(Prefs.prefLowQualityOnMobile, stream)
         }
 
     var prefAdaptiveProgressUpdate: Boolean
-        get() = appPrefs.getBoolean(Prefs.prefUseAdaptiveProgressUpdate.name, false)
+        get() = getPref(Prefs.prefUseAdaptiveProgressUpdate, false)
         set(value) {
-            appPrefs.edit().putBoolean(Prefs.prefUseAdaptiveProgressUpdate.name, value).apply()
+            putPref(Prefs.prefUseAdaptiveProgressUpdate, value)
         }
+
+    private val preferenceChangeListener: SharedPreferences.OnSharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        Log.d(TAG, "PreferenceChangeListener key: $key")
+        if (key != null) cachedPrefs[key] = appPrefs.all[key]
+    }
 
     /**
      * Sets up the UserPreferences class.
@@ -186,10 +190,51 @@ object UserPreferences {
      */
     fun init(context: Context) {
         Logd(TAG, "Creating new instance of UserPreferences")
-        UserPreferences.context = context.applicationContext
-        FilesUtils.context = context.applicationContext
+//        UserPreferences.context = context.applicationContext
         appPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+        Prefs.entries.map { it.name }.forEach { key -> cachedPrefs[key] = appPrefs.all[key] }
+        appPrefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         createNoMediaFile()
+    }
+
+    inline fun <reified T> getPref(key: String, defaultValue: T): T {
+        val value = cachedPrefs[key]
+        return when (value) {
+            is T -> value
+            else -> defaultValue
+        }
+    }
+
+    inline fun <reified T> getPref(key: Prefs, defaultValue: T): T {
+        val value = cachedPrefs[key.name]
+        return when (value) {
+            is T -> value
+            else -> defaultValue
+        }
+    }
+
+    inline fun <reified T> getPrefOrNull(key: Prefs, defaultValue: T?): T? {
+        val value = cachedPrefs[key.name]
+        return when (value) {
+            is T -> value
+            else -> defaultValue
+        }
+    }
+
+    inline fun <reified T> putPref(key: Prefs, value: T) {
+        cachedPrefs[key.name] = value
+
+        val editor = appPrefs.edit()
+        when (value) {
+            is String -> editor.putString(key.name, value)
+            is Int -> editor.putInt(key.name, value)
+            is Boolean -> editor.putBoolean(key.name, value)
+            is Float -> editor.putFloat(key.name, value)
+            is Long -> editor.putLong(key.name, value)
+            else -> throw IllegalArgumentException("Unsupported type")
+        }
+        editor.apply()
     }
 
     /**
@@ -207,9 +252,8 @@ object UserPreferences {
     /**
      * @return `true` if we should show remaining time or the duration
      */
-    fun shouldShowRemainingTime(): Boolean {
-        return appPrefs.getBoolean(Prefs.showTimeLeft.name, false)
-    }
+    val shouldShowRemainingTime: Boolean
+        get() = getPref(Prefs.showTimeLeft, false)
 
     /**
      * Sets the preference for whether we show the remain time, if not show the duration. This will
@@ -217,23 +261,21 @@ object UserPreferences {
      * @return `true` if we should show remaining time or the duration
      */
     fun setShowRemainTimeSetting(showRemain: Boolean?) {
-        appPrefs.edit().putBoolean(Prefs.showTimeLeft.name, showRemain!!).apply()
+        putPref(Prefs.showTimeLeft, showRemain!!)
     }
 
-    fun backButtonOpensDrawer(): Boolean {
-        return appPrefs.getBoolean(Prefs.prefBackButtonOpensDrawer.name, false)
-    }
+    val backButtonOpensDrawer: Boolean
+        get() = getPref(Prefs.prefBackButtonOpensDrawer, false)
 
-    fun timeRespectsSpeed(): Boolean {
-        return appPrefs.getBoolean(Prefs.prefPlaybackTimeRespectsSpeed.name, false)
-    }
+    val timeRespectsSpeed: Boolean
+        get() = getPref(Prefs.prefPlaybackTimeRespectsSpeed, false)
 
     fun setPlaybackSpeed(speed: Float) {
-        appPrefs.edit().putString(Prefs.prefPlaybackSpeed.name, speed.toString()).apply()
+        putPref(Prefs.prefPlaybackSpeed, speed.toString())
     }
 
     fun setVideoMode(mode: Int) {
-        appPrefs.edit().putString(Prefs.prefVideoPlaybackMode.name, mode.toString()).apply()
+        putPref(Prefs.prefVideoPlaybackMode, mode.toString())
     }
 
     enum class DefaultPages(val res: Int) {
@@ -287,6 +329,9 @@ object UserPreferences {
         prefAutoBackupFolder,
         prefAutoBackupLimit,
         prefAutoBackupTimeStamp,
+
+        prefUseCustomMediaFolder,
+        prefCustomMediaUri,
 
         prefAutoDelete,
         prefAutoDeleteLocal,

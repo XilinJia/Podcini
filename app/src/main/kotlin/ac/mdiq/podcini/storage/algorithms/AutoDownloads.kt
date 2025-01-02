@@ -8,6 +8,8 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
+import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -98,6 +100,7 @@ object AutoDownloads {
                 // we should only auto download if both network AND power are happy
                 if (networkShouldAutoDl && powerShouldAutoDl) {
                     Logd(TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
+                    val toDelete: MutableSet<Episode> = mutableSetOf()
                     val candidates: MutableSet<Episode> = mutableSetOf()
                     val queueItems = realm.query(Episode::class).query("id IN $0 AND downloaded == false", curQueue.episodeIds).find()
                     Logd(TAG, "autoDownloadEpisodeMedia add from queue: ${queueItems.size}")
@@ -111,15 +114,24 @@ object AutoDownloads {
                                 else EpisodeFilter(EpisodeFilter.States.downloaded.name, EpisodeFilter.States.unplayed.name, EpisodeFilter.States.inQueue.name,
                                     EpisodeFilter.States.inProgress.name, EpisodeFilter.States.skipped.name)
                             val downloadedCount = getEpisodesCount(dlFilter, f.id)
-                            val allowedDLCount = (f.autoDLMaxEpisodes?:0) - downloadedCount
+                            var allowedDLCount = f.autoDLMaxEpisodes - downloadedCount
                             Logd(TAG, "autoDownloadEpisodeMedia ${f.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
                             if (allowedDLCount > 0) {
 //                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND downloaded == false"
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND downloaded == false"
                                 when (f.autoDLPolicy) {
                                     Feed.AutoDownloadPolicy.ONLY_NEW -> {
-                                        queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
-                                        episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                        if (f.autoDLPolicy.replace) {
+                                            queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                            episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                            allowedDLCount = f.autoDLMaxEpisodes
+                                            val numToDelete = episodes.size + downloadedCount - allowedDLCount
+                                            val toDelete_ = getEpisodes(dlFilter, f.id, numToDelete)
+                                            if (toDelete_.isNotEmpty()) toDelete.addAll(toDelete_)
+                                        } else {
+                                            queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3 * allowedDLCount})"
+                                            episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                        }
                                     }
                                     Feed.AutoDownloadPolicy.NEWER -> {
                                         queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
@@ -133,7 +145,6 @@ object AutoDownloads {
                                         queryString += " AND playState <= ${PlayState.SOON.code} SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
-                                    else -> {}
                                 }
                                 if (episodes.isNotEmpty()) {
                                     var count = 0
@@ -169,11 +180,12 @@ object AutoDownloads {
                     if (candidates.isNotEmpty()) {
                         val autoDownloadableCount = candidates.size
                         val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-                        val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount)
+                        val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount - toDelete.size)
                         val cacheIsUnlimited = episodeCacheSize <= UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                         val allowedCount =
                             if (cacheIsUnlimited || episodeCacheSize >= downloadedCount + autoDownloadableCount) autoDownloadableCount
                             else episodeCacheSize - (downloadedCount - deletedCount)
+                        if (toDelete.isNotEmpty()) deleteEpisodes(context, toDelete.toList())
                         if (allowedCount in 0..candidates.size) {
                             val itemsToDownload: MutableList<Episode> = candidates.toMutableList().subList(0, allowedCount)
                             if (itemsToDownload.isNotEmpty()) {

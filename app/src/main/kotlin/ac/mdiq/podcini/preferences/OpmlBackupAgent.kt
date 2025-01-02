@@ -4,6 +4,7 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
@@ -30,7 +31,7 @@ import java.security.NoSuchAlgorithmException
 class OpmlBackupAgent : BackupAgentHelper() {
 
     override fun onCreate() {
-        val isAutoBackupOPML = appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLBackup.name, true)
+        val isAutoBackupOPML = getPref(UserPreferences.Prefs.prefOPMLBackup, true)
         if (isAutoBackupOPML) {
             Logd(TAG, "Backup of OPML enabled in preferences")
             addHelper(OPML_BACKUP_KEY, OpmlBackupHelper(this))
@@ -153,7 +154,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
         private const val OPML_BACKUP_KEY = "opml"
 
         val isOPMLRestored: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLRestore.name, false)
+            get() = getPref(UserPreferences.Prefs.prefOPMLRestore, false)
 
         fun performRestore(context: Context) {
             Logd(TAG, "performRestore")

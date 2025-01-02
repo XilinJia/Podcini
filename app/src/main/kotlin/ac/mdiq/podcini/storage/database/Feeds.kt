@@ -24,8 +24,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.AudioType
 import ac.mdiq.podcini.storage.model.Feed.Companion.TAG_ROOT
-import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
+import ac.mdiq.podcini.storage.utils.StorageUtils.feedfilePath
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -508,7 +507,7 @@ object Feeds {
         feed.author = "Yours Truly"
         feed.downloadUrl = null
         feed.hasVideoMedia = video
-        feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
+        feed.fileUrl = File(feedfilePath, feed.getFeedfileName()).toString()
 //        feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
         feed.keepUpdated = false
         feed.queueId = -2L

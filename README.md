@@ -199,7 +199,8 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
 
 * Auto download algorithm is changed to individual feed based.
   * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
-  * Each feed also has its own download policy (only new episodes, newest episodes, oldest episodes or episodes marked as Soon. "newest episodes" meaning most recent episodes, new or old)
+  * Each feed also has its own download policy (Only new (with or without Replace), Newest, Oldest or Marked as Soon. 
+    * Newest meaning most recent episodes, With Replace, new episodes will be downloaded and older downloaded episodes deleted
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
   * Auto downloads run after feed updates, scheduled or manual
   * Auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue
@@ -239,6 +240,11 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
   * then Preferences and DB are backed up in sub-folder named "Podcini-AudoBackups-(date)"
   * backup time is on the next resume of Podcini after interval hours from last backup time
   * to restore, use Combo restore 
+* Folder for downloaded media can be customized
+  	* the use of customized folder can be changed or reset
+	* folder in SD card should also work (Someone try it and let me know as I can't test it)
+	* upon change, downloaded media files are moved from the previous folder to the new folder
+	* export and reconcile should also work with customized folder
 * Play history/progress can be separately exported/imported as Json files
 * Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
 * Podcasts can be selectively exported from Subscriptions view

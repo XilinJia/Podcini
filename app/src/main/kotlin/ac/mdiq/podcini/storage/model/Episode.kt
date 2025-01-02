@@ -1,17 +1,23 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import ac.mdiq.podcini.storage.utils.ChapterUtils.ChapterStartTimeComparator
 import ac.mdiq.podcini.storage.utils.ChapterUtils.loadChaptersFromUrl
 import ac.mdiq.podcini.storage.utils.ChapterUtils.merge
+import ac.mdiq.podcini.storage.utils.StorageUtils.MEDIA_DOWNLOADPATH
+import ac.mdiq.podcini.storage.utils.StorageUtils.customMediaUriString
+import ac.mdiq.podcini.storage.utils.StorageUtils.generateFileName
+import ac.mdiq.podcini.storage.utils.StorageUtils.getDataFolder
+import ac.mdiq.podcini.storage.utils.StorageUtils.getMimeType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
@@ -20,9 +26,11 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import android.webkit.URLUtil.guessFileName
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.documentfile.provider.DocumentFile
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
@@ -33,6 +41,8 @@ import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 import okhttp3.Request
 import okhttp3.Request.Builder
+import org.apache.commons.io.FilenameUtils.EXTENSION_SEPARATOR
+import org.apache.commons.io.FilenameUtils.getExtension
 import org.apache.commons.io.input.CountingInputStream
 import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
@@ -493,7 +503,7 @@ class Episode : RealmObject {
 
     fun setfileUrlOrNull(url: String?) {
         fileUrl = url
-        if (url == null) downloaded = false
+        if (url.isNullOrBlank()) downloaded = false
     }
 
     fun setPosition(newPosition: Int) {
@@ -502,11 +512,83 @@ class Episode : RealmObject {
     }
 
     fun fileExists(): Boolean {
-        if (fileUrl == null) return false
-        else {
-            val f = File(fileUrl!!)
-            return f.exists()
+        val fileuri = Uri.parse(fileUrl)
+        if (fileuri == null) return false
+        return when (fileuri.scheme) {
+            "file" -> {
+                val file = File(fileuri.path!!)
+                file.exists()
+            }
+            "content" -> {
+                try {
+                    getAppContext().contentResolver.openFileDescriptor(fileuri, "r")?.close()
+                    true
+                } catch (e: FileNotFoundException) {
+                    Logd(TAG, "file not exist $fileuri: ${e.message}")
+                    false
+                } catch (e: Exception) {
+                    Logd(TAG, "Error checking file existence: ${e.message}")
+                    false
+                }
+            }
+            else -> throw IllegalArgumentException("Unsupported URI scheme: ${fileuri.scheme}")
         }
+    }
+
+    fun getMediaFileUriString(): String? {
+        val fileName = getMediafilename()
+        Logd(TAG, "getMediaFileUriString: filename: $fileName customMediaUriString: $customMediaUriString")
+        val subDirectoryName = generateFileName(feed?.title ?: "NoFeed")
+        return if (customMediaUriString.isNotBlank()) {
+            val customUri = Uri.parse(customMediaUriString)
+            val baseDir = DocumentFile.fromTreeUri(getAppContext(), customUri)
+            if (baseDir == null || !baseDir.isDirectory) throw IllegalArgumentException("Invalid tree URI: $customMediaUriString")
+
+            var subDirectory = baseDir.findFile(subDirectoryName)
+            Logd(TAG, "getMediaFileUriString subDirectoryName: [$subDirectoryName] ${subDirectory.toString()}")
+            if (subDirectory == null) subDirectory = baseDir.createDirectory(subDirectoryName)
+
+            var fileUri: Uri? = null
+            if (subDirectory != null) fileUri = subDirectory.findFile(fileName)?.uri ?: subDirectory.createFile(getMimeType(fileName), fileName)?.uri
+            fileUri.toString()
+        } else {
+            val baseDir = getAppContext().getExternalFilesDir("media")
+            val subDirectory = File(baseDir, subDirectoryName)
+            if (!subDirectory.exists()) {
+                if (!subDirectory.mkdir()) throw IllegalStateException("Failed to create sub-directory: ${subDirectory.absolutePath}")
+            }
+            val file = File(subDirectory, fileName)
+            if (!file.exists()) {
+                if (!file.createNewFile()) throw IllegalStateException("Failed to create file: ${file.absolutePath}")
+            }
+            Uri.fromFile(file).toString()
+        }
+    }
+
+    fun getMediafilename(): String {
+        var titleBaseFilename = ""
+        if (title != null) titleBaseFilename = generateFileName(title!!)
+        val urlBaseFilename = guessFileName(downloadUrl, null, mimeType)
+        var baseFilename: String
+        baseFilename = if (titleBaseFilename != "") titleBaseFilename else urlBaseFilename
+        val filenameMaxLength = 220
+        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
+        return (baseFilename + EXTENSION_SEPARATOR + id + EXTENSION_SEPARATOR + getExtension(urlBaseFilename))
+
+//        var titleBaseFilename = ""
+//        if (title != null) titleBaseFilename = generateFileName(title!!)
+//        var baseFilename: String
+//        baseFilename = if (titleBaseFilename.isNotBlank()) titleBaseFilename else "NoTitle"
+//        val filenameMaxLength = 220
+//        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
+//        return (baseFilename + EXTENSION_SEPARATOR + "noid" + EXTENSION_SEPARATOR + "wav")
+    }
+
+    // TODO: for TTS temp file
+    fun getMediafilePath(): String {
+        val title = feed?.title?:return ""
+        val mediaPath = (MEDIA_DOWNLOADPATH + generateFileName(title))
+        return getDataFolder(mediaPath).toString() + "/"
     }
 
     /**
@@ -554,7 +636,7 @@ class Episode : RealmObject {
      * Returns true if a local file that can be played is available. getFileUrl MUST return a non-null string if this method returns true.
      */
     fun localFileAvailable(): Boolean {
-        return downloaded && fileUrl != null
+        return downloaded && !fileUrl.isNullOrBlank()
     }
 
     /**
@@ -665,10 +747,17 @@ class Episode : RealmObject {
     @Throws(IOException::class)
     private fun openStream(context: Context): CountingInputStream {
         if (localFileAvailable()) {
-            if (fileUrl == null) throw IOException("No local url")
-            val source = File(fileUrl ?: "")
-            if (!source.exists()) throw IOException("Local file does not exist")
-            return CountingInputStream(BufferedInputStream(FileInputStream(source)))
+            if (fileUrl.isNullOrBlank()) throw IOException("No local url")
+            val fileuri = Uri.parse(fileUrl) ?: throw IOException("Not valid uri")
+            when (fileuri.scheme) {
+                "file" -> {
+                    val source = File(fileuri.path)
+                    if (!source.exists()) throw IOException("Local file does not exist")
+                    return CountingInputStream(BufferedInputStream(FileInputStream(source)))
+                }
+                "content" -> return CountingInputStream(BufferedInputStream(context.contentResolver.openInputStream(fileuri)))
+            }
+            throw IOException("Local file is not valid")
         } else {
             val streamurl = downloadUrl
             if (streamurl != null && streamurl.startsWith(ContentResolver.SCHEME_CONTENT)) {
@@ -725,17 +814,19 @@ class Episode : RealmObject {
     fun checkEmbeddedPicture(persist: Boolean = true) {
         if (!localFileAvailable()) hasEmbeddedPicture = false
         else {
-            try {
-                MediaMetadataRetrieverCompat().use { mmr ->
-                    mmr.setDataSource(fileUrl)
-                    val image = mmr.embeddedPicture
-                    hasEmbeddedPicture = image != null
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                hasEmbeddedPicture = false
-            }
+            // TODO: what to do with this
+//            try {
+//                MediaMetadataRetrieverCompat().use { mmr ->
+//                    mmr.setDataSource(getAppContext(), Uri.parse(fileUrl))
+//                    val image = mmr.embeddedPicture
+//                    hasEmbeddedPicture = image != null
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                hasEmbeddedPicture = false
+//            }
         }
+        // TODO
 //        if (persist && episode != null) upsertBlk(episode!!) {}
     }
 
@@ -760,7 +851,7 @@ class Episode : RealmObject {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
 
         val useEpisodeCoverSetting: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefEpisodeCover.name, true)
+            get() = getPref(UserPreferences.Prefs.prefEpisodeCover, true)
 
         // from EpisodeMedia
         const val INVALID_TIME: Int = -1

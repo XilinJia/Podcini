@@ -6,6 +6,8 @@ import ac.mdiq.podcini.preferences.*
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
@@ -217,7 +219,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                                             if (child.name == prefsDirName) {
                                                 if (comboDic["Preferences"] == true) PreferencesTransporter(prefsDirName).importBackup(child.uri, activity)
                                             } else if (child.name == mediaFilesDirName) {
-                                                if (comboDic["Media files"] == true) MediaFilesTransporter(mediaFilesDirName).importBackup(child.uri, activity)
+                                                if (comboDic["Media files"] == true) MediaFilesTransporter(mediaFilesDirName).importFromUri(child.uri, activity)
                                             }
                                         } else if (isRealmFile(child.uri) && comboDic["Database"] == true) DatabaseTransporter().importBackup(child.uri, activity)
                                     }
@@ -236,7 +238,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                     showComboImportDialog = false
                 }) { Text(text = "OK") }
             },
-            dismissButton = { TextButton(onClick = { showComboImportDialog = false }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { showComboImportDialog = false }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
     var showComboExportDialog by remember { mutableStateOf(false) }
@@ -263,7 +265,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                             val exportSubDir = chosenDir.createDirectory(dateStampFilename("$backupDirName-%s")) ?: throw IOException("Error creating subdirectory $backupDirName")
                             val subUri: Uri = exportSubDir.uri
                             if (comboDic["Preferences"] == true) PreferencesTransporter(prefsDirName).exportToDocument(subUri, activity)
-                            if (comboDic["Media files"] == true) MediaFilesTransporter(mediaFilesDirName).exportToDocument(subUri, activity)
+                            if (comboDic["Media files"] == true) MediaFilesTransporter(mediaFilesDirName).exportToUri(subUri, activity)
                             if (comboDic["Database"] == true) {
                                 val realmFile = exportSubDir.createFile("application/octet-stream", "backup.realm")
                                 if (realmFile != null) DatabaseTransporter().exportToDocument(realmFile.uri, activity)
@@ -274,19 +276,18 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                     showComboExportDialog = false
                 }) { Text(text = "OK") }
             },
-            dismissButton = { TextButton(onClick = { showComboExportDialog = false }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { showComboExportDialog = false }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
-    var backupFolder by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefAutoBackupFolder.name, activity.getString(R.string.pref_auto_backup_folder_sum))!! ) }
-    val autoBackupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    var backupFolder by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupFolder, activity.getString(R.string.pref_auto_backup_folder_sum))) }
+    val selectAutoBackupDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
             val uri: Uri? = it.data?.data
             if (uri != null) {
-                activity.contentResolver.takePersistableUriPermission(uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                activity.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 backupFolder = uri.toString()
-                appPrefs.edit().putString(UserPreferences.Prefs.prefAutoBackupFolder.name, uri.toString()).apply()
+                putPref(UserPreferences.Prefs.prefAutoBackupFolder, uri.toString())
             }
         }
     }
@@ -384,7 +385,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
     }
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-        var isAutoBackup by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefAutoBackup.name, false)) }
+        var isAutoBackup by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackup, false)) }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.pref_auto_backup_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -392,13 +393,13 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             }
             Switch(checked = isAutoBackup, onCheckedChange = {
                 isAutoBackup = it
-                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefAutoBackup.name, it).apply()
+                putPref(UserPreferences.Prefs.prefAutoBackup, it)
             })
         }
         if (isAutoBackup) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Text(stringResource(R.string.pref_auto_backup_interval), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                var interval by remember { mutableStateOf(appPrefs.getInt(UserPreferences.Prefs.prefAutoBackupIntervall.name, 24).toString()) }
+                var interval by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupIntervall, 24).toString()) }
                 var showIcon by remember { mutableStateOf(false) }
                 TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("(hours)") },
                     singleLine = true, modifier = Modifier.weight(0.5f),
@@ -413,14 +414,14 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                         if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                             modifier = Modifier.size(30.dp).padding(start = 5.dp).clickable(onClick = {
                                 if (interval.isEmpty()) interval = "0"
-                                appPrefs.edit().putInt(UserPreferences.Prefs.prefAutoBackupIntervall.name, interval.toIntOrNull()?:0).apply()
+                                putPref(UserPreferences.Prefs.prefAutoBackupIntervall, interval.toIntOrNull()?:0)
                                 showIcon = false
                             }))
                     })
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Text(stringResource(R.string.pref_auto_backup_limit), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                var count by remember { mutableStateOf(appPrefs.getInt(UserPreferences.Prefs.prefAutoBackupLimit.name, 2).toString()) }
+                var count by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupLimit, 2).toString()) }
                 var showIcon by remember { mutableStateOf(false) }
                 TextField(value = count, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true, modifier = Modifier.weight(0.4f),  label = { Text("1 - 9") },
@@ -435,7 +436,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                         if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                             modifier = Modifier.size(30.dp).padding(start = 5.dp).clickable(onClick = {
                                 if (count.isEmpty()) count = "0"
-                                appPrefs.edit().putInt(UserPreferences.Prefs.prefAutoBackupLimit.name, count.toIntOrNull()?:0).apply()
+                                putPref(UserPreferences.Prefs.prefAutoBackupLimit, count.toIntOrNull()?:0)
                                 showIcon = false
                             }))
                     })
@@ -444,7 +445,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 intent.addCategory(Intent.CATEGORY_DEFAULT)
-                autoBackupLauncher.launch(intent)
+                selectAutoBackupDirLauncher.launch(intent)
             })) {
                 Text(stringResource(R.string.pref_auto_backup_folder), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                 Text(backupFolder, color = textColor, style = MaterialTheme.typography.bodySmall)
@@ -490,9 +491,9 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                     TextButton(onClick = {
                         try { choosePAImportPathLauncher.launch("*/*") } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                         showPAImportDialog.value = false
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 },
-                dismissButton = { TextButton(onClick = { showPAImportDialog.value = false }) { Text("Cancel") } }
+                dismissButton = { TextButton(onClick = { showPAImportDialog.value = false }) { Text(stringResource(R.string.cancel_label)) } }
             )
         }
         TitleSummaryActionColumn(R.string.import_PA_label, 0) { showPAImportDialog.value = true }

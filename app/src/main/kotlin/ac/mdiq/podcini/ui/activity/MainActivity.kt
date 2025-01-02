@@ -174,8 +174,8 @@ class MainActivity : CastEnabledActivity() {
         val ioScope = CoroutineScope(Dispatchers.IO)
         ioScope.launch {
 //            RealmDB.apply { }
-            NavDrawerFragment.getSharedPrefs(this@MainActivity)
-            SwipeActions.getSharedPrefs(this@MainActivity)
+//            NavDrawerFragment.getSharedPrefs(this@MainActivity)
+//            SwipeActions.getSharedPrefs(this@MainActivity)
             buildTags()
             monitorFeeds()
         }
@@ -277,7 +277,7 @@ class MainActivity : CastEnabledActivity() {
                     onDismiss()
                 }) { Text("OK") }
             },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
@@ -431,9 +431,7 @@ class MainActivity : CastEnabledActivity() {
         audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
-    fun isPlayerVisible(): Boolean {
-        return audioPlayerView.visibility == View.VISIBLE
-    }
+    fun isPlayerVisible(): Boolean = audioPlayerView.visibility == View.VISIBLE
 
     fun loadFragment(tag: String?, args: Bundle?) {
         var tag = tag
@@ -590,7 +588,7 @@ class MainActivity : CastEnabledActivity() {
             else -> {
                 val toPage = defaultPage
                 if (NavDrawerFragment.getLastNavFragment() == toPage || UserPreferences.DefaultPages.Remember.name == toPage) {
-                    if (backButtonOpensDrawer()) drawerLayout?.openDrawer(navDrawer)
+                    if (backButtonOpensDrawer) drawerLayout?.openDrawer(navDrawer)
                     else super.onBackPressed()
                 } else loadFragment(toPage, null)
             }

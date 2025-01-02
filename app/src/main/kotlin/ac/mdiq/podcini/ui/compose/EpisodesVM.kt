@@ -321,7 +321,7 @@ fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         }
                         selected.forEach { e -> runBlocking { addToQueueSync(e, toQueue) } }
                         onDismissRequest()
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -370,7 +370,7 @@ fun ShelveDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
                         }
                         upsertBlk(toFeed!!) { it.episodes.addAll(eList) }
                         onDismissRequest()
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -421,7 +421,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                         } catch (e: Throwable) { Log.e("EraseEpisodesDialog", Log.getStackTraceString(e)) }
                     }
                     onDismissRequest()
-                }) { Text("Confirm") }
+                }) { Text(stringResource(R.string.confirm_label)) }
             }
         }
     }
@@ -696,7 +696,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                             onDragStopped = { onDragEnd() }
                         ))
             }
-            val imgLoc = remember(vm) { vm.episode.getEpisodeListImageLocation() }
+            val imgLoc = remember(vm.episode) { vm.episode.getEpisodeListImageLocation() }
             AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
                 .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                 contentDescription = "imgvCover",
@@ -950,7 +950,7 @@ fun ConfirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                                 }
                                 withContext(Dispatchers.Main) { onDismissRequest() }
                             }
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                     }
                     if (showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 4.dp, modifier = Modifier.padding(start = 40.dp, end = 40.dp).width(30.dp).height(30.dp))
                 }
@@ -1234,7 +1234,7 @@ fun DatesFilterDialogCompose(inclPlayed: Boolean = false, from: Long? = null, to
                 onDismissRequest()
             }) { Text(text = "OK") }
         },
-        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
     )
 }
 
@@ -1291,7 +1291,7 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
                 onDismissRequest()
             }) { Text(text = "OK") }
         },
-        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
     )
 }
 
@@ -1316,7 +1316,7 @@ fun SkipDialog(direction: SkipDirection, onDismissRequest: ()->Unit, callBack: (
                 }
             }) { Text(text = "OK") }
         },
-        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
     )
 }
 
@@ -1352,7 +1352,7 @@ fun ChaptersDialog(media: Episode, onDismissRequest: () -> Unit) {
 //                                Text(ch.link?: "")
                                 val duration = if (index + 1 < chapters.size) chapters[index + 1].start - ch.start
                                 else media.duration - ch.start
-                                Text(stringResource(R.string.chapter_duration0) + DurationConverter.getDurationStringLocalized(LocalContext.current, duration), color = textColor)
+                                Text(stringResource(R.string.chapter_duration0) + DurationConverter.getDurationStringLocalized(duration), color = textColor)
                             }
                             val playRes = if (index == currentChapterIndex) R.drawable.ic_replay else R.drawable.ic_play_48dp
                             Icon(imageVector = ImageVector.Companion.vectorResource(playRes), tint = textColor, contentDescription = "play button",

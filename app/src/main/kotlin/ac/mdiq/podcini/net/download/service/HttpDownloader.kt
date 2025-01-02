@@ -1,16 +1,19 @@
 package ac.mdiq.podcini.net.download.service
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.feed.parser.utils.DateUtils.parse
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.storage.model.DownloadResult
-
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.net.feed.parser.utils.DateUtils.parse
+import ac.mdiq.podcini.net.utils.NetworkUtils.getURIFromRequestUrl
 import ac.mdiq.podcini.net.utils.NetworkUtils.wasDownloadBlocked
-import ac.mdiq.podcini.storage.utils.StorageUtils.freeSpaceAvailable
-import ac.mdiq.podcini.net.utils.URIUtil.getURIFromRequestUrl
+import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed.Companion.FEEDFILETYPE_FEED
+import ac.mdiq.podcini.storage.utils.StorageUtils.ensureMediaFileExists
+import ac.mdiq.podcini.storage.utils.StorageUtils.freeSpaceAvailable
+import ac.mdiq.podcini.util.Logd
+import android.net.Uri
 import android.util.Log
 import okhttp3.*
 import okhttp3.internal.http.StatusLine
@@ -20,11 +23,17 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.*
+import kotlin.Throws
 
 class HttpDownloader(request: DownloadRequest) : Downloader(request) {
 
     override fun download() {
-        Logd(TAG, "starting download()")
+        if (downloadRequest.feedfileType == FEEDFILETYPE_FEED) downloadFeed()
+        else downloadEpisode()
+    }
+
+    private fun downloadFeed() {
+        Logd(TAG, "starting downloadFeed()")
         if (downloadRequest.source == null || downloadRequest.destination == null) return
 
         val destination = File(downloadRequest.destination)
@@ -41,13 +50,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             httpReq.cacheControl(CacheControl.Builder().noStore().build())
 
             Logd(TAG, "starting download: " + downloadRequest.feedfileType + " " + uri.scheme)
-            if (downloadRequest.feedfileType == Episode.FEEDFILETYPE_FEEDMEDIA) {
-                // set header explicitly so that okhttp doesn't do transparent gzip
-                Logd(TAG, "addHeader(\"Accept-Encoding\", \"identity\")")
-                httpReq.addHeader("Accept-Encoding", "identity")
-                httpReq.cacheControl(CacheControl.Builder().noCache().build()) // noStore breaks CDNs
-            }
-
             if (uri.scheme == "http") httpReq.addHeader("Upgrade-Insecure-Requests", "1")
 
             if (!downloadRequest.lastModified.isNullOrEmpty()) {
@@ -89,10 +91,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 }
                 !response.isSuccessful || response.body == null -> {
                     callOnFailByResponseCode(response)
-                    return
-                }
-                downloadRequest.feedfileType == Episode.FEEDFILETYPE_FEEDMEDIA && isContentTypeTextAndSmallerThan100kb(response) -> {
-                    onFail(DownloadError.ERROR_FILE_TYPE, null)
                     return
                 }
                 else -> {
@@ -156,7 +154,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                                 val lastModified = response.header("Last-Modified")
                                 if (lastModified != null) downloadRequest.setLastModified(lastModified)
                                 else downloadRequest.setLastModified(response.header("ETag"))
-                                onSuccess()
+                                result.setSuccessful()
                             }
                         }
                     }
@@ -189,6 +187,170 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             onFail(DownloadError.ERROR_CONNECTION_ERROR, downloadRequest.source)
         } finally {
             IOUtils.closeQuietly(out)
+            IOUtils.closeQuietly(responseBody)
+        }
+    }
+
+    private fun downloadEpisode() {
+        Logd(TAG, "starting downloadEpisode(): destination: ${downloadRequest.destination}")
+        if (downloadRequest.source == null || downloadRequest.destination == null) return
+
+        val connection: InputStream
+        var responseBody: ResponseBody? = null
+
+        try {
+            val uri = getURIFromRequestUrl(downloadRequest.source)
+            val httpReq: Request.Builder = Request.Builder().url(uri.toURL())
+            httpReq.tag(downloadRequest)
+            httpReq.cacheControl(CacheControl.Builder().noStore().build())
+
+            Logd(TAG, "starting download: " + downloadRequest.feedfileType + " " + uri.scheme)
+
+            // set header explicitly so that okhttp doesn't do transparent gzip
+            Logd(TAG, "addHeader(\"Accept-Encoding\", \"identity\")")
+            httpReq.addHeader("Accept-Encoding", "identity")
+            httpReq.cacheControl(CacheControl.Builder().noCache().build()) // noStore breaks CDNs
+
+            if (uri.scheme == "http") httpReq.addHeader("Upgrade-Insecure-Requests", "1")
+
+            val destinationUri = Uri.parse(downloadRequest.destination)
+            val existingFileSize: Long = when (destinationUri.scheme) {
+                "content" -> {
+                    val fileDescriptor = getAppContext().contentResolver.openFileDescriptor(destinationUri, "rw")
+                    fileDescriptor?.use { it.statSize } ?: 0L
+                }
+                "file" -> {
+                    val file = File(destinationUri.path!!)
+                    if (file.exists()) file.length() else 0L
+                }
+                else -> throw IllegalArgumentException("Unsupported Uri scheme: ${destinationUri.scheme}")
+            }
+
+            // add range header if necessary
+            if (existingFileSize > 0) {
+                downloadRequest.soFar = existingFileSize
+                httpReq.addHeader("Range", "bytes=" + downloadRequest.soFar + "-")
+                Logd(TAG, "Adding range header: " + downloadRequest.soFar)
+            }
+
+            val response = newCall(httpReq)
+            responseBody = response.body
+            val contentEncodingHeader = response.header("Content-Encoding")
+            var isGzip = false
+            if (!contentEncodingHeader.isNullOrEmpty()) isGzip = (contentEncodingHeader.lowercase(Locale.getDefault()) == "gzip")
+
+            Logd(TAG, "Response code is " + response.code)// check if size specified in the response header is the same as the size of the
+            // written file. This check cannot be made if compression was used
+            //                    Log.d(TAG,"buffer: $buffer")
+            when {
+                !response.isSuccessful && response.code == HttpURLConnection.HTTP_NOT_MODIFIED -> {
+                    Logd(TAG, "Feed '" + downloadRequest.source + "' not modified since last update, Download canceled")
+                    onCancelled()
+                    return
+                }
+                !response.isSuccessful || response.body == null -> {
+                    callOnFailByResponseCode(response)
+                    return
+                }
+                isContentTypeTextAndSmallerThan100kb(response) -> {
+                    onFail(DownloadError.ERROR_FILE_TYPE, null)
+                    return
+                }
+                else -> {
+                    checkIfRedirect(response)
+                    connection = BufferedInputStream(responseBody!!.byteStream())
+                    ensureMediaFileExists(destinationUri)
+
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var count = 0
+                    downloadRequest.setStatusMsg(R.string.download_running)
+                    Logd(TAG, "Getting size of download")
+                    downloadRequest.size = responseBody.contentLength() + downloadRequest.soFar
+                    Logd(TAG, "downloadRequest size is " + downloadRequest.size)
+                    if (downloadRequest.size < 0) downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
+
+                    val freeSpace = freeSpaceAvailable
+                    Logd(TAG, "Free space is $freeSpace")
+                    if (downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.size > freeSpace) {
+                        onFail(DownloadError.ERROR_NOT_ENOUGH_SPACE, null)
+                        return
+                    }
+
+                    Logd(TAG, "Starting saving file")
+                    try {
+                        if (destinationUri.scheme == "content") {
+                            getAppContext().contentResolver.openOutputStream(destinationUri, "wa")?.use { outputStream ->
+                                while (connection.read(buffer).also { count = it } != -1) {
+                                    outputStream.write(buffer, 0, count)
+                                    downloadRequest.soFar += count
+                                    val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()
+                                    downloadRequest.progressPercent = progressPercent
+                                }
+                            } ?: throw IOException("Failed to open OutputStream for Uri: $destinationUri")
+                        } else if (destinationUri.scheme == "file") {
+                            val file = File(destinationUri.path!!)
+                            file.outputStream().use { outputStream ->
+                                outputStream.channel.position(existingFileSize) // Move to end of file
+                                while (connection.read(buffer).also { count = it } != -1) {
+                                    outputStream.write(buffer, 0, count)
+                                    downloadRequest.soFar += count
+                                    val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()
+                                    downloadRequest.progressPercent = progressPercent
+                                }
+                            }
+                        }
+                    } catch (e: IOException) { Log.e(TAG, Log.getStackTraceString(e)) }
+
+                    if (cancelled) onCancelled()
+                    else {
+                        // check if size specified in the response header is the same as the size of the
+                        // written file. This check cannot be made if compression was used
+                        when {
+                            !isGzip && downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.soFar != downloadRequest.size -> {
+                                onFail(DownloadError.ERROR_IO_WRONG_SIZE, "Download completed but size: ${downloadRequest.soFar} does not equal expected size ${downloadRequest.size}")
+                                return
+                            }
+                            downloadRequest.size > 0 && downloadRequest.soFar == 0L -> {
+                                onFail(DownloadError.ERROR_IO_ERROR, "Download completed, but nothing was read")
+                                return
+                            }
+                            else -> {
+                                val lastModified = response.header("Last-Modified")
+                                if (lastModified != null) downloadRequest.setLastModified(lastModified)
+                                else downloadRequest.setLastModified(response.header("ETag"))
+                                result.setSuccessful()
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            onFail(DownloadError.ERROR_MALFORMED_URL, e.message)
+        } catch (e: SocketTimeoutException) {
+            e.printStackTrace()
+            onFail(DownloadError.ERROR_CONNECTION_ERROR, e.message)
+        } catch (e: UnknownHostException) {
+            e.printStackTrace()
+            onFail(DownloadError.ERROR_UNKNOWN_HOST, e.message)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            if (wasDownloadBlocked(e)) {
+                onFail(DownloadError.ERROR_IO_BLOCKED, e.message)
+                return
+            }
+            val message = e.message
+            if (message != null && message.contains("Trust anchor for certification path not found")) {
+                onFail(DownloadError.ERROR_CERTIFICATE, e.message)
+                return
+            }
+            onFail(DownloadError.ERROR_IO_ERROR, e.message)
+        } catch (e: NullPointerException) {
+            // might be thrown by connection.getInputStream()
+            e.printStackTrace()
+            onFail(DownloadError.ERROR_CONNECTION_ERROR, downloadRequest.source)
+        } finally {
+//            IOUtils.closeQuietly(out)
             IOUtils.closeQuietly(responseBody)
         }
     }
@@ -267,11 +429,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 permanentRedirectUrl = secondUrl
             }
         }
-    }
-
-    private fun onSuccess() {
-        Logd(TAG, "Download was successful")
-        result.setSuccessful()
     }
 
     private fun onFail(reason: DownloadError, reasonDetailed: String?) {

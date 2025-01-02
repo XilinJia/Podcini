@@ -38,17 +38,12 @@ class FeedAutoDownloadFilter(
      * @return true if the item should be downloaded
      */
     fun meetsAutoDLCriteria(item: Episode): Boolean {
-//        if (includeTerms == null) includeTerms = parseTerms(includeFilterRaw)
-//        if (excludeTerms == null)  excludeTerms = parseTerms(excludeFilterRaw)
-
         // nothing has been specified, so include everything
-        if (includeTerms.isNullOrEmpty() && excludeTerms.isNullOrEmpty() && minimalDurationFilter <= -1) return true
+        if (includeTerms.isEmpty() && excludeTerms.isEmpty() && minimalDurationFilter <= -1) return true
 
-        // Check if the episode is long enough if minimal duration filter is on
+        // Check if the episode is long enough if minimal duration filter is on, Minimal Duration is stored in seconds
         if (hasMinimalDurationFilter()) {
-            val durationInMs = item.duration
-            // Minimal Duration is stored in seconds
-            if (durationInMs > 0 && durationInMs / 1000 < minimalDurationFilter) return false
+            if (item.duration > 0 && item.duration / 1000 < minimalDurationFilter) return false
         }
 
         // check using lowercase so the users don't have to worry about case.
@@ -56,11 +51,11 @@ class FeedAutoDownloadFilter(
 
         // if it's explicitly excluded, it shouldn't be autodownloaded
         // even if it has include terms
-        for (term in excludeTerms!!) {
+        for (term in excludeTerms) {
             if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return false
         }
 
-        for (term in includeTerms!!) {
+        for (term in includeTerms) {
             if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return true
         }
 

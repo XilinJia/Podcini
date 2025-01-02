@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.net.feed.searcher
 
-import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import ac.mdiq.vista.extractor.channel.ChannelInfoItem
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -72,9 +71,9 @@ class PodcastSearchResult private constructor(
             return PodcastSearchResult(searchHit.title, searchHit.thumbImageURL, searchHit.xmlUrl, searchHit.author, null, null, -1, "Fyyd")
         }
 
-        fun fromGpodder(searchHit: GpodnetPodcast): PodcastSearchResult {
-            return PodcastSearchResult(searchHit.title, searchHit.logoUrl, searchHit.url, searchHit.author, null, null, -1, "GPodder")
-        }
+//        fun fromGpodder(searchHit: GpodnetPodcast): PodcastSearchResult {
+//            return PodcastSearchResult(searchHit.title, searchHit.logoUrl, searchHit.url, searchHit.author, null, null, -1, "GPodder")
+//        }
 
         fun fromPodcastIndex(json: JSONObject): PodcastSearchResult {
             val title = json.optString("title", "")

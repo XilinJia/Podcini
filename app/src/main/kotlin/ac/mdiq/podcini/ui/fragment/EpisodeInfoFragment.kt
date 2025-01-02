@@ -488,6 +488,7 @@ class EpisodeInfoFragment : Fragment() {
                     }
                     withContext(Dispatchers.Main) {
                         Logd(TAG, "chapters: ${episode?.chapters?.size}")
+                        Logd(TAG, "files: [${episode?.feed?.fileUrl}] [${episode?.fileUrl}]")
                         if (episode != null) {
                             rating = episode!!.rating
                             inQueue = curQueue.contains(episode!!)

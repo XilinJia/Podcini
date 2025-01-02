@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.util.error
 
 import ac.mdiq.podcini.BuildConfig
-import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
+import ac.mdiq.podcini.storage.utils.StorageUtils.getDataFolder
 import android.os.Build
 import android.util.Log
 import org.apache.commons.io.IOUtils

@@ -32,9 +32,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
+import ac.mdiq.podcini.storage.utils.DurationConverter.convertOnSpeed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
@@ -369,7 +368,7 @@ class AudioPlayerFragment : Fragment() {
             val bitrate = curEpisode?.bitrate ?: 0
             if (bitrate > 0) Text(formatLargeInteger(bitrate) + "bits", color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
-            showTimeLeft = UserPreferences.shouldShowRemainingTime()
+            showTimeLeft = UserPreferences.shouldShowRemainingTime
             Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
                 if (controller == null) return@clickable
                 showTimeLeft = !showTimeLeft
@@ -669,15 +668,15 @@ class AudioPlayerFragment : Fragment() {
             playButInit = true
         }
         if (curEpisode?.id != event.episode?.id || controller == null || curPositionFB == Episode.INVALID_TIME || curDurationFB == Episode.INVALID_TIME) return
-        val converter = TimeSpeedConverter(curSpeedFB)
-        currentPosition = converter.convert(event.position)
-        duration = converter.convert(event.duration)
-        val remainingTime: Int = converter.convert(max((event.duration - event.position).toDouble(), 0.0).toInt())
+//        val converter = TimeSpeedConverter(curSpeedFB)
+        currentPosition = convertOnSpeed(event.position, curSpeedFB)
+        duration = convertOnSpeed(event.duration, curSpeedFB)
+        val remainingTime: Int = convertOnSpeed(max((event.duration - event.position).toDouble(), 0.0).toInt(), curSpeedFB)
         if (currentPosition == Episode.INVALID_TIME || duration == Episode.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        showTimeLeft = UserPreferences.shouldShowRemainingTime()
+        showTimeLeft = UserPreferences.shouldShowRemainingTime
         txtvLengtTexth = if (showTimeLeft) (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
         else DurationConverter.getDurationStringLong(duration)
         sliderValue = event.position.toFloat()

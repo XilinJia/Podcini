@@ -1,11 +1,11 @@
-package ac.mdiq.podcini.net.sync.gpoddernet.model
+package ac.mdiq.podcini.net.sync.model
 
-import ac.mdiq.podcini.net.sync.model.UploadChangesResponse
 import org.json.JSONException
 
 /**
  * Object returned by [GpodnetService] in uploadChanges method.
  */
+
 /**
  * URLs that should be updated. The key of the map is the original URL, the value of the map
  * is the sanitized URL.

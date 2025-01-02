@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.DurationConverter
@@ -166,7 +167,7 @@ fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldVa
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = { onDismissRequest() }) { Text("Cancel") }
+                    TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) }
                     TextButton(onClick = {
                         onSave(textState.text)
                         onDismissRequest()
@@ -218,7 +219,7 @@ fun SimpleSwitchDialog(title: String, text: String, onDismissRequest: ()->Unit, 
                 onDismissRequest()
             }) { Text(text = "OK") }
         },
-        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+        dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
     )
 }
 
@@ -251,7 +252,7 @@ fun TitleSummarySwitchPrefRow(titleRes: Int, summaryRes: Int, prefName: String, 
             Text(stringResource(titleRes), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
             Text(stringResource(summaryRes), color = textColor, style = MaterialTheme.typography.bodySmall)
         }
-        var isChecked by remember { mutableStateOf(appPrefs.getBoolean(prefName, default)) }
+        var isChecked by remember { mutableStateOf(getPref(prefName, default)) }
         Switch(checked = isChecked, onCheckedChange = {
             isChecked = it
             appPrefs.edit().putBoolean(prefName, it).apply() })
@@ -271,9 +272,9 @@ fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boole
                 TextButton(onClick = {
                     onConfirm()
                     showDialog.value = false
-                }) { Text("Confirm") }
+                }) { Text(stringResource(R.string.confirm_label)) }
             },
-            dismissButton = { if (cancellable) TextButton(onClick = { showDialog.value = false }) { Text("Cancel") } }
+            dismissButton = { if (cancellable) TextButton(onClick = { showDialog.value = false }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 }

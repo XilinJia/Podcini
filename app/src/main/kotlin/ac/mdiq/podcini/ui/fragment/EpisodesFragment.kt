@@ -1,9 +1,12 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -15,6 +18,7 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
+import ac.mdiq.podcini.storage.utils.StorageUtils.customMediaUriString
 import ac.mdiq.podcini.ui.actions.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
@@ -28,6 +32,7 @@ import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -47,6 +52,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -89,19 +95,19 @@ class EpisodesFragment : Fragment() {
     private val showClearHistoryDialog = mutableStateOf(false)
 
     private var episodesSortOrder: EpisodeSortOrder
-        get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(UserPreferences.Prefs.prefEpisodesSort.name, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
+        get() = EpisodeSortOrder.fromCodeString(getPref(UserPreferences.Prefs.prefEpisodesSort, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
         set(s) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodesSort.name, "" + s.code).apply()
+            putPref(UserPreferences.Prefs.prefEpisodesSort, "" + s.code)
         }
     private var prefFilterEpisodes: String
-        get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodesFilter.name, "")?:""
+        get() = getPref(UserPreferences.Prefs.prefEpisodesFilter, "")
         set(filter) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodesFilter.name, filter).apply()
+            putPref(UserPreferences.Prefs.prefEpisodesFilter, filter)
         }
     private var prefFilterDownloads: String
-        get() = appPrefs.getString(UserPreferences.Prefs.prefDownloadsFilter.name, EpisodeFilter.States.downloaded.name) ?: EpisodeFilter.States.downloaded.name
+        get() = getPref(UserPreferences.Prefs.prefDownloadsFilter, EpisodeFilter.States.downloaded.name)
         set(filter) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefDownloadsFilter.name, filter).apply()
+            putPref(UserPreferences.Prefs.prefDownloadsFilter, filter)
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -389,18 +395,36 @@ class EpisodesFragment : Fragment() {
     private val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
     private val filesRemoved: MutableList<String> = mutableListOf()
     private fun reconcile() {
-        fun traverse(srcFile: File, srcRootDir: File) {
-            val relativePath = srcFile.absolutePath.substring(srcRootDir.absolutePath.length+1)
+        fun traverse(srcFile: File) {
+            val filename = srcFile.name
             if (srcFile.isDirectory) {
-                Logd(TAG, "traverse folder title: $relativePath")
+                Logd(TAG, "traverse folder title: $filename")
                 val dirFiles = srcFile.listFiles()
-                dirFiles?.forEach { file -> traverse(file, srcFile) }
+                dirFiles?.forEach { file -> traverse(file) }
             } else {
                 Logd(TAG, "traverse: $srcFile")
-                val episode = nameEpisodeMap.remove(relativePath)
+                val episode = nameEpisodeMap.remove(filename)
                 if (episode == null) {
-                    Logd(TAG, "traverse: error: episode not exist in map: $relativePath")
-                    filesRemoved.add(relativePath)
+                    Logd(TAG, "traverse: error: episode not exist in map: $filename")
+                    filesRemoved.add(filename)
+                    srcFile.delete()
+                    return
+                }
+                Logd(TAG, "traverse found episode: ${episode.title}")
+            }
+        }
+        fun traverse(srcFile: DocumentFile) {
+            val filename = srcFile.name
+            if (srcFile.isDirectory) {
+                Logd(TAG, "traverse folder title: $filename")
+                val dirFiles = srcFile.listFiles()
+                dirFiles.forEach { file -> traverse(file) }
+            } else {
+                Logd(TAG, "traverse: $srcFile")
+                val episode = nameEpisodeMap.remove(filename)
+                if (episode == null) {
+                    Logd(TAG, "traverse: error: episode not exist in map: $filename")
+                    if (filename != null) filesRemoved.add(filename)
                     srcFile.delete()
                     return
                 }
@@ -418,8 +442,14 @@ class EpisodesFragment : Fragment() {
                 Logd(TAG, "reconcile: fileUrl: $fileUrl")
                 nameEpisodeMap[fileUrl] = e
             }
-            val mediaDir = requireContext().getExternalFilesDir("media") ?: return@runOnIOScope
-            mediaDir.listFiles()?.forEach { file -> traverse(file, mediaDir) }
+            if (customMediaUriString.isBlank()) {
+                val mediaDir = requireContext().getExternalFilesDir("media") ?: return@runOnIOScope
+                mediaDir.listFiles()?.forEach { file -> traverse(file) }
+            } else {
+                val customUri = Uri.parse(customMediaUriString)
+                val baseDir = DocumentFile.fromTreeUri(getAppContext(), customUri)
+                baseDir?.listFiles()?.forEach { file -> traverse(file) }
+            }
             Logd(TAG, "reconcile: end, episodes missing file: ${nameEpisodeMap.size}")
             if (nameEpisodeMap.isNotEmpty()) for (e in nameEpisodeMap.values) upsertBlk(e) { it.setfileUrlOrNull(null) }
             loadItems()

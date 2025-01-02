@@ -13,6 +13,7 @@ import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.ui.utils.NotificationUtils
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 
 import java.io.File
@@ -24,6 +25,7 @@ object ClientConfigurator {
     @Synchronized
     fun initialize(context: Context) {
         if (initialized) return
+        Logd("ClientConfigurator", "initialize")
 
         UserPreferences.init(context)
         UsageStatistics.init(context)

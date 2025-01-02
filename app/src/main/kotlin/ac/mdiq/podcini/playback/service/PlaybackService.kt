@@ -27,8 +27,10 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefAdaptiveProgressUpdate
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnNotification
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
@@ -274,8 +276,8 @@ class PlaybackService : MediaLibraryService() {
         list
     }
 
-    val shouldSkipKeepEpisode by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true) }
-    val shouldKeepSuperEpisode by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true) }
+    val shouldSkipKeepEpisode by lazy { getPref(UserPreferences.Prefs.prefSkipKeepsEpisode, true) }
+    val shouldKeepSuperEpisode by lazy { getPref(UserPreferences.Prefs.prefFavoriteKeepsEpisode, true) }
 
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
@@ -1503,26 +1505,26 @@ class PlaybackService : MediaLibraryService() {
         /**
          * @return `true` if notifications are persistent, `false`  otherwise
          */
-//        val isPersistNotify: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true) }
+//        val isPersistNotify: Boolean by lazy { getPref(UserPreferences.Prefs.prefPersistNotify.name, true) }
 
-        val isPauseOnHeadsetDisconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true) }
+        val isPauseOnHeadsetDisconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect, true) }
 
-        val isUnpauseOnHeadsetReconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, true) }
+        val isUnpauseOnHeadsetReconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect, true) }
 
-        val isUnpauseOnBluetoothReconnect: Boolean by lazy { appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, false) }
+        val isUnpauseOnBluetoothReconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect, false) }
 
-        val hardwareForwardButton: Int by lazy { appPrefs.getString(UserPreferences.Prefs.prefHardwareForwardButton.name, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
+        val hardwareForwardButton: Int by lazy { getPref(UserPreferences.Prefs.prefHardwareForwardButton, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
 
-        val hardwarePreviousButton: Int by lazy { appPrefs.getString(UserPreferences.Prefs.prefHardwarePreviousButton.name, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
+        val hardwarePreviousButton: Int by lazy { getPref(UserPreferences.Prefs.prefHardwarePreviousButton, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
 
         /**
          * Set to true to enable Continuous Playback
          */
         @set:VisibleForTesting
         var isFollowQueue: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefFollowQueue.name, true)
+            get() = getPref(UserPreferences.Prefs.prefFollowQueue, true)
             set(value) {
-                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFollowQueue.name, value).apply()
+                putPref(UserPreferences.Prefs.prefFollowQueue, value)
             }
 
         val curPositionFB: Int

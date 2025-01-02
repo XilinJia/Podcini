@@ -6,6 +6,8 @@ import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -38,9 +40,9 @@ object Queues {
      * @see .queueKeepSortedOrder
      */
     var isQueueKeepSorted: Boolean
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, false)
+        get() = getPref(UserPreferences.Prefs.prefQueueKeepSorted, false)
         set(keepSorted) {
-            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, keepSorted).apply()
+            putPref(UserPreferences.Prefs.prefQueueKeepSorted, keepSorted)
         }
 
     /**
@@ -51,17 +53,17 @@ object Queues {
      */
     var queueKeepSortedOrder: EpisodeSortOrder?
         get() {
-            val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")!!
+            val sortOrderStr = getPref(UserPreferences.Prefs.prefQueueKeepSortedOrder, "use-default")
             return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
         }
         set(sortOrder) {
             if (sortOrder == null) return
-            appPrefs.edit().putString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, sortOrder.name).apply()
+            putPref(UserPreferences.Prefs.prefQueueKeepSortedOrder, sortOrder.name)
         }
 
     var enqueueLocation: EnqueueLocation
         get() {
-            val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)!!
+            val valStr = getPref(UserPreferences.Prefs.prefEnqueueLocation, EnqueueLocation.BACK.name)
             try { return EnqueueLocation.valueOf(valStr)
             } catch (t: Throwable) {
                 // should never happen but just in case
@@ -70,7 +72,7 @@ object Queues {
             }
         }
         set(location) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
+            putPref(UserPreferences.Prefs.prefEnqueueLocation, location.name)
         }
     
     fun getInQueueEpisodeIds(): Set<Long> {
@@ -123,7 +125,6 @@ object Queues {
                 }
                 for (event in events) EventFlow.postEvent(event)
                 setPlayState(PlayState.QUEUE.code, false, *setInQueue.toTypedArray())
-//                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
         }
     }
@@ -147,7 +148,6 @@ object Queues {
 
         if (episode.playState < PlayState.QUEUE.code) setPlayState(PlayState.QUEUE.code, false, episode)
         if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
-//                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
 
     /**

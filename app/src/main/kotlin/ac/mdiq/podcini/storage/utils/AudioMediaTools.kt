@@ -6,7 +6,7 @@ import java.nio.ByteOrder
 
 // converted to Kotlin from the java file: https://gist.github.com/DrustZ/d3d3fc8fcc1067433db4dd3079f8d187
 object AudioMediaTools {
-
+    // TODO: need to accept uri rather than path
     fun mergeAudios(selection: Array<String>, outpath: String?, callback: OperationCallbacks?) {
         var RECORDER_SAMPLERATE = 0
         try {
@@ -19,7 +19,6 @@ object AudioMediaTools {
             }
             for (i in selection.indices) {
                 mergeFilesStream[i] = DataInputStream(BufferedInputStream(FileInputStream(selection[i])))
-
                 if (i == selection.size - 1) {
                     mergeFilesStream[i]!!.skip(24)
                     val sampleRt = ByteArray(4)
@@ -27,9 +26,7 @@ object AudioMediaTools {
                     val bbInt = ByteBuffer.wrap(sampleRt).order(ByteOrder.LITTLE_ENDIAN)
                     RECORDER_SAMPLERATE = bbInt.getInt()
                     mergeFilesStream[i]!!.skip(16)
-                } else {
-                    mergeFilesStream[i]!!.skip(44)
-                }
+                } else mergeFilesStream[i]!!.skip(44)
             }
 
             for (b in selection.indices) {
@@ -38,9 +35,8 @@ object AudioMediaTools {
                     try {
                         dataBytes[0] = mergeFilesStream[b]!!.readByte()
                         dataBytes[1] = mergeFilesStream[b]!!.readByte()
-                    } catch (e: EOFException) {
-                        amplifyOutputStream.close()
-                    }
+                    } catch (e: EOFException) { amplifyOutputStream.close() }
+
                     val dataInShort = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN).getShort()
                     val dataInFloat = dataInShort.toFloat() / 37268.0f
 
@@ -52,9 +48,7 @@ object AudioMediaTools {
                 }
             }
             amplifyOutputStream.close()
-            for (i in selection.indices) {
-                mergeFilesStream[i]!!.close()
-            }
+            for (i in selection.indices) mergeFilesStream[i]!!.close()
         } catch (e: FileNotFoundException) {
             callback?.onAudioOperationError(e)
             e.printStackTrace()
@@ -208,11 +202,8 @@ object AudioMediaTools {
                     remain -= read
                 }
             }
-        } catch (e: IOException) {
-            throw e
-        } finally {
-            fis.close()
-        }
+        } catch (e: IOException) { throw e
+        } finally { fis.close() }
         return bytes
     }
 
@@ -232,9 +223,7 @@ object AudioMediaTools {
 
     @Throws(IOException::class)
     private fun writeString(output: DataOutputStream, value: String) {
-        for (element in value) {
-            output.write(element.code)
-        }
+        for (element in value) output.write(element.code)
     }
 
     interface OperationCallbacks {

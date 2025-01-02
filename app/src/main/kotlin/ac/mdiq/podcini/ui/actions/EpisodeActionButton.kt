@@ -21,7 +21,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
-import ac.mdiq.podcini.storage.utils.FilesUtils
+import ac.mdiq.podcini.storage.utils.StorageUtils
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.util.EventFlow
@@ -31,6 +31,7 @@ import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -210,7 +211,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     override fun getDrawable(): Int = R.drawable.ic_play_24dp
 
     override fun onClick(context: Context) {
-        Logd("PlayActionButton", "onClick called")
+        Logd("PlayActionButton", "onClick called file: ${item.fileUrl}")
         if (!item.fileExists()) {
             Toast.makeText(context, R.string.error_file_not_found, Toast.LENGTH_LONG).show()
             notifyMissingEpisodeMediaFile(context, item)
@@ -296,10 +297,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         else {
             val builder = MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.confirm_mobile_download_dialog_title)
-                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int ->
-                    DownloadServiceInterface.get()?.downloadNow(context, item, false) }
-                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time) { _: DialogInterface?, _: Int ->
-                    DownloadServiceInterface.get()?.downloadNow(context, item, true) }
+                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, false) }
+                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, true) }
                 .setNegativeButton(R.string.cancel_label, null)
             if (NetworkUtils.isNetworkRestricted && NetworkUtils.isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
             else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
@@ -410,7 +409,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                 }
 
                 var j = 0
-                val mediaFile = File(FilesUtils.getMediafilePath(item), FilesUtils.getMediafilename(item))
+                val mediaFile = File(item.getMediafilePath(), item.getMediafilename())
                 FeedEpisodesFragment.tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {
                         Logd(TAG, "onStart $utteranceId")
@@ -472,7 +471,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     if (item_ != null) {
                         item = upsertBlk(item_) {
                             it.fillMedia(null, 0, "audio/*")
-                            it.fileUrl = mFilename
+                            it.fileUrl = Uri.fromFile(mediaFile).toString()
                             it.duration = durationMs
                             it.setIsDownloaded()
                             it.setTranscriptIfLonger(readerText)

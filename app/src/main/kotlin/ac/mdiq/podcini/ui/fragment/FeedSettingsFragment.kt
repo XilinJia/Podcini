@@ -134,7 +134,7 @@ class FeedSettingsFragment : Fragment() {
                                     Spacer(modifier = Modifier.width(20.dp))
                                     Text(text = stringResource(R.string.pref_feed_audio_type), style = CustomTextStyles.titleCustom, color = textColor,
                                         modifier = Modifier.clickable(onClick = {
-                                            selectedOption = feed!!.audioTypeSetting?.tag ?: Feed.AudioType.SPEECH.tag
+                                            selectedOption = feed!!.audioTypeSetting.tag
                                             showDialog = true
                                         })
                                     )
@@ -187,7 +187,7 @@ class FeedSettingsFragment : Fragment() {
                                         Spacer(modifier = Modifier.width(20.dp))
                                         Text(text = stringResource(R.string.pref_feed_audio_quality), style = CustomTextStyles.titleCustom, color = textColor,
                                             modifier = Modifier.clickable(onClick = {
-                                                selectedOption = feed!!.audioQualitySetting?.tag ?: Feed.AVQuality.GLOBAL.tag
+                                                selectedOption = feed!!.audioQualitySetting.tag
                                                 showDialog = true
                                             })
                                         )
@@ -205,7 +205,7 @@ class FeedSettingsFragment : Fragment() {
                                             Spacer(modifier = Modifier.width(20.dp))
                                             Text(text = stringResource(R.string.pref_feed_video_quality), style = CustomTextStyles.titleCustom, color = textColor,
                                                 modifier = Modifier.clickable(onClick = {
-                                                    selectedOption = feed!!.videoQualitySetting?.tag ?: Feed.AVQuality.GLOBAL.tag
+                                                    selectedOption = feed!!.videoQualitySetting.tag
                                                     showDialog = true
                                                 })
                                             )
@@ -540,28 +540,68 @@ class FeedSettingsFragment : Fragment() {
     @Composable
     fun AutoDownloadPolicyDialog(onDismissRequest: () -> Unit) {
         val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.autoDLPolicy ?: AutoDownloadPolicy.ONLY_NEW) }
-        Dialog(onDismissRequest = { onDismissRequest() }) {
-            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
+            title = { Text(stringResource(R.string.pref_custom_media_dir_title), style = CustomTextStyles.titleCustom) },
+            text = {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     AutoDownloadPolicy.entries.forEach { item ->
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = (item == selectedOption),
-                                onCheckedChange = {
-                                    Logd(TAG, "row clicked: $item $selectedOption")
-                                    if (item != selectedOption) {
-                                        onOptionSelected(item)
-                                        feed = upsertBlk(feed!!) { it.autoDLPolicy = item }
-//                                                getAutoDeletePolicy()
-                                        onDismissRequest()
-                                    }
-                                }
-                            )
+                            Checkbox(checked = (item == selectedOption), onCheckedChange = { onOptionSelected(item) })
                             Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                         }
+                        if (selectedOption == AutoDownloadPolicy.ONLY_NEW && item == selectedOption)
+                            Row(Modifier.fillMaxWidth().padding(start = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                                var replaceChecked by remember { mutableStateOf(item.replace) }
+                                Checkbox(checked = replaceChecked, onCheckedChange = {
+                                    replaceChecked = it
+                                    item.replace = it
+                                })
+                                Text(text = stringResource(R.string.replace), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.padding(start = 16.dp))
+                            }
                     }
                 }
-            }
-        }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    Logd(TAG, "autoDLPolicy: ${selectedOption.name} ${selectedOption.replace}")
+                    feed = upsertBlk(feed!!) { it.autoDLPolicy = selectedOption }
+                    onDismissRequest()
+                }) { Text(stringResource(R.string.confirm_label)) }
+            },
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
+        )
+
+
+//        Dialog(onDismissRequest = { onDismissRequest() }) {
+//            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
+//                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+//                    AutoDownloadPolicy.entries.forEach { item ->
+//                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+//                            Checkbox(checked = (item == selectedOption),
+//                                onCheckedChange = {
+//                                    Logd(TAG, "row clicked: $item $selectedOption")
+//                                    if (item != selectedOption) {
+//                                        onOptionSelected(item)
+//                                        feed = upsertBlk(feed!!) { it.autoDLPolicy = item }
+//                                        onDismissRequest()
+//                                    }
+//                                }
+//                            )
+//                            Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
+//                        }
+//                        if (item == AutoDownloadPolicy.ONLY_NEW) Row(Modifier.fillMaxWidth().padding(start = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+//                            var replaceChecked by remember { mutableStateOf(item.replace) }
+//                            Checkbox(checked = replaceChecked, onCheckedChange = {
+//                                replaceChecked = it
+//                                item.replace = it
+//                                feed = upsertBlk(feed!!) { it.autoDLPolicy = item }
+//                            })
+//                            Text(text = stringResource(R.string.replace), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.padding(start = 16.dp))
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     @Composable
@@ -577,7 +617,7 @@ class FeedSettingsFragment : Fragment() {
                             feed = upsertBlk(feed!!) { it.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }
                             onDismiss()
                         }
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -727,7 +767,7 @@ class FeedSettingsFragment : Fragment() {
                             Thread({ runOnce(requireContext(), feed) }, "RefreshAfterCredentialChange").start()
                             onDismiss()
                         }
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -752,7 +792,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             onDismiss()
                         }
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -852,9 +892,9 @@ class FeedSettingsFragment : Fragment() {
                                 onConfirmed(FeedAutoDownloadFilter(includeFilter, filter.excludeFilterRaw, filter.minimalDurationFilter, filter.markExcludedPlayed))
                             }
                             onDismiss()
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                         Spacer(Modifier.weight(1f))
-                        Button(onClick = { onDismiss() }) { Text("Cancel") }
+                        Button(onClick = { onDismiss() }) { Text(stringResource(R.string.cancel_label)) }
                     }
                 }
             }

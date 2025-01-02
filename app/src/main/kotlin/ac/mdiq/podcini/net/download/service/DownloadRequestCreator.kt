@@ -3,12 +3,9 @@ package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.findUnusedFile
-import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
-import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
+import ac.mdiq.podcini.storage.utils.StorageUtils.feedfilePath
 import ac.mdiq.podcini.util.Logd
+import android.util.Log
 import java.io.File
 
 /**
@@ -19,7 +16,7 @@ object DownloadRequestCreator {
 
     @JvmStatic
     fun create(feed: Feed): DownloadRequest.Builder {
-        val dest = File(feedfilePath, getFeedfileName(feed))
+        val dest = File(feedfilePath, feed.getFeedfileName())
         if (dest.exists()) dest.delete()
         Logd(TAG, "Requesting download feed from url " + feed.downloadUrl)
         val username = feed.username
@@ -30,15 +27,14 @@ object DownloadRequestCreator {
     @JvmStatic
     fun create(media: Episode): DownloadRequest.Builder {
         Logd(TAG, "create: ${media.fileUrl} ${media.title}")
-        val pdFile = if (media.fileUrl != null) File(media.fileUrl!!) else null
-        val partiallyDownloadedFileExists = pdFile?.exists() ?: false
-        var dest: File
-        dest = if (partiallyDownloadedFileExists) pdFile!! else File(getMediafilePath(media), getMediafilename(media))
-        if (dest.exists() && !partiallyDownloadedFileExists) dest = findUnusedFile(dest)!!
-        Logd(TAG, "Requesting download media from url " + media.downloadUrl)
+        val destUriString = media.getMediaFileUriString() ?: ""
+        Logd(TAG, "destUriString: $destUriString")
+        if (destUriString.isEmpty()) {
+            Log.e(TAG, "destUriString is empty")
+        }
         val feed = media.feed
         val username = feed?.username
         val password = feed?.password
-        return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)
+        return DownloadRequest.Builder(destUriString, media).withAuthentication(username, password)
     }
 }

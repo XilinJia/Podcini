@@ -65,14 +65,12 @@ class HtmlToPlainText {
 
         // appends text to the string builder with a simple word wrap method
         private fun append(text: String) {
-            if (text == " " && (accum.isEmpty() || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n")))
-                return  // don't accumulate long runs of empty spaces
+            // don't accumulate long runs of empty spaces
+            if (text == " " && (accum.isEmpty() || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n"))) return
             accum.append(text)
         }
 
-        override fun toString(): String {
-            return accum.toString()
-        }
+        override fun toString(): String = accum.toString()
     }
 
     companion object {
@@ -93,7 +91,6 @@ class HtmlToPlainText {
                 }
                 str.isEmpty() -> str = ""
             }
-
             return str
         }
 

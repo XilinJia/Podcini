@@ -3,6 +3,7 @@ package ac.mdiq.podcini
 import ac.mdiq.podcini.net.download.VistaDownloaderImpl
 import ac.mdiq.podcini.preferences.PreferenceUpgrader
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.receiver.SPAReceiver
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.ui.activity.SplashActivity
@@ -81,20 +82,18 @@ class PodciniApp : Application() {
      * The receiving single purpose apps will then send their feeds back to Podcini via an
      * ACTION_SP_APPS_QUERY_FEEDS_RESPONSE intent.
      * This intent will only be sent once.
-     *
      * @return True if an intent was sent, false otherwise (for example if the intent has already been
      * sent before.
      */
     @Synchronized
     fun sendSPAppsQueryFeedsIntent(context: Context): Boolean {
-//        assert(context != null) { "context = null" }
         val appContext = context.applicationContext
         if (appContext == null) {
             Log.wtf("App", "Unable to get application context")
             return false
         }
 //        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
-        if (!appPrefs.getBoolean(PREF_HAS_QUERIED_SP_APPS, false)) {
+        if (!getPref(PREF_HAS_QUERIED_SP_APPS, false)) {
             appContext.sendBroadcast(Intent(SPAReceiver.ACTION_SP_APPS_QUERY_FEEDS))
             Logd("App", "Sending SP_APPS_QUERY_FEEDS intent")
             val editor = appPrefs.edit()
@@ -116,6 +115,10 @@ class PodciniApp : Application() {
 
         fun getInstance(): PodciniApp {
             return singleton
+        }
+
+        fun getAppContext(): Context {
+            return singleton.applicationContext
         }
 
         @JvmStatic

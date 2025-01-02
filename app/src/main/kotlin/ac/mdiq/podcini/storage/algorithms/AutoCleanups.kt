@@ -3,7 +3,9 @@ package ac.mdiq.podcini.storage.algorithms
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.preferences.screens.EpisodeCleanupOptions
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
@@ -25,9 +27,9 @@ object AutoCleanups {
     private val TAG: String = AutoCleanups::class.simpleName ?: "Anonymous"
 
     private var episodeCleanupValue: Int
-        get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, EpisodeCleanupOptions.Never.num.toString())!!.toIntOrNull() ?: EpisodeCleanupOptions.Never.num
+        get() = getPref(UserPreferences.Prefs.prefEpisodeCleanup, EpisodeCleanupOptions.Never.num.toString()).toIntOrNull() ?: EpisodeCleanupOptions.Never.num
         set(episodeCleanupValue) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCleanup.name, episodeCleanupValue.toString()).apply()
+            putPref(UserPreferences.Prefs.prefEpisodeCleanup, episodeCleanupValue.toString())
         }
 
     /**

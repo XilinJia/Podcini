@@ -10,6 +10,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
@@ -21,6 +22,7 @@ import ac.mdiq.podcini.storage.model.Episode
 
 import ac.mdiq.podcini.storage.model.Episode.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.storage.utils.ChapterUtils
+import ac.mdiq.podcini.storage.utils.StorageUtils.ensureMediaFileExists
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
@@ -32,6 +34,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
@@ -159,24 +162,29 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
         }
         private fun performDownload(media: Episode, request: DownloadRequest): Result {
-            Logd(TAG, "starting performDownload")
+            Logd(TAG, "starting performDownload: ${request.destination}")
             if (request.destination == null) {
                 Log.e(TAG, "performDownload request.destination is null")
                 return Result.failure()
             }
-            val dest = File(request.destination)
-            if (!dest.exists()) {
-                try { dest.createNewFile() } catch (e: IOException) { Log.e(TAG, "performDownload Unable to create file") }
-            }
-            if (dest.exists()) {
-                try {
-                    var episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
-                    if (episode != null) {
-                        episode = upsertBlk(episode) { it.setfileUrlOrNull(request.destination) }
-                        EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
-                    } else Log.e(TAG, "performDownload media.episode is null")
-                } catch (e: Exception) { Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message) }
-            }
+
+            // TODO: need to save file name in episode
+            ensureMediaFileExists(Uri.parse(request.destination))
+
+//            val dest = File(request.destination)
+//            if (!dest.exists()) {
+//                try { dest.createNewFile() } catch (e: IOException) { Log.e(TAG, "performDownload Unable to create file") }
+//            }
+//            if (dest.exists()) {
+//                try {
+//                    var episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
+//                    if (episode != null) {
+//                        episode = upsertBlk(episode) { it.setfileUrlOrNull(request.destination) }
+//                        EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
+//                    } else Log.e(TAG, "performDownload media.episode is null")
+//                } catch (e: Exception) { Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message) }
+//            }
+
             downloader = DefaultDownloaderFactory().create(request)
             if (downloader == null) {
                 Log.e(TAG, "performDownload Unable to create downloader")
@@ -285,7 +293,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         }
 
         class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult, private val request: DownloadRequest) : Runnable {
-             override fun run() {
+            override fun run() {
                 var item = realm.query(Episode::class).query("id == ${request.feedfileId}").first().find()
                 if (item == null) {
                     Log.e(TAG, "Could not find downloaded episode object in database")
@@ -295,14 +303,18 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 item = upsertBlk(item) {
                     it.setIsDownloaded()
                     it.setfileUrlOrNull(request.destination)
+                    Logd(TAG, "run() set request.destination: ${request.destination}")
                     if (request.destination != null) it.size = File(request.destination).length()
+                    Logd(TAG, "run() set size: ${it.size}")
                     it.checkEmbeddedPicture(false) // enforce check
                     if (it.chapters.isEmpty()) it.setChapters(it.loadChaptersFromMediaFile(context))
+                    Logd(TAG, "run() set setChapters: ${it.chapters.size}")
                     if (it.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(it.podcastIndexChapterUrl!!, false)
+                    Logd(TAG, "run() loaded chapters: ${it.chapters.size}")
                     var durationStr: String? = null
                     try {
                         MediaMetadataRetrieverCompat().use { mmr ->
-                            mmr.setDataSource(it.fileUrl)
+                            mmr.setDataSource(context, Uri.parse(it.fileUrl))
                             durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                             if (durationStr != null) it.duration = (durationStr.toInt())
                         }
@@ -311,6 +323,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                         Log.e(TAG, "Get duration failed", e)
                         it.duration = (30000)
                     }
+                    Logd(TAG, "run() set duration: ${it.duration}")
                     it.disableAutoDownload()
                 }
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
@@ -347,7 +360,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.downloadUrl)
-            if (appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)) {
+            if (getPref(UserPreferences.Prefs.prefEnqueueDownloaded, true)) {
                 if (item.feed?.queue != null) runBlocking { Queues.addToQueueSync(item, item.feed?.queue) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }

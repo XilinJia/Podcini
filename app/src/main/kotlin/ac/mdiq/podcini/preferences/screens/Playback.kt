@@ -7,6 +7,8 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fallbackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.speedforwardSpeed
@@ -66,7 +68,7 @@ fun PlaybackPreferencesScreen() {
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
         Text(stringResource(R.string.interruptions), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        var prefUnpauseOnHeadsetReconnect by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true)) }
+        var prefUnpauseOnHeadsetReconnect by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect, true)) }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.pref_pauseOnHeadsetDisconnect_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -74,7 +76,7 @@ fun PlaybackPreferencesScreen() {
             }
             Switch(checked = prefUnpauseOnHeadsetReconnect, onCheckedChange = {
                 prefUnpauseOnHeadsetReconnect = it
-                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, it).apply()
+                putPref(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect, it)
             })
         }
         if (prefUnpauseOnHeadsetReconnect) {
@@ -182,11 +184,11 @@ fun PlaybackPreferencesScreen() {
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        appPrefs.edit().putString(UserPreferences.Prefs.prefHardwareForwardButton.name, tempFFSelectedOption.toString()).apply()
+                        putPref(UserPreferences.Prefs.prefHardwareForwardButton, tempFFSelectedOption.toString())
                         showHardwareForwardButtonOptions = false
                     }) { Text(text = "OK") }
                 },
-                dismissButton = { TextButton(onClick = { showHardwareForwardButtonOptions = false }) { Text(text = "Cancel") } }
+                dismissButton = { TextButton(onClick = { showHardwareForwardButtonOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
             )
         }
         var showHardwarePreviousButtonOptions by remember { mutableStateOf(false) }
@@ -207,11 +209,11 @@ fun PlaybackPreferencesScreen() {
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        appPrefs.edit().putString(UserPreferences.Prefs.prefHardwarePreviousButton.name, tempPRSelectedOption.toString()).apply()
+                        putPref(UserPreferences.Prefs.prefHardwarePreviousButton, tempPRSelectedOption.toString())
                         showHardwarePreviousButtonOptions = false
                     }) { Text(text = "OK") }
                 },
-                dismissButton = { TextButton(onClick = { showHardwarePreviousButtonOptions = false }) { Text(text = "Cancel") } }
+                dismissButton = { TextButton(onClick = { showHardwarePreviousButtonOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
             )
         }
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 5.dp))
@@ -236,11 +238,11 @@ fun PlaybackPreferencesScreen() {
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, tempLocationOption).apply()
+                        putPref(UserPreferences.Prefs.prefEnqueueLocation, tempLocationOption)
                         showEnqueueLocationOptions = false
                     }) { Text(text = "OK") }
                 },
-                dismissButton = { TextButton(onClick = { showEnqueueLocationOptions = false }) { Text(text = "Cancel") } }
+                dismissButton = { TextButton(onClick = { showEnqueueLocationOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
             )
         }
         TitleSummarySwitchPrefRow(R.string.pref_followQueue_title, R.string.pref_followQueue_sum, UserPreferences.Prefs.prefFollowQueue.name, true)

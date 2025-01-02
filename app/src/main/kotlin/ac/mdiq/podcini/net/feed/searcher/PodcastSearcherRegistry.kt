@@ -4,8 +4,6 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult.Companion.fromChannelInfoItem
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials
-import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.channel.ChannelInfoItem
@@ -33,7 +31,7 @@ object PodcastSearcherRegistry {
                 field = ArrayList()
                 field.add(SearcherInfo(CombinedSearcher(), 1.0f))
                 field.add(SearcherInfo(VistaGuidePodcastSearcher(), 1.0f))
-                field.add(SearcherInfo(GpodnetPodcastSearcher(), 0.0f))
+//                field.add(SearcherInfo(GpodnetPodcastSearcher(), 0.0f))
                 field.add(SearcherInfo(FyydPodcastSearcher(), 1.0f))
                 field.add(SearcherInfo(ItunesPodcastSearcher(), 1.0f))
                 field.add(SearcherInfo(PodcastIndexPodcastSearcher(), 1.0f))
@@ -161,24 +159,24 @@ class FyydPodcastSearcher : PodcastSearcher {
         get() = "fyyd"
 }
 
-class GpodnetPodcastSearcher : PodcastSearcher {
-    override suspend fun search(query: String): List<PodcastSearchResult> {
-        return try {
-            val service = GpodnetService(PodciniHttpClient.getHttpClient(),
-                SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID ?: "",
-                SynchronizationCredentials.username ?: "", SynchronizationCredentials.password ?: "")
-            val gpodnetPodcasts = withContext(Dispatchers.IO) { service.searchPodcasts(query, 0) }
-            val results: MutableList<PodcastSearchResult> = ArrayList()
-            for (podcast in gpodnetPodcasts) results.add(PodcastSearchResult.fromGpodder(podcast))
-            results
-        } catch (e: GpodnetService.GpodnetServiceException) {
-            e.printStackTrace()
-            throw e
-        }
-    }
-    override val name: String
-        get() = "Gpodder.net"
-}
+//class GpodnetPodcastSearcher : PodcastSearcher {
+//    override suspend fun search(query: String): List<PodcastSearchResult> {
+//        return try {
+//            val service = GpodnetService(PodciniHttpClient.getHttpClient(),
+//                SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID ?: "",
+//                SynchronizationCredentials.username ?: "", SynchronizationCredentials.password ?: "")
+//            val gpodnetPodcasts = withContext(Dispatchers.IO) { service.searchPodcasts(query, 0) }
+//            val results: MutableList<PodcastSearchResult> = ArrayList()
+//            for (podcast in gpodnetPodcasts) results.add(PodcastSearchResult.fromGpodder(podcast))
+//            results
+//        } catch (e: GpodnetService.GpodnetServiceException) {
+//            e.printStackTrace()
+//            throw e
+//        }
+//    }
+//    override val name: String
+//        get() = "Gpodder.net"
+//}
 
 class ItunesPodcastSearcher : PodcastSearcher {
     override suspend fun search(query: String): List<PodcastSearchResult> {

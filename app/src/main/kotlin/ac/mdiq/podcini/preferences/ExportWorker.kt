@@ -3,7 +3,7 @@ package ac.mdiq.podcini.preferences
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
+import ac.mdiq.podcini.storage.utils.StorageUtils.getDataFolder
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.net.Uri

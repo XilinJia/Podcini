@@ -10,6 +10,8 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.mediaBrowser
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
@@ -100,7 +102,7 @@ class QueuesFragment : Fragment() {
 
     private var showSwipeActionsDialog by mutableStateOf(false)
 
-    private var isQueueLocked by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, true))
+    private var isQueueLocked by mutableStateOf(getPref(UserPreferences.Prefs.prefQueueLocked, true))
 
     private var queueNames = mutableStateListOf<String>()
     private val spinnerTexts = mutableStateListOf<String>()
@@ -471,6 +473,7 @@ class QueuesFragment : Fragment() {
             },
             actions = {
                 var binIconRes by remember { mutableIntStateOf( if (showBin) R.drawable.playlist_play else R.drawable.ic_history) }
+                var feedsIconRes by remember { mutableIntStateOf( if (showFeeds) R.drawable.playlist_play else R.drawable.baseline_dynamic_feed_24) }
                 IconButton(onClick = {
                     showBin = !showBin
                     showSpinner = !showBin
@@ -479,8 +482,7 @@ class QueuesFragment : Fragment() {
                     binIconRes = if (showBin) R.drawable.playlist_play else R.drawable.ic_history
                     loadCurQueue(false)
                 }) { Icon(imageVector = ImageVector.vectorResource(binIconRes), contentDescription = "bin") }
-                IconButton(onClick = { showFeeds = !showFeeds
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.baseline_dynamic_feed_24), contentDescription = "feeds") }
+                IconButton(onClick = { showFeeds = !showFeeds }) { Icon(imageVector = ImageVector.vectorResource(feedsIconRes), contentDescription = "feeds") }
                 if (!showBin) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
@@ -546,7 +548,7 @@ class QueuesFragment : Fragment() {
                                 spinnerTexts[index_] = newName + " : " + curQueue.episodeIds.size
                                 onDismiss()
                             }
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                     }
                 }
             }
@@ -574,7 +576,7 @@ class QueuesFragment : Fragment() {
                                 spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
                                 onDismiss()
                             }
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                     }
                 }
             }
@@ -609,13 +611,13 @@ class QueuesFragment : Fragment() {
                     onDismiss()
                 }) { Text(stringResource(R.string.lock_queue)) }
             },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
     private fun setQueueLock(locked: Boolean) {
         isQueueLocked = locked
-        appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
+        putPref(UserPreferences.Prefs.prefQueueLocked, locked)
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         if (queueItems.isEmpty()) {
             if (locked) (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
@@ -634,12 +636,12 @@ class QueuesFragment : Fragment() {
             var timeLeft: Long = 0
             for (item in queueItems) {
                 var playbackSpeed = 1f
-                if (UserPreferences.timeRespectsSpeed()) playbackSpeed = getCurrentPlaybackSpeed(item)
+                if (UserPreferences.timeRespectsSpeed) playbackSpeed = getCurrentPlaybackSpeed(item)
                 val itemTimeLeft: Long = (item.duration - item.position).toLong()
                 timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
             }
             infoText += " • "
-            infoText += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
+            infoText += DurationConverter.getDurationStringLocalized(timeLeft)
         }
         infoBarText.value = "$infoText $infoTextUpdate"
     }

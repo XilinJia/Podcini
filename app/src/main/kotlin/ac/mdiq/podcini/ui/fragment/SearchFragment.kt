@@ -348,7 +348,7 @@ class SearchFragment : Fragment() {
                         Row(Modifier.padding(top = 5.dp)) {
                             val measureString = remember {
                                 NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
-                                        DurationConverter.durationInHours(requireActivity(), feed.totleDuration / 1000)
+                                        DurationConverter.durationInHours(feed.totleDuration / 1000)
                             }
                             Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             Spacer(modifier = Modifier.weight(1f))

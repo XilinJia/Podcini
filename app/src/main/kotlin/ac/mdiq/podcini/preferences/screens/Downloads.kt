@@ -1,27 +1,41 @@
 package ac.mdiq.podcini.preferences.screens
 
+import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
+import ac.mdiq.podcini.preferences.MediaFilesTransporter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.storage.model.ProxyConfig
+import ac.mdiq.podcini.storage.utils.StorageUtils.createNoMediaFile
+import ac.mdiq.podcini.storage.utils.StorageUtils.deleteDirectoryRecursively
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity.Screens
+import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
 import ac.mdiq.podcini.ui.compose.TitleSummarySwitchPrefRow
+import android.app.Activity.RESULT_OK
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.util.Patterns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -35,6 +49,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.NavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +104,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
         var message by remember { mutableStateOf("") }
         var messageColor by remember { mutableStateOf(textColor) }
         var showOKButton by remember { mutableStateOf(false) }
-        var OKbuttonTextRes by remember { mutableIntStateOf(R.string.proxy_test_label) }
+        var okButtonTextRes by remember { mutableIntStateOf(R.string.proxy_test_label) }
 
         fun setProxyConfig() {
             val typeEnum = Proxy.Type.valueOf(type)
@@ -102,10 +118,10 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
         fun setTestRequired(required: Boolean) {
             if (required) {
                 testSuccessful = false
-                OKbuttonTextRes = R.string.proxy_test_label
+                okButtonTextRes = R.string.proxy_test_label
             } else {
                 testSuccessful = true
-                OKbuttonTextRes = android.R.string.ok
+                okButtonTextRes = android.R.string.ok
             }
         }
         fun checkHost(): Boolean {
@@ -230,14 +246,56 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                     setProxyConfig()
                     reinit()
                     onDismissRequest()
-                }) { Text(stringResource(OKbuttonTextRes)) }
+                }) { Text(stringResource(okButtonTextRes)) }
             },
-            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
-    var blockAutoDeleteLocal by remember { mutableStateOf(true) }
+    var useCustomMediaDir by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefUseCustomMediaFolder, false)) }
+
+    val showImporSuccessDialog = remember { mutableStateOf(false) }
+    ComfirmDialog(titleRes = R.string.successful_import_label, message = stringResource(R.string.import_ok), showDialog = showImporSuccessDialog, cancellable = false) { forceRestart() }
+
     val textColor = MaterialTheme.colorScheme.onSurface
+
+    var showProgress by remember { mutableStateOf(false) }
+    if (showProgress) {
+        Dialog(onDismissRequest = { showProgress = false }) {
+            Surface(modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.TopCenter))
+                    Text("Loading...", color = textColor, modifier = Modifier.align(Alignment.BottomCenter))
+                }
+            }
+        }
+    }
+
+    var customMediaFolderUriString by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefCustomMediaUri, "")) }
+    val selectCustomMediaDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK) {
+            val uri: Uri? = it.data?.data
+            if (uri != null) {
+                showProgress = true
+                CoroutineScope(Dispatchers.IO).launch {
+                    val chosenDir = if (customMediaFolderUriString.isNotBlank()) DocumentFile.fromTreeUri(activity, Uri.parse(customMediaFolderUriString)) else null
+                    activity.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    val baseDir = DocumentFile.fromTreeUri(getAppContext(), uri) ?: return@launch
+                    val mediaDir = baseDir.createDirectory("Podcini.media") ?: return@launch
+                    MediaFilesTransporter("Podcini.media").exportToUri(mediaDir.uri, getAppContext(), move = true, useSubDir = false)
+                    customMediaFolderUriString = mediaDir.uri.toString()
+                    useCustomMediaDir = true
+                    putPref(UserPreferences.Prefs.prefUseCustomMediaFolder, true)
+                    putPref(UserPreferences.Prefs.prefCustomMediaUri, customMediaFolderUriString)
+                    if (chosenDir != null) deleteDirectoryRecursively(chosenDir)
+                    showProgress = false
+                    showImporSuccessDialog.value = true
+                }
+            }
+        }
+    }
+
+    var blockAutoDeleteLocal by remember { mutableStateOf(true) }
     val scrollState = rememberScrollState()
     var showProxyDialog by remember { mutableStateOf(false) }
     if (showProxyDialog) ProxyDialog {showProxyDialog = false }
@@ -247,7 +305,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.feed_refresh_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!) }
+                var interval by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoUpdateIntervall, "12")) }
                 var showIcon by remember { mutableStateOf(false) }
                 TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("(hours)") },
                     singleLine = true, modifier = Modifier.weight(0.5f),
@@ -261,22 +319,73 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                         if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                             modifier = Modifier.size(30.dp).padding(start = 10.dp).clickable(onClick = {
                                 if (interval.isEmpty()) interval = "0"
-                                appPrefs.edit().putString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, interval).apply()
+                                putPref(UserPreferences.Prefs.prefAutoUpdateIntervall, interval)
                                 showIcon = false
                                 restartUpdateAlarm(activity, true)
                             }))
                     })
             }
-            Text(stringResource(R.string.feed_refresh_sum), color = textColor)
+            Text(stringResource(R.string.feed_refresh_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
+        }
+        var showSetCustomFolderDialog by remember { mutableStateOf(false) }
+        if (showSetCustomFolderDialog) {
+            var sumTextRes = if (useCustomMediaDir) R.string.pref_custom_media_dir_sum1 else R.string.pref_custom_media_dir_sum
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showSetCustomFolderDialog = false },
+                title = { Text(stringResource(R.string.pref_custom_media_dir_title), style = CustomTextStyles.titleCustom) },
+                text = { Text(stringResource(sumTextRes), color = textColor, style = MaterialTheme.typography.bodySmall) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        intent.addCategory(Intent.CATEGORY_DEFAULT)
+                        selectCustomMediaDirLauncher.launch(intent)
+                        showSetCustomFolderDialog = false
+                    }) { Text(stringResource(R.string.confirm_label)) }
+                },
+                dismissButton = { TextButton(onClick = { showSetCustomFolderDialog = false }) { Text(stringResource(R.string.cancel_label)) } }
+            )
+        }
+        var showResetCustomFolderDialog by remember { mutableStateOf(false) }
+        if (showResetCustomFolderDialog) {
+            AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showResetCustomFolderDialog = false },
+                title = { Text(stringResource(R.string.pref_custom_media_dir_title), style = CustomTextStyles.titleCustom) },
+                text = { Text(stringResource(R.string.pref_custom_media_dir_sum2), color = textColor, style = MaterialTheme.typography.bodySmall) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showProgress = true
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val chosenDir = DocumentFile.fromTreeUri(activity, Uri.parse(customMediaFolderUriString)) ?: throw IOException("Destination directory is not valid")
+                            customMediaFolderUriString = ""
+                            useCustomMediaDir = false
+                            putPref(UserPreferences.Prefs.prefUseCustomMediaFolder, false)
+                            putPref(UserPreferences.Prefs.prefCustomMediaUri, "")
+                            MediaFilesTransporter("").importFromUri(chosenDir.uri, activity, move = true, verify = false)
+                            deleteDirectoryRecursively(chosenDir)
+//                            createNoMediaFile()
+                            showProgress = false
+                            showImporSuccessDialog.value = true
+                            showResetCustomFolderDialog = false
+                        }
+                    }) { Text(stringResource(R.string.reset)) }
+                },
+                dismissButton = { TextButton(onClick = { showResetCustomFolderDialog = false }) { Text(stringResource(R.string.cancel_label)) } }
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
+            Column(modifier = Modifier.weight(1f).clickable(onClick = { showSetCustomFolderDialog = true })) {
+                Text(stringResource(R.string.pref_custom_media_dir_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
+                Text(if (customMediaFolderUriString.isNotBlank()) customMediaFolderUriString else stringResource(R.string.pref_custom_media_dir_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
+            }
+            if (useCustomMediaDir) TextButton(onClick = { showResetCustomFolderDialog = true }) { Text(stringResource(R.string.reset)) }
         }
         TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) { navController.navigate(Screens.autodownload.tag) }
         TitleSummarySwitchPrefRow(R.string.pref_auto_delete_title, R.string.pref_auto_delete_sum, UserPreferences.Prefs.prefAutoDelete.name)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.pref_auto_local_delete_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.pref_auto_local_delete_sum), color = textColor)
+                Text(stringResource(R.string.pref_auto_local_delete_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
             }
-            var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefAutoDeleteLocal.name, false)) }
+            var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoDeleteLocal, false)) }
             Switch(checked = isChecked, onCheckedChange = {
                 isChecked = it
                 if (blockAutoDeleteLocal && it) {
@@ -284,7 +393,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                         .setMessage(R.string.pref_auto_local_delete_dialog_body)
                         .setPositiveButton(R.string.yes) { _: DialogInterface?, _: Int ->
                             blockAutoDeleteLocal = false
-                            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefAutoDeleteLocal.name, it).apply()
+                            putPref(UserPreferences.Prefs.prefAutoDeleteLocal, it)
 //                                                (findPreference<Preference>(Prefs.prefAutoDeleteLocal.name) as TwoStatePreference?)!!.isChecked = true
                             blockAutoDeleteLocal = true
                         }
@@ -323,11 +432,11 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, tempSelectedOptions).apply()
+                        putPref(UserPreferences.Prefs.prefMobileUpdateTypes, tempSelectedOptions)
                         showMeteredNetworkOptions = false
                     }) { Text(text = "OK") }
                 },
-                dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(text = "Cancel") } }
+                dismissButton = { TextButton(onClick = { showMeteredNetworkOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
             )
         }
         TitleSummaryActionColumn(R.string.pref_proxy_title, R.string.pref_proxy_sum) { showProxyDialog = true }
@@ -346,22 +455,22 @@ fun AutoDownloadPreferencesScreen() {
     val textColor = MaterialTheme.colorScheme.onSurface
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-        var isEnabled by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, false)) }
+        var isEnabled by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefEnableAutoDl, false)) }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.pref_automatic_download_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
-                Text(stringResource(R.string.pref_automatic_download_sum), color = textColor)
+                Text(stringResource(R.string.pref_automatic_download_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Switch(checked = isEnabled, onCheckedChange = {
                 isEnabled = it
-                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, it).apply()
+                putPref(UserPreferences.Prefs.prefEnableAutoDl, it)
             })
         }
         if (isEnabled) {
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.pref_episode_cache_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCacheSize.name, "25")!!) }
+                    var interval by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefEpisodeCacheSize, "25")) }
                     var showIcon by remember { mutableStateOf(false) }
                     TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("integer") },
                         singleLine = true, modifier = Modifier.weight(0.5f),
@@ -375,18 +484,18 @@ fun AutoDownloadPreferencesScreen() {
                             if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                                 modifier = Modifier.size(30.dp).padding(start = 10.dp).clickable(onClick = {
                                     if (interval.isEmpty()) interval = "0"
-                                    appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCacheSize.name, interval).apply()
+                                    putPref(UserPreferences.Prefs.prefEpisodeCacheSize, interval)
                                     showIcon = false
                                 }))
                         })
                 }
-                Text(stringResource(R.string.pref_episode_cache_summary), color = textColor)
+                Text(stringResource(R.string.pref_episode_cache_summary), color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             var showCleanupOptions by remember { mutableStateOf(false) }
             TitleSummaryActionColumn(R.string.pref_episode_cleanup_title, R.string.pref_episode_cleanup_summary) { showCleanupOptions = true }
             if (showCleanupOptions) {
-                var tempCleanupOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
-                var interval by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "-1")!!) }
+                var tempCleanupOption by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefEpisodeCleanup, "-1")) }
+                var interval by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefEpisodeCleanup, "-1")) }
                 if ((interval.toIntOrNull() ?: -1) > 0) tempCleanupOption = EpisodeCleanupOptions.LimitBy.num.toString()
                 AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showCleanupOptions = false },
                     title = { Text(stringResource(R.string.pref_episode_cleanup_title), style = CustomTextStyles.titleCustom) },
@@ -409,11 +518,11 @@ fun AutoDownloadPreferencesScreen() {
                         TextButton(onClick = {
                             var num = if (tempCleanupOption == EpisodeCleanupOptions.LimitBy.num.toString()) interval else tempCleanupOption
                             if (num.toIntOrNull() == null) num = EpisodeCleanupOptions.Never.num.toString()
-                            appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCleanup.name, num).apply()
+                            putPref(UserPreferences.Prefs.prefEpisodeCleanup, num)
                             showCleanupOptions = false
                         }) { Text(text = "OK") }
                     },
-                    dismissButton = { TextButton(onClick = { showCleanupOptions = false }) { Text(text = "Cancel") } }
+                    dismissButton = { TextButton(onClick = { showCleanupOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
                 )
             }
             TitleSummarySwitchPrefRow(R.string.pref_automatic_download_on_battery_title, R.string.pref_automatic_download_on_battery_sum, UserPreferences.Prefs.prefEnableAutoDownloadOnBattery.name)

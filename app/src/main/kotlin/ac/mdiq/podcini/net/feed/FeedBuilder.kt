@@ -5,13 +5,12 @@ import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
-import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
+import ac.mdiq.podcini.net.utils.NetworkUtils.prepareUrl
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
+import ac.mdiq.podcini.storage.utils.StorageUtils.feedfilePath
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.DownloadErrorLabel.from
@@ -122,7 +121,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                     onDismissRequest()
                 }) { Text(text = "Confirm") }
             },
-            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
@@ -137,7 +136,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
             feed_.id = Feed.newId()
             feed_.type = Feed.FeedType.YOUTUBE.name
             feed_.hasVideoMedia = true
-            feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+            feed_.fileUrl = File(feedfilePath, feed_.getFeedfileName()).toString()
             val eList: MutableList<Episode> = mutableListOf()
             feed_.title = playlistInfo.name
             feed_.description = playlistInfo.description?.content ?: ""
@@ -200,7 +199,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
             feed_.id = Feed.newId()
             feed_.type = Feed.FeedType.YOUTUBE.name
             feed_.hasVideoMedia = true
-            feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+            feed_.fileUrl = File(feedfilePath, feed_.getFeedfileName()).toString()
             val eList: MutableList<Episode> = mutableListOf()
             feed_.title = channelInfo.name + " " + title
             feed_.description = channelInfo.description

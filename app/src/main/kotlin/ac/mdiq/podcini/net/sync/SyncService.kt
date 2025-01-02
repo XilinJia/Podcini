@@ -4,25 +4,24 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.sync.LockingAsyncExecutor.executeLockedAsync
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials.deviceID
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials.hosturl
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials.password
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials.username
 import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData.Companion.fromIdentifier
-import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.ISyncService
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudSyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
+import ac.mdiq.podcini.net.utils.NetworkUtils.containsUrl
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFor
 import ac.mdiq.podcini.net.utils.NetworkUtils.setAllowMobileFor
-import ac.mdiq.podcini.net.utils.UrlChecker.containsUrl
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
+import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
@@ -34,7 +33,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -53,6 +51,7 @@ import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import kotlin.Throws
 
 open class SyncService(context: Context, params: WorkerParameters) : Worker(context, params) {
     val TAG = this::class.simpleName ?: "Anonymous"
@@ -292,7 +291,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
     fun gpodnetNotificationsEnabled(): Boolean {
         if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
-        return appPrefs.getBoolean(UserPreferences.Prefs.pref_gpodnet_notifications.name, true)
+        return getPref(UserPreferences.Prefs.pref_gpodnet_notifications, true)
     }
 
     protected fun updateErrorNotification(exception: Exception) {
@@ -331,7 +330,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         if (selectedService == null) return null
 
         return when (selectedService) {
-            SynchronizationProviderViewData.GPODDER_NET -> GpodnetService(getHttpClient(), hosturl, deviceID?:"", username?:"", password?:"")
+//            SynchronizationProviderViewData.GPODDER_NET -> GpodnetService(getHttpClient(), hosturl, deviceID?:"", username?:"", password?:"")
             SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudSyncService(getHttpClient(), hosturl, username?:"", password?:"")
         }
     }

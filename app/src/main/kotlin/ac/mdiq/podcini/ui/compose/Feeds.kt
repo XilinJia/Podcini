@@ -13,7 +13,9 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackServic
 import ac.mdiq.podcini.preferences.OpmlTransporter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPrefOrNull
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
@@ -150,7 +152,7 @@ fun RemoveFeedDialog(feeds: List<Feed>, onDismissRequest: () -> Unit, callback: 
                         } catch (e: Throwable) { Log.e("RemoveFeedDialog", Log.getStackTraceString(e)) }
                     }
                     onDismissRequest()
-                }) { Text("Confirm") }
+                }) { Text(stringResource(R.string.confirm_label)) }
             }
         }
     }
@@ -188,7 +190,7 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                                 }
                             }
                             onDismissRequest()
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                     }
                 }
             }
@@ -351,7 +353,7 @@ fun TagSettingDialog(feeds_: List<Feed>, onDismiss: () -> Unit) {
                     }
                 }
                 Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
-                    Button(onClick = { onDismiss() }) { Text("Cancel") }
+                    Button(onClick = { onDismiss() }) { Text(stringResource(R.string.cancel_label)) }
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         Logd("TagsSettingDialog", "tags: [${tags.joinToString()}] commonTags: [${commonTags.joinToString()}]")
@@ -364,7 +366,7 @@ fun TagSettingDialog(feeds_: List<Feed>, onDismiss: () -> Unit) {
                             buildTags()
                         }
                         onDismiss()
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -432,13 +434,13 @@ fun PlaybackSpeedDialog(feeds: List<Feed>, initSpeed: Float, maxSpeed: Float, is
                     }
                 }
                 Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)) {
-                    Button(onClick = { onDismiss() }) { Text("Cancel") }
+                    Button(onClick = { onDismiss() }) { Text(stringResource(R.string.cancel_label)) }
                     Spacer(Modifier.weight(1f))
                     Button(onClick = {
                         val newSpeed = if (useGlobal) Feed.SPEED_USE_GLOBAL else speed
                         speedCB(newSpeed)
                         onDismiss()
-                    }) { Text("Confirm") }
+                    }) { Text(stringResource(R.string.confirm_label)) }
                 }
             }
         }
@@ -470,14 +472,14 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
         }
         return mutableListOf(1.0f, 1.25f, 1.5f)
     }
-//    fun getPlaybackSpeedArray() = readPlaybackSpeedArray(appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null))
+//    fun getPlaybackSpeedArray() = readPlaybackSpeedArray(getPref(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null))
     fun setPlaybackSpeedArray(speeds: List<Float>) {
         val format = DecimalFormatSymbols(Locale.US)
         format.decimalSeparator = '.'
         val speedFormat = DecimalFormat("0.00", format)
         val jsonArray = JSONArray()
         for (speed in speeds) jsonArray.put(speedFormat.format(speed.toDouble()))
-        appPrefs.edit().putString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, jsonArray.toString()).apply()
+        putPref(UserPreferences.Prefs.prefPlaybackSpeedArray, jsonArray.toString())
     }
     fun setCurTempSpeed(speed: Float) {
         curState = upsertBlk(curState) { it.curTempSpeed = speed }
@@ -491,7 +493,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
         Card(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 10.dp, bottom = 10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column {
                 var speed by remember { mutableStateOf(curSpeedFB) }
-                var speeds = remember { readPlaybackSpeedArray(appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null)).toMutableStateList() }
+                var speeds = remember { readPlaybackSpeedArray(getPrefOrNull<String>(UserPreferences.Prefs.prefPlaybackSpeedArray, null)).toMutableStateList() }
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.playback_speed), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                     Spacer(Modifier.width(50.dp))
@@ -646,7 +648,7 @@ fun OpmlImportSelectionDialog(readElements: SnapshotStateList<OpmlTransporter.Op
                     }
                 }
                 onDismissRequest()
-            }) { Text("Confirm") }
+            }) { Text(stringResource(R.string.confirm_label)) }
         },
         dismissButton = { Button(onClick = { onDismissRequest() }) { Text("Dismiss") } }
     )

@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.actions
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesWarnLocal
@@ -52,7 +53,7 @@ import java.util.*
 
 interface SwipeAction {
     fun getId(): String
-    fun getTitle(context: Context): String
+    fun getTitle(): String
     @DrawableRes
     fun getActionIcon(): Int
     @AttrRes
@@ -87,7 +88,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
     }
 
     private fun getPrefs(tag: String, defaultActions: String): RightLeftActions {
-        val prefsString = prefs?.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions) ?: defaultActions
+        val prefsString = prefs.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions) ?: defaultActions
         return RightLeftActions(prefsString)
     }
 
@@ -134,8 +135,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return androidx.appcompat.R.attr.colorAccent
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.add_to_queue_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.add_to_queue_label)
         }
         override fun performAction(item: Episode) {
             addToQueue(item)
@@ -155,8 +156,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return androidx.appcompat.R.attr.colorAccent
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.combo_action)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.combo_action)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -181,8 +182,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                                     context.theme.resolveAttribute(action.getActionColor(), typedValue, true)
                                     Color(typedValue.data)
                                 }
-                                Icon(imageVector = ImageVector.vectorResource(id = action.getActionIcon()),  tint = colorAccent, contentDescription = action.getTitle(context))
-                                Text(action.getTitle(context), Modifier.padding(start = 4.dp))
+                                Icon(imageVector = ImageVector.vectorResource(id = action.getActionIcon()),  tint = colorAccent, contentDescription = action.getTitle())
+                                Text(action.getTitle(), Modifier.padding(start = 4.dp))
                             }
                         }
                     }
@@ -201,8 +202,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_red
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.delete_episode_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.delete_episode_label)
         }
         override fun performAction(item_: Episode) {
             var item = item_
@@ -228,8 +229,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_yellow
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.set_rating_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.set_rating_label)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -255,8 +256,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_yellow
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.add_opinion_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.add_opinion_label)
         }
         override fun performAction(item: Episode) {
 //            onEpisode = realm.query(Episode::class).query("id == ${item.id}").first().find()
@@ -292,8 +293,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_red
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.no_action_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.no_action_label)
         }
         override fun performAction(item: Episode) {}
     }
@@ -310,8 +311,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_purple
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.remove_history_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.remove_history_label)
         }
         override fun performAction(item: Episode) {
             val playbackCompletionDate: Date? = item.playbackCompletionDate
@@ -319,7 +320,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             setHistoryDates(item)
 
             (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
-                .setAction(fragment.getString(R.string.undo)) { if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate?:0, playbackCompletionDate) }
+                .setAction(fragment.getString(R.string.undo)) { if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate, playbackCompletionDate) }
         }
         private fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
             runOnIOScope {
@@ -345,8 +346,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return androidx.appcompat.R.attr.colorAccent
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.remove_from_queue_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.remove_from_queue_label)
         }
         override fun performAction(item_: Episode) {
 //            val position: Int = curQueue.episodes.indexOf(item_)
@@ -371,8 +372,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_gray
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.put_in_queue_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.put_in_queue_label)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -394,8 +395,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_green
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.download_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.download_label)
         }
         override fun performAction(item: Episode) {
             if (!item.downloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(fragment.requireContext())
@@ -414,8 +415,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_gray
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.set_play_state_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.set_play_state_label)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -439,8 +440,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_gray
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.shelve_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.shelve_label)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -464,8 +465,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         override fun getActionColor(): Int {
             return R.attr.icon_gray
         }
-        override fun getTitle(context: Context): String {
-            return context.getString(R.string.erase_episodes_label)
+        override fun getTitle(): String {
+            return getAppContext().getString(R.string.erase_episodes_label)
         }
         override fun performAction(item: Episode) {
             onEpisode = item
@@ -482,10 +483,10 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
         private const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
         private const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
 
-        var prefs: SharedPreferences? = null
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
-        }
+        val prefs: SharedPreferences by lazy { getAppContext().getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE) }
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = getAppContext().getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
+//        }
 
         @Composable
         fun SwipeActionsSettingDialog(sa: SwipeActions, onDismissRequest: () -> Unit, callback: (RightLeftActions)->Unit) {
@@ -499,11 +500,11 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
 
             fun savePrefs(tag: String, right: String?, left: String?) {
 //                getSharedPrefs(context)
-                prefs?.edit()?.putString(KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left")?.apply()
+                prefs.edit()?.putString(KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left")?.apply()
             }
             fun saveActionsEnabledPrefs(enabled: Boolean) {
 //                getSharedPrefs(context)
-                prefs?.edit()?.putBoolean(KEY_PREFIX_NO_ACTION + sa.tag, enabled)?.apply()
+                prefs.edit()?.putBoolean(KEY_PREFIX_NO_ACTION + sa.tag, enabled)?.apply()
             }
 
             var direction by remember { mutableIntStateOf(0) }
@@ -522,7 +523,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                                     showPickerDialog = false
                                 }) {
                                     Icon(imageVector = ImageVector.vectorResource(keys[index].getActionIcon()), tint = textColor, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp))
-                                    Text(keys[index].getTitle(context), color = textColor, textAlign = TextAlign.Center)
+                                    Text(keys[index].getTitle(), color = textColor, textAlign = TextAlign.Center)
                                 }
                             }
                         }
@@ -580,7 +581,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                             saveActionsEnabledPrefs(true)
                             callback(actions)
                             onDismissRequest()
-                        }) { Text("Confirm") }
+                        }) { Text(stringResource(R.string.confirm_label)) }
                     }
                 }
             }

@@ -534,7 +534,7 @@ class FeedEpisodesFragment : Fragment() {
                     if (feed_ != null) {
                         Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                         val eListTmp = mutableListOf<Episode>()
-                        if (enableFilter && !feed_.filterString.isNullOrEmpty()) {
+                        if (enableFilter && feed_.filterString.isNotEmpty()) {
                             Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                             val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
                             eListTmp.addAll(episodes_)

@@ -1,0 +1,18 @@
+ Version 7.2.0
+
+* enabled caching in Shared Preferences to enhance performance
+* fileUrl in Episode is now changed to a uri string (rather than a path string)
+	* DB is auto-migrated on first start of this version
+* added ability to customize folder for media downloads
+	* the use of customized folder can be changed or reset
+	* folder in SD card should also work (Someone try it and let me know as I can't test it)
+	* upon change, downloaded media files are moved from the previous folder to the new folder
+	* export and reconcile should also work with customized folder
+* in auto-download policy ONLY_NEW, added option "Replace",
+	* when checked, new episodes will be downloaded and older downloaded episodes deleted
+* fixed OnlineFeed not resolving url caused by redirect routine
+* in Queues, showFeeds icon on the title bar toggles with view
+* made some button text translatable
+* removed GPODDER_NET sync and search routines
+* consolidated a couple utility files
+* resort to application context in some routines

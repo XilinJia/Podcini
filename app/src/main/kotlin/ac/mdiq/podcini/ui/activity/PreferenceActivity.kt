@@ -7,6 +7,8 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.DefaultPages
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.preferences.screens.*
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
@@ -230,10 +232,10 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_backup_on_google_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
                 }
-                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLBackup.name, true)) }
+                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefOPMLBackup, true)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefOPMLBackup.name, it).apply()
+                    putPref(UserPreferences.Prefs.prefOPMLBackup, it)
                     val intent = packageManager?.getLaunchIntentForPackage(packageName)
                     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     startActivity(intent)
@@ -400,10 +402,10 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_black_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_black_theme_message), color = textColor)
                 }
-                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefThemeBlack.name, false)) }
+                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefThemeBlack, false)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefThemeBlack.name, it).apply()
+                    putPref(UserPreferences.Prefs.prefThemeBlack, it)
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
             }
@@ -412,10 +414,10 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_tinted_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_tinted_theme_message), color = textColor)
                 }
-                var isChecked by remember { mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefTintedColors.name, false)) }
+                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefTintedColors, false)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    appPrefs.edit().putBoolean(UserPreferences.Prefs.prefTintedColors.name, it).apply()
+                    putPref(UserPreferences.Prefs.prefTintedColors, it)
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
             }
@@ -432,7 +434,7 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummarySwitchPrefRow(R.string.pref_show_notification_skip_title, R.string.pref_show_notification_skip_sum, UserPreferences.Prefs.prefShowSkip.name, true)
             Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showDefaultPageOptions by remember { mutableStateOf(false) }
-            var tempSelectedOption by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.prefDefaultPage.name, DefaultPages.SubscriptionsFragment.name)!!) }
+            var tempSelectedOption by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefDefaultPage, DefaultPages.SubscriptionsFragment.name)!!) }
             TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
             if (showDefaultPageOptions) {
                 AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDefaultPageOptions = false },
@@ -449,11 +451,11 @@ class PreferenceActivity : AppCompatActivity() {
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            appPrefs.edit().putString(UserPreferences.Prefs.prefDefaultPage.name, tempSelectedOption).apply()
+                            putPref(UserPreferences.Prefs.prefDefaultPage, tempSelectedOption)
                             showDefaultPageOptions = false
                         }) { Text(text = "OK") }
                     },
-                    dismissButton = { TextButton(onClick = { showDefaultPageOptions = false }) { Text(text = "Cancel") } }
+                    dismissButton = { TextButton(onClick = { showDefaultPageOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
                 )
             }
             TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)

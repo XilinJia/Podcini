@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.net.download.service
 
-import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
+import ac.mdiq.podcini.net.utils.NetworkUtils.prepareUrl
 import ac.mdiq.podcini.storage.model.Episode
 
 import ac.mdiq.podcini.storage.model.Episode.Companion.FEEDFILETYPE_FEEDMEDIA
@@ -28,7 +28,8 @@ class DownloadRequest private constructor(
     var size: Long = 0
     private var statusMsg = 0
 
-    private constructor(builder: Builder) : this(builder.destination,
+    private constructor(builder: Builder) : this(
+        builder.destination,
         builder.source,
         builder.title,
         builder.feedfileId,
@@ -40,7 +41,8 @@ class DownloadRequest private constructor(
         builder.arguments,
         builder.initiatedByUser)
 
-    private constructor(inVal: Parcel) : this(inVal.readString(),
+    private constructor(inVal: Parcel) : this(
+        inVal.readString(),
         inVal.readString(),
         inVal.readString(),
         inVal.readLong(),
@@ -52,9 +54,7 @@ class DownloadRequest private constructor(
         inVal.readBundle(), // TODO: this may have problem
         inVal.readByte() > 0)
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(destination)
@@ -172,17 +172,13 @@ class DownloadRequest private constructor(
             this.password = password
             return this
         }
-        fun build(): DownloadRequest {
-            return DownloadRequest(this)
-        }
+        fun build(): DownloadRequest = DownloadRequest(this)
     }
 
     companion object {
         const val REQUEST_ARG_PAGE_NR: String = "page"
 
-        private fun nullIfEmpty(str: String?): String? {
-            return if (str.isNullOrEmpty()) null else str
-        }
+        private fun nullIfEmpty(str: String?): String? = if (str.isNullOrEmpty()) null else str
 
         @JvmField
         val CREATOR: Parcelable.Creator<DownloadRequest> = object : Parcelable.Creator<DownloadRequest> {

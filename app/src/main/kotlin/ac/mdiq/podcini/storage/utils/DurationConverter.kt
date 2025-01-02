@@ -1,6 +1,8 @@
 package ac.mdiq.podcini.storage.utils
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences.timeRespectsSpeed
 import android.content.Context
 import java.util.*
 
@@ -70,8 +72,8 @@ object DurationConverter {
      * Converts milliseconds to a localized string containing hours and minutes.
      */
     @JvmStatic
-    fun getDurationStringLocalized(context: Context, duration: Long): String {
-        val resources = context.resources
+    fun getDurationStringLocalized(duration: Long): String {
+        val resources = getAppContext().resources
         var result = ""
         var h = (duration / HOURS_MIL).toInt()
         val d = h / 24
@@ -100,8 +102,13 @@ object DurationConverter {
      * @return "HH:MM hours"
      */
     @JvmStatic
-    fun durationInHours(context: Context, time: Long, showHoursText: Boolean = true): String {
+    fun durationInHours(time: Long, showHoursText: Boolean = true): String {
         val hours = time.toFloat() / 3600f
-        return String.format(Locale.getDefault(), "%.2f ", hours) + if (showHoursText) context.getString(R.string.time_hours) else ""
+        return String.format(Locale.getDefault(), "%.2f ", hours) + if (showHoursText) getAppContext().getString(R.string.time_hours) else ""
+    }
+
+    fun convertOnSpeed(time: Int, speed: Float): Int {
+        if (time > 0 && timeRespectsSpeed) return (time / speed).toInt()
+        return time
     }
 }

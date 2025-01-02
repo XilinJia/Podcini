@@ -8,6 +8,7 @@ import ac.mdiq.podcini.preferences.ExportWorker
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -155,12 +156,12 @@ class SubscriptionsFragment : Fragment() {
     private var showNewSynthetic by mutableStateOf(false)
 
     private var useGrid by mutableStateOf<Boolean?>(null)
-    private val useGridLayout by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false))
+    private val useGridLayout by mutableStateOf(getPref(UserPreferences.Prefs.prefFeedGridLayout, false))
 
     private var selectMode by mutableStateOf(false)
 
     private val swipeToRefresh: Boolean
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)
+        get() = getPref(UserPreferences.Prefs.prefSwipeToRefreshAll, true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -785,7 +786,7 @@ class SubscriptionsFragment : Fragment() {
                                 Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
                                 Row(Modifier.padding(top = 5.dp)) {
                                     val measureString = remember { NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " : " +
-                                            DurationConverter.durationInHours(requireActivity(), feed.totleDuration/1000) }
+                                            DurationConverter.durationInHours(feed.totleDuration/1000) }
                                     Text(measureString, color = textColor, style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.weight(1f))
                                     var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }

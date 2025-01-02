@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
+import ac.mdiq.podcini.storage.utils.StorageUtils.generateFileName
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,6 +30,7 @@ class Feed : RealmObject {
     var identifier: String? = null
 
     var fileUrl: String? = null
+
     var downloadUrl: String? = null
 //    var downloaded: Boolean = false
 
@@ -128,11 +130,11 @@ class Feed : RealmObject {
     @Ignore
     var episodeFilter: EpisodeFilter = EpisodeFilter("")
         private set
-        get() = EpisodeFilter(filterString ?: "")
+        get() = EpisodeFilter(filterString)
 
     @Ignore
     var sortOrder: EpisodeSortOrder? = null
-        get() = fromCode(sortOrderCode ?: 2)
+        get() = fromCode(sortOrderCode)
         set(value) {
             if (value == null) return
             field = value
@@ -417,17 +419,24 @@ class Feed : RealmObject {
         return eList_
     }
 
+    fun getFeedfileName(): String {
+        var filename = downloadUrl
+        if (!title.isNullOrEmpty()) filename = title
+        if (filename == null) return ""
+        return "feed-" + generateFileName(filename) + id
+    }
+
     enum class FeedType(name: String) {
         RSS("rss"),
         ATOM1("atom"),
         YOUTUBE("YouTube")
     }
 
-    enum class AutoDownloadPolicy(val code: Int, val resId: Int) {
-        ONLY_NEW(0, R.string.feed_auto_download_new),
-        NEWER(1, R.string.feed_auto_download_newer),
-        OLDER(2, R.string.feed_auto_download_older),
-        SOON(3, R.string.feed_auto_download_soon);
+    enum class AutoDownloadPolicy(val code: Int, val resId: Int, var replace: Boolean) {
+        ONLY_NEW(0, R.string.feed_auto_download_new, false),
+        NEWER(1, R.string.feed_auto_download_newer, false),
+        OLDER(2, R.string.feed_auto_download_older, false),
+        SOON(3, R.string.feed_auto_download_soon, false);
 
         companion object {
             fun fromCode(code: Int): AutoDownloadPolicy {

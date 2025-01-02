@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.database
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.updateFeed
@@ -11,15 +12,17 @@ import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
 import ac.mdiq.podcini.preferences.UserPreferences.Prefs
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
-import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
@@ -45,8 +48,8 @@ object Episodes {
 
     private const val smartMarkAsPlayedPercent: Int = 95
 
-    val prefRemoveFromQueueMarkedPlayed by lazy { appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true) }
-    val prefDeleteRemovesFromQueue by lazy { appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false) }
+    val prefRemoveFromQueueMarkedPlayed by lazy { getPref(Prefs.prefRemoveFromQueueMarkedPlayed, true) }
+    val prefDeleteRemovesFromQueue by lazy { getPref(Prefs.prefDeleteRemovesFromQueue, false) }
 
     /**
      * @param offset The first episode that should be loaded.
@@ -69,6 +72,14 @@ object Episodes {
         var queryString = filter?.queryString()?:"id > 0"
         if (feedId >= 0) queryString += " AND feedId == $feedId "
         return realm.query(Episode::class).query(queryString).count().find().toInt()
+    }
+
+    fun getEpisodes(filter: EpisodeFilter?, feedId: Long = -1, limit: Int): List<Episode> {
+        Logd(TAG, "getEpisodesCount called")
+        var queryString = filter?.queryString()?:"id > 0"
+        if (feedId >= 0) queryString += " AND feedId == $feedId "
+        queryString += " AND SORT(pubDate ASC) LIMIT($limit) "
+        return realm.query(Episode::class).query(queryString).find()
     }
 
     /**
@@ -131,7 +142,7 @@ object Episodes {
                 // Local feed
                 val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(episode.fileUrl))
                 if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
-                    EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.delete_local_failed)))
+                    EventFlow.postEvent(FlowEvent.MessageEvent(getAppContext().getString(R.string.delete_local_failed)))
                     return episode
                 }
                 episode = upsertBlk(episode) {
@@ -146,7 +157,7 @@ object Episodes {
                 val mediaFile = File(url)
                 if (!mediaFile.delete()) {
                     Log.e(TAG, "delete media file failed: $url")
-                    val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed_simple) + ": $url")
+                    val evt = FlowEvent.MessageEvent(getAppContext().getString(R.string.delete_failed_simple) + ": $url")
                     EventFlow.postEvent(evt)
                     return episode
                 }
@@ -167,8 +178,8 @@ object Episodes {
             nm.cancel(R.id.notification_playing)
         }
 
+        // Do full update of this feed to get rid of the episode
         if (localDelete) {
-            // Do full update of this feed to get rid of the episode
             if (episode.feed != null) updateFeed(episode.feed!!, context.applicationContext, null)
         } else {
             if (isProviderConnected) {
@@ -262,7 +273,7 @@ object Episodes {
         e.viewCount = item.viewCount.toInt()
         e.fillMedia(item.url, 0, "video/*")
         if (item.duration > 0) e.duration = item.duration.toInt() * 1000
-        e.fileUrl = getMediafilename(e)
+        e.fileUrl = e.getMediafilename()
         return e
     }
 
@@ -276,7 +287,7 @@ object Episodes {
         e.viewCount = info.viewCount.toInt()
         e.fillMedia(info.url, 0, "video/*")
         if (info.duration > 0) e.duration = info.duration.toInt() * 1000
-        e.fileUrl = getMediafilename(e)
+        e.fileUrl = e.getMediafilename()
         return e
     }
 

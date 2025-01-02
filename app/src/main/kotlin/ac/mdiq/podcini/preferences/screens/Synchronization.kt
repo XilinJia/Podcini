@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.preferences.screens
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.AuthenticationDialogBinding
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
@@ -14,7 +13,8 @@ import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow.AuthenticationCallback
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.fragments.GpodderAuthenticationFragment
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.UserPreferences.putPref
 import ac.mdiq.podcini.preferences.fragments.WifiAuthenticationFragment
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
@@ -23,18 +23,9 @@ import ac.mdiq.podcini.ui.compose.IconTitleSummaryActionRow
 import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
-import android.content.Context
-import android.content.DialogInterface
 import android.text.format.DateUtils
-import android.text.method.HideReturnsTransformationMethod
-import android.text.method.PasswordTransformationMethod
-import android.view.LayoutInflater
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,48 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @Composable
 fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
     var showToast by remember { mutableStateOf(false) }
     var toastMassege by remember { mutableStateOf("") }
-
-    abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean, usernameInitialValue: String?, passwordInitialValue: String?)
-        : MaterialAlertDialogBuilder(context) {
-
-        var passwordHidden: Boolean = true
-
-        init {
-            setTitle(titleRes)
-            val viewBinding = AuthenticationDialogBinding.inflate(LayoutInflater.from(context))
-            setView(viewBinding.root)
-
-            viewBinding.usernameEditText.isEnabled = enableUsernameField
-            if (usernameInitialValue != null) viewBinding.usernameEditText.setText(usernameInitialValue)
-            if (passwordInitialValue != null) viewBinding.passwordEditText.setText(passwordInitialValue)
-
-            viewBinding.showPasswordButton.setOnClickListener {
-                if (passwordHidden) {
-                    viewBinding.passwordEditText.transformationMethod = HideReturnsTransformationMethod.getInstance()
-                    viewBinding.showPasswordButton.alpha = 1.0f
-                } else {
-                    viewBinding.passwordEditText.transformationMethod = PasswordTransformationMethod.getInstance()
-                    viewBinding.showPasswordButton.alpha = 0.6f
-                }
-                passwordHidden = !passwordHidden
-            }
-
-            setOnCancelListener { onCancelled() }
-            setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> onCancelled() }
-            setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                onConfirmed(viewBinding.usernameEditText.text.toString(), viewBinding.passwordEditText.text.toString())
-            }
-        }
-
-        protected open fun onCancelled() {}
-        protected abstract fun onConfirmed(username: String, password: String)
-    }
 
     val selectedSyncProviderKey: String = SynchronizationSettings.selectedSyncProviderKey?:""
     var selectedProvider by remember { mutableStateOf(SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey)) }
@@ -113,7 +67,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
     fun NextcloudAuthenticationDialog(onDismissRequest: ()->Unit) {
         var nextcloudLoginFlow = remember<NextcloudLoginFlow?> { null }
         var showUrlEdit by remember { mutableStateOf(true) }
-        var serverUrlText by remember { mutableStateOf(appPrefs.getString(UserPreferences.Prefs.pref_nextcloud_server_address.name, "")!!) }
+        var serverUrlText by remember { mutableStateOf(getPref(UserPreferences.Prefs.pref_nextcloud_server_address, "")!!) }
         var errorText by remember { mutableStateOf("") }
         var showChooseHost by remember { mutableStateOf(serverUrlText.isNotBlank()) }
 
@@ -160,7 +114,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
             },
             confirmButton = {
                 if (showChooseHost) TextButton(onClick = {
-                    appPrefs.edit().putString(UserPreferences.Prefs.pref_nextcloud_server_address.name, serverUrlText).apply()
+                    putPref(UserPreferences.Prefs.pref_nextcloud_server_address, serverUrlText)
                     nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), serverUrlText, activity, nextCloudAuthCallback)
                     errorText = ""
                     showChooseHost = false
@@ -168,7 +122,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
 //                        onDismissRequest()
                 }) { Text(stringResource(R.string.proceed_to_login_butLabel)) }
             },
-            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
@@ -185,7 +139,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(2.dp)
                             .clickable {
                                 when (option) {
-                                    SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(activity.supportFragmentManager, GpodderAuthenticationFragment.TAG)
+//                                    SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(activity.supportFragmentManager, GpodderAuthenticationFragment.TAG)
                                     SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> showNextCloudAuthDialog = true
                                 }
                                 loggedIn = isProviderConnected
@@ -198,7 +152,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(text = "Cancel") } }
+            dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
         )
     }
 
@@ -235,17 +189,6 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
                 Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "", tint = textColor, modifier = Modifier.size(40.dp).padding(end = 15.dp))
             }
             TitleSummaryActionColumn(titleRes, summaryRes) { onClick?.invoke() }
-        }
-        if (isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)) {
-            TitleSummaryActionColumn(R.string.pref_gpodnet_setlogin_information_title, R.string.pref_gpodnet_setlogin_information_sum) {
-                val dialog: AuthenticationDialog = object : AuthenticationDialog(activity, R.string.pref_gpodnet_setlogin_information_title,
-                    false, SynchronizationCredentials.username, null) {
-                    override fun onConfirmed(username: String, password: String) {
-                        SynchronizationCredentials.password = password
-                    }
-                }
-                dialog.show()
-            }
         }
         if (loggedIn) {
             TitleSummaryActionColumn(R.string.synchronization_sync_changes_title, R.string.synchronization_sync_summary) { SyncService.syncImmediately(activity.applicationContext) }

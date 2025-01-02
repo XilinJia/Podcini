@@ -20,11 +20,11 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.utils.DurationConverter.convertOnSpeed
 
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
-import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -141,8 +141,7 @@ class SleepTimerDialog : DialogFragment() {
                 val time = if (binding.endEpisode.isChecked) {
                     val curPosition = curEpisode?.position ?: 0
                     val duration = curEpisode?.duration ?: 0
-                    val converter = TimeSpeedConverter(curSpeedFB)
-                    TimeUnit.MILLISECONDS.toMinutes(converter.convert(max((duration - curPosition).toDouble(), 0.0).toInt()).toLong()) // ms to minutes
+                    TimeUnit.MILLISECONDS.toMinutes(convertOnSpeed(max((duration - curPosition).toDouble(), 0.0).toInt(), curSpeedFB).toLong()) // ms to minutes
                 } else etxtTime.getText().toString().toLong()
                 Logd(TAG, "Sleep timer set: $time")
                 if (time == 0L) throw NumberFormatException("Timer must not be zero")

@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder.encode
-import ac.mdiq.podcini.net.utils.URIUtil
+import ac.mdiq.podcini.net.utils.NetworkUtils.getURIFromRequestUrl
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.ProxyConfig
@@ -28,7 +28,7 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
-import kotlin.concurrent.Volatile
+import kotlin.Throws
 
 /**
  * Provides access to a HttpClient singleton.
@@ -70,7 +70,6 @@ object PodciniHttpClient {
     @JvmStatic
     fun newBuilder(): Builder {
         Logd(TAG, "Creating new instance of HTTP client")
-
         System.setProperty("http.maxConnections", MAX_CONNECTIONS.toString())
 
         val builder = Builder()
@@ -244,7 +243,7 @@ object PodciniHttpClient {
             if (request.tag() is DownloadRequest) {
                 val downloadRequest = request.tag() as? DownloadRequest
                 if (downloadRequest?.source != null) {
-                    userInfo = URIUtil.getURIFromRequestUrl(downloadRequest.source).userInfo
+                    userInfo = getURIFromRequestUrl(downloadRequest.source).userInfo
                     if (userInfo.isEmpty() && (!downloadRequest.username.isNullOrEmpty() || !downloadRequest.password.isNullOrEmpty()))
                         userInfo = downloadRequest.username + ":" + downloadRequest.password
                 }
@@ -298,14 +297,9 @@ object PodciniHttpClient {
         try {
             factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
             factory.init(keystore)
-            for (manager in factory.trustManagers) {
-                if (manager is X509TrustManager) return manager
-            }
-        } catch (e: NoSuchAlgorithmException) {
-            e.printStackTrace()
-        } catch (e: KeyStoreException) {
-            e.printStackTrace()
-        }
+            for (manager in factory.trustManagers) if (manager is X509TrustManager) return manager
+        } catch (e: NoSuchAlgorithmException) { e.printStackTrace()
+        } catch (e: KeyStoreException) { e.printStackTrace() }
         throw IllegalStateException("Unexpected default trust managers")
     }
 
@@ -315,12 +309,9 @@ object PodciniHttpClient {
             val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
             keystore.load(null) // Clear
             val cf = CertificateFactory.getInstance("X.509")
-            keystore.setCertificateEntry("BACKPORT_COMODO_ROOT_CA", cf.generateCertificate(
-                ByteArrayInputStream(COMODO.toByteArray(Charset.forName("UTF-8")))))
-            keystore.setCertificateEntry("SECTIGO_USER_TRUST_CA", cf.generateCertificate(
-                ByteArrayInputStream(SECTIGO_USER_TRUST.toByteArray(Charset.forName("UTF-8")))))
-            keystore.setCertificateEntry("LETSENCRYPT_ISRG_CA", cf.generateCertificate(
-                ByteArrayInputStream(LETSENCRYPT_ISRG.toByteArray(Charset.forName("UTF-8")))))
+            keystore.setCertificateEntry("BACKPORT_COMODO_ROOT_CA", cf.generateCertificate(ByteArrayInputStream(COMODO.toByteArray(Charset.forName("UTF-8")))))
+            keystore.setCertificateEntry("SECTIGO_USER_TRUST_CA", cf.generateCertificate(ByteArrayInputStream(SECTIGO_USER_TRUST.toByteArray(Charset.forName("UTF-8")))))
+            keystore.setCertificateEntry("LETSENCRYPT_ISRG_CA", cf.generateCertificate(ByteArrayInputStream(LETSENCRYPT_ISRG.toByteArray(Charset.forName("UTF-8")))))
 
             val managers: MutableList<X509TrustManager> = ArrayList()
             managers.add(getSystemTrustManager(keystore))
@@ -355,10 +346,7 @@ object PodciniHttpClient {
                 try {
                     trustManager.checkClientTrusted(chain, authType)
                     return  // someone trusts them. success!
-                } catch (e: CertificateException) {
-                    // maybe someone else will trust them
-                    reason = e
-                }
+                } catch (e: CertificateException) { reason = e }  // maybe someone else will trust them
             }
             throw reason!!
         }
@@ -370,20 +358,15 @@ object PodciniHttpClient {
                 try {
                     trustManager.checkServerTrusted(chain, authType)
                     return  // someone trusts them. success!
-                } catch (e: CertificateException) {
-                    // maybe someone else will trust them
-                    reason = e
-                }
+                } catch (e: CertificateException) { reason = e }    // maybe someone else will trust them
             }
             throw reason!!
         }
 
         override fun getAcceptedIssuers(): Array<X509Certificate> {
             val certificates: MutableList<X509Certificate> = java.util.ArrayList()
-            for (trustManager in trustManagers) {
 //            TODO: appears time consuming
-                certificates.addAll(listOf(*trustManager.acceptedIssuers))
-            }
+            for (trustManager in trustManagers) certificates.addAll(listOf(*trustManager.acceptedIssuers))
             return certificates.toTypedArray<X509Certificate>()
         }
     }

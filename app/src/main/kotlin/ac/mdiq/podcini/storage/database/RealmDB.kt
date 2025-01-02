@@ -4,6 +4,7 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.showStackTrace
+import android.net.Uri
 import android.util.Log
 import io.realm.kotlin.MutableRealm
 import io.realm.kotlin.Realm
@@ -17,6 +18,7 @@ import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
+import java.io.File
 import kotlin.coroutines.ContinuationInterceptor
 
 object RealmDB {
@@ -40,7 +42,7 @@ object RealmDB {
                 PAFeed::class,
             ))
             .name("Podcini.realm")
-            .schemaVersion(38)
+            .schemaVersion(39)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema
@@ -168,6 +170,16 @@ object RealmDB {
                                 set("autoDLPolicyCode", pref.getValue("autoDLPolicyCode", Long::class))
                                 Logd(TAG, "after all")
                             }
+                        }
+                    }
+                }
+                if (oldRealm.schemaVersion() < 39) {
+                    Logd(TAG, "migrating DB from below 37")
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            val fileUrl = oldObject.getNullableValue("fileUrl", String::class)
+                            Logd(TAG, "fileUrl: $fileUrl")
+                            if (fileUrl != null) set("fileUrl", Uri.fromFile(File(fileUrl)).toString())
                         }
                     }
                 }

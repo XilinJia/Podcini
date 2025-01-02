@@ -12,17 +12,19 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
-import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
+import ac.mdiq.podcini.net.utils.NetworkUtils.prepareUrl
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.getPref
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
-import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
+import ac.mdiq.podcini.storage.model.DownloadResult
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.utils.StorageUtils.feedfilePath
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -52,8 +54,6 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -62,6 +62,7 @@ import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import javax.xml.parsers.ParserConfigurationException
+import kotlin.Throws
 
 object FeedUpdateManager {
     private val TAG: String = FeedUpdateManager::class.simpleName ?: "Anonymous"
@@ -75,7 +76,7 @@ object FeedUpdateManager {
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
     private val updateInterval: Long
-        get() = appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!.toInt().toLong()
+        get() = getPref(UserPreferences.Prefs.prefAutoUpdateIntervall, "12").toInt().toLong()
 
     private val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L
@@ -287,7 +288,7 @@ object FeedUpdateManager {
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
                         feed_.title = channelInfo.name
-                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.fileUrl = File(feedfilePath, feed_.getFeedfileName()).toString()
                         feed_.description = channelInfo.description
                         feed_.author = channelInfo.parentChannelName
                         feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
@@ -325,7 +326,7 @@ object FeedUpdateManager {
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
                         feed_.title = playlistInfo.name
-                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.fileUrl = File(feedfilePath, feed_.getFeedfileName()).toString()
                         feed_.description = playlistInfo.description?.content ?: ""
                         feed_.author = playlistInfo.uploaderName
                         feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
@@ -383,7 +384,7 @@ object FeedUpdateManager {
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
                         feed_.title = channelInfo.name
-                        feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                        feed_.fileUrl = File(feedfilePath, feed_.getFeedfileName()).toString()
                         feed_.description = channelInfo.description
                         feed_.author = channelInfo.parentChannelName
                         feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null

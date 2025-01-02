@@ -2,7 +2,7 @@ package ac.mdiq.podcini.net.sync.nextcloud
 
 import ac.mdiq.podcini.net.sync.HostnameParser
 import ac.mdiq.podcini.net.sync.ResponseMapper
-import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetUploadChangesResponse
+import ac.mdiq.podcini.net.sync.model.GpodnetUploadChangesResponse
 import ac.mdiq.podcini.net.sync.model.*
 import ac.mdiq.podcini.util.Logd
 import okhttp3.*

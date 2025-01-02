@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
@@ -178,16 +179,16 @@ class NavDrawerFragment : Fragment() {
 
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
-        private var prefs: SharedPreferences? = null
+        private val prefs: SharedPreferences by lazy { getAppContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
         var feedCount: Int = -1
             get() {
                 if (field < 0) field = getFeedCount()
                 return field
             }
 
-        fun getSharedPrefs(context: Context) {
-            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        }
+//        fun getSharedPrefs(context: Context) {
+//            if (prefs == null) prefs = getAppContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+//        }
 
         class NavItem(val tag: String, val iconRes: Int, val nameRes: Int) {
             var count by mutableIntStateOf(0)
@@ -205,7 +206,7 @@ class NavDrawerFragment : Fragment() {
 
         fun saveLastNavFragment(tag: String?, arg: String? = null) {
             Logd(TAG, "saveLastNavFragment(tag: $tag)")
-            val edit: SharedPreferences.Editor? = prefs?.edit()
+            val edit: SharedPreferences.Editor? = prefs.edit()
             if (tag != null) {
                 edit?.putString(PREF_LAST_FRAGMENT_TAG, tag)
                 if (arg != null) edit?.putString(PREF_LAST_FRAGMENT_ARG, arg)
@@ -214,8 +215,8 @@ class NavDrawerFragment : Fragment() {
             edit?.apply()
         }
 
-        fun getLastNavFragment(): String = prefs?.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG) ?: ""
-        fun getLastNavFragmentArg(): String = prefs?.getString(PREF_LAST_FRAGMENT_ARG, "0") ?: ""
+        fun getLastNavFragment(): String = prefs.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionsFragment.TAG) ?: ""
+        fun getLastNavFragmentArg(): String = prefs.getString(PREF_LAST_FRAGMENT_ARG, "0") ?: ""
 
         /**
          * Returns data necessary for displaying the navigation drawer. This includes

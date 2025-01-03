@@ -294,6 +294,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 
 * [Changelog](changelog.md)
 * [Privacy Policy](PrivacyPolicy.md)
+* [Contributors](CONTRIBUTORS.md)
 * [Contributing](CONTRIBUTING.md)
 <!-- * [Translation (Transifex)](https://app.transifex.com/xilinjia/podcini/dashboard/) -->
 * [Translation (Crowdin)](https://crowdin.com/project/podcini)

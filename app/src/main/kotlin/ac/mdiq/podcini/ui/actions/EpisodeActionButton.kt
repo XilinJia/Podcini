@@ -10,9 +10,9 @@ import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.isStreamOverDownload
+import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
@@ -21,7 +21,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
-import ac.mdiq.podcini.storage.utils.StorageUtils
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.util.EventFlow
@@ -80,9 +79,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     var processing by mutableIntStateOf(-1)
     val actionState = mutableIntStateOf(0)
 
-    abstract fun getLabel(): Int
-
-    abstract fun getDrawable(): Int
+    abstract val label: Int
+    abstract val drawable: Int
 
     abstract fun onClick(context: Context)
 
@@ -111,7 +109,6 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         Dialog(onDismissRequest = onDismiss) {
             Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                 Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val label = getLabel()
                     Logd(TAG, "button label: $label")
                     if (label != R.string.play_label && label != R.string.pause_label && label != R.string.download_label) {
                         IconButton(onClick = {
@@ -169,17 +166,12 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
         get() = !item.link.isNullOrEmpty()
 
-    override fun getLabel(): Int {
-        return R.string.visit_website_label
-    }
-
-    override fun getDrawable(): Int {
-        return R.drawable.ic_web
-    }
+    override val label: Int = R.string.visit_website_label
+    override val drawable: Int = R.drawable.ic_web
 
     override fun onClick(context: Context) {
         if (!item.link.isNullOrEmpty()) IntentUtils.openInBrowser(context, item.link!!)
-        actionState.value = getLabel()
+        actionState.value = label
     }
 
     override fun forItem(item_: Episode): EpisodeActionButton {
@@ -190,25 +182,25 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
 
 class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     @StringRes
-    override fun getLabel(): Int = R.string.cancel_download_label
+    override val label: Int = R.string.cancel_download_label
 
     @DrawableRes
-    override fun getDrawable(): Int = R.drawable.ic_cancel
+    override val drawable: Int = R.drawable.ic_cancel
     
     override fun onClick(context: Context) {
         DownloadServiceInterface.get()?.cancel(context, item)
-        if (UserPreferences.isEnableAutodownload) {
+        if (AppPreferences.isEnableAutodownload) {
             val item_ = upsertBlk(item) { it.disableAutoDownload() }
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))
         }
-        actionState.value = getLabel()
+        actionState.value = label
     }
 }
 
 class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int = R.string.play_label
+    override val label: Int = R.string.play_label
 
-    override fun getDrawable(): Int = R.drawable.ic_play_24dp
+    override val drawable: Int = R.drawable.ic_play_24dp
 
     override fun onClick(context: Context) {
         Logd("PlayActionButton", "onClick called file: ${item.fileUrl}")
@@ -227,7 +219,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         playVideoIfNeeded(context, item)
-        actionState.value = getLabel()
+        actionState.value = label
     }
 
     /**
@@ -256,30 +248,30 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
             return (item.downloaded || item.feed?.isLocalFeed == true)
         }
 
-    override fun getLabel(): Int = R.string.delete_label
-    override fun getDrawable(): Int = R.drawable.ic_delete
+    override val label: Int = R.string.delete_label
+    override val drawable: Int = R.drawable.ic_delete
     
     override fun onClick(context: Context) {
         deleteEpisodesWarnLocal(context, listOf(item))
-        actionState.value = getLabel()
+        actionState.value = label
     }
 }
 
 class NullActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int = R.string.null_label
-    override fun getDrawable(): Int = R.drawable.ic_questionmark
+    override val label: Int = R.string.null_label
+    override val drawable: Int = R.drawable.ic_questionmark
     override fun onClick(context: Context) {}
 }
 
 class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int = R.string.pause_label
-    override fun getDrawable(): Int = R.drawable.ic_pause
+    override val label: Int = R.string.pause_label
+    override val drawable: Int = R.drawable.ic_pause
     
     override fun onClick(context: Context) {
         Logd("PauseActionButton", "onClick called")
         if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
 //        EventFlow.postEvent(FlowEvent.PlayEvent(item, Action.END))
-        actionState.value = getLabel()
+        actionState.value = label
     }
 }
 
@@ -287,8 +279,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
         get() = item.feed?.isLocalFeed != true
 
-    override fun getLabel(): Int = R.string.download_label
-    override fun getDrawable(): Int = R.drawable.ic_download
+    override val label: Int = R.string.download_label
+    override val drawable: Int = R.drawable.ic_download
 
     override fun onClick(context: Context) {
         if (shouldNotDownload(item)) return
@@ -304,7 +296,7 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
             else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
             builder.show()
         }
-        actionState.value = getLabel()
+        actionState.value = label
     }
 
     private fun shouldNotDownload(media: Episode?): Boolean {
@@ -315,14 +307,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 }
 
 class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int {
-        return R.string.stream_label
-    }
-
-    override fun getDrawable(): Int {
-        return R.drawable.ic_stream
-    }
-
+    override val label: Int = R.string.stream_label
+    override val drawable: Int = R.drawable.ic_stream
     
     override fun onClick(context: Context) {
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
@@ -332,7 +318,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
             return
         }
         stream(context, item)
-        actionState.value = getLabel()
+        actionState.value = label
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Episode) {
@@ -366,12 +352,8 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Boolean
         get() = !item.link.isNullOrEmpty()
 
-    override fun getLabel(): Int {
-        return R.string.TTS_label
-    }
-    override fun getDrawable(): Int {
-        return R.drawable.text_to_speech
-    }
+    override val label: Int = R.string.TTS_label
+    override val drawable: Int = R.drawable.text_to_speech
 
     override fun onClick(context: Context) {
         Logd("TTSActionButton", "onClick called")
@@ -489,18 +471,14 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
 
             processing = 100
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
-            actionState.value = getLabel()
+            actionState.value = label
         }
     }
 }
 
 class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
-    override fun getLabel(): Int {
-        return R.string.play_label
-    }
-    override fun getDrawable(): Int {
-        return R.drawable.ic_play_24dp
-    }
+    override val label: Int = R.string.play_label
+    override val drawable: Int = R.drawable.ic_play_24dp
     
     override fun onClick(context: Context) {
         Logd("PlayLocalActionButton", "onClick called")
@@ -514,6 +492,6 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
         if (item.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
-        actionState.value = getLabel()
+        actionState.value = label
     }
 }

@@ -4,11 +4,10 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.DefaultPages
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.DefaultPages
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.screens.*
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
@@ -232,10 +231,10 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_backup_on_google_sum), color = textColor, style = MaterialTheme.typography.bodySmall)
                 }
-                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefOPMLBackup, true)) }
+                var isChecked by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefOPMLBackup, true)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    putPref(UserPreferences.Prefs.prefOPMLBackup, it)
+                    putPref(AppPreferences.AppPrefs.prefOPMLBackup, it)
                     val intent = packageManager?.getLaunchIntentForPackage(packageName)
                     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     startActivity(intent)
@@ -368,30 +367,30 @@ class PreferenceActivity : AppCompatActivity() {
             Text(stringResource(R.string.appearance), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 var checkIndex by remember { mutableIntStateOf(
-                    when(UserPreferences.theme) {
-                        UserPreferences.ThemePreference.SYSTEM -> 0
-                        UserPreferences.ThemePreference.LIGHT -> 1
-                        UserPreferences.ThemePreference.DARK -> 2
+                    when(AppPreferences.theme) {
+                        AppPreferences.ThemePreference.SYSTEM -> 0
+                        AppPreferences.ThemePreference.LIGHT -> 1
+                        AppPreferences.ThemePreference.DARK -> 2
                         else -> 0
                     }) }
                 Spacer(Modifier.weight(1f))
                 RadioButton(selected = checkIndex == 0, onClick = {
                     checkIndex = 0
-                    UserPreferences.theme = UserPreferences.ThemePreference.SYSTEM
+                    AppPreferences.theme = AppPreferences.ThemePreference.SYSTEM
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
                 Text(stringResource(R.string.pref_theme_title_automatic), color = textColor, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.weight(1f))
                 RadioButton(selected = checkIndex == 1, onClick = {
                     checkIndex = 1
-                    UserPreferences.theme = UserPreferences.ThemePreference.LIGHT
+                    AppPreferences.theme = AppPreferences.ThemePreference.LIGHT
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
                 Text(stringResource(R.string.pref_theme_title_light), color = textColor, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.weight(1f))
                 RadioButton(selected = checkIndex == 2, onClick = {
                     checkIndex = 2
-                    UserPreferences.theme = UserPreferences.ThemePreference.DARK
+                    AppPreferences.theme = AppPreferences.ThemePreference.DARK
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
                 Text(stringResource(R.string.pref_theme_title_dark), color = textColor, fontWeight = FontWeight.Bold)
@@ -402,10 +401,10 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_black_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_black_theme_message), color = textColor)
                 }
-                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefThemeBlack, false)) }
+                var isChecked by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefThemeBlack, false)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    putPref(UserPreferences.Prefs.prefThemeBlack, it)
+                    putPref(AppPreferences.AppPrefs.prefThemeBlack, it)
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
             }
@@ -414,27 +413,27 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(stringResource(R.string.pref_tinted_theme_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.pref_tinted_theme_message), color = textColor)
                 }
-                var isChecked by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefTintedColors, false)) }
+                var isChecked by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefTintedColors, false)) }
                 Switch(checked = isChecked, onCheckedChange = {
                     isChecked = it
-                    putPref(UserPreferences.Prefs.prefTintedColors, it)
+                    putPref(AppPreferences.AppPrefs.prefTintedColors, it)
                     ActivityCompat.recreate(this@PreferenceActivity)
                 })
             }
-            TitleSummarySwitchPrefRow(R.string.pref_episode_cover_title, R.string.pref_episode_cover_summary, UserPreferences.Prefs.prefEpisodeCover.name)
-            TitleSummarySwitchPrefRow(R.string.pref_show_remain_time_title, R.string.pref_show_remain_time_summary, UserPreferences.Prefs.showTimeLeft.name)
+            TitleSummarySwitchPrefRow(R.string.pref_episode_cover_title, R.string.pref_episode_cover_summary, AppPreferences.AppPrefs.prefEpisodeCover.name)
+            TitleSummarySwitchPrefRow(R.string.pref_show_remain_time_title, R.string.pref_show_remain_time_summary, AppPreferences.AppPrefs.showTimeLeft.name)
             Text(stringResource(R.string.subscriptions_label), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
-            TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)
-            TitleSummarySwitchPrefRow(R.string.pref_feedGridLayout_title, R.string.pref_feedGridLayout_sum, UserPreferences.Prefs.prefFeedGridLayout.name)
+            TitleSummarySwitchPrefRow(R.string.pref_swipe_refresh_title, R.string.pref_swipe_refresh_sum, AppPreferences.AppPrefs.prefSwipeToRefreshAll.name, true)
+            TitleSummarySwitchPrefRow(R.string.pref_feedGridLayout_title, R.string.pref_feedGridLayout_sum, AppPreferences.AppPrefs.prefFeedGridLayout.name)
             Text(stringResource(R.string.external_elements), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             if (Build.VERSION.SDK_INT < 26) {
-                TitleSummarySwitchPrefRow(R.string.pref_expandNotify_title, R.string.pref_expandNotify_sum, UserPreferences.Prefs.prefExpandNotify.name)
+                TitleSummarySwitchPrefRow(R.string.pref_expandNotify_title, R.string.pref_expandNotify_sum, AppPreferences.AppPrefs.prefExpandNotify.name)
             }
 //            TitleSummarySwitchPrefRow(R.string.pref_persistNotify_title, R.string.pref_persistNotify_sum, UserPreferences.Prefs.prefPersistNotify.name)
-            TitleSummarySwitchPrefRow(R.string.pref_show_notification_skip_title, R.string.pref_show_notification_skip_sum, UserPreferences.Prefs.prefShowSkip.name, true)
+            TitleSummarySwitchPrefRow(R.string.pref_show_notification_skip_title, R.string.pref_show_notification_skip_sum, AppPreferences.AppPrefs.prefShowSkip.name, true)
             Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showDefaultPageOptions by remember { mutableStateOf(false) }
-            var tempSelectedOption by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefDefaultPage, DefaultPages.SubscriptionsFragment.name)!!) }
+            var tempSelectedOption by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefDefaultPage, DefaultPages.SubscriptionsFragment.name)!!) }
             TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
             if (showDefaultPageOptions) {
                 AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDefaultPageOptions = false },
@@ -451,14 +450,14 @@ class PreferenceActivity : AppCompatActivity() {
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            putPref(UserPreferences.Prefs.prefDefaultPage, tempSelectedOption)
+                            putPref(AppPreferences.AppPrefs.prefDefaultPage, tempSelectedOption)
                             showDefaultPageOptions = false
                         }) { Text(text = "OK") }
                     },
                     dismissButton = { TextButton(onClick = { showDefaultPageOptions = false }) { Text(stringResource(R.string.cancel_label)) } }
                 )
             }
-            TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, UserPreferences.Prefs.prefBackButtonOpensDrawer.name)
+            TitleSummarySwitchPrefRow(R.string.pref_back_button_opens_drawer, R.string.pref_back_button_opens_drawer_summary, AppPreferences.AppPrefs.prefBackButtonOpensDrawer.name)
         }
     }
 
@@ -475,9 +474,9 @@ class PreferenceActivity : AppCompatActivity() {
             val scrollState = rememberScrollState()
             Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
                 Text(stringResource(R.string.notification_group_errors), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, UserPreferences.Prefs.prefShowDownloadReport.name, true)
+                TitleSummarySwitchPrefRow(R.string.notification_channel_download_error, R.string.notification_channel_download_error_description, AppPreferences.AppPrefs.prefShowDownloadReport.name, true)
                 if (isProviderConnected)
-                    TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, UserPreferences.Prefs.pref_gpodnet_notifications.name, true)
+                    TitleSummarySwitchPrefRow(R.string.notification_channel_sync_error, R.string.notification_channel_sync_error_description, AppPreferences.AppPrefs.pref_gpodnet_notifications.name, true)
             }
         }
     }

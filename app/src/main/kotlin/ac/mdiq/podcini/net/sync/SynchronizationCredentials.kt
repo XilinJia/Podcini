@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.clearQueue
-import ac.mdiq.podcini.preferences.UserPreferences.Prefs.pref_gpodnet_notifications
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs.pref_gpodnet_notifications
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context
 import android.content.SharedPreferences

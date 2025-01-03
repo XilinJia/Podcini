@@ -1,3 +1,13 @@
+# 7.2.1
+
+* cleaned UserPreferences
+* in Queues, showFeeds icon on the title bar toggles with view
+* some code pruning in action buttons
+* machine-translated some languages
+* added support for some more languages (not translated yet)
+* changed tranlation service to Crowdin
+* added a couple fellow contributors
+
 # 7.2.0
 
 * enabled caching in Shared Preferences to enhance performance

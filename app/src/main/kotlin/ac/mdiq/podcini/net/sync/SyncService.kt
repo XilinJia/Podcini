@@ -17,8 +17,8 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.containsUrl
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFor
 import ac.mdiq.podcini.net.utils.NetworkUtils.setAllowMobileFor
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
@@ -51,7 +51,6 @@ import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
-import kotlin.Throws
 
 open class SyncService(context: Context, params: WorkerParameters) : Worker(context, params) {
     val TAG = this::class.simpleName ?: "Anonymous"
@@ -291,7 +290,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
     fun gpodnetNotificationsEnabled(): Boolean {
         if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
-        return getPref(UserPreferences.Prefs.pref_gpodnet_notifications, true)
+        return getPref(AppPreferences.AppPrefs.pref_gpodnet_notifications, true)
     }
 
     protected fun updateErrorNotification(exception: Exception) {

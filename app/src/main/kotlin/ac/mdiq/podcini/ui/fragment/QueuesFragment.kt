@@ -8,10 +8,10 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybac
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.mediaBrowser
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
@@ -41,11 +41,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -102,7 +98,7 @@ class QueuesFragment : Fragment() {
 
     private var showSwipeActionsDialog by mutableStateOf(false)
 
-    private var isQueueLocked by mutableStateOf(getPref(UserPreferences.Prefs.prefQueueLocked, true))
+    private var isQueueLocked by mutableStateOf(getPref(AppPreferences.AppPrefs.prefQueueLocked, true))
 
     private var queueNames = mutableStateListOf<String>()
     private val spinnerTexts = mutableStateListOf<String>()
@@ -241,52 +237,52 @@ class QueuesFragment : Fragment() {
         MediaBrowser.releaseFuture(browserFuture)
     }
 
-     @OptIn(ExperimentalFoundationApi::class)
-     @Composable
-     fun FeedsGrid() {
-         val context = LocalContext.current
-         val lazyGridState = rememberLazyGridState()
-         LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(80.dp),
-             verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
-             contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)) {
-             items(feedsAssociated.size, key = {index -> feedsAssociated[index].id}) { index ->
-                 val feed by remember { mutableStateOf(feedsAssociated[index]) }
-                 ConstraintLayout {
-                     val (coverImage, episodeCount, rating, _) = createRefs()
-                     val imgLoc = remember(feed) { feed.imageUrl }
-                     AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
-                         .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
-                         contentDescription = "coverImage",
-                         modifier = Modifier.height(100.dp).aspectRatio(1f)
-                             .constrainAs(coverImage) {
-                                 top.linkTo(parent.top)
-                                 bottom.linkTo(parent.bottom)
-                                 start.linkTo(parent.start)
-                             }.combinedClickable(onClick = {
-                                 Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
-                                 (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-                             }, onLongClick = {
-                                 Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun FeedsGrid() {
+        val context = LocalContext.current
+        val lazyGridState = rememberLazyGridState()
+        LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(80.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)) {
+            items(feedsAssociated.size, key = {index -> feedsAssociated[index].id}) { index ->
+                val feed by remember { mutableStateOf(feedsAssociated[index]) }
+                ConstraintLayout {
+                    val (coverImage, episodeCount, rating, _) = createRefs()
+                    val imgLoc = remember(feed) { feed.imageUrl }
+                    AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
+                        .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
+                        contentDescription = "coverImage",
+                        modifier = Modifier.height(100.dp).aspectRatio(1f)
+                            .constrainAs(coverImage) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                            }.combinedClickable(onClick = {
+                                Logd(SubscriptionsFragment.TAG, "clicked: ${feed.title}")
+                                (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                            }, onLongClick = {
+                                Logd(SubscriptionsFragment.TAG, "long clicked: ${feed.title}")
 //                                val inflater: MenuInflater = (activity as MainActivity).menuInflater
 //                                inflater.inflate(R.menu.feed_context, contextMenu)
 //                                contextMenu.setHeaderTitle(feed.title)
-                             })
-                     )
-                     Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
-                         modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
-                             end.linkTo(parent.end)
-                             top.linkTo(coverImage.top)
-                         })
-                     if (feed.rating != Rating.UNRATED.code)
-                         Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                             modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                 start.linkTo(parent.start)
-                                 centerVerticallyTo(coverImage)
-                             })
-                 }
-             }
-         }
-     }
+                            })
+                    )
+                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()), color = Color.Green,
+                        modifier = Modifier.background(Color.Gray).constrainAs(episodeCount) {
+                            end.linkTo(parent.end)
+                            top.linkTo(coverImage.top)
+                        })
+                    if (feed.rating != Rating.UNRATED.code)
+                        Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
+                            modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+                                start.linkTo(parent.start)
+                                centerVerticallyTo(coverImage)
+                            })
+                }
+            }
+        }
+    }
 
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
@@ -472,14 +468,16 @@ class QueuesFragment : Fragment() {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playlist_play), contentDescription = "Open Drawer") } }
             },
             actions = {
-                var binIconRes by remember { mutableIntStateOf( if (showBin) R.drawable.playlist_play else R.drawable.ic_history) }
-                var feedsIconRes by remember { mutableIntStateOf( if (showFeeds) R.drawable.playlist_play else R.drawable.baseline_dynamic_feed_24) }
+                val binIconRes by remember(showBin) { derivedStateOf { if (showBin) R.drawable.playlist_play else R.drawable.ic_history } }
+//                var binIconRes by remember { mutableIntStateOf( if (showBin) R.drawable.playlist_play else R.drawable.ic_history) }
+//                var feedsIconRes = if (showFeeds) R.drawable.playlist_play else R.drawable.baseline_dynamic_feed_24)
+                val feedsIconRes by remember(showFeeds) { derivedStateOf { if (showFeeds) R.drawable.playlist_play else R.drawable.baseline_dynamic_feed_24 } }
                 IconButton(onClick = {
                     showBin = !showBin
                     showSpinner = !showBin
                     title = if (showBin) curQueue.name + " Bin" else ""
                     refreshSwipeTelltale()
-                    binIconRes = if (showBin) R.drawable.playlist_play else R.drawable.ic_history
+//                    binIconRes = if (showBin) R.drawable.playlist_play else R.drawable.ic_history
                     loadCurQueue(false)
                 }) { Icon(imageVector = ImageVector.vectorResource(binIconRes), contentDescription = "bin") }
                 IconButton(onClick = { showFeeds = !showFeeds }) { Icon(imageVector = ImageVector.vectorResource(feedsIconRes), contentDescription = "feeds") }
@@ -617,7 +615,7 @@ class QueuesFragment : Fragment() {
 
     private fun setQueueLock(locked: Boolean) {
         isQueueLocked = locked
-        putPref(UserPreferences.Prefs.prefQueueLocked, locked)
+        putPref(AppPreferences.AppPrefs.prefQueueLocked, locked)
         dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         if (queueItems.isEmpty()) {
             if (locked) (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
@@ -636,7 +634,7 @@ class QueuesFragment : Fragment() {
             var timeLeft: Long = 0
             for (item in queueItems) {
                 var playbackSpeed = 1f
-                if (UserPreferences.timeRespectsSpeed) playbackSpeed = getCurrentPlaybackSpeed(item)
+                if (getPref(AppPrefs.prefPlaybackTimeRespectsSpeed, false)) playbackSpeed = getCurrentPlaybackSpeed(item)
                 val itemTimeLeft: Long = (item.duration - item.position).toLong()
                 timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
             }

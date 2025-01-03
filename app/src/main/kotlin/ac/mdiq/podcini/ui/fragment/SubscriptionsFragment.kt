@@ -6,9 +6,8 @@ import ac.mdiq.podcini.preferences.DocumentFileExportWorker
 import ac.mdiq.podcini.preferences.ExportTypes
 import ac.mdiq.podcini.preferences.ExportWorker
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -156,12 +155,12 @@ class SubscriptionsFragment : Fragment() {
     private var showNewSynthetic by mutableStateOf(false)
 
     private var useGrid by mutableStateOf<Boolean?>(null)
-    private val useGridLayout by mutableStateOf(getPref(UserPreferences.Prefs.prefFeedGridLayout, false))
+    private val useGridLayout by mutableStateOf(getPref(AppPreferences.AppPrefs.prefFeedGridLayout, false))
 
     private var selectMode by mutableStateOf(false)
 
     private val swipeToRefresh: Boolean
-        get() = getPref(UserPreferences.Prefs.prefSwipeToRefreshAll, true)
+        get() = getPref(AppPreferences.AppPrefs.prefSwipeToRefreshAll, true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

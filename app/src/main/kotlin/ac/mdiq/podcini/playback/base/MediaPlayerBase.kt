@@ -5,11 +5,10 @@ import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curState
-import ac.mdiq.podcini.preferences.UserPreferences.Prefs
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
-import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.prefLowQualityMedia
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.MediaType
@@ -471,10 +470,10 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         val prefPlaybackSpeed: Float
             get() {
-                try { return getPref(Prefs.prefPlaybackSpeed, "1.00")!!.toFloat()
+                try { return getPref(AppPrefs.prefPlaybackSpeed, "1.00")!!.toFloat()
                 } catch (e: NumberFormatException) {
                     Log.e(TAG, Log.getStackTraceString(e))
-                    setPlaybackSpeed(1.0f)
+                    putPref(AppPrefs.prefPlaybackSpeed, "1.0")
                     return 1.0f
                 }
             }

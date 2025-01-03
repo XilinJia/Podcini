@@ -13,8 +13,8 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.net.utils.NetworkUtils.prepareUrl
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds
@@ -62,7 +62,6 @@ import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 import javax.xml.parsers.ParserConfigurationException
-import kotlin.Throws
 
 object FeedUpdateManager {
     private val TAG: String = FeedUpdateManager::class.simpleName ?: "Anonymous"
@@ -76,7 +75,7 @@ object FeedUpdateManager {
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
     private val updateInterval: Long
-        get() = getPref(UserPreferences.Prefs.prefAutoUpdateIntervall, "12").toInt().toLong()
+        get() = getPref(AppPreferences.AppPrefs.prefAutoUpdateIntervall, "12").toInt().toLong()
 
     private val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L

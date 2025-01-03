@@ -12,15 +12,15 @@ import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
-import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.defaultPage
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.autoBackup
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
@@ -57,11 +57,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -211,7 +207,7 @@ class MainActivity : CastEnabledActivity() {
 
         val fm = supportFragmentManager
         if (fm.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {
-            if (defaultPage != UserPreferences.DefaultPages.Remember.name) loadFragment(defaultPage, null)
+            if (defaultPage != AppPreferences.DefaultPages.Remember.name) loadFragment(defaultPage, null)
             else {
                 val lastFragment = NavDrawerFragment.getLastNavFragment()
                 Logd(TAG, "lastFragment: $lastFragment")
@@ -587,8 +583,8 @@ class MainActivity : CastEnabledActivity() {
             supportFragmentManager.backStackEntryCount != 0 -> super.onBackPressed()
             else -> {
                 val toPage = defaultPage
-                if (NavDrawerFragment.getLastNavFragment() == toPage || UserPreferences.DefaultPages.Remember.name == toPage) {
-                    if (backButtonOpensDrawer) drawerLayout?.openDrawer(navDrawer)
+                if (NavDrawerFragment.getLastNavFragment() == toPage || AppPreferences.DefaultPages.Remember.name == toPage) {
+                    if (getPref(AppPrefs.prefBackButtonOpensDrawer, false)) drawerLayout?.openDrawer(navDrawer)
                     else super.onBackPressed()
                 } else loadFragment(toPage, null)
             }

@@ -11,11 +11,10 @@ import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.OpmlTransporter
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPrefOrNull
-import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPrefOrNull
+import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
@@ -479,7 +478,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
         val speedFormat = DecimalFormat("0.00", format)
         val jsonArray = JSONArray()
         for (speed in speeds) jsonArray.put(speedFormat.format(speed.toDouble()))
-        putPref(UserPreferences.Prefs.prefPlaybackSpeedArray, jsonArray.toString())
+        putPref(AppPrefs.prefPlaybackSpeedArray, jsonArray.toString())
     }
     fun setCurTempSpeed(speed: Float) {
         curState = upsertBlk(curState) { it.curTempSpeed = speed }
@@ -493,7 +492,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
         Card(modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(top = 10.dp, bottom = 10.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
             Column {
                 var speed by remember { mutableStateOf(curSpeedFB) }
-                var speeds = remember { readPlaybackSpeedArray(getPrefOrNull<String>(UserPreferences.Prefs.prefPlaybackSpeedArray, null)).toMutableStateList() }
+                var speeds = remember { readPlaybackSpeedArray(getPrefOrNull<String>(AppPrefs.prefPlaybackSpeedArray, null)).toMutableStateList() }
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.playback_speed), fontSize = MaterialTheme.typography.headlineSmall.fontSize, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                     Spacer(Modifier.width(50.dp))
@@ -559,7 +558,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                                 playbackService!!.isFallbackSpeed = false
                                 if (settingCode.size == 3) {
                                     Logd(TAG, "setSpeed codeArray: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
-                                    if (settingCode[2]) UserPreferences.setPlaybackSpeed(chipSpeed)
+                                    if (settingCode[2]) putPref(AppPrefs.prefPlaybackSpeed, chipSpeed.toString())
                                     if (settingCode[1]) {
                                         val episode = curEpisode ?: curEpisode
                                         if (episode?.feed != null) upsertBlk(episode.feed!!) { it.playSpeed = chipSpeed }
@@ -574,7 +573,7 @@ fun PlaybackSpeedFullDialog(settingCode: BooleanArray, indexDefault: Int, maxSpe
                                 }
                             }
                             else {
-                                UserPreferences.setPlaybackSpeed(chipSpeed)
+                                putPref(AppPrefs.prefPlaybackSpeed, chipSpeed.toString())
                                 EventFlow.postEvent(FlowEvent.SpeedChangedEvent(chipSpeed))
                             }
                             onDismiss()

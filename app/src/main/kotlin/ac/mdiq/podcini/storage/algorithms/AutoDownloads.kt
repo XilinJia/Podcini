@@ -4,10 +4,10 @@ import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
@@ -15,13 +15,15 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-
 import io.realm.kotlin.UpdatePolicy
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -95,7 +97,7 @@ object AutoDownloads {
                 // true if we should auto download based on network status
                 val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
                 // true if we should auto download based on power status
-                val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
+                val powerShouldAutoDl = (deviceCharging(context) || getPref(AppPrefs.prefEnableAutoDownloadOnBattery, true))
                 Logd(TAG, "autoDownloadEpisodeMedia prepare $networkShouldAutoDl $powerShouldAutoDl")
                 // we should only auto download if both network AND power are happy
                 if (networkShouldAutoDl && powerShouldAutoDl) {
@@ -181,10 +183,10 @@ object AutoDownloads {
                         val autoDownloadableCount = candidates.size
                         val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                         val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount - toDelete.size)
-                        val cacheIsUnlimited = episodeCacheSize <= UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
+                        val cacheIsUnlimited = getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() <= AppPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                         val allowedCount =
-                            if (cacheIsUnlimited || episodeCacheSize >= downloadedCount + autoDownloadableCount) autoDownloadableCount
-                            else episodeCacheSize - (downloadedCount - deletedCount)
+                            if (cacheIsUnlimited || getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() >= downloadedCount + autoDownloadableCount) autoDownloadableCount
+                            else getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() - (downloadedCount - deletedCount)
                         if (toDelete.isNotEmpty()) deleteEpisodes(context, toDelete.toList())
                         if (allowedCount in 0..candidates.size) {
                             val itemsToDownload: MutableList<Episode> = candidates.toMutableList().subList(0, allowedCount)

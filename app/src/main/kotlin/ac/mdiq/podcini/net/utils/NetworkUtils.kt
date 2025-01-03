@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.net.utils
 
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.appPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.Context
@@ -47,7 +47,7 @@ object NetworkUtils {
 
     // not using this
     val isEnableAutodownloadWifiFilter: Boolean
-        get() = false && Build.VERSION.SDK_INT < 29 && getPref(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter, false)
+        get() = false && Build.VERSION.SDK_INT < 29 && getPref(AppPreferences.AppPrefs.prefEnableAutoDownloadWifiFilter, false)
 
     @JvmStatic
     val isAutoDownloadAllowed: Boolean
@@ -144,7 +144,7 @@ object NetworkUtils {
 
     val autodownloadSelectedNetworks: Array<String>
         get() {
-            val selectedNetWorks = getPref(UserPreferences.Prefs.prefAutodownloadSelectedNetworks, "")
+            val selectedNetWorks = getPref(AppPreferences.AppPrefs.prefAutodownloadSelectedNetworks, "")
             return selectedNetWorks?.split(",")?.toTypedArray() ?: arrayOf()
         }
 
@@ -163,18 +163,18 @@ object NetworkUtils {
     fun isAllowMobileFor(type: String): Boolean {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val allowed = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
+        val allowed = appPrefs.getStringSet(AppPreferences.AppPrefs.prefMobileUpdateTypes.name, defaultValue)
         return allowed!!.contains(type)
     }
 
     fun setAllowMobileFor(type: String, allow: Boolean) {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val getValueStringSet = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
+        val getValueStringSet = appPrefs.getStringSet(AppPreferences.AppPrefs.prefMobileUpdateTypes.name, defaultValue)
         val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
         if (allow) allowed.add(type)
         else allowed.remove(type)
-        putPref(UserPreferences.Prefs.prefMobileUpdateTypes, allowed)
+        putPref(AppPreferences.AppPrefs.prefMobileUpdateTypes, allowed)
     }
 
     @JvmStatic

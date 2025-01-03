@@ -8,7 +8,7 @@ import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -169,10 +169,10 @@ class EpisodeInfoFragment : Fragment() {
                     Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                         modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(24.dp).height(24.dp).clickable(onClick = { showChooseRatingDialog = true }))
                     Spacer(modifier = Modifier.weight(0.2f))
-                    if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.getDrawable() ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
+                    if (hasMedia) Icon(imageVector = ImageVector.vectorResource(actionButton1?.drawable ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
                         modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
                             when {
-                                actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
+                                actionButton1 is StreamActionButton && !AppPreferences.isStreamOverDownload
                                         && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
                                     showOnDemandConfigBalloon(true)
                                     return@clickable
@@ -183,9 +183,9 @@ class EpisodeInfoFragment : Fragment() {
                         }))
                     Spacer(modifier = Modifier.weight(0.2f))
                     Box(modifier = Modifier.width(40.dp).height(40.dp).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
-                        Icon(imageVector = ImageVector.vectorResource(actionButton2?.getDrawable() ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
+                        Icon(imageVector = ImageVector.vectorResource(actionButton2?.drawable ?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction2", modifier = Modifier.width(24.dp).height(24.dp).clickable {
                             when {
-                                actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
+                                actionButton2 is DownloadActionButton && AppPreferences.isStreamOverDownload
                                         && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
                                     showOnDemandConfigBalloon(false)
                                     return@clickable
@@ -296,7 +296,7 @@ class EpisodeInfoFragment : Fragment() {
         message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
         else R.string.on_demand_config_download_text)
         positiveButton.setOnClickListener {
-            UserPreferences.isStreamOverDownload = offerStreaming
+            AppPreferences.isStreamOverDownload = offerStreaming
             // Update all visible lists to reflect new streaming action button
             //            TODO: need another event type?
             EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())

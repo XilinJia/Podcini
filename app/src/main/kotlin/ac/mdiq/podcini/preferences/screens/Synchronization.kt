@@ -11,10 +11,9 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow.AuthenticationCallback
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.fragments.WifiAuthenticationFragment
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
@@ -67,7 +66,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
     fun NextcloudAuthenticationDialog(onDismissRequest: ()->Unit) {
         var nextcloudLoginFlow = remember<NextcloudLoginFlow?> { null }
         var showUrlEdit by remember { mutableStateOf(true) }
-        var serverUrlText by remember { mutableStateOf(getPref(UserPreferences.Prefs.pref_nextcloud_server_address, "")!!) }
+        var serverUrlText by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.pref_nextcloud_server_address, "")!!) }
         var errorText by remember { mutableStateOf("") }
         var showChooseHost by remember { mutableStateOf(serverUrlText.isNotBlank()) }
 
@@ -114,7 +113,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
             },
             confirmButton = {
                 if (showChooseHost) TextButton(onClick = {
-                    putPref(UserPreferences.Prefs.pref_nextcloud_server_address, serverUrlText)
+                    putPref(AppPreferences.AppPrefs.pref_nextcloud_server_address, serverUrlText)
                     nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), serverUrlText, activity, nextCloudAuthCallback)
                     errorText = ""
                     showChooseHost = false

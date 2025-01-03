@@ -1,716 +1,878 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-  <!--Activity and fragment titles-->
-  <string name="feed_update_receiver_name">Обновить подписки</string>
-  <string name="feeds_label">Подкасты</string>
-  <string name="statistics_label">Статистика</string>
-  <string name="add_feed_label">Добавить подкаст</string>
-  <string name="episodes_label">Выпуски</string>
-  <string name="home_label">Главная</string>
-  <string name="queue_label">Очередь</string>
-
-
-  <string name="settings_label">Настройки</string>
-  <string name="downloads_label">Загрузки</string>
-
-
-  <string name="subscriptions_label">Подписки</string>
-
-  <string name="cancel_download_label">Отменить загрузку</string>
-  <string name="playback_history_label">История</string>
-
-
-  <string name="years_statistics_label">По годам</string>
-  <string name="notification_pref_fragment">Уведомления</string>
-
-  <!--Google Assistant-->
-  <string name="app_action_not_found">«%1$s» не найдено</string>
-  <!--SwipeActions-->
-  <string name="swipeactions_label">Действия при смахивании</string>
-  <string name="swipeactions_summary">Выберите действие, выполняемое при смахивании выпуска в списке</string>
-  <string name="swipe_right">Смахнуть вправо</string>
-  <string name="swipe_left">Смахнуть влево</string>
-
-
-  <string name="individual_subscription">Отдельная подписка</string>
-  <!--Statistics fragment-->
-  <string name="statistics_include_marked">Просто учесть длительность выпусков, помеченных как прослушанные.</string>
-  <string name="statistics_speed_not_counted">Замечание: Скорость воспроизведения никогда не учитывается.</string>
-  <string name="statistics_from">С</string>
-  <string name="statistics_to">По</string>
-  <string name="statistics_today">Сегодня</string>
-  <string name="statistics_filter_all_time">За всё время</string>
-  <string name="statistics_filter_past_year">В течение года</string>
-  <string name="statistics_reset_data">Сбросить статистику</string>
-  <string name="statistics_reset_data_msg">Вы уверены, что хотите безвозвратно стереть статистику воспроизведения всех выпусков\?</string>
-  <string name="statistics_counting_range">Прослушанные с %1$s по %2$s</string>
-  <string name="statistics_counting_total">Прослушано за всё время</string>
-  <!--Home fragment-->
-  <string name="notification_permission_denied">Вы не дали разрешения.</string>
-
-
-  <!--Download Statistics fragment-->
-  <string name="total_size_downloaded_podcasts">Общий размер выпусков на устройстве</string>
-  <!--Main activity-->
-  <string name="drawer_open">Открыть меню</string>
-  <string name="drawer_close">Закрыть меню</string>
-  <string name="drawer_preferences">Настройка бокового меню</string>
-
-
-
-
-
-
-
-  <!--Bug report activity-->
-  <string name="log_file_share_exception">Совместимых приложений не найдено</string>
-  <string name="export_logs_menu_title">Экспортировать подробные журналы</string>
-  <string name="confirm_export_log_dialog_message">Подробные журналы могут содержать личные сведения, такие как список ваших подписок</string>
-  <!--Webview actions-->
-  <string name="open_in_browser_label">Открыть в браузере</string>
-  <string name="copy_url_label">Скопировать ссылку</string>
-  <string name="share_url_label">Поделиться ссылкой</string>
-  <string name="go_to_position_label">Перейти к этому месту</string>
-  <!--Playback history-->
-  <string name="clear_history_label">Очистить историю</string>
-  <string name="clear_playback_history_msg">Вы уверены, что хотите стереть всю историю вопроизведения\?</string>
-  <string name="remove_history_label">Удалить из истории</string>
-  <string name="removed_history_label">Удалено из истории</string>
-  <!--Other-->
-  <string name="confirm_label">Подтвердить</string>
-  <string name="cancel_label">Отмена</string>
-  <string name="yes">Да</string>
-  <string name="no">Нет</string>
-  <string name="reset">Сброс</string>
-  <string name="global_default">как по умолчанию</string>
-  <string name="url_label">Ссылка</string>
-  <string name="support_funding_label">Поддержать</string>
-  <string name="support_podcast">Поддержать этот подкаст</string>
-  <string name="error_label">Ошибка</string>
-  <string name="error_msg_prefix">Произошла ошибка:</string>
-  <string name="refresh_label">Обновить</string>
-  <string name="chapters_label">Главы</string>
-
-
-  <string name="description_label">Описание</string>
-
-
-  <string name="episodes_suffix">\u0020выпуск(ов)</string>
-  <string name="close_label">Закрыть</string>
-  <string name="retry_label">Повторить</string>
-  <string name="auto_download_label">Добавить в автозагрузки</string>
-  <string name="auto_delete_label">Автоматическое удаление выпусков</string>
-  <string name="feed_auto_download_always">всегда</string>
-  <string name="feed_auto_download_never">никогда</string>
-
-
-  <string name="episode_cleanup_never">никогда</string>
-  <string name="episode_cleanup_except_favorite">Когда не в избранном</string>
-  <string name="episode_cleanup_not_in_queue">Когда не в очереди</string>
-  <string name="episode_cleanup_after_listening">После прослушивания</string>
-  <plurals name="episode_cleanup_hours_after_listening">
-    <item quantity="one">1 час после прослушивания</item>
-    <item quantity="few">%d часов после прослушивания</item>
-    <item quantity="many">%d часов после прослушивания</item>
-    <item quantity="other">%d часов после прослушивания</item>
-  </plurals>
-  <plurals name="episode_cleanup_days_after_listening">
-    <item quantity="one">день после прослушивания</item>
-    <item quantity="few">%d дня после прослушивания</item>
-    <item quantity="many">%d дней после прослушивания</item>
-    <item quantity="other">%d дней после прослушивания</item>
-  </plurals>
-
-
-
-  <!--Actions on feeds-->
-
-
-
-
-
-
-
-  <string name="feed_settings_label">Настройки подкаста</string>
-  <string name="rename_feed_label">Переименовать подкаст</string>
-  <string name="remove_feed_label">Удалить подкаст</string>
-  <string name="share_label">Поделиться</string>
-  <string name="share_file_label">Поделиться файлом</string>
-
-  <string name="feed_delete_confirmation_msg">Подтвердите, что хотите удалить подкаст «%1$s», все его выпуски (включая загруженные) и его статистику.</string>
-  <string name="feed_delete_confirmation_msg_batch">Подтвердите, что хотите удалить выбранные подкасты, все их выпуски (включая загруженные) и их статистику.</string>
-  <string name="feed_delete_confirmation_local_msg">Подтвердите, что хотите удалить подкаст «%1$s» и его статистику. Файлы в локальной исходной папке не будут удалены.</string>
-
-  <string name="load_complete_feed">Обновить весь подкаст</string>
-  <string name="multi_select">Множественный выбор</string>
-
-
-  <string name="filtered_label">Отфильтровано</string>
-
-  <string name="open_podcast">Открыть подкаст</string>
-  <string name="please_wait_for_data">Подождите, пока загружаются данные</string>
-
-  <plurals name="updated_feeds_batch_label">
-    <item quantity="one">%d подписка обновлена.</item>
-    <item quantity="few">%d подписки обновлено.</item>
-    <item quantity="many">%d подписок обновлено.</item>
-    <item quantity="other">%d подписок обновлено.</item>
-  </plurals>
-  <string name="edit_tags">Править метки</string>
-  <string name="add_tag">Добавить метку</string>
-
-  <string name="confirm_mobile_feed_refresh_dialog_message">Обновление подкастов через мобильное соединение отключено в настройках.\n\nВы действительно хотите обновить подкасты\?</string>
-  <!--actions on feeditems-->
-  <string name="download_label">Загрузить</string>
-  <string name="play_label">Воспроизвести</string>
-  <string name="pause_label">Пауза</string>
-  <string name="stream_label">Воспроизвести из сети</string>
-  <string name="delete_label">Удалить</string>
-
-  <string name="delete_episode_label">Удалить выпуск</string>
-
-
-
-  <string name="play_this_to_seek_position">Для переходов в выпуске нужно слушать выпуск</string>
-
-  <string name="add_to_queue_label">Добавить в очередь</string>
-  <string name="remove_from_queue_label">Убрать из очереди</string>
-  <plurals name="removed_from_queue_batch_label">
-    <item quantity="one">%d выпуск удален из очереди.</item>
-    <item quantity="few">%d выпуска удалены из очереди.</item>
-    <item quantity="many">%d выпусков удалены из очереди.</item>
-    <item quantity="other">%d выпусков удалено из очереди.</item>
-  </plurals>
-
-
-  <string name="visit_website_label">Посетить сайт</string>
-  <string name="skip_episode_label">Пропустить выпуск</string>
-
-
-  <!--Download messages and labels-->
-  <string name="download_successful">успешно</string>
-  <string name="download_pending">Загрузка в ожидании</string>
-  <string name="download_running">Загрузка в процессе</string>
-  <string name="download_error_details">Подробнее</string>
-  <string name="download_log_details_message">%1$s \n\nПричина: \n%2$s \n\Адрес файла:\n%3$s</string>
-  <string name="download_error_retrying">\"%1$s\" загрузка не удалась. Повтор – позже.</string>
-  <string name="download_error_not_retrying">\"%1$s\" загрузка не удалась.</string>
-  <string name="download_error_tap_for_details">Подробнее…</string>
-  <string name="download_error_device_not_found">Устройство хранения не найдено</string>
-  <string name="download_error_insufficient_space">На устройстве не осталось места.</string>
-  <string name="download_error_http_data_error">Ошибка данных HTTP</string>
-  <string name="download_error_error_unknown">Неизвестная ошибка</string>
-  <string name="download_error_parser_exception">Сервер подкаста прислал негодный файл канала.</string>
-  <string name="download_error_unsupported_type">Неподдерживаемый тип канала</string>
-  <string name="download_error_unsupported_type_html">Сервер подкаста прислал сайт вместо подкаста.</string>
-  <string name="download_error_not_found">Сервер подкаста не может найти запрошенный файл. Возможно он был удалён.</string>
-  <string name="download_error_connection_error">Ошибка соединения</string>
-  <string name="download_error_unknown_host">Сервер не найден. Проверьте правильность указанного адреса и имеется ли подключение к сети.</string>
-  <string name="download_error_unauthorized">Ошибка авторизации. Проверьте правильность имени пользователя и пароля.</string>
-  <string name="download_error_file_type_type">Ошибочный в тип файла</string>
-  <string name="download_error_forbidden">Сервер подкаста отказывает в ответе.</string>
-  <string name="download_canceled_msg">Загрузка отменена</string>
-  <string name="download_error_wrong_size">Соединение с сервером было оборвано до завершения загрузки.</string>
-  <string name="download_error_blocked">Загрузка была заблокирована другим приложением на вашем устройстве (например, VPN или блокировщиком рекламы).</string>
-  <string name="download_error_certificate">Невозможно установить защищённое соединение. Возможно загрузке препятствует другое приложение (например, VPN или блокировщик рекламы), либо что-то не так с сертификатом сервера.</string>
-  <string name="download_report_title">Загрузки завершились с ошибкой</string>
-  <string name="download_error_io_error">Ошибка ввода-вывода</string>
-  <string name="download_error_request_error">Ошибка запроса</string>
-  <string name="download_error_db_access">Ошибка доступа к базе данных</string>
-  <plurals name="downloads_left">
-    <item quantity="one">Осталась %d загрузка</item>
-    <item quantity="few">Осталось %d загрузки</item>
-    <item quantity="many">Осталось %d загрузок</item>
-    <item quantity="other">Осталось %d загрузок</item>
-  </plurals>
-  <string name="download_notification_title_feeds">Подкасты обновляются</string>
-  <string name="download_notification_title_episodes">Выпуски загружаются</string>
-  <string name="download_log_title_unknown">Неизвестное название</string>
-  <string name="download_type_feed">Канал</string>
-  <string name="download_type_media">Медиафайл</string>
-  <string name="null_value_podcast_error">Не указан подкаст, который следовало бы показать.</string>
-  <string name="no_feed_url_podcast_found_by_search">У предложенного подкаста отсутствует RSS-ссылка, Podcini нашел подкаст, который возможно ему соответствует</string>
-
-  <string name="confirm_mobile_download_dialog_title">Подтвердите загрузку через мобильное соединение</string>
-  <string name="confirm_mobile_download_dialog_message">Загрузка через мобильное соединение отключена в настройках. Podcini может загрузить выпуск позже, когда появится соединение через Wi-Fi.</string>
-  <string name="confirm_mobile_download_dialog_download_later">Загрузить позже</string>
-  <string name="confirm_mobile_download_dialog_allow_this_time">Всё равно загрузить</string>
-  <string name="confirm_mobile_streaming_notification_title">Подтвердите трансляцию через мобильное соединение</string>
-  <string name="confirm_mobile_streaming_notification_message">Трансляция через мобильное подключение отключена в настройках. Нажмите, чтобы продолжить трансляцию.</string>
-  <string name="confirm_mobile_streaming_button_always">Всегда</string>
-  <string name="confirm_mobile_streaming_button_once">В этот раз</string>
-  <!--Mediaplayer messages-->
-  <string name="playback_error_generic"><![CDATA[Не удаётся воспроизвести медиафайл.\n\n- Попробуйте удалить и загрузить выпуск заново.\n- Проверьте соединение и блокировку со стороны VPN или страницы авторизации.\n- Попробуйте долгим нажатием поделиться \"ссылкой на медиафайл\" и попытайтесь открыть её в браузере. Если это не помогло, обратитесь к авторам подкаста.]]></string>
-
-
-
-
-
-  <string name="no_media_playing_label">Ничего не воспроизводится</string>
-  <string name="unknown_media_key">Podcini - неизвестный ключ носителя: %1$d</string>
-  <string name="error_file_not_found">Файл не найден</string>
-  <string name="no_media_label">Элемент не содержит медиафайл</string>
-  <!--Queue operations-->
-  <string name="lock_queue">Заблокировать очередь</string>
-  <string name="queue_locked">Очередь заблокирована</string>
-  <string name="queue_unlocked">Очередь разблокирована</string>
-  <string name="queue_lock_warning">Заблокировав очередь, вы не сможете смахивать или менять выпуски местами.</string>
-  <string name="checkbox_do_not_show_again">Больше не показывать</string>
-  <string name="clear_queue_label">Очистить очередь</string>
-  <string name="undo">Отмена</string>
-
-
-  <string name="sort">Сортировать</string>
-  <string name="keep_sorted">Сохранять сортировку</string>
-  <string name="date">По дате</string>
-  <string name="duration">По длительности</string>
-  <string name="episode_title">Название выпуска</string>
-  <string name="feed_title">Название подкаста</string>
-  <string name="random">Случайно</string>
-  <string name="smart_shuffle">Умное перемешивание</string>
-  <string name="clear_queue_confirmation_msg">Подтвердите, что хотите удалить из очереди все выпуски.</string>
-
-  <!--Variable Speed-->
-
-  <string name="preset_already_exists">%1$.2fx такая заготовка уже есть.</string>
-  <!--Empty list labels-->
-
-
-  <string name="no_shownotes_label">Этот выпуск не содержит примечаний.</string>
-
-
-
-
-
-
-
-
-
-
-
-
-  <string name="no_subscriptions_label">Чтобы подписаться на подкаст, нажмите значок «плюс» внизу.</string>
-  <!--Preferences-->
-  <string name="project_pref">Проект</string>
-  <string name="synchronization_pref">Синхронизация</string>
-  <string name="synchronization_sum">Синхронизация с другими устройствами</string>
-  <string name="automation">Автоматизация</string>
-  <string name="download_pref_details">Подробнее</string>
-  <string name="import_export_pref">Импорт/экспорт</string>
-  <string name="import_export_search_keywords">резервирование, восстановление, резервная, копия, бекап, бэкап</string>
-  <string name="appearance">Внешний вид</string>
-  <string name="external_elements">Внешние органы управления</string>
-  <string name="interruptions">Прерывания</string>
-  <string name="playback_control">Управление воспроизведением</string>
-  <string name="reassign_hardware_buttons">Переназначить физические кнопки</string>
-  <string name="preference_search_hint">Найти…</string>
-  <string name="preference_search_no_results">Нет результатов</string>
-  <string name="preference_search_clear_history">Очистить историю</string>
-  <string name="pref_episode_cleanup_title">Удаление выпусков</string>
-  <string name="pref_episode_cleanup_summary">Выпуски, подлежащие удалению, если для автозагрузки потребуется место для новых выпусков</string>
-  <string name="pref_pauseOnDisconnect_sum">Поставить на паузу, когда наушники или Bluetooth отключены</string>
-  <string name="pref_unpauseOnHeadsetReconnect_sum">Продолжать воспроизведение после подключения наушников</string>
-  <string name="pref_unpauseOnBluetoothReconnect_sum">Возобновить, когда восстановится Bluetooth-соединение</string>
-  <string name="pref_hardware_forward_button_title">Кнопка «Вперёд»</string>
-  <string name="pref_hardware_forward_button_summary">Настройка поведения кнопки Вперед</string>
-  <string name="pref_hardware_previous_button_title">Кнопка «Назад»</string>
-  <string name="pref_hardware_previous_button_summary">Настройка поведения кнопки Назад</string>
-  <string name="button_action_fast_forward">Перемотка вперёд</string>
-  <string name="button_action_rewind">Перемотка назад</string>
-  <string name="button_action_skip_episode">Пропустить выпуск</string>
-  <string name="button_action_restart_episode">Выпуск с начала</string>
-  <string name="pref_followQueue_sum">После завершения воспроизведения перейти к следующему в очереди</string>
-  <string name="pref_auto_delete_sum">Удалять выпуск по окончании воспроизведения</string>
-  <string name="pref_auto_delete_title">Автоматическое удаление</string>
-
-
-  <string name="pref_skip_keeps_episodes_sum">Сохранять выпуски, которые были пропущены</string>
-  <string name="pref_skip_keeps_episodes_title">Сохранять пропущенные выпуски</string>
-
-
-  <string name="playback_pref">Воспроизведение</string>
-  <string name="playback_pref_sum">Кнопки гарнитуры, шаг перемотки, очередь</string>
-  <string name="downloads_pref">Загрузки</string>
-  <string name="downloads_pref_sum">Интервал обновления, мобильная сеть, автоматизация</string>
-  <string name="feed_refresh_title">Обновить подкасты</string>
-
-  <string name="feed_refresh_never">Никогда</string>
-  <string name="feed_every_hour">Каждый час</string>
-  <string name="feed_every_2_hours">Каждые 2 часа</string>
-  <string name="feed_every_4_hours">Каждые 4 часа</string>
-  <string name="feed_every_8_hours">Каждые 8 часов</string>
-  <string name="feed_every_12_hours">Каждые 12 часов</string>
-  <string name="feed_every_24_hours">Каждый день</string>
-  <string name="feed_every_72_hours">Каждые 3 дня</string>
-  <string name="pref_followQueue_title">Непрерывное воспроизведение</string>
-  <string name="pref_pauseOnHeadsetDisconnect_title">Отключение наушников или Bluetooth</string>
-  <string name="pref_unpauseOnHeadsetReconnect_title">При подключении наушников</string>
-  <string name="pref_unpauseOnBluetoothReconnect_title">При подключении Bluetooth</string>
-  <string name="pref_stream_over_download_title">Трансляция вместо загрузки</string>
-
-  <string name="pref_mobileUpdate_sum">Выберите, что разрешено загружать через мобильное подключение</string>
-  <string name="pref_mobileUpdate_refresh">Обновление подкастов</string>
-  <string name="pref_mobileUpdate_images">Обложки</string>
-  <string name="pref_mobileUpdate_auto_download">Автозагрузка</string>
-  <string name="pref_mobileUpdate_episode_download">Загрузка выпусков</string>
-  <string name="pref_mobileUpdate_streaming">Трансляции по сети</string>
-  <string name="user_interface_label">Интерфейс</string>
-  <string name="user_interface_sum">Внешний вид, подписки, экран блокировки</string>
-  <string name="pref_black_theme_title">Чёрная</string>
-  <string name="pref_black_theme_message">Чёрная тема вместо тёмной</string>
-  <string name="pref_tinted_theme_title">Динамические цвета</string>
-  <string name="pref_tinted_theme_message">Менять цвета в приложении по цвету обоев</string>
-  <string name="pref_nav_drawer_items_title">Выбрать пункты боковой панели</string>
-  <string name="pref_nav_drawer_feed_order_title">Сортировка подписок</string>
-  <string name="pref_nav_drawer_feed_order_sum">Выбрать порядок отображения подписок</string>
-
-
-  <string name="pref_automatic_download_title">Автоматическая загрузка</string>
-  <string name="pref_autodl_wifi_filter_title">Включить фильтр Wi-Fi</string>
-  <string name="pref_autodl_wifi_filter_sum">Разрешать автоматическую загрузку только для выбранных сетей Wi-Fi.</string>
-  <string name="pref_automatic_download_on_battery_title">Загружать без зарядки</string>
-  <string name="pref_automatic_download_on_battery_sum">Разрешать автоматическую загрузку когда батарея не заряжается</string>
-  <string name="pref_episode_cache_title">Кэш выпусков</string>
-
-  <string name="pref_episode_cover_title">Использовать обложку выпуска</string>
-  <string name="pref_episode_cover_summary">Если выпуск содержит свою обложку, показывать в списках её. Если не выбрано, всегда используется обложка подкаста.</string>
-  <string name="pref_show_remain_time_title">Показывать оставшееся время</string>
-  <string name="pref_show_remain_time_summary">Отображать оставшееся время выпусков. Если не выбрано, будет отображаться общая длительность.</string>
-  <string name="pref_theme_title_automatic">Автоматически</string>
-  <string name="pref_theme_title_light">Светлая</string>
-  <string name="pref_theme_title_dark">Темная</string>
-  <string name="pref_episode_cache_unlimited">Неограничен</string>
-  <string name="pref_playback_speed_sum">Выбрать значения скорости, доступные при воспроизведении</string>
-  <string name="pref_feed_playback_speed_sum">Скорость, с которой будут изначально воспроизводиться выпуски этого подкаста</string>
-  <string name="pref_feed_skip">Автоматическая перемотка</string>
-  <string name="pref_feed_skip_sum">Проматывать вступительную и заключительную часть.</string>
-  <string name="pref_feed_skip_ending">Промотать в конце</string>
-  <string name="pref_feed_skip_intro">Промотать в начале</string>
-  <string name="pref_feed_skip_ending_toast">Промотаны последние %d с</string>
-  <string name="pref_feed_skip_intro_toast">Промотаны первые %d с</string>
-  <string name="pref_playback_time_respects_speed_title">Подстройка метаданных под скорость воспроизведения</string>
-  <string name="pref_playback_time_respects_speed_sum">Отображаемые позиция и длительность меняются со скоростью</string>
-  <string name="pref_fast_forward">Интервал перемотки вперёд</string>
-  <string name="pref_fast_forward_sum">Настройте длину шага в секундах при нажатии кнопки перемотки вперед</string>
-  <string name="pref_rewind">Интервал перемотки назад</string>
-  <string name="pref_rewind_sum">Настройте длину шага в секундах при нажатии кнопки перемотки назад</string>
-  <string name="pref_expandNotify_title">Уведомление с высоким приоритетом</string>
-  <string name="pref_expandNotify_sum">Как правило, разворачивает уведомление, показывая кнопки управления воспроизведением.</string>
-  <string name="pref_persistNotify_title">Постоянное управление воспроизведением</string>
-
-
-
-  <string name="pref_enqueue_location_title">Размещение в очереди</string>
-  <string name="pref_enqueue_location_sum">Добавлять выпуски %1$s</string>
-  <string name="enqueue_location_back">в конец</string>
-  <string name="enqueue_location_front">в начало</string>
-  <string name="enqueue_location_after_current">за текущим выпуском</string>
-  <string name="enqueue_location_random">Случайно</string>
-
-  <string name="documentation_support">Документация и поддержка</string>
-  <string name="visit_user_forum">Форум пользователей</string>
-  <string name="bug_report_title">Сообщить об ошибке</string>
-  <string name="open_bug_tracker">Перейти в систему отслеживания ошибок</string>
-  <string name="copy_to_clipboard">Скопировать в буфер</string>
-  <string name="copied_to_clipboard">Скопировано в буфер</string>
-  <string name="pref_proxy_title">Прокси</string>
-  <string name="pref_proxy_sum">Настройки прокси</string>
-  <string name="pref_no_browser_found">Веб-браузер не обнаружен.</string>
-  <string name="pref_enqueue_downloaded_title">Добавлять загруженные в очередь</string>
-  <string name="pref_enqueue_downloaded_summary">Добавлять загруженные выпуски в очередь</string>
-  <string name="pref_skip_silence_title">Пропускать участки тишины</string>
-  <string name="behavior">Поведение</string>
-  <string name="pref_default_page">Первая страница</string>
-  <string name="pref_back_button_opens_drawer">Кнопка Возврат открывает боковую панель</string>
-  <string name="pref_back_button_opens_drawer_summary">Нажатие кнопки Возврат на первой странице откроет панель навигации</string>
-  <string name="remember_last_page">Запоминать последнюю страницу</string>
-  <string name="pref_delete_removes_from_queue_title">Убирать удаленные из очереди</string>
-
-
-
-
-
-
-
-
-
-
-  <string name="pref_contribute">Поучаствовать</string>
-
-
-
-  <!--About screen-->
-  <string name="about_pref">О программе</string>
-  <string name="podcini_version">Версия Podcini</string>
-  <string name="contributors">Участники</string>
-  <string name="contributors_summary">Любой может сделать Podcini лучше — своим кодом, переводом или помогая пользователям на форуме</string>
-  <string name="developers">Разработчики</string>
-  <string name="translators">Переводчики</string>
-  <string name="special_thanks">Особая благодарность</string>
-  <string name="privacy_policy">Политика конфиденциальности</string>
-  <string name="licenses">Лицензии</string>
-  <string name="licenses_summary">В Podcini используется другое отличное ПО</string>
-  <!--Search-->
-  <string name="search_status_no_results">Ничего не найдено</string>
-
-  <string name="search_label">Поиск</string>
-  <string name="no_results_for_query">По запросу «%1$s» ничего не найдено</string>
-  <!--Synchronization-->
-  <string name="sync_status_started">Синхронизация запущена</string>
-  <string name="sync_status_episodes_upload">Отправка изменений по выпускам…</string>
-  <string name="sync_status_episodes_download">Загрузка изменений по выпускам…</string>
-  <string name="sync_status_upload_played">Отправка состояния прослушивания…</string>
-  <string name="sync_status_subscriptions">Синхронизация подписок…</string>
-  <string name="sync_status_wait_for_downloads">Ожидаем завершения загрузок…</string>
-  <string name="sync_status_success">Синхронизация выполнена</string>
-  <string name="sync_status_error">Синхронизация не удалась</string>
-  <!--import and export-->
-  <string name="import_export_summary">Перенести подписку и очередь на другое устройство</string>
-  <string name="database">База данных</string>
-  <string name="opml">OPML</string>
-  <string name="html">HTML</string>
-  <string name="html_export_summary">Показать подписки другу</string>
-  <string name="opml_export_summary">Передать подписки в другое приложение</string>
-  <string name="opml_import_summary">Импортировать подписки из другого приложения</string>
-  <string name="database_export_summary">Передать подписки, список прослушанных и очередь в Podcini на другом устройстве</string>
-  <string name="database_import_summary">Импортировать базу данных Podcini с другого устройства</string>
-  <string name="opml_import_label">Импорт OPML</string>
-  <string name="opml_add_podcast_label">Импортировать список подкастов (OPML)</string>
-  <string name="opml_reader_error">При чтении OPML произошла ошибка:</string>
-  <string name="opml_import_error_no_file">Ничего не выбрано!</string>
-  <string name="select_all_label">Выбрать все</string>
-  <string name="deselect_all_label">Снять выбор</string>
-  <string name="opml_export_label">Экспорт в OPML</string>
-  <string name="html_export_label">Экспорт в HTML</string>
-  <string name="database_export_label">Экспорт базы данных</string>
-  <string name="database_import_label">Импорт базы данных</string>
-  <string name="database_import_warning">Импорт базы данных приведет к замене всех текущих подписок и истории воспроизведения. Следует экспортировать текущую базу данных, чтобы иметь резервную копию. Хотите заменить\?</string>
-  <string name="please_wait">Подождите…</string>
-  <string name="import_export_error_label">Ошибка экспорта</string>
-  <string name="export_success_title">Экспорт выполнен</string>
-  <string name="opml_import_ask_read_permission">Для чтения файла OPML необходим доступ к внешнему хранилищу</string>
-  <string name="successful_import_label">Импорт успешен</string>
-  <string name="import_ok">Нажмите OK, чтобы перезапустить Podcini</string>
-
-  <string name="favorites_export_label">Экспорт избранного</string>
-  <string name="favorites_export_summary">Экспортировать сохраненное избранное в файл</string>
-  <!--Sleep timer-->
-  <string name="set_sleeptimer_label">Установить таймер сна</string>
-  <string name="disable_sleeptimer_label">Отключить таймер сна</string>
-  <string name="extend_sleep_timer_label">+%d мин.</string>
-  <string name="sleep_timer_always">Всегда</string>
-  <string name="sleep_timer_label">Таймер сна</string>
-  <string name="time_dialog_invalid_input">Неправильный ввод, время должно быть в виде числа</string>
-  <string name="shake_to_reset_label">Сбросить встряхиванием</string>
-  <string name="timer_vibration_label">Вибрировать перед окончанием</string>
-  <string name="time_seconds">сек</string>
-  <string name="time_minutes">мин</string>
-  <string name="time_hours">ч</string>
-  <plurals name="time_minutes_quantified">
-    <item quantity="one">%d минута</item>
-    <item quantity="few">%d минуты</item>
-    <item quantity="many">%d минут</item>
-    <item quantity="other">%d минут</item>
-  </plurals>
-  <plurals name="time_hours_quantified">
-    <item quantity="one">%d час</item>
-    <item quantity="few">%d часа</item>
-    <item quantity="many">%d часов</item>
-    <item quantity="other">%d часов</item>
-  </plurals>
-  <string name="auto_enable_label">Запускать таймер сна вместе с началом воспроизведения</string>
-  <string name="auto_enable_label_with_times" formatted="false">Автоматически запускать таймер сна при пуске воспроизведения в интервале с%s до %s</string>
-  <string name="sleep_timer_enabled_label">Таймер сна включен</string>
-  <!--Synchronisation-->
-  <string name="synchronization_choose_title">Выберите провайдера синхронизации</string>
-  <string name="synchronization_summary_unchoosen">Вы можете выбрать из нескольких провайдеров для синхронизации подписок и состояния воспроизведения выпусков</string>
-  <string name="dialog_choose_sync_service_title">Выберите провайдера синхронизации</string>
-  <string name="gpodnet_description">Gpodder.net — сервис синхронизации подкастов с открытым исходным кодом, которое вы можете установить на свой сервер. Gpodder.net не связан с проектом Podcini.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync — приложение с открытым исходным кодом для Nextcloud, которое вы можете установить на свой сервер. Это приложение не связано с проектом Podcini.</string>
-  <string name="synchronization_host_explanation">Можно выбрать свой сервер для синхронизации. Опредилившись с предпочтительным сервером синхронизации, введите его адрес здесь.</string>
-  <string name="synchronization_host_label">Адрес сервера</string>
-  <string name="proceed_to_login_butLabel">Авторизоваться</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Предоставить доступ, открыв веб-браузер, и вернуться в Podcini.</string>
-  <string name="gpodnetauth_login_butLabel">Войти</string>
-  <string name="synchronization_credentials_explanation">Пожалуйста, укажите данные своей учётной записи на сервере синхронизации.</string>
-  <string name="gpodnetauth_encryption_warning">Пароль и данные не зашифрованы!</string>
-  <string name="username_label">Имя пользователя</string>
-  <string name="password_label">Пароль</string>
-  <string name="synchronization_login_butLabel">Войти</string>
-  <string name="synchronization_selectDevice_explanation">Пожалуйста, выберите устройство с сервера синхронизации, либо создайте новое.</string>
-  <string name="gpodnetauth_device_name">Название устройства</string>
-  <string name="gpodnetauth_device_name_default">Podcini на %1$s</string>
-  <string name="gpodnetauth_existing_devices">Существующие устройства</string>
-  <string name="gpodnetauth_create_device">Создать устройство</string>
-  <string name="gpodnetauth_finish_descr">Поздравляем! Ваша учётная запись gpodder.net связана с устройством. Podcini будет автоматически синхронизировать Ваши подписки с учётной записью gpodder.net.</string>
-  <string name="gpodnetauth_finish_butsyncnow">Начать синхронизацию</string>
-  <string name="pref_gpodnet_setlogin_information_title">Изменить информацию авторизации</string>
-  <string name="pref_gpodnet_setlogin_information_sum">Изменить информацию авторизации для аккаунта gpodder.net</string>
-  <string name="synchronization_sync_changes_title">Синхронизировать сейчас</string>
-  <string name="synchronization_sync_summary">Сихронизировать ваши подписки и изменения состояния выпусков</string>
-  <string name="synchronization_full_sync_title">Выполнить полную синхронизацию</string>
-  <string name="synchronization_force_sync_summary">Пересихронизировать ваши подписки и состояние выпусков</string>
-  <string name="synchronization_logout">Выйти</string>
-  <string name="synchronization_login_status"><![CDATA[Авторизованы как <i>%1$s</i> на <i>%2$s</i>. <br/><br/>Вы сможете снова выбрать провайдера синхронизации после выхода из системы]]></string>
-  <string name="pref_synchronization_logout_toast">Выход успешно выполнен</string>
-  <string name="gpodnetsync_error_title">Ошибка синхронизации с gpodder.net</string>
-  <string name="gpodnetsync_error_descr">Произошла ошибка во время синхронизации:\u0020</string>
-  <string name="gpodnetsync_pref_report_successful">Успешно</string>
-  <string name="gpodnetsync_pref_report_failed">Неудачно</string>
-  <string name="gpodnetsync_username_characters_error">Имя пользователя может содержать только буквы, цифры, дефисы и символы подчеркивания.</string>
-  <!--Directory chooser-->
-  <string name="choose_data_directory">Выбрать папку для хранения данных</string>
-  <string name="choose_data_directory_message">Укажите основную папку для хранения данных. Podcini создаст необходимые подкаталоги.</string>
-  <string name="choose_data_directory_available_space">свободно: %1$s из %2$s</string>
-  <string name="pref_pausePlaybackForFocusLoss_sum">Пауза вместо уменьшения громкости, когда другое приложение проигрывает звуки</string>
-  <string name="pref_pausePlaybackForFocusLoss_title">Пауза при прерывании</string>
-  <!--Online feed view-->
-  <string name="subscribe_label">Подписаться</string>
-
-  <string name="preview_episode">Предпросмотр</string>
-
-  <!--Content descriptions for image buttons-->
-  <string name="toolbar_back_button_content_description">Назад</string>
-  <string name="rewind_label">Назад</string>
-  <string name="fast_forward_label">Вперед</string>
-  <string name="increase_speed">Увеличить скорость</string>
-  <string name="decrease_speed">Уменьшить скорость</string>
-
-  <string name="status_downloading_label">Выпуск загружается</string>
-  <string name="load_next_page_label">Загрузить следующую страницу</string>
-  <string name="position">Позиция: %1$s</string>
-
-
-
-  <string name="next_chapter">Следующая глава</string>
-  <!--Feed settings/information screen-->
-  <string name="authentication_label">Авторизация</string>
-  <string name="authentication_descr">Изменить имя пользователя и пароль для этого подкаста и его выпусков.</string>
-  <string name="feed_tags_label">Метки</string>
-  <string name="feed_tags_summary">Используйте метки, чтобы организовать ваши подписки.</string>
-  <string name="feed_folders_include_root">Показывать подкаст в основном списке</string>
-  <string name="multi_feed_common_tags_info">{faw_info_circle} Отображаются только общие метки для всех выбранных подписок. Другие не затрагиваются.</string>
-  <string name="auto_download_settings_label">Настройки автозагрузки</string>
-  <string name="episode_filters_label">Фильтр выпусков</string>
-  <string name="episode_filters_description">Перечень условий по включению или исключению выпуска из списков автоматической загрузки</string>
-  <string name="add_term">Добавить условие</string>
-  <string name="exclude_terms">Исключить выпуски подпадающие под любое из условий</string>
-  <string name="include_terms">Включать выпуски подпадающие под любое из условий</string>
-  <string name="exclude_episodes_shorter_than">Исключить выпуски короче чем</string>
-  <string name="keep_updated">Постоянно обновлять</string>
-  <string name="keep_updated_summary">Обновлять подкаст при (авто)обновлении всех подкастов</string>
-  <string name="auto_download_disabled_globally">Автоматическая загрузка отключена в основных настройках Podcini</string>
-  <string name="statistics_time_played">Времени прослушивания:</string>
-  <string name="statistics_total_duration">Общая длительность (примерно):</string>
-  <string name="statistics_episodes_on_device">Выпусков на устройстве:</string>
-  <string name="statistics_space_used">Занято пространства:</string>
-  <string name="statistics_episodes_started_total">Выпусков начато / всего:</string>
-  <string name="statistics_view_all">Просмотреть все подкасты »</string>
-  <string name="edit_url_menu">Исправить ссылку на канал</string>
-  <string name="edit_url_confirmation_msg">Изменение адреса ссылки может запросто испортить состояние воспроизведения и список выпусков подкаста. Мы крайне НЕ рекомендуем его менять и НЕ сможем Вам помочь, если что-то пойдёт не так. Действие необратимо. Простым возвратом старого адреса поломку HE исправить. Советуем сперва создать резервную копию. </string>
-  <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Импорт подписок из моноприложений…</string>
-  <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Найти подкаст…</string>
-  <string name="search_itunes_label">Поиск в Apple Podcasts</string>
-  <string name="search_podcastindex_label">Поиск на Podcast Index</string>
-  <string name="search_fyyd_label">Поиск в fyyd</string>
-  <string name="gpodnet_search_hint">Искать на gpodder.net</string>
-  <string name="advanced">Дополнительные</string>
-  <string name="add_podcast_by_url">Добавить подкаст по адресу RSS</string>
-  <string name="discover">Ознакомиться</string>
-  <string name="discover_hide">Скрыть</string>
-  <string name="discover_is_hidden">Вы предпочли скрыть рекомендации.</string>
-  <string name="discover_more">еще »</string>
-  <string name="discover_powered_by_itunes">Предложения Apple Podcasts</string>
-  <string name="discover_confirm">Показать рекомендации</string>
-  <string name="search_powered_by">Результаты по %1$s</string>
-  <string name="select_country">Выбор страны</string>
-  <!--Local feeds-->
-  <string name="add_local_folder">Добавить локальную папку</string>
-  <string name="local_folder">Локальная папка</string>
-  <string name="reconnect_local_folder">Переподключить локальную папку</string>
-  <string name="reconnect_local_folder_warning">В случае отказа в разрешении вы можете использовать это для переподключения к той же самой папке. Не выбирайте другую папку.</string>
-  <string name="local_feed_description">Этот виртуальный подкаст был создан путем добавления папки в Podcini.</string>
-  <string name="unable_to_start_system_file_manager">Невозможно запустить системный файловый менеджер</string>
-  <string name="filter">Фильтровать</string>
-
-
-  <string name="downloaded_label">Загружено</string>
-
-
-
-  <string name="has_media">С медиа</string>
-
-
-
-
-
-  <!--Sort-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!--Share episode dialog-->
-  <string name="share_playback_position_dialog_label">С позицией воспроизведения</string>
-  <string name="share_dialog_episode_website_label">Сайт выпуска</string>
-  <string name="share_dialog_for_social">сообщением</string>
-  <string name="share_dialog_media_address">ссылкой на медиафайл</string>
-  <string name="share_dialog_media_file_label">медиафайлом</string>
-  <string name="share_starting_position_label">начиная с</string>
-  <!--Audio controls-->
-  <string name="audio_controls">Управление звучанием</string>
-  <string name="playback_speed">Скорость воспроизведения</string>
-
-  <string name="player_switch_to_audio_only">Переключиться на аудио</string>
-  <!--proxy settings-->
-  <string name="proxy_type_label">Тип</string>
-  <string name="host_label">Узел</string>
-  <string name="port_label">Порт</string>
-  <string name="optional_hint">(необязательно)</string>
-  <string name="proxy_test_label">Проверить</string>
-  <string name="proxy_checking">Проверка…</string>
-  <string name="proxy_test_successful">Проверка пройдена</string>
-  <string name="proxy_test_failed">Проверка не удалась</string>
-  <string name="proxy_host_empty_error">Обязательно укажите узел</string>
-  <string name="proxy_host_invalid_error">Неверный адрес или домен узла</string>
-  <string name="proxy_port_invalid_error">Неверный порт</string>
-  <!--Subscriptions fragment-->
-
-  <!--Notification channels-->
-  <string name="notification_group_errors">Ошибки</string>
-
-  <string name="notification_channel_user_action">Требуется действие</string>
-  <string name="notification_channel_user_action_description">Показывается, когда от Вас требуется действие, например, ввести пароль.</string>
-  <string name="notification_channel_downloading">Загружается</string>
-  <string name="notification_channel_downloading_description">Показывается во время загрузки.</string>
-  <string name="notification_channel_playing">Сейчас воспроизводится</string>
-  <string name="notification_channel_playing_description">Позволяет управлять воспроизведением. Основное уведомление, показывается при воспроизведении подкаста.</string>
-  <string name="notification_channel_download_error">Загрузка не удалась</string>
-  <string name="notification_channel_download_error_description">Отображается, когда загрузка или обновление канала завершилось с ошибкой</string>
-  <string name="notification_channel_sync_error">Синхронизация не удалась</string>
-  <string name="notification_channel_sync_error_description">Отображается, если сбоит синхронизация gpodder.</string>
-
-
-  <!--Widget settings-->
-  <string name="widget_settings">Настройки виджета</string>
-  <string name="widget_create_button">Создать виджет</string>
-  <string name="widget_opacity">Непрозрачность</string>
-  <!--On-Demand configuration-->
-  <string name="on_demand_config_setting_changed">Настройки успешно обновлены.</string>
-  <string name="on_demand_config_stream_text">Похоже, вы часто слушаете по сети. Хотите, чтобы в списке выпусков отображались кнопки для потокового воспроизведения\?</string>
-  <string name="on_demand_config_download_text">Похоже, вы часто слушаете загружаете выпуски. Хотите, чтобы в списке выпусков отображались кнопки для загрузки\?</string>
-  <string name="shortcut_subscription_label">Ярлык подписки</string>
-  <string name="shortcut_select_subscription">Выбрать подписку</string>
-  <string name="add_shortcut">Добавить ярлык</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Activity and fragment titles -->
+    <string name="feed_update_receiver_name">Обновить подписки</string>
+    <string name="feeds">Ленты</string>
+    <string name="pafeeds">PAFeeds</string>
+    <string name="feeds_label">Подкасты</string>
+    <string name="statistics_label">Статистика</string>
+    <string name="add_feed_label">Добавить подкаст</string>
+    <string name="online_episodes_label">Серии в сети</string>
+    <string name="episodes_label">Выпуски</string>
+    <string name="home_label">Главная</string>
+    <string name="queue_label">Очередь</string>
+    <string name="settings_label">Настройки</string>
+    <string name="downloads_label">Загрузки</string>
+    <string name="logs_label">Логи</string>
+    <string name="subscriptions_label">Подписки</string>
+    <string name="unsubscribed_label">Отписано</string>
+    <string name="cancel_download_label">Отменить загрузку</string>
+    <string name="playback_history_label">История</string>
+    <string name="months_statistics_label">Месяцев</string>
+    <string name="years_statistics_label">По годам</string>
+    <string name="notification_pref_fragment">Уведомления</string>
+    <string name="current_episode">Текущее</string>
+    <string name="current_podcast">Подкаст</string>
+    <string name="global">Глобально</string>
+    <!-- Google Assistant -->
+    <string name="app_action_not_found">«%1$s» не найдено</string>
+    <!-- SwipeActions -->
+    <string name="swipeactions_label">Действия при смахивании</string>
+    <string name="swipeactions_summary">Выберите действие, выполняемое при смахивании выпуска в списке</string>
+    <string name="swipe_right">Смахнуть вправо</string>
+    <string name="swipe_left">Смахнуть влево</string>
+    <string name="individual_subscription">Отдельная подписка</string>
+    <string name="subscription">Подписка</string>
+    <!-- Statistics fragment -->
+    <string name="statistics_include_marked">Просто учесть длительность выпусков, помеченных как прослушанные.</string>
+    <string name="statistics_speed_not_counted">Замечание: Скорость воспроизведения никогда не учитывается.</string>
+    <string name="statistics_start_month">Месяц начала</string>
+    <string name="statistics_end_month">Конец месяца</string>
+    <string name="statistics_month_year">Формат: ММ/ГГГГ</string>
+    <string name="statistics_from">С</string>
+    <string name="statistics_to">По</string>
+    <string name="statistics_today">Сегодня</string>
+    <string name="statistics_filter_all_time">За всё время</string>
+    <string name="statistics_filter_past_year">В течение года</string>
+    <string name="statistics_reset_data">Сбросить статистику</string>
+    <string name="statistics_reset_data_msg">Вы уверены, что хотите безвозвратно стереть статистику воспроизведения всех выпусков\?</string>
+    <string name="statistics_counting_range">Прослушанные с %1$s по %2$s</string>
+    <string name="statistics_counting_total">Прослушано за всё время</string>
+    <string name="web_content_not_available">Веб-контент недоступен</string>
+    <string name="language_not_supported_by_tts">Язык не поддерживается TTS</string>
+    <string name="tts_init_failed">Сбой инициализации TTS</string>
+    <string name="tts_not_available">Движок речи недоступен</string>
+    <string name="episode_has_no_content">Эпизод не содержит содержимого</string>
+    <string name="unrestricted_background_permission_text">Для успешного воспроизведения списка эпизодов в фоновом режиме, Podcini требуется разрешение на неограниченную фоновую активность. Обратите внимание на некоторые бренды, есть настройки для этого, пожалуйста, установите их соответственно.</string>
+    <string name="notification_permission_text">Начиная с Android 13, для перезагрузки и воспроизведения требуются уведомления верхнего уровня. Вы можете запретить оповещения субкатеры по вашему желанию.</string>
+    <string name="notification_permission_denied">Вы не дали разрешения.</string>
+    <!-- Download Statistics fragment -->
+    <string name="total_size_downloaded_podcasts">Общий размер выпусков на устройстве</string>
+    <!-- Main activity -->
+    <string name="drawer_open">Открыть меню</string>
+    <string name="drawer_close">Закрыть меню</string>
+    <string name="drawer_preferences">Настройка бокового меню</string>
+    <!-- Bug report activity -->
+    <string name="log_file_share_exception">Совместимых приложений не найдено</string>
+    <string name="export_logs_menu_title">Экспортировать подробные журналы</string>
+    <string name="confirm_export_log_dialog_message">Подробные журналы могут содержать личные сведения, такие как список ваших подписок</string>
+    <!-- Webview actions -->
+    <string name="open_in_browser_label">Открыть в браузере</string>
+    <string name="copy_url_label">Скопировать ссылку</string>
+    <string name="share_url_label">Поделиться ссылкой</string>
+    <string name="go_to_position_label">Перейти к этому месту</string>
+    <string name="show_shared_logs_label">Показать общие журналы</string>
+    <string name="show_subscription_logs_label">Показать журналы подписки</string>
+    <string name="show_download_logs_label">Показать журналы загрузок</string>
+    <!-- Playback history -->
+    <string name="clear_history_label">Очистить историю</string>
+    <string name="clear_playback_history_msg">Вы уверены, что хотите стереть всю историю вопроизведения\?</string>
+    <string name="remove_history_label">Удалить из истории</string>
+    <string name="removed_history_label">Удалено из истории</string>
+    <!-- Other -->
+    <string name="confirm_label">Подтвердить</string>
+    <string name="cancel_label">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="reset">Сброс</string>
+    <string name="global_default">как по умолчанию</string>
+    <string name="url_label">Ссылка</string>
+    <string name="support_funding_label">Поддержать</string>
+    <string name="support_podcast">Поддержать этот подкаст</string>
+    <string name="error_label">Ошибка</string>
+    <string name="error_msg_prefix">Произошла ошибка:</string>
+    <string name="refresh_label">Обновить</string>
+    <string name="new_synth_label">Новый синтетический канал</string>
+    <string name="new_synth_yt_label">Новый синтетический Youtube</string>
+    <string name="toggle_grid_list">Переключить список сетки</string>
+    <string name="refreshing_label">Обновление</string>
+    <string name="clear_new_label">Очистить новый</string>
+    <string name="reconcile_label">Сверка</string>
+    <string name="chapters_label">Главы</string>
+    <string name="chapter_duration0">Продолжительность: </string>
+    <string name="description_label">Описание</string>
+    <string name="episodes_suffix">\u0020выпуск(ов)</string>
+    <string name="close_label">Закрыть</string>
+    <string name="retry_label">Повторить</string>
+    <string name="auto_download_label">Добавить в автозагрузки</string>
+    <string name="auto_delete_label">Автоматическое удаление выпусков</string>
+    <string name="feed_volume_adapdation">Адаптация объема</string>
+    <string name="feed_volume_adaptation_summary">Включить громкость для эпизодов подкаста вверх или вниз: %1$s</string>
+    <string name="feed_volume_reduction_off">Нет адаптации</string>
+    <string name="feed_volume_reduction_light">Легкое сокращение</string>
+    <string name="feed_volume_reduction_heavy">Сильное сокращение</string>
+    <string name="feed_volume_boost_light">Усиление света</string>
+    <string name="feed_volume_boost_medium">Средний прирост</string>
+    <string name="feed_volume_boost_heavy">Тяжелый бонус</string>
+    <string name="feed_auto_download_always">всегда</string>
+    <string name="feed_auto_download_never">никогда</string>
+    <string name="feed_video_mode_label">Режим видео</string>
+    <string name="feed_video_mode_window">Режим окна</string>
+    <string name="feed_video_mode_fullscreen">Полный экран</string>
+    <string name="feed_video_mode_audioonly">Только аудио</string>
+    <string name="feed_auto_download_policy">Политика автозагрузки</string>
+    <string name="feed_auto_download_new">Только новые элементы</string>
+    <string name="replace">Заменить</string>
+    <string name="feed_auto_download_newer">Новейшие неигровые</string>
+    <string name="feed_auto_download_older">Старые неигровые</string>
+    <string name="feed_auto_download_soon">Помечено как скоро</string>
+    <string name="put_in_queue_label">Добавить в очередь…</string>
+    <string name="remove_from_other_queues">Удалить из других очередей</string>
+    <string name="create_synthetic_first_note">Сначала нужно создать синтетические каналы</string>
+    <string name="remove_from_current_feed">Удалить из текущего канала</string>
+    <string name="episode_cleanup_limit_by">Лимит на</string>
+    <string name="episode_cleanup_never">никогда</string>
+    <string name="episode_cleanup_except_favorite">Когда не в избранном</string>
+    <string name="episode_cleanup_not_in_queue">Когда не в очереди</string>
+    <string name="episode_cleanup_after_listening">После прослушивания</string>
+    <plurals name="episode_cleanup_hours_after_listening">
+        <item quantity="one">1 час после прослушивания</item>
+        <item quantity="few">%d часов после прослушивания</item>
+        <item quantity="many">%d часов после прослушивания</item>
+        <item quantity="other">%d часов после прослушивания</item>
+    </plurals>
+    <plurals name="episode_cleanup_days_after_listening">
+        <item quantity="one">день после прослушивания</item>
+        <item quantity="few">%d дня после прослушивания</item>
+        <item quantity="many">%d дней после прослушивания</item>
+        <item quantity="other">%d дней после прослушивания</item>
+    </plurals>
+    <!-- Actions on feeds -->
+    <string name="max_episodes_cache">Максимальное количество разрешенных эпизодов</string>
+    <string name="new_namee">Новое имя</string>
+    <string name="feed_settings_label">Настройки подкаста</string>
+    <string name="switch_queue_label">Выберите активную очередь</string>
+    <string name="rename_feed_label">Переименовать подкаст</string>
+    <string name="remove_feed_label">Удалить подкаст</string>
+    <string name="init_tts">Начать TTS</string>
+    <string name="share_label">Поделиться</string>
+    <string name="share_file_label">Поделиться файлом</string>
+    <string name="share_notes_label">Поделиться заметками</string>
+    <string name="erase_episodes_confirmation_msg">Пожалуйста, подтвердите, что вы хотите стереть эпизоды.</string>
+    <string name="feed_delete_confirmation_msg">Подтвердите, что хотите удалить подкаст «%1$s», все его выпуски (включая загруженные) и его статистику.</string>
+    <string name="feed_delete_confirmation_msg_batch">Подтвердите, что хотите удалить выбранные подкасты, все их выпуски (включая загруженные) и их статистику.</string>
+    <string name="feed_delete_confirmation_local_msg">Подтвердите, что хотите удалить подкаст «%1$s» и его статистику. Файлы в локальной исходной папке не будут удалены.</string>
+    <string name="not_erase_message">Можно стереть только эпизоды из синтетических каналов.</string>
+    <string name="feed_delete_reason_msg">Для дальнейшей ссылки вы можете указать причину здесь:</string>
+    <string name="load_complete_feed">Обновить весь подкаст</string>
+    <string name="multi_select">Множественный выбор</string>
+    <string name="filtered_label">Отфильтровано</string>
+    <string name="progressing_label">Обработка</string>
+    <string name="open_podcast">Открыть подкаст</string>
+    <string name="open">Открыть</string>
+    <string name="please_wait_for_data">Подождите, пока загружаются данные</string>
+    <plurals name="updated_feeds_batch_label">
+        <item quantity="one">%d подписка обновлена.</item>
+        <item quantity="few">%d подписки обновлено.</item>
+        <item quantity="many">%d подписок обновлено.</item>
+        <item quantity="other">%d подписок обновлено.</item>
+    </plurals>
+    <string name="edit_tags">Править метки</string>
+    <string name="add_tag">Добавить метку</string>
+    <string name="confirm_delete_logs_label">Подтвердите удаление журналов здесь</string>
+    <string name="confirm_delete_logs_message">Это приведет к удалению всех журналов, обнаруженных здесь из базы данных и не может быть отменено. Вы уверены?</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message">Обновление подкастов через мобильное соединение отключено в настройках.\n\nВы действительно хотите обновить подкасты\?</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Ваше приложение VPN выглядит мобильной сетью (лимитированное соединение). Обновление подкастов через мобильную передачу данных отключено в настройках.\n\nВы все равно хотите обновить\? Если вы хотите, чтобы эта проблема была исправлена, свяжитесь с создателями вашего VPN-приложения.</string>
+    <!-- actions on feeditems -->
+    <string name="download_label">Загрузить</string>
+    <string name="TTS_label">Говорить</string>
+    <string name="play_label">Воспроизвести</string>
+    <string name="pause_label">Пауза</string>
+    <string name="stream_label">Воспроизвести из сети</string>
+    <string name="erase_episodes_label">Очистить эпизоды</string>
+    <string name="reserve_episodes_label">Зарезервировать эпизоды</string>
+    <string name="null_label">Пустой</string>
+    <string name="delete_label">Удалить</string>
+    <string name="delete_failed_simple">Невозможно удалить файл.</string>
+    <string name="delete_local_failed">Не удается удалить файл. Попробуйте переподключить локальную папку на экране информации подкаста.</string>
+    <string name="delete_episode_label">Удалить выпуск</string>
+    <string name="show_hidden">Показать скрытые</string>
+    <string name="no_action_label">Без действий</string>
+    <string name="my_opinion_label">Мое мнение</string>
+    <string name="add_opinion_label">Добавить мнение</string>
+    <string name="cancelled_on_label">Отменено на</string>
+    <string name="choose_tab">Выберите вкладку в канале</string>
+    <string name="set_play_state_label">Задать состояние игры</string>
+    <string name="play_this_to_seek_position">Для переходов в выпуске нужно слушать выпуск</string>
+    <string name="combo_action">Комбо действие</string>
+    <string name="shelve_label">Полка для синтеза</string>
+    <string name="add_to_queue_label">Добавить в очередь</string>
+    <string name="remove_from_queue_label">Убрать из очереди</string>
+    <plurals name="removed_from_queue_batch_label">
+        <item quantity="one">%d выпуск удален из очереди.</item>
+        <item quantity="few">%d выпуска удалены из очереди.</item>
+        <item quantity="many">%d выпусков удалены из очереди.</item>
+        <item quantity="other">%d выпусков удалено из очереди.</item>
+    </plurals>
+    <string name="show_video_label">Воспроизвести видео</string>
+    <string name="media_type">Тип медиа</string>
+    <string name="unknown">Неизвестен</string>
+    <string name="audio">Аудио</string>
+    <string name="video">Видео</string>
+    <string name="audio_app">Аудио приложение</string>
+    <string name="rating_label">Рейтинг</string>
+    <string name="unrated">Не оценено</string>
+    <string name="trash">Корзина</string>
+    <string name="bad">Плохое</string>
+    <string name="OK">ОК</string>
+    <string name="good">Хорошо</string>
+    <string name="Super">Супер</string>
+    <string name="set_rating_label">Установить рейтинг</string>
+    <string name="playstate">Состояние воспроизведения</string>
+    <string name="unspecified">Не указано</string>
+    <string name="building">Здание</string>
+    <string name="new_label">Новый</string>
+    <string name="unplayed">Не воспроизведено</string>
+    <string name="later">Позже</string>
+    <string name="soon">Скоро</string>
+    <string name="in_queue">В очереди</string>
+    <string name="in_progress">В процессе</string>
+    <string name="skipped">Пропущено</string>
+    <string name="played">Играл</string>
+    <string name="again">Снова</string>
+    <string name="forever">Всегда</string>
+    <string name="ignored">Игнорировать</string>
+    <string name="visit_website_label">Посетить сайт</string>
+    <string name="skip_episode_label">Пропустить выпуск</string>
+    <string name="delete_local_feed_warning_body">Предупреждение: вы удаляете локальные эпизоды. Это удалит медиа файлы из хранилища вашего устройства. Он не может быть загружен снова через Podcini. Продолжить?</string>
+    <string name="share_existing">существующий</string>
+    <!-- Download messages and labels -->
+    <string name="download_successful">успешно</string>
+    <string name="download_pending">Загрузка в ожидании</string>
+    <string name="download_running">Загрузка в процессе</string>
+    <string name="download_error_details">Подробнее</string>
+    <string name="download_log_details_message">%1$s \n\nПричина: \n%2$s \n\Адрес файла:\n%3$s</string>
+    <string name="download_error_retrying">\"%1$s\" загрузка не удалась. Повтор – позже.</string>
+    <string name="download_error_not_retrying">\"%1$s\" загрузка не удалась.</string>
+    <string name="download_error_tap_for_details">Подробнее…</string>
+    <string name="download_error_device_not_found">Устройство хранения не найдено</string>
+    <string name="download_error_insufficient_space">На устройстве не осталось места.</string>
+    <string name="download_error_http_data_error">Ошибка данных HTTP</string>
+    <string name="download_error_error_unknown">Неизвестная ошибка</string>
+    <string name="download_error_parser_exception">Сервер подкаста прислал негодный файл канала.</string>
+    <string name="download_error_unsupported_type">Неподдерживаемый тип канала</string>
+    <string name="download_error_unsupported_type_html">Сервер подкаста прислал сайт вместо подкаста.</string>
+    <string name="download_error_not_found">Сервер подкаста не может найти запрошенный файл. Возможно он был удалён.</string>
+    <string name="download_error_connection_error">Ошибка соединения</string>
+    <string name="download_error_no_connection">Нет подключения к сети</string>
+    <string name="download_error_unknown_host">Сервер не найден. Проверьте правильность указанного адреса и имеется ли подключение к сети.</string>
+    <string name="download_error_unauthorized">Ошибка авторизации. Проверьте правильность имени пользователя и пароля.</string>
+    <string name="download_error_file_type_type">Ошибочный в тип файла</string>
+    <string name="download_error_forbidden">Сервер подкаста отказывает в ответе.</string>
+    <string name="download_canceled_msg">Загрузка отменена</string>
+    <string name="download_error_wrong_size">Соединение с сервером было оборвано до завершения загрузки.</string>
+    <string name="download_error_blocked">Загрузка была заблокирована другим приложением на вашем устройстве (например, VPN или блокировщиком рекламы).</string>
+    <string name="download_error_certificate">Невозможно установить защищённое соединение. Возможно загрузке препятствует другое приложение (например, VPN или блокировщик рекламы), либо что-то не так с сертификатом сервера.</string>
+    <string name="download_report_title">Загрузки завершились с ошибкой</string>
+    <string name="download_error_io_error">Ошибка ввода-вывода</string>
+    <string name="download_error_request_error">Ошибка запроса</string>
+    <string name="download_error_db_access">Ошибка доступа к базе данных</string>
+    <plurals name="downloads_left">
+        <item quantity="one">Осталась %d загрузка</item>
+        <item quantity="few">Осталось %d загрузки</item>
+        <item quantity="many">Осталось %d загрузок</item>
+        <item quantity="other">Осталось %d загрузок</item>
+    </plurals>
+    <string name="download_notification_title_feeds">Подкасты обновляются</string>
+    <string name="download_notification_title_episodes">Выпуски загружаются</string>
+    <string name="download_log_title_unknown">Неизвестное название</string>
+    <string name="download_type_feed">Канал</string>
+    <string name="download_type_media">Медиафайл</string>
+    <string name="null_value_podcast_error">Не указан подкаст, который следовало бы показать.</string>
+    <string name="no_feed_url_podcast_found_by_search">У предложенного подкаста отсутствует RSS-ссылка, Podcini нашел подкаст, который возможно ему соответствует</string>
+    <string name="confirm_mobile_download_dialog_title">Подтвердите загрузку через мобильное соединение</string>
+    <string name="confirm_mobile_download_dialog_message">Загрузка через мобильное соединение отключена в настройках. Podcini может загрузить выпуск позже, когда появится соединение через Wi-Fi.</string>
+    <string name="confirm_mobile_download_dialog_message_vpn">Ваше приложение VPN выглядит мобильной сетью (лимитированное соединение). Загрузка по мобильной сети отключена в настройках. Если вы хотите, чтобы эта проблема была исправлена, свяжитесь с создателями вашего VPN-приложения.</string>
+    <string name="confirm_mobile_download_dialog_download_later">Загрузить позже</string>
+    <string name="confirm_mobile_download_dialog_allow_this_time">Всё равно загрузить</string>
+    <string name="confirm_mobile_streaming_notification_title">Подтвердите трансляцию через мобильное соединение</string>
+    <string name="confirm_mobile_streaming_notification_message">Трансляция через мобильное подключение отключена в настройках. Нажмите, чтобы продолжить трансляцию.</string>
+    <string name="confirm_mobile_streaming_button_always">Всегда</string>
+    <string name="confirm_mobile_streaming_button_once">В этот раз</string>
+    <!-- Mediaplayer messages -->
+    <string name="playback_error_generic"><![CDATA[Не удаётся воспроизвести медиафайл.\n\n- Попробуйте удалить и загрузить выпуск заново.\n- Проверьте соединение и блокировку со стороны VPN или страницы авторизации.\n- Попробуйте долгим нажатием поделиться \"ссылкой на медиафайл\" и попытайтесь открыть её в браузере. Если это не помогло, обратитесь к авторам подкаста.]]></string>
+    <string name="no_media_playing_label">Ничего не воспроизводится</string>
+    <string name="unknown_media_key">Podcini - неизвестный ключ носителя: %1$d</string>
+    <string name="error_file_not_found">Файл не найден</string>
+    <string name="no_media_label">Элемент не содержит медиафайл</string>
+    <!-- Queue operations -->
+    <string name="lock_queue">Заблокировать очередь</string>
+    <string name="queue_locked">Очередь заблокирована</string>
+    <string name="queue_unlocked">Очередь разблокирована</string>
+    <string name="queue_lock_warning">Заблокировав очередь, вы не сможете смахивать или менять выпуски местами.</string>
+    <!--    <string name="switch_queue">Switch active queue</string>-->
+    <string name="open_queue">Открыть очередь</string>
+    <string name="checkbox_do_not_show_again">Больше не показывать</string>
+    <string name="clear_queue_label">Очистить очередь</string>
+    <string name="clear_bin_label">Очистить корзину</string>
+    <string name="undo">Отмена</string>
+    <string name="sort">Сортировать</string>
+    <string name="rename">Переименовать</string>
+    <string name="add_queue">Добавить очередь</string>
+    <string name="keep_sorted">Сохранять сортировку</string>
+    <string name="publish_date">Дата публикации</string>
+    <string name="download_date">Дата загрузки</string>
+    <string name="view_count">Количество просмотров</string>
+    <string name="date">По дате</string>
+    <string name="count">Счетчик</string>
+    <string name="last_comment_date">Дата комментария</string>
+    <string name="last_played_date">Дата воспроизведения</string>
+    <string name="completed_date">Дата завершения</string>
+    <string name="duration">По длительности</string>
+    <string name="spent">Потрачено</string>
+    <string name="hours">часов</string>
+    <string name="episode_title">Название выпуска</string>
+    <string name="feed_title">Название подкаста</string>
+    <string name="show_criteria">Показать критерии</string>
+    <string name="title">Заголовок</string>
+    <string name="author">Автор</string>
+    <string name="random">Случайно</string>
+    <string name="smart_shuffle">Умное перемешивание</string>
+    <string name="size">Размер</string>
+    <string name="clear_queue_confirmation_msg">Подтвердите, что хотите удалить из очереди все выпуски.</string>
+    <string name="show_bin_label">Показать корзину</string>
+    <!--  Variable Speed -->
+    <string name="preset_already_exists">%1$.2fx такая заготовка уже есть.</string>
+    <!-- Empty list labels -->
+    <string name="no_shownotes_label">Этот выпуск не содержит примечаний.</string>
+    <string name="no_subscriptions_label">Чтобы подписаться на подкаст, нажмите значок «плюс» внизу.</string>
+    <!-- Preferences -->
+    <string name="project_pref">Проект</string>
+    <string name="synchronization_pref">Синхронизация</string>
+    <string name="synchronization_sum">Синхронизация с другими устройствами</string>
+    <string name="pref_backup_on_google_title">Автоматическое резервное копирование OPML</string>
+    <string name="pref_backup_on_google_sum">Автоматическое резервное копирование OPML файлов в Google. После того, как Podcini деинсталлируется и переинсталлируется, подписки могут быть восстановлены. Включите эту настройку, чтобы перезапустить Podcini.</string>
+    <string name="automation">Автоматизация</string>
+    <string name="download_pref_details">Подробнее</string>
+    <string name="import_export_pref">Импорт/экспорт</string>
+    <string name="import_export_search_keywords">резервирование, восстановление, резервная, копия, бекап, бэкап</string>
+    <string name="pref_auto_backup_title">Автоматическое резервное копирование</string>
+    <string name="pref_auto_backup_sum">Автоматическое резервное копирование БД и настроек с заданным интервалом в выбранную папку.</string>
+    <string name="pref_auto_backup_interval">Интервал резервного копирования</string>
+    <string name="pref_auto_backup_folder">Потратить папку с резервной копией</string>
+    <string name="pref_auto_backup_folder_sum">Не указано.</string>
+    <string name="pref_auto_backup_limit">Количество резервных копий для хранения</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="external_elements">Внешние органы управления</string>
+    <string name="create_YT_syndicates">Создать YT синдикаты</string>
+    <string name="add_to_feed">Добавить в канал</string>
+    <string name="interruptions">Прерывания</string>
+    <string name="playback_control">Управление воспроизведением</string>
+    <string name="reassign_hardware_buttons">Переназначить физические кнопки</string>
+    <string name="preference_search_hint">Найти…</string>
+    <string name="preference_search_no_results">Нет результатов</string>
+    <string name="preference_search_clear_history">Очистить историю</string>
+    <string name="pref_episode_cleanup_title">Удаление выпусков</string>
+    <string name="pref_episode_cleanup_summary">Выпуски, подлежащие удалению, если для автозагрузки потребуется место для новых выпусков</string>
+    <string name="pref_pauseOnDisconnect_sum">Поставить на паузу, когда наушники или Bluetooth отключены</string>
+    <string name="pref_unpauseOnHeadsetReconnect_sum">Продолжать воспроизведение после подключения наушников</string>
+    <string name="pref_unpauseOnBluetoothReconnect_sum">Возобновить, когда восстановится Bluetooth-соединение</string>
+    <string name="pref_hardware_forward_button_title">Кнопка «Вперёд»</string>
+    <string name="pref_hardware_forward_button_summary">Настройка поведения кнопки Вперед</string>
+    <string name="pref_hardware_previous_button_title">Кнопка «Назад»</string>
+    <string name="pref_hardware_previous_button_summary">Настройка поведения кнопки Назад</string>
+    <string name="button_action_fast_forward">Перемотка вперёд</string>
+    <string name="button_action_rewind">Перемотка назад</string>
+    <string name="button_action_skip_episode">Пропустить выпуск</string>
+    <string name="button_action_restart_episode">Выпуск с начала</string>
+    <string name="pref_followQueue_sum">После завершения воспроизведения перейти к следующему в очереди</string>
+    <string name="pref_pick_custom_media_dir">Укажите пользовательскую папку</string>
+    <string name="pref_custom_media_dir_title">Использовать пользовательскую папку</string>
+    <string name="pref_custom_media_dir_sum">Выберите пользовательскую папку для загруженного носителя. Вы всегда можете сбросить. Требуется перезапуск.</string>
+    <string name="pref_custom_media_dir_sum1">Пользовательская папка установлена. Хотите изменить?</string>
+    <string name="pref_custom_media_dir_sum2">Пользовательская папка установлена. Хотите сбросить настройки по умолчанию?</string>
+    <string name="pref_auto_delete_sum">Удалять выпуск по окончании воспроизведения</string>
+    <string name="pref_auto_delete_title">Автоматическое удаление</string>
+    <string name="pref_auto_local_delete_title">Автоматически удалять из локальных папок</string>
+    <string name="pref_auto_local_delete_sum">Включить локальные папки в функцию автоудаления</string>
+    <string name="pref_auto_local_delete_dialog_body">Обратите внимание, что для локальных папок это удалит эпизоды из Podcini и удалит их медиафайлы из памяти вашего устройства. Они не могут быть снова загружены через Podcini. Включить автоматическое удаление\?</string>
+    <string name="pref_mark_played_removes_from_queue_title">Отметить проигрываемое удаление из очереди</string>
+    <string name="pref_mark_played_removes_from_queue_sum">Удаляет эпизоды из всех очередей, когда они отмечены эпизодами в воспроизведенных </string>
+    <string name="pref_skip_keeps_episodes_sum">Сохранять выпуски, которые были пропущены</string>
+    <string name="pref_skip_keeps_episodes_title">Сохранять пропущенные выпуски</string>
+    <string name="pref_keeps_important_episodes_sum">Сохранять эпизоды, когда они помечены Супер или установлены как снова или навсегда.</string>
+    <string name="pref_keeps_important_episodes_title">Сохранить важные выпуски</string>
+    <string name="playback_pref">Воспроизведение</string>
+    <string name="playback_pref_sum">Кнопки гарнитуры, шаг перемотки, очередь</string>
+    <string name="downloads_pref">Загрузки</string>
+    <string name="downloads_pref_sum">Интервал обновления, мобильная сеть, автоматизация</string>
+    <string name="feed_refresh_title">Обновить подкасты</string>
+    <string name="feed_refresh_sum">Укажите интервал (в часах, 0 означает никогда), при котором Podcini автоматически ищет новые эпизоды.</string>
+    <string name="feed_refresh_never">Никогда</string>
+    <string name="feed_every_hour">Каждый час</string>
+    <string name="feed_every_2_hours">Каждые 2 часа</string>
+    <string name="feed_every_4_hours">Каждые 4 часа</string>
+    <string name="feed_every_8_hours">Каждые 8 часов</string>
+    <string name="feed_every_12_hours">Каждые 12 часов</string>
+    <string name="feed_every_24_hours">Каждый день</string>
+    <string name="feed_every_72_hours">Каждые 3 дня</string>
+    <string name="pref_followQueue_title">Непрерывное воспроизведение</string>
+    <string name="pref_pauseOnHeadsetDisconnect_title">Отключение наушников или Bluetooth</string>
+    <string name="pref_unpauseOnHeadsetReconnect_title">При подключении наушников</string>
+    <string name="pref_unpauseOnBluetoothReconnect_title">При подключении Bluetooth</string>
+    <string name="pref_stream_over_download_title">Трансляция вместо загрузки</string>
+    <string name="pref_stream_over_download_sum">Отображать кнопку потока вместо кнопки загрузки в списках</string>
+    <string name="pref_low_quality_on_mobile_title">Предпочитать низкое качество на мобильном устройстве</string>
+    <string name="pref_low_quality_on_mobile_sum">В сети получен только низкокачественный носитель (если имеется)</string>
+    <string name="pref_use_adaptive_progress_title">Адаптивно обновить прогресс</string>
+    <string name="pref_use_adaptive_progress_sum">Обновите прогресс за адаптивный интервал больше 5 секунд или 2% длительности медиа. Это экономит определенную энергию. Иначе она обновляется каждые 5 секунд.</string>
+    <string name="pref_metered_network_title">Ограниченные настройки сети</string>
+    <string name="pref_mobileUpdate_sum">Выберите, что разрешено загружать через мобильное подключение</string>
+    <string name="pref_mobileUpdate_refresh">Обновление подкастов</string>
+    <string name="pref_mobileUpdate_images">Обложки</string>
+    <string name="pref_mobileUpdate_auto_download">Автозагрузка</string>
+    <string name="pref_mobileUpdate_episode_download">Загрузка выпусков</string>
+    <string name="pref_mobileUpdate_streaming">Трансляции по сети</string>
+    <string name="user_interface_label">Интерфейс</string>
+    <string name="user_interface_sum">Внешний вид, подписки, экран блокировки</string>
+    <string name="pref_black_theme_title">Чёрная</string>
+    <string name="pref_black_theme_message">Чёрная тема вместо тёмной</string>
+    <string name="pref_tinted_theme_title">Динамические цвета</string>
+    <string name="pref_tinted_theme_message">Менять цвета в приложении по цвету обоев</string>
+    <string name="pref_nav_drawer_items_title">Выбрать пункты боковой панели</string>
+    <string name="pref_nav_drawer_items_sum">Изменить, какие элементы отображаются в панели навигации</string>
+    <string name="pref_nav_drawer_feed_order_title">Сортировка подписок</string>
+    <string name="pref_nav_drawer_feed_order_sum">Выбрать порядок отображения подписок</string>
+    <string name="pref_automatic_download_title">Автоматическая загрузка</string>
+    <string name="pref_automatic_download_sum">Настроить автоматическую загрузку эпизодов</string>
+    <string name="pref_autodl_wifi_filter_title">Включить фильтр Wi-Fi</string>
+    <string name="pref_autodl_wifi_filter_sum">Разрешать автоматическую загрузку только для выбранных сетей Wi-Fi.</string>
+    <string name="pref_automatic_download_on_battery_title">Загружать без зарядки</string>
+    <string name="pref_automatic_download_on_battery_sum">Разрешать автоматическую загрузку когда батарея не заряжается</string>
+    <string name="pref_episode_cache_title">Кэш выпусков</string>
+    <string name="pref_episode_cache_summary">Общее количество загруженных эпизодов, кэшированных на устройстве (0 означает неограниченно). Автоматическая загрузка будет приостановлена, если это число будет достигнуто.</string>
+    <string name="pref_auto_download_counting_played_title">Счетчик сыгран</string>
+    <string name="pref_auto_download_counting_played_summary">Установка если загруженные эпизоды уже воспроизведены в кэш эпизодов</string>
+    <string name="pref_episode_cover_title">Использовать обложку выпуска</string>
+    <string name="pref_episode_cover_summary">Если выпуск содержит свою обложку, показывать в списках её. Если не выбрано, всегда используется обложка подкаста.</string>
+    <string name="pref_show_remain_time_title">Показывать оставшееся время</string>
+    <string name="pref_show_remain_time_summary">Отображать оставшееся время выпусков. Если не выбрано, будет отображаться общая длительность.</string>
+    <string name="pref_theme_title_automatic">Автоматически</string>
+    <string name="pref_theme_title_light">Светлая</string>
+    <string name="pref_theme_title_dark">Темная</string>
+    <string name="pref_episode_cache_unlimited">Неограничен</string>
+    <string name="pref_playback_speed_sum">Выбрать значения скорости, доступные при воспроизведении</string>
+    <string name="pref_feed_playback_speed_sum">Скорость, с которой будут изначально воспроизводиться выпуски этого подкаста</string>
+    <string name="pref_feed_skip">Автоматическая перемотка</string>
+    <string name="pref_feed_skip_sum">Проматывать вступительную и заключительную часть.</string>
+    <string name="associated">Связанные</string>
+    <string name="pref_feed_audio_type">Тип аудио</string>
+    <string name="pref_feed_audio_type_sum">Речек, Музыка или Фильм для улучшения обработки.</string>
+    <string name="pref_feed_audio_quality">Качество звука</string>
+    <string name="pref_feed_audio_quality_sum">Глобальные, как правило, имеют высокое качество, за исключением тех случаев, когда для сети установлен prefLowQualityMedia. Настройка качества здесь имеет приоритет перед установкой prefLowQualityMedia для ограниченных сетей.</string>
+    <string name="pref_feed_video_quality">Качество видео</string>
+    <string name="pref_feed_video_quality_sum">Глобальные равны низкому качеству, настройки качества здесь имеют приоритет перед настройками prefLowQualityMedia для распределенной сети.</string>
+    <string name="pref_feed_associated_queue">Связанная очередь</string>
+    <string name="pref_feed_associated_queue_sum">Очередь, в которую epiosdes в канале будет добавлена по умолчанию</string>
+    <string name="pref_feed_skip_ending">Промотать в конце</string>
+    <string name="pref_feed_skip_intro">Промотать в начале</string>
+    <string name="pref_feed_skip_ending_toast">Промотаны последние %d с</string>
+    <string name="pref_feed_skip_intro_toast">Промотаны первые %d с</string>
+    <string name="pref_playback_time_respects_speed_title">Подстройка метаданных под скорость воспроизведения</string>
+    <string name="pref_playback_time_respects_speed_sum">Отображаемые позиция и длительность меняются со скоростью</string>
+    <string name="pref_fallback_speed">Резервная скорость</string>
+    <string name="pref_speed_forward">Скорость перемотки вперед</string>
+    <string name="pref_speed_forward_sum">Настроить скорость вперед при нажатии кнопки \"Пропустить\"</string>
+    <string name="pref_fallback_speed_sum">Настроить скорость при долгом нажатии кнопки воспроизведения</string>
+    <string name="pref_fast_forward">Интервал перемотки вперёд</string>
+    <string name="pref_fast_forward_sum">Настройте длину шага в секундах при нажатии кнопки перемотки вперед</string>
+    <string name="pref_rewind">Интервал перемотки назад</string>
+    <string name="pref_rewind_sum">Настройте длину шага в секундах при нажатии кнопки перемотки назад</string>
+    <string name="pref_playback_video_mode">Режим воспроизведения видео</string>
+    <string name="pref_playback_video_mode_sum">Выберите, как видеоэпизод воспроизводится по умолчанию</string>
+    <string name="pref_video_mode_full_screen">Полный экран</string>
+    <string name="pref_video_mode_small_window">Маленькое окно</string>
+    <string name="pref_video_mode_audio_only">Только аудио</string>
+    <string name="pref_swipe_refresh_title">Проведите для обновления</string>
+    <string name="pref_swipe_refresh_sum">Смахните вниз, чтобы обновить все подписки</string>
+    <string name="pref_feedGridLayout_title">Подписки используют расположение сетки </string>
+    <string name="pref_feedGridLayout_sum">Когда установлено, в виде подписок используется шаблон сетки, в противном случае раскладка списка</string>
+    <string name="pref_expandNotify_title">Уведомление с высоким приоритетом</string>
+    <string name="pref_expandNotify_sum">Как правило, разворачивает уведомление, показывая кнопки управления воспроизведением.</string>
+    <string name="pref_persistNotify_title">Постоянное управление воспроизведением</string>
+    <string name="pref_persistNotify_sum">Сохранять уведомления и управление экраном блокировки при паузе воспроизведения</string>
+    <string name="pref_show_notification_skip_title">Показывать пропуск при уведомлении</string>
+    <string name="pref_show_notification_skip_sum">Переключить кнопку пропустить на панели уведомлений</string>
+    <string name="pref_compact_notification_buttons_dialog_error_exact">Вы должны выбрать ровно %1$d элементов.</string>
+    <string name="pref_full_notification_buttons_title">Настройка кнопок уведомлений</string>
+    <string name="pref_full_notification_buttons_sum">Изменить кнопки воспроизведения при уведомлении о воспроизведении.</string>
+    <string name="pref_enqueue_location_title">Размещение в очереди</string>
+    <string name="pref_enqueue_location_sum">Добавлять выпуски %1$s</string>
+    <string name="enqueue_location_back">в конец</string>
+    <string name="enqueue_location_front">в начало</string>
+    <string name="enqueue_location_after_current">за текущим выпуском</string>
+    <string name="enqueue_location_random">Случайно</string>
+    <string name="documentation_support">Документация и поддержка</string>
+    <string name="visit_user_forum">Форум пользователей</string>
+    <string name="bug_report_title">Сообщить об ошибке</string>
+    <string name="email_developer">Написать разработчику</string>
+    <string name="need_email_client">На телефоне установлен почтовый клиент.</string>
+    <string name="open_bug_tracker">Перейти в систему отслеживания ошибок</string>
+    <string name="copy_to_clipboard">Скопировать в буфер</string>
+    <string name="copied_to_clipboard">Скопировано в буфер</string>
+    <string name="pref_proxy_title">Прокси</string>
+    <string name="pref_proxy_sum">Настройки прокси</string>
+    <string name="pref_no_browser_found">Веб-браузер не обнаружен.</string>
+    <string name="pref_enqueue_downloaded_title">Добавлять загруженные в очередь</string>
+    <string name="pref_enqueue_downloaded_summary">Добавлять загруженные выпуски в очередь</string>
+    <string name="pref_skip_silence_title">Пропускать участки тишины</string>
+    <string name="behavior">Поведение</string>
+    <string name="pref_select_properties">Выберите свойства</string>
+    <string name="pref_import_media_files_later">Медиа-файлы могут быть импортированы только после импорта базы данных.</string>
+    <string name="pref_default_page">Первая страница</string>
+    <string name="pref_default_page_sum">Экран, который открывается при запуске Podcini</string>
+    <string name="pref_back_button_opens_drawer">Кнопка Возврат открывает боковую панель</string>
+    <string name="pref_back_button_opens_drawer_summary">Нажатие кнопки Возврат на первой странице откроет панель навигации</string>
+    <string name="remember_last_page">Запоминать последнюю страницу</string>
+    <string name="pref_delete_removes_from_queue_title">Убирать удаленные из очереди</string>
+    <string name="pref_delete_removes_from_queue_sum">Автоматически удалять эпизод из очереди при его удалении</string>
+    <string name="pref_contribute">Поучаствовать</string>
+    <!-- About screen -->
+    <string name="about_pref">О программе</string>
+    <string name="podcini_version">Версия Podcini</string>
+    <string name="contributors">Участники</string>
+    <string name="contributors_summary">Любой может сделать Podcini лучше — своим кодом, переводом или помогая пользователям на форуме</string>
+    <string name="developers">Разработчики</string>
+    <string name="translators">Переводчики</string>
+    <string name="special_thanks">Особая благодарность</string>
+    <string name="online_help">Главная страница онлайн</string>
+    <string name="online_help_sum">Получить больше информации онлайн</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="licenses">Лицензии</string>
+    <string name="licenses_summary">В Podcini используется другое отличное ПО</string>
+    <string name="email_sum">Сообщите о проблемах или внесите предложения непосредственно разработчику.</string>
+    <!-- Search -->
+    <string name="search_status_no_results">Ничего не найдено</string>
+    <string name="search_label">Поиск</string>
+    <string name="no_results_for_query">По запросу «%1$s» ничего не найдено</string>
+    <string name="search_online">Искать в сети</string>
+    <!-- Synchronization -->
+    <string name="sync_status_started">Синхронизация запущена</string>
+    <string name="sync_status_episodes_upload">Отправка изменений по выпускам…</string>
+    <string name="sync_status_episodes_download">Загрузка изменений по выпускам…</string>
+    <string name="sync_status_upload_played">Отправка состояния прослушивания…</string>
+    <string name="sync_status_subscriptions">Синхронизация подписок…</string>
+    <string name="sync_status_wait_for_downloads">Ожидаем завершения загрузок…</string>
+    <string name="sync_status_success">Синхронизация выполнена</string>
+    <string name="sync_status_in_progress">Выполняется синхронизация</string>
+    <string name="sync_status_error">Синхронизация не удалась</string>
+    <string name="sync_error_host_not_respond">Хост не отвечает, оставление</string>
+    <string name="sync_error_guest_not_respond">Гость не отвечает, отказ от ответа</string>
+    <!-- import and export -->
+    <string name="import_export_summary">Перенести подписку и очередь на другое устройство</string>
+    <string name="preferences">Настройки</string>
+    <string name="media_files">Медиа файлы</string>
+    <string name="combos">Комбо</string>
+    <string name="database">База данных</string>
+    <string name="opml">OPML</string>
+    <string name="html">HTML</string>
+    <string name="progress">Прогресс</string>
+    <string name="html_export_summary">Показать подписки другу</string>
+    <string name="opml_export_summary">Передать подписки в другое приложение</string>
+    <string name="opml_import_summary">Импортировать подписки из другого приложения</string>
+    <string name="preferences_export_summary">Экспорт настроек Podcini</string>
+    <string name="preferences_import_summary">Импорт настроек Podcini</string>
+    <string name="media_files_export_summary">Экспорт медиафайлов Podcini</string>
+    <string name="media_files_import_summary">Импорт медиа-файлов Podcini</string>
+    <string name="combo_export_summary">Экспортировать выбранную базу данных, настройки, медиа-файлы.</string>
+    <string name="combo_import_summary">Импортируйте выбранную базу данных, настройки, медиа-файлы.</string>
+    <string name="database_export_summary">Передать подписки, список прослушанных и очередь в Podcini на другом устройстве</string>
+    <string name="database_import_summary">Импортировать базу данных Podcini с другого устройства</string>
+    <string name="opml_import_label">Импорт OPML</string>
+    <string name="opml_add_podcast_label">Импортировать список подкастов (OPML)</string>
+    <string name="opml_reader_error">При чтении OPML произошла ошибка:</string>
+    <string name="opml_import_error_no_file">Ничего не выбрано!</string>
+    <string name="select_all_label">Выбрать все</string>
+    <string name="deselect_all_label">Снять выбор</string>
+    <string name="progress_export_label">Экспорт эпизодов прогресса</string>
+    <string name="progress_import_label">Эпизоды прогресса импорта</string>
+    <string name="progress_export_summary">Перенос истории выпусков Podcini на другую установку Podcini. Обратите внимание, что это не обязательно, если вы можете перенести БД.</string>
+    <string name="progress_import_summary">Импорт истории выпусков Podcini из другой установки Podcini. Обратите внимание, что это не обязательно, если вы уже импортировали БД. </string>
+    <string name="progress_import_warning">Прогресс импортирования эпизодов заменит всю текущую историю игр. Вы должны экспортировать ваш текущий прогресс как резервную копию. Вы хотите заменить\? Если да, на следующем экране выберите желаемый . son файл. Процесс может занять пару минут в зависимости от размера. После завершения, будет показано всплывающее окно успеха или неудачи.</string>
+    <string name="opml_export_label">Экспорт в OPML</string>
+    <string name="html_export_label">Экспорт в HTML</string>
+    <string name="media_files_export_label">Экспорт медиафайлов</string>
+    <string name="media_files_import_label">Импорт медиафайлов</string>
+    <string name="import_SQLite_message">Импортированные подписки вместе с сериями и игровой историей будут добавлены в существующую БД. Если подтверждено, выберите ранее экспортированную базу данных sqlit.\"</string>
+    <string name="combo_import_warning">Импорт любого из выбранных элементов будет заменен их в вашем текущем хранилище. Если подтверждено, выберите ранее экспортированный каталог с именем, содержащим \"Podcini-Backups\"</string>
+    <string name="preferences_export_label">Экспорт настроек</string>
+    <string name="preferences_import_label">Импорт настроек</string>
+    <string name="preferences_import_warning">Импорт настроек заменит все ваши текущие настройки. При подтверждении выберите ранее экспортированную директорию с именем \"Podcini-Prefs\"</string>
+    <string name="media_files_import_notice">Выберите ранее экспортированный каталог с именем, содержащим \"Podcini-MediaFiles\"</string>
+    <string name="combo_export_label">Комбо экспорт</string>
+    <string name="combo_import_label">Комбо импорт</string>
+    <string name="import_AP_label">Импорт базы данных AntennaPod</string>
+    <string name="import_PA_label">Импортировать из резервной копии Podcast Addict</string>
+    <string name="import_PA_DB_label">Импорт подписок</string>
+    <string name="import_PA_DB_message">Импортированные подписки вместе с эпизодами и историей воспроизведения будут добавлены в БД podcini \"</string>
+    <string name="import_PA_directory_label">Папка импорта</string>
+    <string name="import_PA_directory_message">Импорт прямых подкастов для оффлайн поиска\"</string>
+    <string name="import_PA_message">Если подтверждено, выберите ранее экспортированный архив из Podcast Addict app.\"</string>
+    <string name="database_export_label">Экспорт базы данных</string>
+    <string name="database_import_label">Импорт базы данных</string>
+    <string name="realm_database_import_label">Импорт базы данных Realm</string>
+    <string name="database_import_warning">Импорт базы данных приведет к замене всех текущих подписок и истории воспроизведения. Следует экспортировать текущую базу данных, чтобы иметь резервную копию. Хотите заменить\?</string>
+    <string name="import_directory_toast">Принимаются только имя каталога, включая: </string>
+    <string name="import_file_type_toast">Принимаем только расширение файла: </string>
+    <string name="please_wait">Подождите…</string>
+    <string name="import_export_error_label">Ошибка экспорта</string>
+    <string name="export_success_title">Экспорт выполнен</string>
+    <string name="opml_import_ask_read_permission">Для чтения файла OPML необходим доступ к внешнему хранилищу</string>
+    <string name="successful_import_label">Импорт успешен</string>
+    <string name="import_ok">Нажмите OK, чтобы перезапустить Podcini</string>
+    <string name="favorites_export_label">Экспорт избранного</string>
+    <string name="favorites_export_summary">Экспортировать сохраненное избранное в файл</string>
+    <string name="restore_subscriptions_label">Восстановить подписки</string>
+    <string name="restore_subscriptions_summary">Предыдущие подписки подкастов могут быть восстановлены. Хотите восстановить их?</string>
+    <!-- Sleep timer -->
+    <string name="set_sleeptimer_label">Установить таймер сна</string>
+    <string name="disable_sleeptimer_label">Отключить таймер сна</string>
+    <string name="extend_sleep_timer_label">+%d мин.</string>
+    <string name="end_episode">К концу эпизода</string>
+    <string name="sleep_timer_always">Всегда</string>
+    <string name="sleep_timer_label">Таймер сна</string>
+    <string name="time_dialog_invalid_input">Неправильный ввод, время должно быть в виде числа</string>
+    <string name="shake_to_reset_label">Сбросить встряхиванием</string>
+    <string name="timer_vibration_label">Вибрировать перед окончанием</string>
+    <string name="time_seconds">сек</string>
+    <string name="time_minutes">мин</string>
+    <string name="time_hours">ч</string>
+    <plurals name="time_minutes_quantified">
+        <item quantity="one">%d минута</item>
+        <item quantity="few">%d минуты</item>
+        <item quantity="many">%d минут</item>
+        <item quantity="other">%d минут</item>
+    </plurals>
+    <plurals name="time_hours_quantified">
+        <item quantity="one">%d час</item>
+        <item quantity="few">%d часа</item>
+        <item quantity="many">%d часов</item>
+        <item quantity="other">%d часов</item>
+    </plurals>
+    <plurals name="time_days_quantified">
+        <item quantity="one">1 день</item>
+        <item quantity="few">%d дней</item>
+        <item quantity="many">%d дней</item>
+        <item quantity="other">%d дней</item>
+    </plurals>
+    <string name="auto_enable_label">Запускать таймер сна вместе с началом воспроизведения</string>
+    <string name="auto_enable_label_with_times" formatted="false">Автоматически запускать таймер сна при пуске воспроизведения в интервале с%s до %s</string>
+    <string name="auto_enable_change_times">Изменить диапазон времени</string>
+    <string name="sleep_timer_enabled_label">Таймер сна включен</string>
+    <!-- Synchronisation -->
+    <string name="wifi_sync">Синхронизация с устройством при WiFi</string>
+    <string name="wifi_sync_summary_unchoosen">Вы можете подключить два устройства в одной сети Wi-Fi для синхронизации состояний воспроизведения эпизодов</string>
+    <string name="synchronization_choose_title">Выберите провайдера синхронизации</string>
+    <string name="synchronization_summary_unchoosen">Вы можете выбрать из нескольких провайдеров для синхронизации подписок и состояния воспроизведения выпусков</string>
+    <string name="dialog_choose_sync_service_title">Выберите провайдера синхронизации</string>
+    <string name="gpodnet_description">Gpodder.net — сервис синхронизации подкастов с открытым исходным кодом, которое вы можете установить на свой сервер. Gpodder.net не связан с проектом Podcini.</string>
+    <string name="synchronization_summary_nextcloud">Gpoddersync — приложение с открытым исходным кодом для Nextcloud, которое вы можете установить на свой сервер. Это приложение не связано с проектом Podcini.</string>
+    <string name="synchronization_host_explanation">Можно выбрать свой сервер для синхронизации. Опредилившись с предпочтительным сервером синхронизации, введите его адрес здесь.</string>
+    <string name="synchronization_host_address_label">Адрес хоста</string>
+    <string name="synchronization_host_port_label">Порт хоста</string>
+    <string name="synchronization_host_label">Адрес сервера</string>
+    <string name="server">Сервер</string>
+    <string name="guest_butLabel">Как гость</string>
+    <string name="host_butLabel">Как хост</string>
+    <string name="proceed_to_login_butLabel">Авторизоваться</string>
+    <string name="wifisync_explanation_message">Это выполняет синхронизацию wifi между двумя устройствами пиров. Устройства должны функционировать как хост или Гостец, но не то же самое. Устройство, действующее в качестве хоста, будет указано свой IP-адрес. Убедитесь, что этот адрес скопирован на гостевом устройстве. Номер порта может быть изменен по мере необходимости, но оба устройства должны использовать один и тот же номер порта. После подтверждения он не может быть отменен. После подтверждения максимальное время ожидания ответа на любом из устройств составляет 2 минуты.</string>
+    <string name="wifisync_progress_message">Общение с пиром</string>
+    <string name="synchronization_nextcloud_authenticate_browser">Предоставить доступ, открыв веб-браузер, и вернуться в Podcini.</string>
+    <string name="connect_to_peer">Подключиться к пиру</string>
+    <string name="host_or_guest">Сначала сделайте себя хостом или гостем</string>
+    <string name="gpodnetauth_login_butLabel">Войти</string>
+    <string name="synchronization_credentials_explanation">Пожалуйста, укажите данные своей учётной записи на сервере синхронизации.</string>
+    <string name="gpodnetauth_encryption_warning">Пароль и данные не зашифрованы!</string>
+    <string name="username_label">Имя пользователя</string>
+    <string name="password_label">Пароль</string>
+    <string name="synchronization_login_butLabel">Войти</string>
+    <string name="synchronization_selectDevice_explanation">Пожалуйста, выберите устройство с сервера синхронизации, либо создайте новое.</string>
+    <string name="gpodnetauth_device_name">Название устройства</string>
+    <string name="gpodnetauth_device_name_default">Podcini на %1$s</string>
+    <string name="gpodnetauth_existing_devices">Существующие устройства</string>
+    <string name="gpodnetauth_create_device">Создать устройство</string>
+    <string name="gpodnetauth_finish_descr">Поздравляем! Ваша учётная запись gpodder.net связана с устройством. Podcini будет автоматически синхронизировать Ваши подписки с учётной записью gpodder.net.</string>
+    <string name="gpodnetauth_finish_butsyncnow">Начать синхронизацию</string>
+    <string name="pref_gpodnet_setlogin_information_title">Изменить информацию авторизации</string>
+    <string name="pref_gpodnet_setlogin_information_sum">Изменить информацию авторизации для аккаунта gpodder.net</string>
+    <string name="synchronization_sync_changes_title">Синхронизировать сейчас</string>
+    <string name="synchronization_sync_summary">Сихронизировать ваши подписки и изменения состояния выпусков</string>
+    <string name="synchronization_full_sync_title">Выполнить полную синхронизацию</string>
+    <string name="synchronization_force_sync_summary">Пересихронизировать ваши подписки и состояние выпусков</string>
+    <string name="synchronization_logout">Выйти</string>
+    <string name="synchronization_login_status"><![CDATA[Авторизованы как <i>%1$s</i> на <i>%2$s</i>. <br/><br/>Вы сможете снова выбрать провайдера синхронизации после выхода из системы]]></string>
+    <string name="pref_synchronization_logout_toast">Выход успешно выполнен</string>
+    <string name="gpodnetsync_error_title">Ошибка синхронизации с gpodder.net</string>
+    <string name="gpodnetsync_error_descr">Произошла ошибка во время синхронизации:\u0020</string>
+    <string name="gpodnetsync_pref_report_successful">Успешно</string>
+    <string name="gpodnetsync_pref_report_failed">Неудачно</string>
+    <string name="gpodnetsync_username_characters_error">Имя пользователя может содержать только буквы, цифры, дефисы и символы подчеркивания.</string>
+    <!-- Directory chooser -->
+    <string name="choose_data_directory">Выбрать папку для хранения данных</string>
+    <string name="choose_data_directory_message">Укажите основную папку для хранения данных. Podcini создаст необходимые подкаталоги.</string>
+    <string name="choose_data_directory_available_space">свободно: %1$s из %2$s</string>
+    <string name="pref_pausePlaybackForFocusLoss_sum">Пауза вместо уменьшения громкости, когда другое приложение проигрывает звуки</string>
+    <string name="pref_pausePlaybackForFocusLoss_title">Пауза при прерывании</string>
+    <!-- Online feed view -->
+    <string name="subscribe_label">Подписаться</string>
+    <string name="preview_episode">Предпросмотр</string>
+    <!-- Content descriptions for image buttons -->
+    <string name="toolbar_back_button_content_description">Назад</string>
+    <string name="rewind_label">Назад</string>
+    <string name="fast_forward_label">Вперед</string>
+    <string name="toggle_video_views">Переключить просмотр видео</string>
+    <string name="increase_speed">Увеличить скорость</string>
+    <string name="decrease_speed">Уменьшить скорость</string>
+    <string name="status_downloading_label">Выпуск загружается</string>
+    <string name="load_next_page_label">Загрузить следующую страницу</string>
+    <string name="position">Позиция: %1$s</string>
+    <string name="next_chapter">Следующая глава</string>
+    <string name="add_preset">Добавить шаблон</string>
+    <!-- Feed settings/information screen -->
+    <string name="authentication_label">Авторизация</string>
+    <string name="authentication_descr">Изменить имя пользователя и пароль для этого подкаста и его выпусков.</string>
+    <string name="feed_tags_label">Метки</string>
+    <string name="feed_tags_summary">Используйте метки, чтобы организовать ваши подписки.</string>
+    <string name="feed_folders_include_root">Показывать подкаст в основном списке</string>
+    <string name="multi_feed_common_tags_info">{faw_info_circle} Отображаются только общие метки для всех выбранных подписок. Другие не затрагиваются.</string>
+    <string name="auto_download_settings_label">Настройки автозагрузки</string>
+    <string name="episode_filters_label">Фильтр выпусков</string>
+    <string name="episode_inclusive_filters_label">Включенный фильтр эпизодов</string>
+    <string name="episode_exclusive_filters_label">Эксклюзивный фильтр эпизодов</string>
+    <string name="episode_filters_description">Перечень условий по включению или исключению выпуска из списков автоматической загрузки</string>
+    <string name="add_term">Добавить условие</string>
+    <string name="exclude_terms">Исключить выпуски подпадающие под любое из условий</string>
+    <string name="include_terms">Включать выпуски подпадающие под любое из условий</string>
+    <string name="exclude_episodes_shorter_than">Исключить выпуски короче чем</string>
+    <string name="mark_excluded_episodes_played">Пометить воспроизведенные эпизоды</string>
+    <string name="use_wide_layout">Использовать широкий макет</string>
+    <string name="use_wide_layout_summary">Широкий макет в списке эпизодов показывает большее изображение, более подходящее для видео содержимого.</string>
+    <string name="keep_updated">Постоянно обновлять</string>
+    <string name="keep_updated_summary">Обновлять подкаст при (авто)обновлении всех подкастов</string>
+    <string name="audo_add_new_queue">Автоматическое добавление в очередь</string>
+    <string name="audo_add_new_queue_summary">Автоматически добавлять новые выпуски в этот подкаст в указанную очередь при (авто-)обновлении</string>
+    <string name="auto_download_disabled_globally">Автоматическая загрузка отключена в основных настройках Podcini</string>
+    <string name="statistics_length_played">Продолжительность всех запущено:</string>
+    <string name="statistics_time_played">Времени прослушивания:</string>
+    <string name="statistics_time_spent">Время:</string>
+    <string name="statistics_total_duration">Общая длительность (примерно):</string>
+    <string name="statistics_episodes_on_device">Выпусков на устройстве:</string>
+    <string name="statistics_space_used">Занято пространства:</string>
+    <string name="statistics_episodes_started_total">Выпусков начато / всего:</string>
+    <string name="statistics_view_this">Просмотреть этот подкаст»</string>
+    <string name="statistics_view_all">Просмотреть все подкасты »</string>
+    <string name="feeds_related_to_author">Ленты, вероятно связанные с автором »</string>
+    <string name="edit_url_menu">Исправить ссылку на канал</string>
+    <string name="edit_url_confirmation_msg">Изменение адреса ссылки может запросто испортить состояние воспроизведения и список выпусков подкаста. Мы крайне НЕ рекомендуем его менять и НЕ сможем Вам помочь, если что-то пойдёт не так. Действие необратимо. Простым возвратом старого адреса поломку HE исправить. Советуем сперва создать резервную копию. </string>
+    <string name="edit_fast_forward_speed">Редактировать скорость быстрого вперед</string>
+    <string name="edit_fallback_speed">Изменить скорость резервного доступа</string>
+    <!-- PodciniSP -->
+    <string name="sp_apps_importing_feeds_msg">Импорт подписок из моноприложений…</string>
+    <!-- Add podcast fragment -->
+    <string name="search_podcast_hint">Найти подкаст…</string>
+    <string name="search_vistaguide_label">Поиск по каналам YouTube</string>
+    <string name="search_itunes_label">Поиск в Apple Podcasts</string>
+    <string name="search_podcastindex_label">Поиск на Podcast Index</string>
+    <string name="search_fyyd_label">Поиск в fyyd</string>
+    <string name="gpodnet_search_hint">Искать на gpodder.net</string>
+    <string name="advanced">Дополнительные</string>
+    <string name="add_podcast_by_url">Добавить подкаст по адресу RSS</string>
+    <string name="discover">Ознакомиться</string>
+    <string name="discover_hide">Скрыть</string>
+    <string name="discover_is_hidden">Вы предпочли скрыть рекомендации.</string>
+    <string name="discover_more">еще »</string>
+    <string name="discover_powered_by_itunes">Предложения Apple Podcasts</string>
+    <string name="discover_confirm">Показать рекомендации</string>
+    <string name="search_powered_by">Результаты по %1$s</string>
+    <string name="select_country">Выбор страны</string>
+    <!-- Local feeds -->
+    <string name="add_local_folder">Добавить локальную папку</string>
+    <string name="local_folder">Локальная папка</string>
+    <string name="reconnect_local_folder">Переподключить локальную папку</string>
+    <string name="reconnect_local_folder_warning">В случае отказа в разрешении вы можете использовать это для переподключения к той же самой папке. Не выбирайте другую папку.</string>
+    <string name="local_feed_description">Этот виртуальный подкаст был создан путем добавления папки в Podcini.</string>
+    <string name="unable_to_start_system_file_manager">Невозможно запустить системный файловый менеджер</string>
+    <string name="filter">Фильтровать</string>
+    <string name="downloaded_label">Загружено</string>
+    <string name="auto_downloadable_label">Автозагрузка</string>
+    <string name="has_media">С медиа</string>
+    <string name="has_chapters">Имеет главы</string>
+    <string name="filename">Имя файла</string>
+    <string name="play_speed">Скорость воспроизведения</string>
+    <string name="global_speed">Глобально</string>
+    <string name="custom_speed">Свой</string>
+    <string name="has_skips">Пропуск установлен</string>
+    <string name="commented">Прокомментировал</string>
+    <string name="feed_type">Тип ленты</string>
+    <string name="synthetic">Синтез</string>
+    <string name="normal">Обычный</string>
+    <string name="feed_origin">Канал происхождения</string>
+    <string name="youtube">Youtube</string>
+    <string name="rss">RSS-лента</string>
+    <string name="has_video">Имеет видео</string>
+    <string name="has_comments">Прокомментировал</string>
+    <string name="auto_delete">Автоудаление</string>
+    <string name="always">Всегда</string>
+    <string name="never">Никогда</string>
+    <string name="auto_download">Автозагрузка</string>
+    <!-- Share episode dialog -->
+    <string name="share_playback_position_dialog_label">С позицией воспроизведения</string>
+    <string name="share_dialog_episode_website_label">Сайт выпуска</string>
+    <string name="share_dialog_for_social">сообщением</string>
+    <string name="share_dialog_media_address">ссылкой на медиафайл</string>
+    <string name="share_dialog_media_file_label">медиафайлом</string>
+    <string name="share_starting_position_label">начиная с</string>
+    <!-- Audio controls -->
+    <string name="audio_controls">Управление звучанием</string>
+    <string name="playback_speed">Скорость воспроизведения</string>
+    <string name="player_switch_to_audio_only">Переключиться на аудио</string>
+    <!-- proxy settings -->
+    <string name="proxy_type_label">Тип</string>
+    <string name="host_label">Узел</string>
+    <string name="port_label">Порт</string>
+    <string name="optional_hint">(необязательно)</string>
+    <string name="proxy_test_label">Проверить</string>
+    <string name="proxy_checking">Проверка…</string>
+    <string name="proxy_test_successful">Проверка пройдена</string>
+    <string name="proxy_test_failed">Проверка не удалась</string>
+    <string name="proxy_host_empty_error">Обязательно укажите узел</string>
+    <string name="proxy_host_invalid_error">Неверный адрес или домен узла</string>
+    <string name="proxy_port_invalid_error">Неверный порт</string>
+    <!-- Subscriptions fragment -->
+    <!-- Notification channels -->
+    <string name="notification_group_errors">Ошибки</string>
+    <string name="notification_channel_user_action">Требуется действие</string>
+    <string name="notification_channel_user_action_description">Показывается, когда от Вас требуется действие, например, ввести пароль.</string>
+    <string name="notification_channel_downloading">Загружается</string>
+    <string name="notification_channel_downloading_description">Показывается во время загрузки.</string>
+    <string name="notification_channel_playing">Сейчас воспроизводится</string>
+    <string name="notification_channel_playing_description">Позволяет управлять воспроизведением. Основное уведомление, показывается при воспроизведении подкаста.</string>
+    <string name="notification_channel_download_error">Загрузка не удалась</string>
+    <string name="notification_channel_download_error_description">Отображается, когда загрузка или обновление канала завершилось с ошибкой</string>
+    <string name="notification_channel_sync_error">Синхронизация не удалась</string>
+    <string name="notification_channel_sync_error_description">Отображается, если сбоит синхронизация gpodder.</string>
+    <!-- Widget settings -->
+    <string name="widget_settings">Настройки виджета</string>
+    <string name="widget_create_button">Создать виджет</string>
+    <string name="widget_opacity">Непрозрачность</string>
+    <!-- On-Demand configuration -->
+    <string name="on_demand_config_setting_changed">Настройки успешно обновлены.</string>
+    <string name="on_demand_config_stream_text">Похоже, вы часто слушаете по сети. Хотите, чтобы в списке выпусков отображались кнопки для потокового воспроизведения\?</string>
+    <string name="on_demand_config_download_text">Похоже, вы часто слушаете загружаете выпуски. Хотите, чтобы в списке выпусков отображались кнопки для загрузки\?</string>
+    <string name="shortcut_subscription_label">Ярлык подписки</string>
+    <string name="shortcut_select_subscription">Выбрать подписку</string>
+    <string name="add_shortcut">Добавить ярлык</string>
+    <string name="Episode">Эпизод</string>
+    <string name="Podcast">Подкаст</string>
+    <string name="All">Все</string>
 </resources>

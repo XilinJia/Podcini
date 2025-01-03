@@ -5,8 +5,8 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.base.VideoMode
-import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
-import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.EpisodeAssistant.searchEpisodeByIdentifyingValue
 import ac.mdiq.podcini.storage.database.Feeds.EpisodeDuplicateGuesser.canonicalizeTitle
@@ -21,8 +21,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.AudioType
+import ac.mdiq.podcini.storage.model.Feed.Companion.MAX_NATURAL_SYNTHETIC_ID
 import ac.mdiq.podcini.storage.model.Feed.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.utils.StorageUtils.feedfilePath
 import ac.mdiq.podcini.util.EventFlow
@@ -448,8 +448,8 @@ object Feeds {
 
     @JvmStatic
     fun allowForAutoDelete(feed: Feed): Boolean {
-        if (!isAutoDelete) return false
-        return !feed.isLocalFeed || isAutoDeleteLocal
+        if (!getPref(AppPrefs.prefAutoDelete, false)) return false
+        return !feed.isLocalFeed || getPref(AppPrefs.prefAutoDeleteLocal, false)
     }
 
     fun createYTSyndicates() {

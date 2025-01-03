@@ -2,8 +2,8 @@ package ac.mdiq.podcini.storage.utils
 
 import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.timeRespectsSpeed
-import android.content.Context
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import java.util.*
 
 /** Provides methods for converting various units.  */
@@ -108,7 +108,7 @@ object DurationConverter {
     }
 
     fun convertOnSpeed(time: Int, speed: Float): Int {
-        if (time > 0 && timeRespectsSpeed) return (time / speed).toInt()
+        if (time > 0 && getPref(AppPrefs.prefPlaybackTimeRespectsSpeed, false)) return (time / speed).toInt()
         return time
     }
 }

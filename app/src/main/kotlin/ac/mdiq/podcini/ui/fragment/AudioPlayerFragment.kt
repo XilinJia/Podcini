@@ -24,9 +24,12 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.toggleFallbackSpeed
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -280,11 +283,11 @@ class AudioPlayerFragment : Fragment() {
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 var showSkipDialog by remember { mutableStateOf(false) }
-                var rewindSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())) }
+                var rewindSecs by remember { mutableStateOf(NumberFormat.getInstance().format(AppPreferences.rewindSecs.toLong())) }
                 if (showSkipDialog) SkipDialog(SkipDirection.SKIP_REWIND, onDismissRequest = { showSkipDialog = false }) { rewindSecs = it.toString() }
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_rewind), tint = textColor, contentDescription = "rewind",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
-                        onClick = { playbackService?.mPlayer?.seekDelta(-UserPreferences.rewindSecs * 1000) },
+                        onClick = { playbackService?.mPlayer?.seekDelta(-AppPreferences.rewindSecs * 1000) },
                         onLongClick = { showSkipDialog = true }))
                 Text(rewindSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
@@ -310,17 +313,17 @@ class AudioPlayerFragment : Fragment() {
                         } },
                     onLongClick = {
                         if (status == PlayerStatus.PLAYING) {
-                            val fallbackSpeed = UserPreferences.fallbackSpeed
+                            val fallbackSpeed = AppPreferences.fallbackSpeed
                             if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
                         } }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 var showSkipDialog by remember { mutableStateOf(false) }
-                var fastForwardSecs by remember { mutableStateOf(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())) }
+                var fastForwardSecs by remember { mutableStateOf(NumberFormat.getInstance().format(AppPreferences.fastForwardSecs.toLong())) }
                 if (showSkipDialog) SkipDialog(SkipDirection.SKIP_FORWARD, onDismissRequest = {showSkipDialog = false }) { fastForwardSecs = it.toString()}
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward), tint = textColor, contentDescription = "forward",
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
-                        onClick = { playbackService?.mPlayer?.seekDelta(UserPreferences.fastForwardSecs * 1000) },
+                        onClick = { playbackService?.mPlayer?.seekDelta(AppPreferences.fastForwardSecs * 1000) },
                         onLongClick = { showSkipDialog = true }))
                 Text(fastForwardSecs, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
@@ -338,11 +341,11 @@ class AudioPlayerFragment : Fragment() {
                     modifier = Modifier.width(43.dp).height(43.dp).combinedClickable(
                         onClick = {
                             if (status == PlayerStatus.PLAYING) {
-                                val speedForward = UserPreferences.speedforwardSpeed
+                                val speedForward = AppPreferences.speedforwardSpeed
                                 if (speedForward > 0.1f) speedForward(speedForward)
                             } },
                         onLongClick = { activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT)) }))
-                if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodySmall)
+                if (AppPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(AppPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.weight(0.1f))
         }
@@ -368,11 +371,11 @@ class AudioPlayerFragment : Fragment() {
             val bitrate = curEpisode?.bitrate ?: 0
             if (bitrate > 0) Text(formatLargeInteger(bitrate) + "bits", color = textColor, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.weight(1f))
-            showTimeLeft = UserPreferences.shouldShowRemainingTime
+            showTimeLeft = getPref(AppPrefs.showTimeLeft, false)
             Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.clickable {
                 if (controller == null) return@clickable
                 showTimeLeft = !showTimeLeft
-                UserPreferences.setShowRemainTimeSetting(showTimeLeft)
+                putPref(AppPrefs.showTimeLeft, showTimeLeft)
                 onPositionUpdate(FlowEvent.PlaybackPositionEvent(curEpisode, curPositionFB, curDurationFB))
             })
         }
@@ -676,7 +679,7 @@ class AudioPlayerFragment : Fragment() {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        showTimeLeft = UserPreferences.shouldShowRemainingTime
+        showTimeLeft = getPref(AppPrefs.showTimeLeft, false)
         txtvLengtTexth = if (showTimeLeft) (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
         else DurationConverter.getDurationStringLong(duration)
         sliderValue = event.position.toFloat()

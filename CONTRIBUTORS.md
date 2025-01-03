@@ -1,6 +1,13 @@
 # Developers
 
 [XilinJia](https://github.com/XilinJia)
+[Poussinou](https://github.com/Poussinou)
+[Nicolas Raoul](https://github.com/nicolas-raoul)
+[linsui](https://github.com/linsui)
+[Dacid99](https://github.com/Dacid99)
+[toofyspooder](https://github.com/toofyspooder)
+[Thunderhawk2001](https://github.com/Thunderhawk2001)
+[krjones91](https://github.com/krjones91)
 
 # Translators
 

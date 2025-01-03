@@ -4,10 +4,9 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -40,9 +39,9 @@ object Queues {
      * @see .queueKeepSortedOrder
      */
     var isQueueKeepSorted: Boolean
-        get() = getPref(UserPreferences.Prefs.prefQueueKeepSorted, false)
+        get() = getPref(AppPreferences.AppPrefs.prefQueueKeepSorted, false)
         set(keepSorted) {
-            putPref(UserPreferences.Prefs.prefQueueKeepSorted, keepSorted)
+            putPref(AppPreferences.AppPrefs.prefQueueKeepSorted, keepSorted)
         }
 
     /**
@@ -53,17 +52,17 @@ object Queues {
      */
     var queueKeepSortedOrder: EpisodeSortOrder?
         get() {
-            val sortOrderStr = getPref(UserPreferences.Prefs.prefQueueKeepSortedOrder, "use-default")
+            val sortOrderStr = getPref(AppPreferences.AppPrefs.prefQueueKeepSortedOrder, "use-default")
             return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
         }
         set(sortOrder) {
             if (sortOrder == null) return
-            putPref(UserPreferences.Prefs.prefQueueKeepSortedOrder, sortOrder.name)
+            putPref(AppPreferences.AppPrefs.prefQueueKeepSortedOrder, sortOrder.name)
         }
 
     var enqueueLocation: EnqueueLocation
         get() {
-            val valStr = getPref(UserPreferences.Prefs.prefEnqueueLocation, EnqueueLocation.BACK.name)
+            val valStr = getPref(AppPreferences.AppPrefs.prefEnqueueLocation, EnqueueLocation.BACK.name)
             try { return EnqueueLocation.valueOf(valStr)
             } catch (t: Throwable) {
                 // should never happen but just in case
@@ -72,7 +71,7 @@ object Queues {
             }
         }
         set(location) {
-            putPref(UserPreferences.Prefs.prefEnqueueLocation, location.name)
+            putPref(AppPreferences.AppPrefs.prefEnqueueLocation, location.name)
         }
     
     fun getInQueueEpisodeIds(): Set<Long> {

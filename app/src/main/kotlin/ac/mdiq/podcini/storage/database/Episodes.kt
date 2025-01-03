@@ -11,8 +11,8 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
-import ac.mdiq.podcini.preferences.UserPreferences.Prefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -48,8 +48,8 @@ object Episodes {
 
     private const val smartMarkAsPlayedPercent: Int = 95
 
-    val prefRemoveFromQueueMarkedPlayed by lazy { getPref(Prefs.prefRemoveFromQueueMarkedPlayed, true) }
-    val prefDeleteRemovesFromQueue by lazy { getPref(Prefs.prefDeleteRemovesFromQueue, false) }
+    val prefRemoveFromQueueMarkedPlayed by lazy { getPref(AppPrefs.prefRemoveFromQueueMarkedPlayed, true) }
+    val prefDeleteRemovesFromQueue by lazy { getPref(AppPrefs.prefDeleteRemovesFromQueue, false) }
 
     /**
      * @param offset The first episode that should be loaded.

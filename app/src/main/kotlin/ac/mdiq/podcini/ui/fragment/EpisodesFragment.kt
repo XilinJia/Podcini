@@ -3,10 +3,9 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -95,19 +94,19 @@ class EpisodesFragment : Fragment() {
     private val showClearHistoryDialog = mutableStateOf(false)
 
     private var episodesSortOrder: EpisodeSortOrder
-        get() = EpisodeSortOrder.fromCodeString(getPref(UserPreferences.Prefs.prefEpisodesSort, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
+        get() = EpisodeSortOrder.fromCodeString(getPref(AppPreferences.AppPrefs.prefEpisodesSort, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
         set(s) {
-            putPref(UserPreferences.Prefs.prefEpisodesSort, "" + s.code)
+            putPref(AppPreferences.AppPrefs.prefEpisodesSort, "" + s.code)
         }
     private var prefFilterEpisodes: String
-        get() = getPref(UserPreferences.Prefs.prefEpisodesFilter, "")
+        get() = getPref(AppPreferences.AppPrefs.prefEpisodesFilter, "")
         set(filter) {
-            putPref(UserPreferences.Prefs.prefEpisodesFilter, filter)
+            putPref(AppPreferences.AppPrefs.prefEpisodesFilter, filter)
         }
     private var prefFilterDownloads: String
-        get() = getPref(UserPreferences.Prefs.prefDownloadsFilter, EpisodeFilter.States.downloaded.name)
+        get() = getPref(AppPreferences.AppPrefs.prefDownloadsFilter, EpisodeFilter.States.downloaded.name)
         set(filter) {
-            putPref(UserPreferences.Prefs.prefDownloadsFilter, filter)
+            putPref(AppPreferences.AppPrefs.prefDownloadsFilter, filter)
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

@@ -13,6 +13,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### Note:
 
+#### Translation service is moved to Crowdin, see link down below.
 #### Podcini is no longer listed on Google Play, as apparently Google doesn't like accessing Youtube.
 #### Podcini.R 7.0 supports importing databases from AntennaPod and Podcast Addict.
 #### Podcini.R 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
@@ -294,7 +295,8 @@ For more details of the changes, see the [Changelog](changelog.md)
 * [Changelog](changelog.md)
 * [Privacy Policy](PrivacyPolicy.md)
 * [Contributing](CONTRIBUTING.md)
-* [Translation (Transifex)](https://app.transifex.com/xilinjia/podcini/dashboard/)
+<!-- * [Translation (Transifex)](https://app.transifex.com/xilinjia/podcini/dashboard/) -->
+* [Translation (Crowdin)](https://crowdin.com/project/podcini)
 
 ## License
 

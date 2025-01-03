@@ -1,14 +1,14 @@
 package ac.mdiq.podcini.receiver
 
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfigurator
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-
-import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
-import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
-import ac.mdiq.podcini.util.Logd
 import android.util.Log
 
 // modified from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html
@@ -31,7 +31,7 @@ class PowerConnectionReceiver : BroadcastReceiver() {
             autodownloadEpisodeMedia(context)
         } else {
             // if we're not supposed to be auto-downloading when we're not charging, stop it
-            if (!isEnableAutodownloadOnBattery) {
+            if (!getPref(AppPrefs.prefEnableAutoDownloadOnBattery, true)) {
                 Logd(TAG, "not charging anymore, canceling auto-download")
                 DownloadServiceInterface.get()?.cancelAll(context)
             } else Logd(TAG, "not charging anymore, but the user allows auto-download when on battery so we'll keep going")

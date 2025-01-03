@@ -10,8 +10,8 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils
 import ac.mdiq.podcini.preferences.SleepTimerPreferences
 import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.proxyConfig
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
@@ -27,7 +27,7 @@ object ClientConfigurator {
         if (initialized) return
         Logd("ClientConfigurator", "initialize")
 
-        UserPreferences.init(context)
+        AppPreferences.init(context)
         UsageStatistics.init(context)
         SslProviderInstaller.install(context)
         NetworkUtils.init(context)

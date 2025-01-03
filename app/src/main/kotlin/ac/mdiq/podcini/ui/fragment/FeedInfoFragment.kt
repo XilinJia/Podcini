@@ -5,7 +5,7 @@ import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -94,7 +94,7 @@ class FeedInfoFragment : Fragment() {
             setContent {
                 CustomTheme(requireContext()) {
                     if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = { showRemoveFeedDialog = false }) {
-                        (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                        (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
                         // Make sure fragment is hidden before actually starting to delete
                         requireActivity().supportFragmentManager.executePendingTransactions()
                     }

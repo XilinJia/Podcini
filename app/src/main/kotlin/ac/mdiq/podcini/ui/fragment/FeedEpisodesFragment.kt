@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -158,7 +158,7 @@ class FeedEpisodesFragment : Fragment() {
             setContent {
                 CustomTheme(requireContext()) {
                     if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = { showRemoveFeedDialog = false }) {
-                        (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                        (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
                         // Make sure fragment is hidden before actually starting to delete
                         requireActivity().supportFragmentManager.executePendingTransactions()
                     }

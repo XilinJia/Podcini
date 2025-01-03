@@ -6,8 +6,8 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.VideoMode
-import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
+import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.AppPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.storage.model.Episode
 
 import ac.mdiq.podcini.storage.model.Feed

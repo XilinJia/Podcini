@@ -24,15 +24,14 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.prefAdaptiveProgressUpdate
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
-import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
-import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnNotification
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.fastForwardSecs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.AppPreferences.prefAdaptiveProgressUpdate
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
@@ -53,7 +52,6 @@ import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PAUSED
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PLAYING
 import ac.mdiq.podcini.storage.model.Episode.Companion.PLAYABLE_TYPE_FEEDMEDIA
 import ac.mdiq.podcini.storage.model.Feed.AutoDeleteAction
-import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
@@ -276,8 +274,8 @@ class PlaybackService : MediaLibraryService() {
         list
     }
 
-    val shouldSkipKeepEpisode by lazy { getPref(UserPreferences.Prefs.prefSkipKeepsEpisode, true) }
-    val shouldKeepSuperEpisode by lazy { getPref(UserPreferences.Prefs.prefFavoriteKeepsEpisode, true) }
+    val shouldSkipKeepEpisode by lazy { getPref(AppPreferences.AppPrefs.prefSkipKeepsEpisode, true) }
+    val shouldKeepSuperEpisode by lazy { getPref(AppPreferences.AppPrefs.prefFavoriteKeepsEpisode, true) }
 
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
@@ -563,7 +561,7 @@ class PlaybackService : MediaLibraryService() {
             when (customCommand.customAction) {
                 NotificationCustomButton.REWIND.customAction -> mPlayer?.seekDelta(-rewindSecs * 1000)
                 NotificationCustomButton.FORWARD.customAction -> mPlayer?.seekDelta(fastForwardSecs * 1000)
-                NotificationCustomButton.SKIP.customAction -> if (showSkipOnNotification) mPlayer?.skip()
+                NotificationCustomButton.SKIP.customAction -> if (getPref(AppPrefs.prefShowSkip, true)) mPlayer?.skip()
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
@@ -1200,7 +1198,7 @@ class PlaybackService : MediaLibraryService() {
                     add(NotificationCustomButton.REWIND.commandButton)
                     add(defaultPlayPauseButton)
                     add(NotificationCustomButton.FORWARD.commandButton)
-                    if (showSkipOnNotification) add(NotificationCustomButton.SKIP.commandButton)
+                    if (getPref(AppPrefs.prefShowSkip, true)) add(NotificationCustomButton.SKIP.commandButton)
                 }.build()
                 /* Fallback option to handle nullability, in case retrieving default play/pause button fails for some reason (should never happen). */
             } else mediaButtons
@@ -1507,24 +1505,24 @@ class PlaybackService : MediaLibraryService() {
          */
 //        val isPersistNotify: Boolean by lazy { getPref(UserPreferences.Prefs.prefPersistNotify.name, true) }
 
-        val isPauseOnHeadsetDisconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect, true) }
+        val isPauseOnHeadsetDisconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefPauseOnHeadsetDisconnect, true) }
 
-        val isUnpauseOnHeadsetReconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect, true) }
+        val isUnpauseOnHeadsetReconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefUnpauseOnHeadsetReconnect, true) }
 
-        val isUnpauseOnBluetoothReconnect: Boolean by lazy { getPref(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect, false) }
+        val isUnpauseOnBluetoothReconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefUnpauseOnBluetoothReconnect, false) }
 
-        val hardwareForwardButton: Int by lazy { getPref(UserPreferences.Prefs.prefHardwareForwardButton, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
+        val hardwareForwardButton: Int by lazy { getPref(AppPreferences.AppPrefs.prefHardwareForwardButton, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
 
-        val hardwarePreviousButton: Int by lazy { getPref(UserPreferences.Prefs.prefHardwarePreviousButton, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
+        val hardwarePreviousButton: Int by lazy { getPref(AppPreferences.AppPrefs.prefHardwarePreviousButton, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
 
         /**
          * Set to true to enable Continuous Playback
          */
         @set:VisibleForTesting
         var isFollowQueue: Boolean
-            get() = getPref(UserPreferences.Prefs.prefFollowQueue, true)
+            get() = getPref(AppPreferences.AppPrefs.prefFollowQueue, true)
             set(value) {
-                putPref(UserPreferences.Prefs.prefFollowQueue, value)
+                putPref(AppPreferences.AppPrefs.prefFollowQueue, value)
             }
 
         val curPositionFB: Int

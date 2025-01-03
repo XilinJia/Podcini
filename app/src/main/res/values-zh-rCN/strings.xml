@@ -1,736 +1,854 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-  <!--Activity and fragment titles-->
-  <string name="feed_update_receiver_name">更新订阅</string>
-  <string name="feeds_label">播客</string>
-  <string name="statistics_label">统计</string>
-  <string name="add_feed_label">添加播客</string>
-  <string name="episodes_label">曲目</string>
-  <string name="home_label">首页</string>
-  <string name="queue_label">播放列表</string>
-
-
-  <string name="settings_label">设置</string>
-  <string name="downloads_label">下载</string>
-
-
-  <string name="subscriptions_label">订阅</string>
-
-  <string name="cancel_download_label">取消下载</string>
-  <string name="playback_history_label">播放历史</string>
-
-
-  <string name="years_statistics_label">年</string>
-  <string name="notification_pref_fragment">通知</string>
-
-  <!--Google Assistant-->
-  <string name="app_action_not_found">\"%1$s\" 未找到</string>
-  <!--SwipeActions-->
-  <string name="swipeactions_label">滑动操作</string>
-  <string name="swipeactions_summary">选择在列表中滑动一期节目时会发生什么</string>
-  <string name="swipe_right">右滑</string>
-  <string name="swipe_left">左滑</string>
-
-
-  <string name="individual_subscription">单独订阅</string>
-  <!--Statistics fragment-->
-  <string name="statistics_include_marked">包括刚被标记为已播放节目的时长</string>
-  <string name="statistics_speed_not_counted">注意：播放速度不在考虑范围之内。</string>
-  <string name="statistics_from">从</string>
-  <string name="statistics_to">到</string>
-  <string name="statistics_today">今日</string>
-  <string name="statistics_filter_all_time">所有时间</string>
-  <string name="statistics_filter_past_year">去年</string>
-  <string name="statistics_reset_data">重置统计数据</string>
-  <string name="statistics_reset_data_msg">这将抹去总播放时间的历史。您确定要进行该操作吗？</string>
-  <string name="statistics_counting_range">%1$s 到 %2$s 期间播放的</string>
-  <string name="statistics_counting_total">总播放</string>
-  <!--Home fragment-->
-
-    <string name="notification_permission_text">从 Android 13 开始，正常刷新和播放需要顶级通知。
-        您可以根据自己的意愿禁止子类别的通知。
-    </string>
-    <string name="notification_permission_denied">你拒绝授予该权限</string>
-
-
-
-
-  <!--Download Statistics fragment-->
-  <string name="total_size_downloaded_podcasts">设备上音频节目的总大小</string>
-  <!--Main activity-->
-  <string name="drawer_open">打开菜单</string>
-  <string name="drawer_close">关闭菜单</string>
-  <string name="drawer_preferences">抽屉选项</string>
-
-
-
-
-
-
-
-  <!--Bug report activity-->
-  <string name="log_file_share_exception">没有找到兼容的应用程序</string>
-  <string name="export_logs_menu_title">导出详细日志</string>
-  <string name="confirm_export_log_dialog_message">详细日志可能包含敏感信息，如你的订阅列表</string>
-  <!--Webview actions-->
-  <string name="open_in_browser_label">在浏览器中打开</string>
-  <string name="copy_url_label">复制 URL</string>
-  <string name="share_url_label">分享 URL</string>
-  <string name="go_to_position_label">转到此位置</string>
-  <!--Playback history-->
-  <string name="clear_history_label">清除历史</string>
-  <string name="clear_playback_history_msg">这会清除整个播放历史。你确定要继续吗？</string>
-  <string name="remove_history_label">从历史中删除</string>
-  <string name="removed_history_label">已从历史中删除</string>
-  <!--Other-->
-  <string name="confirm_label">确定</string>
-  <string name="cancel_label">取消</string>
-  <string name="yes">是</string>
-  <string name="no">否</string>
-  <string name="reset">重置</string>
-  <string name="global_default">全局默认</string>
-  <string name="url_label">链接地址</string>
-  <string name="support_funding_label">支持</string>
-  <string name="support_podcast">支持这档播客</string>
-  <string name="error_label">错误</string>
-  <string name="error_msg_prefix">出错:</string>
-  <string name="refresh_label">刷新</string>
-  <string name="chapters_label">章节</string>
-
-
-  <string name="description_label">描述</string>
-
-
-  <string name="episodes_suffix">\u0020 曲</string>
-  <string name="close_label">关闭</string>
-  <string name="retry_label">重试</string>
-  <string name="auto_download_label">包含到自动下载</string>
-  <string name="auto_delete_label">自动删除节目</string>
-  <string name="feed_volume_adapdation">音量调节</string>
-  <string name="feed_volume_adaptation_summary">调高或调低此播客中节目的音量：%1$s</string>
-  <string name="feed_volume_reduction_off">无调节</string>
-  <string name="feed_volume_reduction_light">略微调低</string>
-  <string name="feed_volume_reduction_heavy">大幅下调</string>
-  <string name="feed_volume_boost_light">略微上调</string>
-  <string name="feed_volume_boost_medium">中度上调</string>
-  <string name="feed_volume_boost_heavy">大幅上调</string>
-  <string name="feed_auto_download_always"> 总是</string>
-  <string name="feed_auto_download_never">从不</string>
-
-
-  <string name="episode_cleanup_never">从不</string>
-  <string name="episode_cleanup_except_favorite">当未收藏时</string>
-  <string name="episode_cleanup_not_in_queue">当不在队列中</string>
-  <string name="episode_cleanup_after_listening">结束后</string>
-  <plurals name="episode_cleanup_hours_after_listening">
-    <item quantity="other">结束后 %d 小时</item>
-  </plurals>
-  <plurals name="episode_cleanup_days_after_listening">
-    <item quantity="other">结束后 %d 天</item>
-  </plurals>
-
-
-
-  <!--Actions on feeds-->
-
-
-
-
-
-
-
-  <string name="feed_settings_label">播客设置</string>
-  <string name="rename_feed_label">重命名播客</string>
-  <string name="remove_feed_label">移除播客</string>
-  <string name="share_label">分享</string>
-  <string name="share_file_label">分享文件</string>
-
-  <string name="feed_delete_confirmation_msg">请确认你想删除播客“%1$s”，该播客的所有节目（包括已下载的节目）及其统计数字。</string>
-  <string name="feed_delete_confirmation_msg_batch">请确认你想删除选中的播客，这些播客的所有节目（包括已下载的节目）及它们的统计数字</string>
-  <string name="feed_delete_confirmation_local_msg">请确认你想删除播客“%1$s”及其统计数字。本地源文件夹内的文件不会被删除。</string>
-
-  <string name="load_complete_feed">刷新所有播客</string>
-  <string name="multi_select">多选</string>
-
-
-  <string name="filtered_label">已过滤的</string>
-
-  <string name="open_podcast">打开播客</string>
-  <string name="please_wait_for_data">请等待数据加载完成</string>
-
-  <plurals name="updated_feeds_batch_label">
-    <item quantity="other">%d 订阅已更新</item>
-  </plurals>
-  <string name="edit_tags">编辑标签</string>
-  <string name="add_tag">添加标签</string>
-
-  <string name="confirm_mobile_feed_refresh_dialog_message">通过移动数据连接刷新播客在设置中被禁用。\n\n你一定要刷新播客吗？</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">您的 VPN 应用自称是移动网络 (按流量计费连接)。在设置中禁用了通过移动数据连接刷新播客。\n\n你仍要刷新吗？如果你想修复此问题，请联系 VPN 应用的创建者。</string>
-  <!--actions on feeditems-->
-  <string name="download_label">下载</string>
-  <string name="play_label">播放</string>
-  <string name="pause_label">暂停</string>
-  <string name="stream_label">流媒体</string>
-  <string name="delete_label">删除</string>
-
-  <string name="delete_local_failed">无法删除文件。尝试从播客信息屏重新连接本地文件夹</string>
-  <string name="delete_episode_label">删除节目</string>
-
-
-
-  <string name="play_this_to_seek_position">要跳转到某处，你需要播放这一集</string>
-
-  <string name="add_to_queue_label">加至队列</string>
-  <string name="remove_from_queue_label">从队列中删除</string>
-  <plurals name="removed_from_queue_batch_label">
-    <item quantity="other">已从序列中移除%d个节目</item>
-  </plurals>
-
-
-  <string name="visit_website_label">访问网站</string>
-  <string name="skip_episode_label">跳过曲目</string>
-
-
-  <string name="delete_local_feed_warning_body">删除操作会从 Podcini 删除播客并从设备存储删除媒体文件。无法再通过 Podcini 重新下载它。</string>
-  <!--Download messages and labels-->
-  <string name="download_successful">成功</string>
-  <string name="download_pending">下载等待</string>
-  <string name="download_running">下载中</string>
-  <string name="download_error_details">详细信息</string>
-  <string name="download_log_details_message">%1$s \n\n技术原因: \n%2$s \n\n文件 URL:\n%3$s</string>
-  <string name="download_error_retrying">下载“%1$s”失败了。稍后会重试。</string>
-  <string name="download_error_not_retrying">下载“%1$s”失败了</string>
-  <string name="download_error_tap_for_details">轻按查看详情</string>
-  <string name="download_error_device_not_found">没有找到存储设备</string>
-  <string name="download_error_insufficient_space">你的设备上剩余空间不足</string>
-  <string name="download_error_http_data_error">HTTP 数据错误</string>
-  <string name="download_error_error_unknown">未知错误</string>
-  <string name="download_error_parser_exception">播客主机的服务器发送了一个损坏的播客源。</string>
-  <string name="download_error_unsupported_type">不受支持的源类型</string>
-  <string name="download_error_unsupported_type_html">播客主机的服务器发送的是一个网站，不是播客。</string>
-  <string name="download_error_not_found">播客主机的服务器不知道去哪里找到文件。它可能被删除了。</string>
-  <string name="download_error_connection_error">连接错误</string>
-  <string name="download_error_no_connection">无网络连接</string>
-  <string name="download_error_unknown_host">找不到服务器。检查地址是否输入正确，以及网络连接是否正常。</string>
-  <string name="download_error_unauthorized">身份认证错误。请确保用户名和密码正确。</string>
-  <string name="download_error_file_type_type">文件类型错误</string>
-  <string name="download_error_forbidden">播客主机的服务器拒绝响应。</string>
-  <string name="download_canceled_msg">已取消下载</string>
-  <string name="download_error_wrong_size">在完成下载之前，服务器连接丢失</string>
-  <string name="download_error_blocked">下载被你设备上的另一个应用程序阻止了（比如 VPN 或广告拦截器)。</string>
-  <string name="download_error_certificate">无法建立安全连接。这可能意味着你设备上的另一个应用程序 (比如 VPN 或广告拦截器)阻止了下载，或者服务器证书有问题。</string>
-  <string name="download_report_title">下载完成</string>
-  <string name="download_error_io_error">IO 错误</string>
-  <string name="download_error_request_error">请求错误</string>
-  <string name="download_error_db_access">数据库访问错误</string>
-  <plurals name="downloads_left">
-    <item quantity="other">剩余%d个下载项</item>
-  </plurals>
-  <string name="download_notification_title_feeds">正在刷新播客</string>
-  <string name="download_notification_title_episodes">正在下载播客</string>
-  <string name="download_log_title_unknown">未知标题</string>
-  <string name="download_type_feed">订阅</string>
-  <string name="download_type_media">媒体文件</string>
-  <string name="null_value_podcast_error">没有可供显示的播客。</string>
-  <string name="no_feed_url_podcast_found_by_search">推荐的播客没有 RSS 链接，Podcini 找到了一个可以匹配的播客</string>
-
-  <string name="confirm_mobile_download_dialog_title">确认使用移动数据下载</string>
-  <string name="confirm_mobile_download_dialog_message">设置中禁用了使用移动数据进行下载。当 Wi-Fi 可用时，Podcini 可以稍后自动下载节目。</string>
-  <string name="confirm_mobile_download_dialog_message_vpn">您的 VPN 应用自称是移动网络 (按流量计费连接)。在设置中禁用了通过移动数据连接下载。如果你想修复此问题，请联系 VPN 应用的创建者。</string>
-  <string name="confirm_mobile_download_dialog_download_later">稍后下载</string>
-  <string name="confirm_mobile_download_dialog_allow_this_time">仍要下载</string>
-  <string name="confirm_mobile_streaming_notification_title">确认使用移动数据进行在线播放</string>
-  <string name="confirm_mobile_streaming_notification_message">通过移动连接播放在设置中未启用。点击以确认您无论如何都要用移动数据来播放</string>
-  <string name="confirm_mobile_streaming_button_always">始终</string>
-  <string name="confirm_mobile_streaming_button_once">仅此一次</string>
-  <!--Mediaplayer messages-->
-  <string name="playback_error_generic"><![CDATA[无法播放该媒体文件。\n\n- 尝试删除并重新下载该节目。\n- 检查你的网络连接，并确保没有 VPN 或登录页在阻止访问。\n- 尝试长按并分享“媒体地址”到网络浏览器来弄清该资源是否可以在浏览器中播放。如果仍无法播放请联系播客创作者。]]></string>
-
-
-
-
-
-  <string name="no_media_playing_label">没有可播放的媒体</string>
-  <string name="unknown_media_key">Podcini - 未知媒体密钥: %1$d</string>
-  <string name="error_file_not_found">文件未找到</string>
-  <string name="no_media_label">条目不包含一个媒体文件</string>
-  <!--Queue operations-->
-  <string name="lock_queue">锁定队列</string>
-  <string name="queue_locked">播放列表已锁定</string>
-  <string name="queue_unlocked">播放列表已解锁</string>
-  <string name="queue_lock_warning">如果锁定队列，您将再也不能滑动或重新排列节目顺序</string>
-  <string name="checkbox_do_not_show_again">不再显示</string>
-  <string name="clear_queue_label">清除队列</string>
-  <string name="undo">撤消</string>
-
-
-  <string name="sort">排序</string>
-  <string name="keep_sorted">保持排序</string>
-  <string name="date">按日期</string>
-  <string name="duration">按时长</string>
-  <string name="episode_title">节目标题</string>
-  <string name="feed_title">播客标题</string>
-  <string name="random">随机</string>
-  <string name="smart_shuffle">智能随机播放</string>
-  <string name="size">大小</string>
-  <string name="clear_queue_confirmation_msg">请确认您要清除队列中的全部曲目</string>
-
-  <!--Variable Speed-->
-
-  <string name="preset_already_exists">%1$.2fx已被保存为一个预设定。</string>
-  <!--Empty list labels-->
-
-
-  <string name="no_shownotes_label">本集不包含展示信息</string>
-
-
-
-
-
-
-
-
-
-
-
-
-  <string name="no_subscriptions_label">点按下方的+号按钮来订阅播客</string>
-  <!--Preferences-->
-  <string name="project_pref">项目</string>
-  <string name="synchronization_pref">同步</string>
-  <string name="synchronization_sum">和其他设备同步</string>
-  <string name="automation">自动化</string>
-  <string name="download_pref_details">细节</string>
-  <string name="import_export_pref">导入/导出</string>
-  <string name="import_export_search_keywords">数据, 备份, 还原, backup, restore</string>
-  <string name="appearance">样式</string>
-  <string name="external_elements">外部元素</string>
-  <string name="interruptions">中断</string>
-  <string name="playback_control">回放控制</string>
-  <string name="reassign_hardware_buttons">重新分配硬件按钮</string>
-  <string name="preference_search_hint">搜索</string>
-  <string name="preference_search_no_results">无结果</string>
-  <string name="preference_search_clear_history">清除历史记录</string>
-  <string name="pref_episode_cleanup_title">节目清理</string>
-  <string name="pref_episode_cleanup_summary">在自动下载需要新曲目空间时，应该被删除的旧曲目</string>
-  <string name="pref_pauseOnDisconnect_sum">耳机或蓝牙断开连接时暂停播放</string>
-  <string name="pref_unpauseOnHeadsetReconnect_sum">当耳机重新连接时恢复播放</string>
-  <string name="pref_unpauseOnBluetoothReconnect_sum">当蓝牙重新连接时恢复播放</string>
-  <string name="pref_hardware_forward_button_title">前进按钮</string>
-  <string name="pref_hardware_forward_button_summary">自定义快进按钮行为</string>
-  <string name="pref_hardware_previous_button_title">后退按钮</string>
-  <string name="pref_hardware_previous_button_summary">自定义“上一个”按钮行为</string>
-  <string name="button_action_fast_forward">快进</string>
-  <string name="button_action_rewind">倒退</string>
-  <string name="button_action_skip_episode">跳过节目</string>
-  <string name="button_action_restart_episode">重新开始节目</string>
-  <string name="pref_followQueue_sum">播放完成跳转到播放列表下一项</string>
-  <string name="pref_auto_delete_sum">当播放完成后删除曲目</string>
-  <string name="pref_auto_delete_title">自动删除</string>
-  <string name="pref_auto_local_delete_title">自动从本地文件夹删除</string>
-  <string name="pref_auto_local_delete_sum">在自动删除功能中包括本地文件夹</string>
-  <string name="pref_auto_local_delete_dialog_body">请注意，对于本地文件夹，此操作会从 Podcini 删除播客并从设备存储删除媒体文件。无法再通过 Podcini 下载它们。要开启自动删除吗？</string>
-
-
-  <string name="pref_skip_keeps_episodes_sum">当剧集被跳过时保留它们</string>
-  <string name="pref_skip_keeps_episodes_title">保留跳过的节目</string>
-
-
-  <string name="playback_pref">播放</string>
-  <string name="playback_pref_sum">耳机控制、跳过间隔、排队</string>
-  <string name="downloads_pref">下载</string>
-  <string name="downloads_pref_sum">更新间隔、移动数据、自动下载、自动删除</string>
-  <string name="feed_refresh_title">刷新播客</string>
-
-  <string name="feed_refresh_never">永不</string>
-  <string name="feed_every_hour">每 1 小时</string>
-  <string name="feed_every_2_hours">每 2 小时</string>
-  <string name="feed_every_4_hours">每 4 小时</string>
-  <string name="feed_every_8_hours">每 8 小时</string>
-  <string name="feed_every_12_hours">每 12 小时</string>
-  <string name="feed_every_24_hours">每 1 天</string>
-  <string name="feed_every_72_hours">每 3 天</string>
-  <string name="pref_followQueue_title">持续播放</string>
-  <string name="pref_pauseOnHeadsetDisconnect_title">耳机或蓝牙断开</string>
-  <string name="pref_unpauseOnHeadsetReconnect_title">耳机重连</string>
-  <string name="pref_unpauseOnBluetoothReconnect_title">蓝牙重连</string>
-  <string name="pref_stream_over_download_title">偏好在线</string>
-  <string name="pref_stream_over_download_sum">在列表中显示在线播放按钮而不是下载按钮</string>
-
-  <string name="pref_mobileUpdate_sum">选择使用移动数据连接时应当允许的内容</string>
-  <string name="pref_mobileUpdate_refresh">播客刷新 </string>
-  <string name="pref_mobileUpdate_images">封面图片</string>
-  <string name="pref_mobileUpdate_auto_download">自动下载</string>
-  <string name="pref_mobileUpdate_episode_download">节目下载</string>
-  <string name="pref_mobileUpdate_streaming">播放中</string>
-  <string name="user_interface_label">用户界面</string>
-  <string name="user_interface_sum">外观、订阅、锁屏</string>
-  <string name="pref_black_theme_title">全黑</string>
-  <string name="pref_black_theme_message">深色主题使用全黑色</string>
-  <string name="pref_tinted_theme_title">动态颜色</string>
-  <string name="pref_tinted_theme_message">基于背景图对应用进行着色</string>
-  <string name="pref_nav_drawer_items_title">设置导航抽屉项</string>
-  <string name="pref_nav_drawer_items_sum">更改显示在导航抽屉中的项目</string>
-  <string name="pref_nav_drawer_feed_order_title">设置订阅顺序</string>
-  <string name="pref_nav_drawer_feed_order_sum">改变你的订阅的排序方式</string>
-
-
-  <string name="pref_automatic_download_title">自动下载</string>
-  <string name="pref_automatic_download_sum">配置节目的自动下载</string>
-  <string name="pref_autodl_wifi_filter_title">打开 Wi-Fi 过滤器</string>
-  <string name="pref_autodl_wifi_filter_sum">只允许在 Wi-Fi 网络下自动下载</string>
-  <string name="pref_automatic_download_on_battery_title">未充电时下载</string>
-  <string name="pref_automatic_download_on_battery_sum">未充电时允许自动下载</string>
-  <string name="pref_episode_cache_title">节目缓存</string>
-
-  <string name="pref_episode_cover_title">使用节目封面</string>
-  <string name="pref_episode_cover_summary">勾选后，在列表中使用一期节目特定的封面图。如果不勾选，应用程序将始终使用播客封面图像。</string>
-  <string name="pref_show_remain_time_title">显示剩余时间</string>
-  <string name="pref_show_remain_time_summary">勾选显示节目的剩余时间。如果未选中，则显示所有节目的持续时间。</string>
-  <string name="pref_theme_title_automatic">自动</string>
-  <string name="pref_theme_title_light">浅色</string>
-  <string name="pref_theme_title_dark">暗色</string>
-  <string name="pref_episode_cache_unlimited">无限</string>
-  <string name="pref_playback_speed_sum">自定义可用于变速播放的速度</string>
-  <string name="pref_feed_playback_speed_sum">开始播放此播客中剧集时使用的速度</string>
-  <string name="pref_feed_skip">自动跳过</string>
-  <string name="pref_feed_skip_sum">跳过开头结尾</string>
-  <string name="pref_feed_skip_ending">跳过最后多少秒</string>
-  <string name="pref_feed_skip_intro">跳过开头多少秒</string>
-  <string name="pref_feed_skip_ending_toast">跳过最后%d秒</string>
-  <string name="pref_feed_skip_intro_toast">跳过最初%d秒</string>
-  <string name="pref_playback_time_respects_speed_title">根据回放速度调整媒体信息</string>
-  <string name="pref_playback_time_respects_speed_sum">显示的播放位置和持续时间已根据回放速度进行调整</string>
-  <string name="pref_fast_forward">快进操作的跳过时间</string>
-  <string name="pref_fast_forward_sum">自定义每次快进节目的秒数</string>
-  <string name="pref_rewind">快退操作的跳过时间</string>
-  <string name="pref_rewind_sum">自定义每次倒回节目的秒数</string>
-  <string name="pref_expandNotify_title">高通知优先级</string>
-  <string name="pref_expandNotify_sum">这通常会拓展通知以显示播放按钮。</string>
-  <string name="pref_persistNotify_title">持久性播放控制</string>
-  <string name="pref_persistNotify_sum">播放暂停时保留通知和锁屏控制</string>
-  <string name="pref_enqueue_location_title">新节目在队列中的位置</string>
-  <string name="pref_enqueue_location_sum">添加音频节目至：%1$s</string>
-  <string name="enqueue_location_back">后退</string>
-  <string name="enqueue_location_front">前进</string>
-  <string name="enqueue_location_after_current">在当前播客节目之后</string>
-  <string name="enqueue_location_random">随机</string>
-
-  <string name="documentation_support">文档和支持</string>
-  <string name="visit_user_forum">用户论坛</string>
-  <string name="bug_report_title">报告Bug</string>
-  <string name="open_bug_tracker">打开Bug跟踪器</string>
-  <string name="copy_to_clipboard">复制到剪贴板</string>
-  <string name="copied_to_clipboard">已复制到剪贴板</string>
-  <string name="pref_proxy_title">代理</string>
-  <string name="pref_proxy_sum">选择一个网络代理</string>
-  <string name="pref_no_browser_found">无网络浏览器</string>
-  <string name="pref_enqueue_downloaded_title">将已下载节目加入队列</string>
-  <string name="pref_enqueue_downloaded_summary">向队列添加已下载的节目</string>
-  <string name="pref_skip_silence_title">跳过静音部分</string>
-  <string name="behavior">行为</string>
-  <string name="pref_default_page">默认页</string>
-  <string name="pref_default_page_sum">启动 Podcini 时要打的屏幕</string>
-  <string name="pref_back_button_opens_drawer">返回按钮打开抽屉</string>
-  <string name="pref_back_button_opens_drawer_summary">在默认页面上按下返回按钮打开导航抽屉</string>
-  <string name="remember_last_page">记住最后的页面</string>
-  <string name="pref_delete_removes_from_queue_title">删除按钮从队列中去除</string>
-  <string name="pref_delete_removes_from_queue_sum">播客被删除后，自动从队列中删掉它</string>
-
-
-
-
-
-
-
-
-
-
-
-  <string name="pref_contribute">贡献</string>
-
-
-
-
-  <!--About screen-->
-  <string name="about_pref">关于</string>
-  <string name="podcini_version">Podcini版本</string>
-  <string name="contributors">贡献者</string>
-  <string name="contributors_summary">每个人都可以通过代码，翻译或通过帮助我们论坛中的用户来让Podcini变得更好</string>
-  <string name="developers">开发者</string>
-  <string name="translators">译者</string>
-  <string name="special_thanks">特别感谢</string>
-  <string name="privacy_policy">隐私政策</string>
-  <string name="licenses">许可证</string>
-  <string name="licenses_summary">Podcini使用其他伟大的软件</string>
-  <!--Search-->
-  <string name="search_status_no_results">没有找到任何结果</string>
-
-  <string name="search_label">搜索</string>
-  <string name="no_results_for_query">未找到关于 \"%1$s\" 的结果</string>
-  <string name="search_online">在线搜索</string>
-  <!--Synchronization-->
-  <string name="sync_status_started">同步已开始</string>
-  <string name="sync_status_episodes_upload">正上传节目更改…</string>
-  <string name="sync_status_episodes_download">正下载节目更改…</string>
-  <string name="sync_status_upload_played">上传播放状态中…</string>
-  <string name="sync_status_subscriptions">同步订阅中…</string>
-  <string name="sync_status_wait_for_downloads">等待下载完成…</string>
-  <string name="sync_status_success">成功同步</string>
-  <string name="sync_status_error">同步失败</string>
-  <!--import and export-->
-  <string name="import_export_summary">移动订阅和队列到另一台设备</string>
-  <string name="database">数据库</string>
-  <string name="opml">OPML格式</string>
-  <string name="html">HTML格式</string>
-  <string name="html_export_summary">向一位朋友展示您的订阅</string>
-  <string name="opml_export_summary">将您的订阅转移到另一个播客应用 </string>
-  <string name="opml_import_summary">从另一个播客应用导入您的订阅</string>
-  <string name="database_export_summary">将订阅，听过的节目和队列转移到另一台设备上的Podcini</string>
-  <string name="database_import_summary">从另一台设备导入Podcini数据库 </string>
-  <string name="opml_import_label">OPML 导入</string>
-  <string name="opml_add_podcast_label">导入播客列表 (OPML)</string>
-  <string name="opml_reader_error">读取 OPML 文档时发生错误</string>
-  <string name="opml_import_error_no_file">没有选择文件！</string>
-  <string name="select_all_label">全选</string>
-  <string name="deselect_all_label">取消所有选择</string>
-  <string name="opml_export_label">OPML 导出</string>
-  <string name="html_export_label">导出为 HTML 文件</string>
-  <string name="database_export_label">数据库导出</string>
-  <string name="database_import_label">数据库导入</string>
-  <string name="database_import_warning">导入数据库将替换所有当前订阅和播放历史记录。您应该将当前数据库导出为备份。您要替换吗？</string>
-  <string name="please_wait">请等待…</string>
-  <string name="import_export_error_label">导出出错</string>
-  <string name="export_success_title">成功导出</string>
-  <string name="opml_import_ask_read_permission">读取 OPML 文件需要访问外部存储的权限</string>
-  <string name="successful_import_label">导入成功</string>
-  <string name="import_ok">请按\"确定\"重新启动Podcini</string>
-
-  <string name="favorites_export_label">收藏导出</string>
-  <string name="favorites_export_summary">将保存的收藏夹导出到文件</string>
-  <!--Sleep timer-->
-  <string name="set_sleeptimer_label">设置休眠计时器</string>
-  <string name="disable_sleeptimer_label">禁用休眠计时器</string>
-  <string name="extend_sleep_timer_label">+ %d 分钟</string>
-  <string name="sleep_timer_always">始终</string>
-  <string name="sleep_timer_label">休眠计时器</string>
-  <string name="time_dialog_invalid_input">无效的输入, 时间是一个整数</string>
-  <string name="shake_to_reset_label">摇动以重置</string>
-  <string name="timer_vibration_label">即将结束时短暂振动</string>
-  <string name="time_seconds">秒</string>
-  <string name="time_minutes">分</string>
-  <string name="time_hours">小时</string>
-  <plurals name="time_minutes_quantified">
-    <item quantity="other">%d 分</item>
-  </plurals>
-  <plurals name="time_hours_quantified">
-    <item quantity="other">%d 小时</item>
-  </plurals>
-  <plurals name="time_days_quantified">
-    <item quantity="other">%d 天</item>
-  </plurals>
-  <string name="auto_enable_label">按下播放时自动激活睡眠定时器</string>
-  <string name="auto_enable_label_with_times" formatted="false">在 %s 和 %s间按下播放时自动激活睡眠定时器</string>
-  <string name="auto_enable_change_times">更改时间范围</string>
-  <string name="sleep_timer_enabled_label">睡眠计时器已启用</string>
-  <!--Synchronisation-->
-  <string name="synchronization_choose_title">选择同步供应商</string>
-  <string name="synchronization_summary_unchoosen">您可以从多个提供商中选择一个用来同步您的订阅和节目播放状态</string>
-  <string name="dialog_choose_sync_service_title">选择同步提供商</string>
-  <string name="gpodnet_description">Gpodder.net 是一个开源的播客同步服务，你可以将其安装在自己的服务器上。Gpodder.net 独立于 Podcini 项目。</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync 是一个开源的 Nextcloud 应用程序，你可以很容易地安装在自己的服务器上。该应用程序独立于 Podcini 项目。</string>
-  <string name="synchronization_host_explanation">你可以选择用自己的服务器进行同步。当你确定了偏好的同步服务器，请在此处输入其地址</string>
-  <string name="synchronization_host_label">服务器地址</string>
-  <string name="proceed_to_login_butLabel">继续登录</string>
-  <string name="synchronization_nextcloud_authenticate_browser">使用打开的网页浏览器授予访问权限，然后返回到 Podcini。</string>
-  <string name="gpodnetauth_login_butLabel">登录</string>
-  <string name="synchronization_credentials_explanation">请提供该同步服务器上你账户的凭据</string>
-  <string name="gpodnetauth_encryption_warning">密码和数据没有加密！</string>
-  <string name="username_label">用户名</string>
-  <string name="password_label">密码</string>
-  <string name="synchronization_login_butLabel">登录</string>
-  <string name="synchronization_selectDevice_explanation">请选择你在同步服务器上创建的设备或新建一个</string>
-  <string name="gpodnetauth_device_name">设备名</string>
-  <string name="gpodnetauth_device_name_default">Podcini 于 %1$s</string>
-  <string name="gpodnetauth_existing_devices">现有设备</string>
-  <string name="gpodnetauth_create_device">创建设备</string>
-  <string name="gpodnetauth_finish_descr">恭喜! 你的 gpodder.net 帐户与设备已连结完成.  现在开始 Podcini 将自动同步你 gpodder.net 帐户内的订阅信息到设备上.</string>
-  <string name="gpodnetauth_finish_butsyncnow">开始同步</string>
-  <string name="pref_gpodnet_setlogin_information_title">改变登录信息</string>
-  <string name="pref_gpodnet_setlogin_information_sum">改变 gpodder.net 账户登录信息.</string>
-  <string name="synchronization_sync_changes_title">立即同步</string>
-  <string name="synchronization_sync_summary">同步订阅和节目状态更改</string>
-  <string name="synchronization_full_sync_title">强制完整同步</string>
-  <string name="synchronization_force_sync_summary">重新同步所有订阅和节目状态</string>
-  <string name="synchronization_logout">退出登录</string>
-  <string name="synchronization_login_status"><![CDATA[登录为 <i>%2$s</i>上的 <i>%1$s</i>。<br/><br/>退出后，您可以再次选择同步提供商]]></string>
-  <string name="pref_synchronization_logout_toast">成功退出登录</string>
-  <string name="gpodnetsync_error_title">gpodder.net 同步错误</string>
-  <string name="gpodnetsync_error_descr">同步过程中发生错误: \u0020</string>
-  <string name="gpodnetsync_pref_report_successful">成功了</string>
-  <string name="gpodnetsync_pref_report_failed">失败了</string>
-  <string name="gpodnetsync_username_characters_error">用户名只能包含字母、数字、连字符和下划线</string>
-  <!--Directory chooser-->
-  <string name="choose_data_directory">选择数据文件夹</string>
-  <string name="choose_data_directory_message">请选择用于 Podcini 的数据根目录， Podcini 将会创建合适的子目录。</string>
-  <string name="choose_data_directory_available_space">%2$s中%1$s可用</string>
-  <string name="pref_pausePlaybackForFocusLoss_sum">当另一个应用程序要播放声音时暂停播放, 而不是降低音量</string>
-  <string name="pref_pausePlaybackForFocusLoss_title">中断暂停</string>
-  <!--Online feed view-->
-  <string name="subscribe_label">订阅</string>
-
-  <string name="preview_episode">预览</string>
-
-  <!--Content descriptions for image buttons-->
-  <string name="toolbar_back_button_content_description">返回</string>
-  <string name="rewind_label">回放</string>
-  <string name="fast_forward_label">快进</string>
-  <string name="increase_speed">加快速度</string>
-  <string name="decrease_speed">放慢速度</string>
-
-  <string name="status_downloading_label">曲目正在下载</string>
-
-
-
-  <string name="load_next_page_label">载入下一页</string>
-  <string name="position">位置：%1$s</string>
-
-
-
-
-  <string name="next_chapter">下一章</string>
-
-  <string name="add_preset">添加预设</string>
-  <!--Feed settings/information screen-->
-  <string name="authentication_label">验证</string>
-  <string name="authentication_descr">给本播客及曲目变更用户名及密码</string>
-  <string name="feed_tags_label">标签</string>
-  <string name="feed_tags_summary">更改此播客的标签，以帮助组织您的订阅</string>
-  <string name="feed_folders_include_root">在主列表中显示此播客</string>
-  <string name="multi_feed_common_tags_info">{faw_info_circle} 只显示来自所有选定订阅的常见标记。其他标记不受影响。</string>
-  <string name="auto_download_settings_label">“自动下载”设置</string>
-  <string name="episode_filters_label">节目筛选器</string>
-  <string name="episode_filters_description">用于确定是否应自动下载一期节目的术语列表</string>
-  <string name="add_term">添加术语</string>
-  <string name="exclude_terms">排除包含任意下列术语的节目</string>
-  <string name="include_terms">只包括含有任意下列术语的节目</string>
-  <string name="exclude_episodes_shorter_than">排除持续了不到指定时间的节目</string>
-  <string name="keep_updated">保持更新</string>
-  <string name="keep_updated_summary">（自动）刷新所有播客时包括此播客 </string>
-  <string name="auto_download_disabled_globally">Podcini主设置中已禁用自动下载</string>
-  <string name="statistics_time_played">已播放时长：</string>
-  <string name="statistics_total_duration">总持续时间（预估）：</string>
-  <string name="statistics_episodes_on_device">设备上的节目:</string>
-  <string name="statistics_space_used">占用的空间: </string>
-  <string name="statistics_episodes_started_total">已启动节目/总数：</string>
-  <string name="statistics_view_all">所有播客视图 »</string>
-  <string name="edit_url_menu">编辑订阅源 URL</string>
-  <string name="edit_url_confirmation_msg">更改 RSS 地址很容易破坏播客的播放状态和节目列表。我们不建议更改它，如果出现任何错误我们不会提供支持。这是无法挽回的。无法通过简单地将地址更改回来修复损坏的订阅。我们建议在继续之前创建备份。</string>
-  <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">正在从选定的应用中导入订阅…</string>
-  <!--Add podcast fragment-->
-  <string name="search_podcast_hint">搜索播客……</string>
-  <string name="search_itunes_label">搜索 Apple Podcasts</string>
-  <string name="search_podcastindex_label">搜索播客索引</string>
-  <string name="search_fyyd_label">搜索 fyyd</string>
-  <string name="gpodnet_search_hint">搜索 gpodder.net</string>
-  <string name="advanced">高级</string>
-  <string name="add_podcast_by_url">通过 RSS 地址添加播客</string>
-  <string name="discover">发现</string>
-  <string name="discover_hide">隐藏</string>
-  <string name="discover_is_hidden">您选择了隐藏建议</string>
-  <string name="discover_more">更多</string>
-  <string name="discover_powered_by_itunes">Apple Podcasts 提供的建议</string>
-  <string name="discover_confirm">显示建议</string>
-  <string name="search_powered_by">按 %1$s 显示结果</string>
-  <string name="select_country">选择国家或地区</string>
-  <!--Local feeds-->
-  <string name="add_local_folder">添加本地文件夹</string>
-  <string name="local_folder">本地文件夹</string>
-  <string name="reconnect_local_folder">重新连接本地文件夹</string>
-  <string name="reconnect_local_folder_warning">在权限遭拒的情况下，您可以使用它重新连接到完全相同的文件夹。不要选择其他文件夹。</string>
-  <string name="local_feed_description">这个虚拟播客是通过向Podcini添加一个文件夹创建的</string>
-  <string name="unable_to_start_system_file_manager">无法启动系统文件管理器</string>
-  <string name="filter">过滤器</string>
-
-
-  <string name="downloaded_label">已下载</string>
-
-
-
-  <string name="has_media">包含媒体</string>
-
-
-
-
-
-  <!--Sort-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!--Share episode dialog-->
-  <string name="share_playback_position_dialog_label">包括播放位置</string>
-  <string name="share_dialog_episode_website_label">节目网页</string>
-  <string name="share_dialog_for_social">社交信息</string>
-  <string name="share_dialog_media_address">媒体地址</string>
-  <string name="share_dialog_media_file_label">媒体文件</string>
-  <string name="share_starting_position_label">开始位置</string>
-  <!--Audio controls-->
-  <string name="audio_controls">音频控制</string>
-  <string name="playback_speed">播放速度</string>
-
-  <string name="player_switch_to_audio_only">切换到仅音频</string>
-  <!--proxy settings-->
-  <string name="proxy_type_label">类型</string>
-  <string name="host_label">主机地址</string>
-  <string name="port_label">端口</string>
-  <string name="optional_hint">（可选）</string>
-  <string name="proxy_test_label">测试</string>
-  <string name="proxy_checking">正在测试</string>
-  <string name="proxy_test_successful">测试成功</string>
-  <string name="proxy_test_failed">测试失败</string>
-  <string name="proxy_host_empty_error">主机地址不能为空</string>
-  <string name="proxy_host_invalid_error">主机地址为无效的IP地址或域名</string>
-  <string name="proxy_port_invalid_error">端口不可用</string>
-  <!--Subscriptions fragment-->
-
-  <!--Notification channels-->
-  <string name="notification_group_errors">错误</string>
-
-  <string name="notification_channel_user_action">需要操作</string>
-  <string name="notification_channel_user_action_description">显示是否需要您的操作，比如是否需要您输入一个密码</string>
-  <string name="notification_channel_downloading">正在下载</string>
-  <string name="notification_channel_downloading_description">下载时显示</string>
-  <string name="notification_channel_playing">当前播放</string>
-  <string name="notification_channel_playing_description">允许控制回放。这是播放播客时您所见的主通知。</string>
-  <string name="notification_channel_download_error">下载失败</string>
-  <string name="notification_channel_download_error_description">当下载或源更新失败时显示</string>
-  <string name="notification_channel_sync_error">同步失败了</string>
-  <string name="notification_channel_sync_error_description">gpodder 同步出错时显示</string>
-
-
-  <!--Widget settings-->
-  <string name="widget_settings">小部件设置</string>
-  <string name="widget_create_button">创建小部件</string>
-  <string name="widget_opacity">不透明度</string>
-  <!--On-Demand configuration-->
-  <string name="on_demand_config_setting_changed">成功更新设置</string>
-  <string name="on_demand_config_stream_text">看起来你在线播放了很多节目。你想要剧集列表显示流按钮吗\?</string>
-  <string name="on_demand_config_download_text">看起来你下载了很多节目。你想要播放列表显示下载按钮吗\?</string>
-  <string name="shortcut_subscription_label">订阅快捷方式</string>
-  <string name="shortcut_select_subscription">选择订阅</string>
-  <string name="add_shortcut">添加快捷方式</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Activity and fragment titles -->
+    <string name="feed_update_receiver_name">更新订阅</string>
+    <string name="feeds">订阅源</string>
+    <string name="pafeeds">PAFeeds</string>
+    <string name="feeds_label">播客</string>
+    <string name="statistics_label">统计</string>
+    <string name="add_feed_label">添加播客</string>
+    <string name="online_episodes_label">在线剧集</string>
+    <string name="episodes_label">剧集</string>
+    <string name="home_label">首页</string>
+    <string name="queue_label">队列</string>
+    <string name="settings_label">设置</string>
+    <string name="downloads_label">下载</string>
+    <string name="logs_label">日志</string>
+    <string name="subscriptions_label">订阅</string>
+    <string name="unsubscribed_label">取消订阅</string>
+    <string name="cancel_download_label">取消下载</string>
+    <string name="playback_history_label">历史记录</string>
+    <string name="months_statistics_label">月</string>
+    <string name="years_statistics_label">年</string>
+    <string name="notification_pref_fragment">通知</string>
+    <string name="current_episode">当前的</string>
+    <string name="current_podcast">播客</string>
+    <string name="global">全局范围</string>
+    <!-- Google Assistant -->
+    <string name="app_action_not_found">找不到“%1$s”</string>
+    <!-- SwipeActions -->
+    <string name="swipeactions_label">滑动动作</string>
+    <string name="swipeactions_summary">选择在列表中滑动剧集时发生的情况</string>
+    <string name="swipe_right">向右滑动</string>
+    <string name="swipe_left">向左滑动</string>
+    <string name="individual_subscription">订阅</string>
+    <string name="subscription">订阅</string>
+    <!-- Statistics fragment -->
+    <string name="statistics_include_marked">包括刚被标记为播放的剧集的持续时间</string>
+    <string name="statistics_speed_not_counted">注意：播放速度从未考虑过。</string>
+    <string name="statistics_start_month">开始月</string>
+    <string name="statistics_end_month">结束月</string>
+    <string name="statistics_month_year">格式：MM/YYYY</string>
+    <string name="statistics_from">来自</string>
+    <string name="statistics_to">收件人</string>
+    <string name="statistics_today">今日：</string>
+    <string name="statistics_filter_all_time">全部时间</string>
+    <string name="statistics_filter_past_year">过去年份</string>
+    <string name="statistics_reset_data">重置统计数据</string>
+    <string name="statistics_reset_data_msg">这将擦除所有剧集的持续时间历史。您确定要继续\？</string>
+    <string name="statistics_counting_range">在 %1$s 和 %2$s 之间播放</string>
+    <string name="statistics_counting_total">总播放量</string>
+    <string name="web_content_not_available">网页内容不可用</string>
+    <string name="language_not_supported_by_tts">TTS 不支持该语言</string>
+    <string name="tts_init_failed">TTS init 失败</string>
+    <string name="tts_not_available">TTS 引擎不可用</string>
+    <string name="episode_has_no_content">剧集没有内容</string>
+    <string name="unrestricted_background_permission_text">为了成功地在后台播放一系列剧集，Podcini需要无限制背景活动的权限。 请注意某些品牌，此处有超常设置，请确保相应设置它们。</string>
+    <string name="notification_permission_text">从 Android 13开始，普通刷新和播放需要顶级通知。您可以随意显示子餐饮业通知。</string>
+    <string name="notification_permission_denied">您拒绝了该权限。</string>
+    <!-- Download Statistics fragment -->
+    <string name="total_size_downloaded_podcasts">设备上剧集的总大小</string>
+    <!-- Main activity -->
+    <string name="drawer_open">打开菜单</string>
+    <string name="drawer_close">关闭菜单</string>
+    <string name="drawer_preferences">抽屉首选项</string>
+    <!-- Bug report activity -->
+    <string name="log_file_share_exception">没有找到兼容的应用</string>
+    <string name="export_logs_menu_title">导出详细日志</string>
+    <string name="confirm_export_log_dialog_message">详细日志可能包含敏感信息，例如您的订阅列表</string>
+    <!-- Webview actions -->
+    <string name="open_in_browser_label">在浏览器中打开</string>
+    <string name="copy_url_label">复制 URL</string>
+    <string name="share_url_label">分享网址</string>
+    <string name="go_to_position_label">转到此位置</string>
+    <string name="show_shared_logs_label">显示共享日志</string>
+    <string name="show_subscription_logs_label">显示订阅日志</string>
+    <string name="show_download_logs_label">显示下载日志</string>
+    <!-- Playback history -->
+    <string name="clear_history_label">清除历史记录</string>
+    <string name="clear_playback_history_msg">这将清除整个播放历史。您确定要继续\？</string>
+    <string name="remove_history_label">从历史记录中删除</string>
+    <string name="removed_history_label">已从历史中删除</string>
+    <!-- Other -->
+    <string name="confirm_label">确认</string>
+    <string name="cancel_label">取消</string>
+    <string name="yes">否</string>
+    <string name="no">否</string>
+    <string name="reset">Reset</string>
+    <string name="global_default">全局默认</string>
+    <string name="url_label">网址</string>
+    <string name="support_funding_label">支持</string>
+    <string name="support_podcast">支持这个播客</string>
+    <string name="error_label">错误</string>
+    <string name="error_msg_prefix">发生错误：</string>
+    <string name="refresh_label">刷新</string>
+    <string name="new_synth_label">新建合成饲料</string>
+    <string name="new_synth_yt_label">新建合成Youtube</string>
+    <string name="toggle_grid_list">切换网格列表</string>
+    <string name="refreshing_label">正在刷新</string>
+    <string name="clear_new_label">清除新的</string>
+    <string name="reconcile_label">调节器</string>
+    <string name="chapters_label">章 次</string>
+    <string name="chapter_duration0">持续时间： </string>
+    <string name="description_label">描述</string>
+    <string name="episodes_suffix">\u0020剧集</string>
+    <string name="close_label">关闭</string>
+    <string name="retry_label">重试</string>
+    <string name="auto_download_label">包含在自动下载中</string>
+    <string name="auto_delete_label">自动删除剧集</string>
+    <string name="feed_volume_adapdation">音量调整</string>
+    <string name="feed_volume_adaptation_summary">将音量转向上或下播客的剧集: %1$s</string>
+    <string name="feed_volume_reduction_off">没有适配器</string>
+    <string name="feed_volume_reduction_light">轻微减少</string>
+    <string name="feed_volume_reduction_heavy">大规模减少</string>
+    <string name="feed_volume_boost_light">轻量加成</string>
+    <string name="feed_volume_boost_medium">中等加速</string>
+    <string name="feed_volume_boost_heavy">重力</string>
+    <string name="feed_auto_download_always">总是显示</string>
+    <string name="feed_auto_download_never">从不使用</string>
+    <string name="feed_video_mode_label">视频模式</string>
+    <string name="feed_video_mode_window">窗口模式</string>
+    <string name="feed_video_mode_fullscreen">全屏</string>
+    <string name="feed_video_mode_audioonly">仅音频</string>
+    <string name="feed_auto_download_policy">自动下载策略</string>
+    <string name="feed_auto_download_new">仅新项目</string>
+    <string name="replace">替换</string>
+    <string name="feed_auto_download_newer">最新未播放</string>
+    <string name="feed_auto_download_older">最早未播放</string>
+    <string name="feed_auto_download_soon">标记为很快的</string>
+    <string name="put_in_queue_label">添加到队列…</string>
+    <string name="remove_from_other_queues">从其他队列移除</string>
+    <string name="create_synthetic_first_note">您需要先创建一些合成源</string>
+    <string name="remove_from_current_feed">从当前源中删除</string>
+    <string name="episode_cleanup_limit_by">限制</string>
+    <string name="episode_cleanup_never">从不使用</string>
+    <string name="episode_cleanup_except_favorite">未收藏时</string>
+    <string name="episode_cleanup_not_in_queue">当不在队列中</string>
+    <string name="episode_cleanup_after_listening">完成后</string>
+    <plurals name="episode_cleanup_hours_after_listening">
+        <item quantity="other">完成后%d 小时</item>
+    </plurals>
+    <plurals name="episode_cleanup_days_after_listening">
+        <item quantity="other">完成后%d 天</item>
+    </plurals>
+    <!-- Actions on feeds -->
+    <string name="max_episodes_cache">允许最大剧集</string>
+    <string name="new_namee">新名称</string>
+    <string name="feed_settings_label">播客设置</string>
+    <string name="switch_queue_label">选择活动队列</string>
+    <string name="rename_feed_label">重命名播客</string>
+    <string name="remove_feed_label">移除播客</string>
+    <string name="init_tts">启动 TTS</string>
+    <string name="share_label">分享</string>
+    <string name="share_file_label">共享文件</string>
+    <string name="share_notes_label">分享笔记</string>
+    <string name="erase_episodes_confirmation_msg">请确认您想要擦除剧集。</string>
+    <string name="feed_delete_confirmation_msg">请确认您想要删除播客\"%1$s\"，所有剧集(包括下载的剧集)及其统计。</string>
+    <string name="feed_delete_confirmation_msg_batch">请确认您想要移除选定的播客，所有剧集(包括已下载的剧集)及其统计。</string>
+    <string name="feed_delete_confirmation_local_msg">请确认您想要移除播客\"%1$s及其统计。 本地源文件夹中的文件将不会被删除。</string>
+    <string name="not_erase_message">只有合成源的剧集才能被擦除。</string>
+    <string name="feed_delete_reason_msg">为了将来的参考，您可以在此记录一个理由：</string>
+    <string name="load_complete_feed">刷新完整播客</string>
+    <string name="multi_select">多选</string>
+    <string name="filtered_label">已过滤</string>
+    <string name="progressing_label">处理中</string>
+    <string name="open_podcast">打开播客模式</string>
+    <string name="open">打开</string>
+    <string name="please_wait_for_data">请稍候，直到数据被加载</string>
+    <plurals name="updated_feeds_batch_label">
+        <item quantity="other">%d 订阅已更新。</item>
+    </plurals>
+    <string name="edit_tags">编辑标签</string>
+    <string name="add_tag">添加标签</string>
+    <string name="confirm_delete_logs_label">确认删除日志</string>
+    <string name="confirm_delete_logs_message">这将从数据库中删除所有在这里看到的日志，无法撤消。您确定吗？</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message">Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway\?</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message_vpn">您的 VPN 应用程序假装是一个移动网络(计量连接)。在设置中禁用通过移动数据连接刷新播客。\n\n您仍然想刷新\? 如果您想要解决这个问题，请联系您的 VPN 应用程序的创建者。</string>
+    <!-- actions on feeditems -->
+    <string name="download_label">下载</string>
+    <string name="TTS_label">朗读</string>
+    <string name="play_label">播放</string>
+    <string name="pause_label">暂停</string>
+    <string name="stream_label">流</string>
+    <string name="erase_episodes_label">擦除剧集</string>
+    <string name="reserve_episodes_label">预订剧集</string>
+    <string name="null_label">无</string>
+    <string name="delete_label">删除</string>
+    <string name="delete_failed_simple">无法删除文件。</string>
+    <string name="delete_local_failed">无法删除文件。请尝试从播客信息屏幕上重新连接本地文件夹。</string>
+    <string name="delete_episode_label">删除剧集媒体</string>
+    <string name="show_hidden">显示隐藏的</string>
+    <string name="no_action_label">无动作</string>
+    <string name="my_opinion_label">我的意见</string>
+    <string name="add_opinion_label">添加意见</string>
+    <string name="cancelled_on_label">取消于</string>
+    <string name="choose_tab">选择频道中的标签</string>
+    <string name="set_play_state_label">设置播放状态</string>
+    <string name="play_this_to_seek_position">要跳转到位置，您需要播放剧集</string>
+    <string name="combo_action">组合操作</string>
+    <string name="shelve_label">架设为合成的</string>
+    <string name="add_to_queue_label">添加到活动队列</string>
+    <string name="remove_from_queue_label">从活动队列中删除</string>
+    <plurals name="removed_from_queue_batch_label">
+        <item quantity="other">%d 剧集已从队列中移除。</item>
+    </plurals>
+    <string name="show_video_label">播放视频</string>
+    <string name="media_type">媒体类型</string>
+    <string name="unknown">未知的</string>
+    <string name="audio">音频</string>
+    <string name="video">视频</string>
+    <string name="audio_app">音频应用</string>
+    <string name="rating_label">评分</string>
+    <string name="unrated">未评分</string>
+    <string name="trash">回收站</string>
+    <string name="bad">坏的</string>
+    <string name="OK">好的</string>
+    <string name="good">好</string>
+    <string name="Super">超级版</string>
+    <string name="set_rating_label">设置评分</string>
+    <string name="playstate">播放状态</string>
+    <string name="unspecified">未指定</string>
+    <string name="building">½¨Ôì½¨Ôì½¨Ôì³É¹¥»÷ÁªÃËÀñ°ü£¬½¨Ôì³É¹ý¼¶µØÀ×</string>
+    <string name="new_label">新的</string>
+    <string name="unplayed">未播放</string>
+    <string name="later">稍后再说</string>
+    <string name="soon">很快的</string>
+    <string name="in_queue">在队列</string>
+    <string name="in_progress">进行中</string>
+    <string name="skipped">跳过</string>
+    <string name="played">已播放</string>
+    <string name="again">再一次</string>
+    <string name="forever">永远的</string>
+    <string name="ignored">忽略</string>
+    <string name="visit_website_label">访问网站</string>
+    <string name="skip_episode_label">跳过剧集</string>
+    <string name="delete_local_feed_warning_body">警告: 您正在删除本地剧集。它将从您的设备存储设备中删除媒体文件。它不能再次通过 Podcini下载。是否继续？</string>
+    <string name="share_existing">已存在</string>
+    <!-- Download messages and labels -->
+    <string name="download_successful">成功</string>
+    <string name="download_pending">下载等待中</string>
+    <string name="download_running">下载正在运行</string>
+    <string name="download_error_details">详细信息</string>
+    <string name="download_log_details_message">%1$s \n\n技术原因： \n%2$s \n\n文件URL：\n%3$s</string>
+    <string name="download_error_retrying">下载“%1$s”失败。稍后将重试一次。</string>
+    <string name="download_error_not_retrying">下载 \"%1$s\" 失败。</string>
+    <string name="download_error_tap_for_details">点击查看详细信息。</string>
+    <string name="download_error_device_not_found">未找到存储设备</string>
+    <string name="download_error_insufficient_space">您的设备上没有足够的空间。</string>
+    <string name="download_error_http_data_error">HTTP 数据错误</string>
+    <string name="download_error_error_unknown">未知错误</string>
+    <string name="download_error_parser_exception">播客主机服务器发送了一个破损的播客新闻源。</string>
+    <string name="download_error_unsupported_type">不支持的饲料类型</string>
+    <string name="download_error_unsupported_type_html">播客主机服务器发送了一个网站，而不是播客。</string>
+    <string name="download_error_not_found">播客主机服务器不知道在哪里查找文件。它可能已被删除。</string>
+    <string name="download_error_connection_error">连接错误</string>
+    <string name="download_error_no_connection">没有网络连接</string>
+    <string name="download_error_unknown_host">找不到服务器。请检查地址是否正确，并检查您是否有工作网络连接。</string>
+    <string name="download_error_unauthorized">身份验证错误。请确保用户名和密码正确。</string>
+    <string name="download_error_file_type_type">文件类型错误</string>
+    <string name="download_error_forbidden">播客主机服务器拒绝响应。</string>
+    <string name="download_canceled_msg">下载已取消</string>
+    <string name="download_error_wrong_size">完成下载前服务器连接丢失</string>
+    <string name="download_error_blocked">下载被您设备上的另一个应用程序阻止(例如一个 VPN 或广告拦截器)。</string>
+    <string name="download_error_certificate">无法建立安全连接。 这可能意味着您设备上的另一个应用程序(如VPN 或广告拦截器)已阻止下载。 或者服务器证书有问题。</string>
+    <string name="download_report_title">下载完成时出错(s)</string>
+    <string name="download_error_io_error">IO error</string>
+    <string name="download_error_request_error">请求错误</string>
+    <string name="download_error_db_access">数据库访问错误</string>
+    <plurals name="downloads_left">
+        <item quantity="other">%d 下载剩余</item>
+    </plurals>
+    <string name="download_notification_title_feeds">刷新播客中</string>
+    <string name="download_notification_title_episodes">正在下载剧集</string>
+    <string name="download_log_title_unknown">未知标题</string>
+    <string name="download_type_feed">订阅源</string>
+    <string name="download_type_media">媒体文件</string>
+    <string name="null_value_podcast_error">没有提供可以显示的播客。</string>
+    <string name="no_feed_url_podcast_found_by_search">建议播客没有RSS链接，Podcini发现一个播客可以匹配</string>
+    <string name="confirm_mobile_download_dialog_title">确认移动下载</string>
+    <string name="confirm_mobile_download_dialog_message">在设置中禁用通过移动数据连接下载。Podcini稍后可以在 Wi-Fi 可用时自动下载剧集。</string>
+    <string name="confirm_mobile_download_dialog_message_vpn">您的 VPN 应用程序假定是一个移动网络 (计量连接) 。在设置中禁用了通过移动数据连接下载。 如果你想要解决这个问题，请联系你的 VPN 应用程序的创建者。</string>
+    <string name="confirm_mobile_download_dialog_download_later">稍后下载</string>
+    <string name="confirm_mobile_download_dialog_allow_this_time">仍然下载</string>
+    <string name="confirm_mobile_streaming_notification_title">确认移动流</string>
+    <string name="confirm_mobile_streaming_notification_message">移动数据连接流量在设置中被禁用。点击以继续流入。</string>
+    <string name="confirm_mobile_streaming_button_always">总是显示</string>
+    <string name="confirm_mobile_streaming_button_once">一次</string>
+    <!-- Mediaplayer messages -->
+    <string name="playback_error_generic"><![CDATA[无法播放媒体文件。\n\n- 尝试删除和重新下载剧集。\n- 请检查您的网络连接，并确保没有 VPN 或登录页面阻止访问。\n- 尝试长按并将 \"媒体地址\" 分享到您的网页浏览器以查看它是否可以在这里播放。 如果没有，请联系播客创建者。]]></string>
+    <string name="no_media_playing_label">没有媒体播放</string>
+    <string name="unknown_media_key">Podcini - Unknown media key: %1$d</string>
+    <string name="error_file_not_found">找不到文件</string>
+    <string name="no_media_label">项目不包含媒体文件</string>
+    <!-- Queue operations -->
+    <string name="lock_queue">锁定队列</string>
+    <string name="queue_locked">队列锁定</string>
+    <string name="queue_unlocked">队列解锁</string>
+    <string name="queue_lock_warning">如果您锁定队列，您不能再滑动或重新排序剧集。</string>
+    <!--    <string name="switch_queue">Switch active queue</string>-->
+    <string name="open_queue">打开队列</string>
+    <string name="checkbox_do_not_show_again">不再显示</string>
+    <string name="clear_queue_label">清除队列</string>
+    <string name="clear_bin_label">清空bin</string>
+    <string name="undo">撤消操作</string>
+    <string name="sort">排序</string>
+    <string name="rename">重命名：</string>
+    <string name="add_queue">添加队列</string>
+    <string name="keep_sorted">保持排序</string>
+    <string name="publish_date">发布日期</string>
+    <string name="download_date">下载日期</string>
+    <string name="view_count">查看计数</string>
+    <string name="date">日期</string>
+    <string name="count">计数</string>
+    <string name="last_comment_date">评论日期</string>
+    <string name="last_played_date">播放日期</string>
+    <string name="completed_date">完成日期</string>
+    <string name="duration">期限</string>
+    <string name="spent">已使用</string>
+    <string name="hours">小时</string>
+    <string name="episode_title">剧集标题</string>
+    <string name="feed_title">播客标题</string>
+    <string name="show_criteria">显示条件</string>
+    <string name="title">标题</string>
+    <string name="author">作者</string>
+    <string name="random">随机播放</string>
+    <string name="smart_shuffle">智能随机播放</string>
+    <string name="size">大小</string>
+    <string name="clear_queue_confirmation_msg">请确认您想要清除所有剧集的队列</string>
+    <string name="show_bin_label">显示 bin</string>
+    <!--  Variable Speed -->
+    <string name="preset_already_exists">%1$.2fx 已经保存为预设。</string>
+    <!-- Empty list labels -->
+    <string name="no_shownotes_label">此剧集没有显示记录。</string>
+    <string name="no_subscriptions_label">要订阅播客，请点击下面的加号图标。</string>
+    <!-- Preferences -->
+    <string name="project_pref">项目</string>
+    <string name="synchronization_pref">同步</string>
+    <string name="synchronization_sum">与其他设备同步</string>
+    <string name="pref_backup_on_google_title">OPML自动备份</string>
+    <string name="pref_backup_on_google_sum">自动备份 OPML 文件到 Google。启用后，在 Podcini 卸载并重新安装后，可以恢复订阅。切换此设置将重启 Podcini。</string>
+    <string name="automation">自动化</string>
+    <string name="download_pref_details">详细信息</string>
+    <string name="import_export_pref">导入/导出</string>
+    <string name="import_export_search_keywords">备份，恢复</string>
+    <string name="pref_auto_backup_title">自动备份</string>
+    <string name="pref_auto_backup_sum">在指定的时间间隔内自动备份数据库和首选项到选定的文件夹。</string>
+    <string name="pref_auto_backup_interval">备份间隔</string>
+    <string name="pref_auto_backup_folder">拾取备份文件夹</string>
+    <string name="pref_auto_backup_folder_sum">未指定。</string>
+    <string name="pref_auto_backup_limit">保留的备份数量</string>
+    <string name="appearance">外观</string>
+    <string name="external_elements">外部因素</string>
+    <string name="create_YT_syndicates">创建 YT 辛迪加斯</string>
+    <string name="add_to_feed">添加到订阅</string>
+    <string name="interruptions">中断</string>
+    <string name="playback_control">播放控制</string>
+    <string name="reassign_hardware_buttons">重新分配硬件按钮</string>
+    <string name="preference_search_hint">搜索…</string>
+    <string name="preference_search_no_results">没有结果</string>
+    <string name="preference_search_clear_history">清除历史记录</string>
+    <string name="pref_episode_cleanup_title">清理集</string>
+    <string name="pref_episode_cleanup_summary">如果自动下载需要新剧集的空间，则应被删除的剧集</string>
+    <string name="pref_pauseOnDisconnect_sum">耳机或蓝牙断开时暂停播放</string>
+    <string name="pref_unpauseOnHeadsetReconnect_sum">耳机重新连接后恢复播放</string>
+    <string name="pref_unpauseOnBluetoothReconnect_sum">重新连接蓝牙时恢复播放</string>
+    <string name="pref_hardware_forward_button_title">转发按钮</string>
+    <string name="pref_hardware_forward_button_summary">自定义前进按钮行为</string>
+    <string name="pref_hardware_previous_button_title">上一个按钮</string>
+    <string name="pref_hardware_previous_button_summary">自定义上一个按钮行为</string>
+    <string name="button_action_fast_forward">快进</string>
+    <string name="button_action_rewind">Rewind</string>
+    <string name="button_action_skip_episode">跳过剧集</string>
+    <string name="button_action_restart_episode">重启剧集</string>
+    <string name="pref_followQueue_sum">播放完成后跳至下一队列项目</string>
+    <string name="pref_pick_custom_media_dir">指定一个自定义文件夹</string>
+    <string name="pref_custom_media_dir_title">使用自定义媒体文件夹</string>
+    <string name="pref_custom_media_dir_sum">选择已下载媒体的自定义文件夹。您可以随时重置。需要重启。</string>
+    <string name="pref_custom_media_dir_sum1">自定义媒体文件夹已设置。想要更改吗？</string>
+    <string name="pref_custom_media_dir_sum2">自定义媒体文件夹已设置。想要重置为默认吗？</string>
+    <string name="pref_auto_delete_sum">播放完成后删除剧集</string>
+    <string name="pref_auto_delete_title">自动删除</string>
+    <string name="pref_auto_local_delete_title">自动从本地文件夹删除</string>
+    <string name="pref_auto_local_delete_sum">自动删除功能中包含本地文件夹</string>
+    <string name="pref_auto_local_delete_dialog_body">请注意，对于本地文件夹，这将会从Podcini中删除剧集，并从您的设备存储设备中删除媒体文件。 无法通过 Podcini下载它们。是否启用自动删除\？</string>
+    <string name="pref_mark_played_removes_from_queue_title">标记播放中的从队列中移除</string>
+    <string name="pref_mark_played_removes_from_queue_sum">当剧集被标记为播放时从所有队列中移除 </string>
+    <string name="pref_skip_keeps_episodes_sum">跳过剧集时保留剧集</string>
+    <string name="pref_skip_keeps_episodes_title">保留跳过的剧集</string>
+    <string name="pref_keeps_important_episodes_sum">当剧集被标记为超级或永久时保持剧集。</string>
+    <string name="pref_keeps_important_episodes_title">保留重要剧集</string>
+    <string name="playback_pref">回放</string>
+    <string name="playback_pref_sum">耳机控制, 跳过间隔, 队列</string>
+    <string name="downloads_pref">下载</string>
+    <string name="downloads_pref_sum">更新间隔，移动数据，自动下载，自动删除</string>
+    <string name="feed_refresh_title">刷新播客</string>
+    <string name="feed_refresh_sum">指定一个时间间隔(小时, 0 表示不会显示) 在 Podcini 自动查找新剧集。</string>
+    <string name="feed_refresh_never">从不使用</string>
+    <string name="feed_every_hour">每小时</string>
+    <string name="feed_every_2_hours">每 2 小时</string>
+    <string name="feed_every_4_hours">每 4 小时</string>
+    <string name="feed_every_8_hours">每 8 小时</string>
+    <string name="feed_every_12_hours">每 12 小时</string>
+    <string name="feed_every_24_hours">每天一次</string>
+    <string name="feed_every_72_hours">每 3 天</string>
+    <string name="pref_followQueue_title">连续播放</string>
+    <string name="pref_pauseOnHeadsetDisconnect_title">耳机或蓝牙断开连接</string>
+    <string name="pref_unpauseOnHeadsetReconnect_title">耳机重新连接</string>
+    <string name="pref_unpauseOnBluetoothReconnect_title">蓝牙重新连接</string>
+    <string name="pref_stream_over_download_title">喜欢串流</string>
+    <string name="pref_stream_over_download_sum">在列表中显示流按钮而不是下载按钮</string>
+    <string name="pref_low_quality_on_mobile_title">移动时优先选择低质量</string>
+    <string name="pref_low_quality_on_mobile_sum">在计量网络上，只获取低质量的媒体 (如果可用)</string>
+    <string name="pref_use_adaptive_progress_title">自适应更新进度</string>
+    <string name="pref_use_adaptive_progress_sum">在一个自适应间隔中将进度更新为更高的5秒或媒体持续时间的2%。 这节省了一些能量。否则它每5秒更新一次。</string>
+    <string name="pref_metered_network_title">计量网络设置</string>
+    <string name="pref_mobileUpdate_sum">选择移动数据连接应允许的内容</string>
+    <string name="pref_mobileUpdate_refresh">播客刷新</string>
+    <string name="pref_mobileUpdate_images">封面图像</string>
+    <string name="pref_mobileUpdate_auto_download">自动下载</string>
+    <string name="pref_mobileUpdate_episode_download">剧集下载</string>
+    <string name="pref_mobileUpdate_streaming">流流</string>
+    <string name="user_interface_label">用户界面</string>
+    <string name="user_interface_sum">出现，订阅，锁屏界面</string>
+    <string name="pref_black_theme_title">全黑色</string>
+    <string name="pref_black_theme_message">黑暗主题使用全黑色</string>
+    <string name="pref_tinted_theme_title">动态颜色</string>
+    <string name="pref_tinted_theme_message">基于壁纸调整应用颜色</string>
+    <string name="pref_nav_drawer_items_title">设置导航抽屉项</string>
+    <string name="pref_nav_drawer_items_sum">更改导航抽屉中显示的项目</string>
+    <string name="pref_nav_drawer_feed_order_title">设置订阅顺序</string>
+    <string name="pref_nav_drawer_feed_order_sum">更改您的订阅顺序</string>
+    <string name="pref_automatic_download_title">自动下载</string>
+    <string name="pref_automatic_download_sum">配置自动下载剧集</string>
+    <string name="pref_autodl_wifi_filter_title">启用 Wi-Fi 过滤器</string>
+    <string name="pref_autodl_wifi_filter_sum">允许仅对选定的 Wi-Fi 网络自动下载。</string>
+    <string name="pref_automatic_download_on_battery_title">未充电时下载</string>
+    <string name="pref_automatic_download_on_battery_sum">允许电池未充电时自动下载</string>
+    <string name="pref_episode_cache_title">剧集缓存</string>
+    <string name="pref_episode_cache_summary">在设备上缓存的已下载剧集总数量 (0表示无限制)。如果达到这个数字，将暂停自动下载。</string>
+    <string name="pref_auto_download_counting_played_title">正在玩的计数</string>
+    <string name="pref_auto_download_counting_played_summary">如果已下载的剧集已经被计数到剧集缓存中，请设置</string>
+    <string name="pref_episode_cover_title">使用剧集封面</string>
+    <string name="pref_episode_cover_summary">随时在列表中使用剧集特定封面。如果未选中，应用程序将始终使用播客封面图像。</string>
+    <string name="pref_show_remain_time_title">显示剩余时间</string>
+    <string name="pref_show_remain_time_summary">选中时显示剧集的剩余时间。如果不选中，显示剧集的总持续时间。</string>
+    <string name="pref_theme_title_automatic">自动的</string>
+    <string name="pref_theme_title_light">亮色的</string>
+    <string name="pref_theme_title_dark">深色</string>
+    <string name="pref_episode_cache_unlimited">无限制</string>
+    <string name="pref_playback_speed_sum">自定义可变速度播放的速度</string>
+    <string name="pref_feed_playback_speed_sum">在播客中开始音频播放时使用的速度</string>
+    <string name="pref_feed_skip">自动跳过</string>
+    <string name="pref_feed_skip_sum">跳过介绍和期终点积分。</string>
+    <string name="associated">关联的</string>
+    <string name="pref_feed_audio_type">音频类型</string>
+    <string name="pref_feed_audio_type_sum">发言、音乐或电影都可以改进处理。</string>
+    <string name="pref_feed_audio_quality">音频质量</string>
+    <string name="pref_feed_audio_quality_sum">全局一般等于高质量，但预制低质量媒体设置为计量网络时除外。 这里的质量设置优先于计量网络预制低质量媒体设置。</string>
+    <string name="pref_feed_video_quality">视频质量</string>
+    <string name="pref_feed_video_quality_sum">全局等于低质量。这里的质量设置优先于计量网络预制低质量媒体设置。</string>
+    <string name="pref_feed_associated_queue">相关队列</string>
+    <string name="pref_feed_associated_queue_sum">Feed中的引号将默认添加到队列</string>
+    <string name="pref_feed_skip_ending">跳过最后一个</string>
+    <string name="pref_feed_skip_intro">跳过前</string>
+    <string name="pref_feed_skip_ending_toast">跳过最后一个 %d 秒</string>
+    <string name="pref_feed_skip_intro_toast">跳过前 %d 秒</string>
+    <string name="pref_playback_time_respects_speed_title">调整媒体信息以播放速度</string>
+    <string name="pref_playback_time_respects_speed_sum">显示位置和持续时间适合播放速度</string>
+    <string name="pref_fallback_speed">回退速度</string>
+    <string name="pref_speed_forward">快速前进速度</string>
+    <string name="pref_speed_forward_sum">点击跳过按钮时自定义向前移动速度</string>
+    <string name="pref_fallback_speed_sum">长按播放按钮时自定义速度</string>
+    <string name="pref_fast_forward">快速跳过时间</string>
+    <string name="pref_fast_forward_sum">点击快速前进按钮时自定义跳转的秒数</string>
+    <string name="pref_rewind">返回跳过时间</string>
+    <string name="pref_rewind_sum">自定义倒退按钮时向后跳的秒数</string>
+    <string name="pref_playback_video_mode">视频播放模式</string>
+    <string name="pref_playback_video_mode_sum">选择默认播放视频剧集的方式</string>
+    <string name="pref_video_mode_full_screen">全屏</string>
+    <string name="pref_video_mode_small_window">小窗口</string>
+    <string name="pref_video_mode_audio_only">仅音频</string>
+    <string name="pref_swipe_refresh_title">滑动刷新</string>
+    <string name="pref_swipe_refresh_sum">向下滑动以刷新所有订阅</string>
+    <string name="pref_feedGridLayout_title">订阅使用网格布局 </string>
+    <string name="pref_feedGridLayout_sum">设置时，订阅视图使用网格布局，否则列出布局</string>
+    <string name="pref_expandNotify_title">高通知优先级</string>
+    <string name="pref_expandNotify_sum">这通常扩展通知以显示播放按钮。</string>
+    <string name="pref_persistNotify_title">持续播放控制</string>
+    <string name="pref_persistNotify_sum">播放暂停时保持通知和锁屏控制</string>
+    <string name="pref_show_notification_skip_title">在通知时显示跳过</string>
+    <string name="pref_show_notification_skip_sum">切换通知面板上的跳过按钮</string>
+    <string name="pref_compact_notification_buttons_dialog_error_exact">您必须选择准确的 %1$d 项。</string>
+    <string name="pref_full_notification_buttons_title">设置通知按钮</string>
+    <string name="pref_full_notification_buttons_sum">更改播放通知上的播放按钮。</string>
+    <string name="pref_enqueue_location_title">加入队列位置</string>
+    <string name="pref_enqueue_location_sum">添加剧集到: %1$s</string>
+    <string name="enqueue_location_back">后退</string>
+    <string name="enqueue_location_front">前端</string>
+    <string name="enqueue_location_after_current">在当前剧集之后</string>
+    <string name="enqueue_location_random">随机播放</string>
+    <string name="documentation_support">文档 &amp; 支持</string>
+    <string name="visit_user_forum">用户论坛</string>
+    <string name="bug_report_title">报告 bug</string>
+    <string name="email_developer">向开发者发送电子邮件</string>
+    <string name="need_email_client">您需要安装在手机上的电子邮件客户端。</string>
+    <string name="open_bug_tracker">打开错误跟踪器</string>
+    <string name="copy_to_clipboard">复制到剪贴板</string>
+    <string name="copied_to_clipboard">复制到剪贴板</string>
+    <string name="pref_proxy_title">代理服务器</string>
+    <string name="pref_proxy_sum">设置网络代理</string>
+    <string name="pref_no_browser_found">未找到网页浏览器。</string>
+    <string name="pref_enqueue_downloaded_title">加入队列已下载</string>
+    <string name="pref_enqueue_downloaded_summary">将下载的剧集添加到队列</string>
+    <string name="pref_skip_silence_title">在音频中跳过静音</string>
+    <string name="behavior">行为</string>
+    <string name="pref_select_properties">选择属性</string>
+    <string name="pref_import_media_files_later">媒体文件只能在导入数据库后导入。</string>
+    <string name="pref_default_page">默认页面</string>
+    <string name="pref_default_page_sum">启动 Podcini 时打开屏幕</string>
+    <string name="pref_back_button_opens_drawer">返回键打开抽屉栏</string>
+    <string name="pref_back_button_opens_drawer_summary">按下默认页面上的后退按钮打开导航栏</string>
+    <string name="remember_last_page">记住最后一个页面</string>
+    <string name="pref_delete_removes_from_queue_title">删除队列中的删除</string>
+    <string name="pref_delete_removes_from_queue_sum">删除时自动从队列中移除剧集</string>
+    <string name="pref_contribute">贡献</string>
+    <!-- About screen -->
+    <string name="about_pref">关于</string>
+    <string name="podcini_version">Podcini版本</string>
+    <string name="contributors">贡献者</string>
+    <string name="contributors_summary">每个人都可以帮助更好的 Podcini - 通过代码、翻译或帮助我们论坛中的用户</string>
+    <string name="developers">开发者</string>
+    <string name="translators">翻译者</string>
+    <string name="special_thanks">特别致谢</string>
+    <string name="online_help">在线主页</string>
+    <string name="online_help_sum">在线获取更多信息</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="licenses">许可协议</string>
+    <string name="licenses_summary">Podcini使用其他优秀软件</string>
+    <string name="email_sum">直接向开发者报告问题或提出建议。</string>
+    <!-- Search -->
+    <string name="search_status_no_results">没有找到结果</string>
+    <string name="search_label">搜索</string>
+    <string name="no_results_for_query">没有找到 \"%1$s \" 的结果</string>
+    <string name="search_online">在线搜索</string>
+    <!-- Synchronization -->
+    <string name="sync_status_started">同步已开始</string>
+    <string name="sync_status_episodes_upload">Uploading episode changes…</string>
+    <string name="sync_status_episodes_download">正在下载剧集更改…</string>
+    <string name="sync_status_upload_played">正在上传播放的状态…</string>
+    <string name="sync_status_subscriptions">正在同步订阅…</string>
+    <string name="sync_status_wait_for_downloads">等待下载完成…</string>
+    <string name="sync_status_success">同步成功</string>
+    <string name="sync_status_in_progress">同步进行中</string>
+    <string name="sync_status_error">同步失败</string>
+    <string name="sync_error_host_not_respond">主机没有响应，放弃。</string>
+    <string name="sync_error_guest_not_respond">客人没有响应，放弃。</string>
+    <!-- import and export -->
+    <string name="import_export_summary">移动订阅和队列到另一台设备</string>
+    <string name="preferences">首选项</string>
+    <string name="media_files">媒体文件</string>
+    <string name="combos">连环画</string>
+    <string name="database">数据库</string>
+    <string name="opml">OPML</string>
+    <string name="html">HTML</string>
+    <string name="progress">进展情况</string>
+    <string name="html_export_summary">向好友显示您的订阅</string>
+    <string name="opml_export_summary">将您的订阅转到另一个播客应用</string>
+    <string name="opml_import_summary">从另一个播客应用导入您的订阅</string>
+    <string name="preferences_export_summary">导出 Podcini 首选项</string>
+    <string name="preferences_import_summary">导入 Podcini 首选项</string>
+    <string name="media_files_export_summary">导出 Podcini 媒体文件</string>
+    <string name="media_files_import_summary">导入 Podcini 介质文件</string>
+    <string name="combo_export_summary">选择性地导出数据库、首选项、媒体文件。</string>
+    <string name="combo_import_summary">选择性地导入数据库、首选项、媒体文件。</string>
+    <string name="database_export_summary">在另一台设备上传输订阅、听到的剧集和队列到 Podcini</string>
+    <string name="database_import_summary">从另一个设备导入 Podcini 数据库</string>
+    <string name="opml_import_label">导入 OPML</string>
+    <string name="opml_add_podcast_label">导入播客列表 (OPML)</string>
+    <string name="opml_reader_error">读取文件时发生错误。请确保您实际选择了 OPML 文件和该文件有效。</string>
+    <string name="opml_import_error_no_file">未选择文件！</string>
+    <string name="select_all_label">选择所有</string>
+    <string name="deselect_all_label">取消全选</string>
+    <string name="progress_export_label">剧集进度导出</string>
+    <string name="progress_import_label">剧集进度导入</string>
+    <string name="progress_export_summary">将 Podcini 剧集历史传输到不同的 Podcini安装。请注意，如果您可以转移DB ，这是不必要的。</string>
+    <string name="progress_import_summary">从另一个安装的 Podcini导入Podcini事件历史。请注意，如果您已经导入DB ，这是不必要的。 </string>
+    <string name="progress_import_warning">导入剧集进度将取代您当前播放的全部历史记录。 您应该将当前进度导出为备份。您想要替换\？如果是，请在下一个屏幕中选择所需。 儿子文件。该进程可能需要几分钟的时间，取决于大小。完成后，将显示一个成功或失败的弹出窗口。</string>
+    <string name="opml_export_label">OPML 导出</string>
+    <string name="html_export_label">HTML 导出</string>
+    <string name="media_files_export_label">媒体文件导出</string>
+    <string name="media_files_import_label">导入媒体文件</string>
+    <string name="import_SQLite_message">导入的订阅以及剧集和播放历史将被添加到现有数据库。如果已确认，请选择先前导出的 sqlite 数据库。”</string>
+    <string name="combo_import_warning">导入所选项目将替换当前存储中的项目。如果已确认，请选择一个先前导出的目录，并且包含\"Podcini-Backups\"</string>
+    <string name="preferences_export_label">首选项导出</string>
+    <string name="preferences_import_label">首选项导入</string>
+    <string name="preferences_import_warning">导入首选项将替换您当前的所有首选项。如果已确认，请选择一个先前导出的目录，名称为“Podcini-Prefs”。</string>
+    <string name="media_files_import_notice">选择一个先前导出的目录，包含\"Podcini-MediaFiles\"</string>
+    <string name="combo_export_label">合并导出</string>
+    <string name="combo_import_label">合并导入</string>
+    <string name="import_AP_label">导入 AntennaPod 数据库</string>
+    <string name="import_PA_label">从 Podcast的 Addict 备份导入</string>
+    <string name="import_PA_DB_label">导入订阅</string>
+    <string name="import_PA_DB_message">导入的订阅以及剧集和游戏历史将被添加到podcini的DB中。”</string>
+    <string name="import_PA_directory_label">导入目录</string>
+    <string name="import_PA_directory_message">导入播客直接用于离线搜索。\"</string>
+    <string name="import_PA_message">如果已确认，请从Podcast Addict 应用中选择先前导出的备份存档。\"</string>
+    <string name="database_export_label">数据库导出</string>
+    <string name="database_import_label">数据库导入</string>
+    <string name="realm_database_import_label">领域数据库导入</string>
+    <string name="database_import_warning">导入数据库将替换当前订阅和播放历史。您应该导出当前数据库作为备份。 您想要替换\？如果是，在下一个屏幕中选择一个扩展名.alread的文件</string>
+    <string name="import_directory_toast">仅接受目录名包括： </string>
+    <string name="import_file_type_toast">仅接受文件扩展名： </string>
+    <string name="please_wait">请等待&#8230;</string>
+    <string name="import_export_error_label">导入/导出错误</string>
+    <string name="export_success_title">导出成功</string>
+    <string name="opml_import_ask_read_permission">读取OPML文件需要访问外部存储</string>
+    <string name="successful_import_label">导入成功</string>
+    <string name="import_ok">请按 OK 重启 Podcini</string>
+    <string name="favorites_export_label">收藏夹导出</string>
+    <string name="favorites_export_summary">导出保存的收藏夹到文件</string>
+    <string name="restore_subscriptions_label">还原订阅</string>
+    <string name="restore_subscriptions_summary">以前的播客订阅可以恢复。你想要还原它们吗？</string>
+    <!-- Sleep timer -->
+    <string name="set_sleeptimer_label">设置睡眠计时器</string>
+    <string name="disable_sleeptimer_label">禁用睡眠计时器</string>
+    <string name="extend_sleep_timer_label">+%d 分钟</string>
+    <string name="end_episode">到剧集结束</string>
+    <string name="sleep_timer_always">总是显示</string>
+    <string name="sleep_timer_label">睡眠计时器</string>
+    <string name="time_dialog_invalid_input">输入无效，时间必须是正整数</string>
+    <string name="shake_to_reset_label">晃动以重置</string>
+    <string name="timer_vibration_label">结束前不久振动</string>
+    <string name="time_seconds">秒</string>
+    <string name="time_minutes">分钟</string>
+    <string name="time_hours">小时</string>
+    <plurals name="time_minutes_quantified">
+        <item quantity="other">%d 分钟</item>
+    </plurals>
+    <plurals name="time_hours_quantified">
+        <item quantity="other">%d 小时</item>
+    </plurals>
+    <plurals name="time_days_quantified">
+        <item quantity="other">%d 天</item>
+    </plurals>
+    <string name="auto_enable_label">按下播放时自动激活睡眠计时器</string>
+    <string name="auto_enable_label_with_times" formatted="false">按下 %s 和 %s 之间的游戏时自动激活睡眠计时器</string>
+    <string name="auto_enable_change_times">更改时间范围</string>
+    <string name="sleep_timer_enabled_label">睡眠计时器已启用</string>
+    <!-- Synchronisation -->
+    <string name="wifi_sync">与 Wifi 上的设备同步</string>
+    <string name="wifi_sync_summary_unchoosen">您可以在同一个WiFi网络上连接两个设备来同步您的剧集播放状态</string>
+    <string name="synchronization_choose_title">选择同步提供商</string>
+    <string name="synchronization_summary_unchoosen">您可以从多个提供商选择以同步您的订阅和剧集播放状态</string>
+    <string name="dialog_choose_sync_service_title">选择同步提供商</string>
+    <string name="gpodnet_description">Gpodder.net 是一个开源播客同步服务，您可以安装在自己的服务器上。Gpodder.net 独立于Podcini项目。</string>
+    <string name="synchronization_summary_nextcloud">Gpoddersync 是一个开放源码Nextcloud应用程序，您可以轻松地在自己的服务器上安装。该应用独立于Podcini项目。</string>
+    <string name="synchronization_host_explanation">您可以挑选自己的服务器来同步。当您已经确认您的首选同步服务器时，请在这里输入其地址。</string>
+    <string name="synchronization_host_address_label">主机地址</string>
+    <string name="synchronization_host_port_label">主机端口</string>
+    <string name="synchronization_host_label">服务器地址</string>
+    <string name="server">服务器</string>
+    <string name="guest_butLabel">作为客人</string>
+    <string name="host_butLabel">作为主机</string>
+    <string name="proceed_to_login_butLabel">继续登录</string>
+    <string name="wifisync_explanation_message">这将在两个对等设备之间执行WiFi同步。设备应该作为主机或客人，但不相同。 以主机身份行事的设备将显示其IP地址。确保在访客设备上复制该地址。 端口号可以根据需要更改，但两个设备都应该使用相同的端口号。 确认后无法取消。确认后，在任一设备上等待响应的最长时间为2分钟。</string>
+    <string name="wifisync_progress_message">与对等点通信</string>
+    <string name="synchronization_nextcloud_authenticate_browser">使用打开的网页浏览器授予访问权限，然后返回Podcini。</string>
+    <string name="connect_to_peer">连接到节点</string>
+    <string name="host_or_guest">首先使自己成为主机或来宾。</string>
+    <string name="gpodnetauth_login_butLabel">登录</string>
+    <string name="synchronization_credentials_explanation">请在同步服务器上提供您帐户的凭据。</string>
+    <string name="gpodnetauth_encryption_warning">密码和数据未加密！</string>
+    <string name="username_label">用户名</string>
+    <string name="password_label">密码</string>
+    <string name="synchronization_login_butLabel">登录</string>
+    <string name="synchronization_selectDevice_explanation">请选择您在同步服务器上创建的设备或创建一个新的设备。</string>
+    <string name="gpodnetauth_device_name">设备名称</string>
+    <string name="gpodnetauth_device_name_default">%1$s 的 Podcini</string>
+    <string name="gpodnetauth_existing_devices">现有设备</string>
+    <string name="gpodnetauth_create_device">创建设备</string>
+    <string name="gpodnetauth_finish_descr">恭喜！您的 gpodder.net 帐户现已链接到您的设备。Podcini 将从现在起自动同步您设备上的 gpodder.net 帐户。</string>
+    <string name="gpodnetauth_finish_butsyncnow">立即开始同步</string>
+    <string name="pref_gpodnet_setlogin_information_title">更改登录信息</string>
+    <string name="pref_gpodnet_setlogin_information_sum">更改您的 gpodder.net 帐户的登录信息。</string>
+    <string name="synchronization_sync_changes_title">立即同步</string>
+    <string name="synchronization_sync_summary">同步订阅和剧集状态更改</string>
+    <string name="synchronization_full_sync_title">强制完全同步</string>
+    <string name="synchronization_force_sync_summary">重新同步所有订阅和剧集状态</string>
+    <string name="synchronization_logout">注销</string>
+    <string name="synchronization_login_status"><![CDATA[登录为 <i>%1$s</i> <i>%2$s</i>。 <br/><br/>您可以在登出后再次选择您的同步提供商]]></string>
+    <string name="pref_synchronization_logout_toast">注销成功</string>
+    <string name="gpodnetsync_error_title">gpodder.net 同步错误</string>
+    <string name="gpodnetsync_error_descr">同步过程中发生错误：\u0020</string>
+    <string name="gpodnetsync_pref_report_successful">成功</string>
+    <string name="gpodnetsync_pref_report_failed">失败</string>
+    <string name="gpodnetsync_username_characters_error">用户名只能包含字母、数字、连字符和下划线。</string>
+    <!-- Directory chooser -->
+    <string name="choose_data_directory">选择数据文件夹</string>
+    <string name="choose_data_directory_message">请选择您的数据文件夹的基础。Podcini将创建相应的子目录。</string>
+    <string name="choose_data_directory_available_space">%1$s of %2$s free</string>
+    <string name="pref_pausePlaybackForFocusLoss_sum">暂停播放而不是在其他应用想要播放声音时降低音量</string>
+    <string name="pref_pausePlaybackForFocusLoss_title">暂停中断</string>
+    <!-- Online feed view -->
+    <string name="subscribe_label">订阅</string>
+    <string name="preview_episode">预览</string>
+    <!-- Content descriptions for image buttons -->
+    <string name="toolbar_back_button_content_description">后退</string>
+    <string name="rewind_label">Rewind</string>
+    <string name="fast_forward_label">快进</string>
+    <string name="toggle_video_views">切换视频视图</string>
+    <string name="increase_speed">增加速度</string>
+    <string name="decrease_speed">降低速度</string>
+    <string name="status_downloading_label">剧集正在下载</string>
+    <string name="load_next_page_label">加载下一页</string>
+    <string name="position">位置： %1$s</string>
+    <string name="next_chapter">下一章节</string>
+    <string name="add_preset">添加预设</string>
+    <!-- Feed settings/information screen -->
+    <string name="authentication_label">认证</string>
+    <string name="authentication_descr">更改这个播客及其剧集的用户名和密码。</string>
+    <string name="feed_tags_label">标签</string>
+    <string name="feed_tags_summary">更改此播客的标签以帮助安排您的订阅</string>
+    <string name="feed_folders_include_root">在主列表中显示此播客</string>
+    <string name="multi_feed_common_tags_info">{faw_info_circle} Only common tags from all selected subscriptions are shown. Other tags stay unaffected.</string>
+    <string name="auto_download_settings_label">自动下载设置</string>
+    <string name="episode_filters_label">剧集过滤器</string>
+    <string name="episode_inclusive_filters_label">剧集包含筛选器</string>
+    <string name="episode_exclusive_filters_label">剧集专用过滤器</string>
+    <string name="episode_filters_description">自动下载时用于决定是否包含剧集或排除的术语列表</string>
+    <string name="add_term">添加条目</string>
+    <string name="exclude_terms">排除包含以下任何条款的剧集</string>
+    <string name="include_terms">仅包括包含以下任何条款的剧集</string>
+    <string name="exclude_episodes_shorter_than">排除短于剧集</string>
+    <string name="mark_excluded_episodes_played">标记已播放的剧集</string>
+    <string name="use_wide_layout">使用宽布局</string>
+    <string name="use_wide_layout_summary">剧集列表上的宽布局显示更大的图像，更适合视频内容。</string>
+    <string name="keep_updated">保持更新</string>
+    <string name="keep_updated_summary">当(自动)刷新所有播客时包括这个播客。</string>
+    <string name="audo_add_new_queue">自动添加新到队列</string>
+    <string name="audo_add_new_queue_summary">当(自动)刷新时，自动将播客中的新剧集添加到指定队列</string>
+    <string name="auto_download_disabled_globally">在主Podcini设置中禁用自动下载</string>
+    <string name="statistics_length_played">所有开始时间：</string>
+    <string name="statistics_time_played">播放时间：</string>
+    <string name="statistics_time_spent">花费时间：</string>
+    <string name="statistics_total_duration">总期限(估计数)：</string>
+    <string name="statistics_episodes_on_device">设备上的集：</string>
+    <string name="statistics_space_used">使用的空间：</string>
+    <string name="statistics_episodes_started_total">剧集开始/总计：</string>
+    <string name="statistics_view_this">查看此播客»</string>
+    <string name="statistics_view_all">查看所有播客”</string>
+    <string name="feeds_related_to_author">可能与作者相关的Feeds »</string>
+    <string name="edit_url_menu">编辑新闻源URL</string>
+    <string name="edit_url_confirmation_msg">更改 RSS 地址可以轻松地破坏播客的播放状态和剧集列表。 我们不建议更改它，如果有任何错误，我们将不会提供支持。 此操作无法撤销。已损坏的订阅无法修复，只需更改地址就无法修复。我们建议在继续之前先创建一个备份。</string>
+    <string name="edit_fast_forward_speed">编辑快速前进速度</string>
+    <string name="edit_fallback_speed">编辑回退速度</string>
+    <!-- PodciniSP -->
+    <string name="sp_apps_importing_feeds_msg">从单一用途应用程序导入订阅&#8230;</string>
+    <!-- Add podcast fragment -->
+    <string name="search_podcast_hint">搜索播客…</string>
+    <string name="search_vistaguide_label">搜索 YouTube 频道</string>
+    <string name="search_itunes_label">搜索苹果播客</string>
+    <string name="search_podcastindex_label">搜索播客索引</string>
+    <string name="search_fyyd_label">搜索 fyd</string>
+    <string name="gpodnet_search_hint">搜索 gpodder.net</string>
+    <string name="advanced">高级版</string>
+    <string name="add_podcast_by_url">添加由 RSS 地址播报</string>
+    <string name="discover">发现</string>
+    <string name="discover_hide">隐藏</string>
+    <string name="discover_is_hidden">您选择隐藏建议。</string>
+    <string name="discover_more">更多 »</string>
+    <string name="discover_powered_by_itunes">Apple Podcasts的建议</string>
+    <string name="discover_confirm">显示建议</string>
+    <string name="search_powered_by">按 %1$s 排列的结果</string>
+    <string name="select_country">选择国家</string>
+    <!-- Local feeds -->
+    <string name="add_local_folder">添加本地文件夹</string>
+    <string name="local_folder">本地文件夹</string>
+    <string name="reconnect_local_folder">重新连接本地文件夹</string>
+    <string name="reconnect_local_folder_warning">在权限被拒绝的情况下，您可以使用它来重新连接到完全相同的文件夹。请不要选择其他文件夹。</string>
+    <string name="local_feed_description">这个虚拟播客是通过添加文件夹到 Podcini创建的。</string>
+    <string name="unable_to_start_system_file_manager">无法启动系统文件管理器</string>
+    <string name="filter">筛选器</string>
+    <string name="downloaded_label">已下载</string>
+    <string name="auto_downloadable_label">自动下载</string>
+    <string name="has_media">有媒体</string>
+    <string name="has_chapters">有章节</string>
+    <string name="filename">文件名称</string>
+    <string name="play_speed">播放速度</string>
+    <string name="global_speed">全局范围</string>
+    <string name="custom_speed">自定义</string>
+    <string name="has_skips">跳过设置</string>
+    <string name="commented">已评论</string>
+    <string name="feed_type">新闻源类型</string>
+    <string name="synthetic">合成体</string>
+    <string name="normal">普通的</string>
+    <string name="feed_origin">饲料来源</string>
+    <string name="youtube">Youtube</string>
+    <string name="rss">RSS</string>
+    <string name="has_video">有视频</string>
+    <string name="has_comments">已评论</string>
+    <string name="auto_delete">自动删除</string>
+    <string name="always">总是显示</string>
+    <string name="never">从不使用</string>
+    <string name="auto_download">自动下载</string>
+    <!-- Share episode dialog -->
+    <string name="share_playback_position_dialog_label">包括播放位置</string>
+    <string name="share_dialog_episode_website_label">剧集网页</string>
+    <string name="share_dialog_for_social">社交信息</string>
+    <string name="share_dialog_media_address">媒体地址</string>
+    <string name="share_dialog_media_file_label">媒体文件</string>
+    <string name="share_starting_position_label">开始于</string>
+    <!-- Audio controls -->
+    <string name="audio_controls">音频控制</string>
+    <string name="playback_speed">播放速度</string>
+    <string name="player_switch_to_audio_only">仅音频</string>
+    <!-- proxy settings -->
+    <string name="proxy_type_label">类型</string>
+    <string name="host_label">主机</string>
+    <string name="port_label">端口</string>
+    <string name="optional_hint">(可选)</string>
+    <string name="proxy_test_label">测试</string>
+    <string name="proxy_checking">正在检查&#8230;</string>
+    <string name="proxy_test_successful">测试成功</string>
+    <string name="proxy_test_failed">测试失败</string>
+    <string name="proxy_host_empty_error">主机不能为空</string>
+    <string name="proxy_host_invalid_error">主机不是有效的 IP 地址或域</string>
+    <string name="proxy_port_invalid_error">端口无效</string>
+    <!-- Subscriptions fragment -->
+    <!-- Notification channels -->
+    <string name="notification_group_errors">错误</string>
+    <string name="notification_channel_user_action">需要采取的行动</string>
+    <string name="notification_channel_user_action_description">显示是否需要您的动作，例如，如果您需要输入密码。</string>
+    <string name="notification_channel_downloading">正在下载</string>
+    <string name="notification_channel_downloading_description">当前下载时显示。</string>
+    <string name="notification_channel_playing">当前正在播放</string>
+    <string name="notification_channel_playing_description">允许控制播放。这是您在播放播客时看到的主要通知。</string>
+    <string name="notification_channel_download_error">下载失败</string>
+    <string name="notification_channel_download_error_description">当下载或新闻源更新失败时显示。</string>
+    <string name="notification_channel_sync_error">同步失败</string>
+    <string name="notification_channel_sync_error_description">当gpoder 同步失败时显示。</string>
+    <!-- Widget settings -->
+    <string name="widget_settings">小部件设置</string>
+    <string name="widget_create_button">创建小部件</string>
+    <string name="widget_opacity">不透明度</string>
+    <!-- On-Demand configuration -->
+    <string name="on_demand_config_setting_changed">设置已成功更新。</string>
+    <string name="on_demand_config_stream_text">看起来您想要剧集列表显示流按钮\？</string>
+    <string name="on_demand_config_download_text">看起来您下载了很多。您想要剧集列表显示下载按钮\吗？</string>
+    <string name="shortcut_subscription_label">订阅快捷方式</string>
+    <string name="shortcut_select_subscription">选择订阅</string>
+    <string name="add_shortcut">添加快捷方式</string>
+    <string name="Episode">剧集</string>
+    <string name="Podcast">播客</string>
+    <string name="All">所有的</string>
 </resources>

@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.storage.utils
 
 import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.net.Uri
@@ -43,7 +43,7 @@ object StorageUtils {
     private val validChars = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-").toCharArray()
 
     val customMediaUriString: String
-        get() = if (getPref(UserPreferences.Prefs.prefUseCustomMediaFolder, false)) getPref(UserPreferences.Prefs.prefCustomMediaUri, "") else ""
+        get() = if (getPref(AppPreferences.AppPrefs.prefUseCustomMediaFolder, false)) getPref(AppPreferences.AppPrefs.prefCustomMediaUri, "") else ""
 
     /**
      * Get the number of free bytes that are available on the external storage.

@@ -12,7 +12,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
@@ -722,20 +722,21 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
                         Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.downloaded} ${vm.dlPercent}")
                         vm.actionButton = vm.actionButton.forItem(vm.episode)
-                        if (vm.actionButton.getLabel() != actionButton.getLabel()) actionButton = vm.actionButton
+                        if (vm.actionButton.label != actionButton.label) actionButton = vm.actionButton
+                        vm.actionRes = actionButton.drawable
                     }
                 } else {
                     LaunchedEffect(Unit) {
                         Logd(TAG, "LaunchedEffect init actionButton")
                         vm.actionButton = actionButton_(vm.episode)
                         actionButton = vm.actionButton
+                        vm.actionRes = actionButton.drawable
                     }
                 }
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.BottomEnd)
                     .pointerInput(Unit) {
                         detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true }, onTap = { actionButton.onClick(activity) })
                     }) {
-                    vm.actionRes = actionButton.getDrawable()
                     Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = buttonColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                     if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                         strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))
@@ -752,8 +753,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         val textColor = MaterialTheme.colorScheme.onSurface
         if (vm.inProgressState || InTheatre.isCurMedia(vm.episode)) {
             val pos = vm.positionState
-            val dur = remember { vm.episode.duration }
-            val durText = remember { getDurationStringLong(dur) }
+            val dur = remember(vm.episode) { vm.episode.duration }
+            val durText = remember(dur) { getDurationStringLong(dur) }
             vm.prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
 //            Logd(TAG, "$index vm.prog: ${vm.prog}")
             Row {
@@ -1244,7 +1245,7 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
     val PREF_SHARE_EPISODE_TYPE = "prefShareEpisodeType"
 
     val prefs = remember { act.getSharedPreferences("ShareDialog", Context.MODE_PRIVATE) }
-    // TODO: ensure
+    // TODO: ensure hasMedia
 //    val hasMedia = remember { item.media != null }
     val hasMedia = remember { true }
     val downloaded = remember { hasMedia && item.downloaded }
@@ -1298,7 +1299,7 @@ fun ShareDialog(item: Episode, act: Activity, onDismissRequest: ()->Unit) {
 @Composable
 fun SkipDialog(direction: SkipDirection, onDismissRequest: ()->Unit, callBack: (Int)->Unit) {
     val titleRes = if (direction == SkipDirection.SKIP_FORWARD) R.string.pref_fast_forward else R.string.pref_rewind
-    var interval by remember { mutableStateOf((if (direction == SkipDirection.SKIP_FORWARD) UserPreferences.fastForwardSecs else UserPreferences.rewindSecs).toString()) }
+    var interval by remember { mutableStateOf((if (direction == SkipDirection.SKIP_FORWARD) AppPreferences.fastForwardSecs else AppPreferences.rewindSecs).toString()) }
     AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
         title = { Text(stringResource(titleRes), style = CustomTextStyles.titleCustom) },
         text = {
@@ -1309,8 +1310,8 @@ fun SkipDialog(direction: SkipDirection, onDismissRequest: ()->Unit, callBack: (
             TextButton(onClick = {
                 if (interval.isNotBlank()) {
                     val value = interval.toInt()
-                    if (direction == SkipDirection.SKIP_FORWARD) UserPreferences.fastForwardSecs = value
-                    else UserPreferences.rewindSecs = value
+                    if (direction == SkipDirection.SKIP_FORWARD) AppPreferences.fastForwardSecs = value
+                    else AppPreferences.rewindSecs = value
                     callBack(value)
                     onDismissRequest()
                 }

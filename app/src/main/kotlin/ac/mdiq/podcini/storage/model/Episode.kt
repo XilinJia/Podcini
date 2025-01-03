@@ -6,8 +6,8 @@ import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import ac.mdiq.podcini.storage.utils.ChapterUtils.ChapterStartTimeComparator
@@ -48,7 +48,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
 import java.io.*
 import java.util.*
-import kotlin.Throws
 import kotlin.math.max
 
 class Episode : RealmObject {
@@ -851,7 +850,7 @@ class Episode : RealmObject {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
 
         val useEpisodeCoverSetting: Boolean
-            get() = getPref(UserPreferences.Prefs.prefEpisodeCover, true)
+            get() = getPref(AppPreferences.AppPrefs.prefEpisodeCover, true)
 
         // from EpisodeMedia
         const val INVALID_TIME: Int = -1

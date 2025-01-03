@@ -5,9 +5,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.*
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.ComfirmDialog
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
@@ -280,14 +279,14 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
         )
     }
 
-    var backupFolder by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupFolder, activity.getString(R.string.pref_auto_backup_folder_sum))) }
+    var backupFolder by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefAutoBackupFolder, activity.getString(R.string.pref_auto_backup_folder_sum))) }
     val selectAutoBackupDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
             val uri: Uri? = it.data?.data
             if (uri != null) {
                 activity.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 backupFolder = uri.toString()
-                putPref(UserPreferences.Prefs.prefAutoBackupFolder, uri.toString())
+                putPref(AppPreferences.AppPrefs.prefAutoBackupFolder, uri.toString())
             }
         }
     }
@@ -385,7 +384,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
     }
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-        var isAutoBackup by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackup, false)) }
+        var isAutoBackup by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefAutoBackup, false)) }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.pref_auto_backup_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -393,13 +392,13 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
             }
             Switch(checked = isAutoBackup, onCheckedChange = {
                 isAutoBackup = it
-                putPref(UserPreferences.Prefs.prefAutoBackup, it)
+                putPref(AppPreferences.AppPrefs.prefAutoBackup, it)
             })
         }
         if (isAutoBackup) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Text(stringResource(R.string.pref_auto_backup_interval), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                var interval by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupIntervall, 24).toString()) }
+                var interval by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefAutoBackupIntervall, 24).toString()) }
                 var showIcon by remember { mutableStateOf(false) }
                 TextField(value = interval, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = { Text("(hours)") },
                     singleLine = true, modifier = Modifier.weight(0.5f),
@@ -414,14 +413,14 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                         if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                             modifier = Modifier.size(30.dp).padding(start = 5.dp).clickable(onClick = {
                                 if (interval.isEmpty()) interval = "0"
-                                putPref(UserPreferences.Prefs.prefAutoBackupIntervall, interval.toIntOrNull()?:0)
+                                putPref(AppPreferences.AppPrefs.prefAutoBackupIntervall, interval.toIntOrNull()?:0)
                                 showIcon = false
                             }))
                     })
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
                 Text(stringResource(R.string.pref_auto_backup_limit), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                var count by remember { mutableStateOf(getPref(UserPreferences.Prefs.prefAutoBackupLimit, 2).toString()) }
+                var count by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.prefAutoBackupLimit, 2).toString()) }
                 var showIcon by remember { mutableStateOf(false) }
                 TextField(value = count, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true, modifier = Modifier.weight(0.4f),  label = { Text("1 - 9") },
@@ -436,7 +435,7 @@ fun ImportExportPreferencesScreen(activity: PreferenceActivity) {
                         if (showIcon) Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings icon",
                             modifier = Modifier.size(30.dp).padding(start = 5.dp).clickable(onClick = {
                                 if (count.isEmpty()) count = "0"
-                                putPref(UserPreferences.Prefs.prefAutoBackupLimit, count.toIntOrNull()?:0)
+                                putPref(AppPreferences.AppPrefs.prefAutoBackupLimit, count.toIntOrNull()?:0)
                                 showIcon = false
                             }))
                     })

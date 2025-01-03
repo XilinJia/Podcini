@@ -18,9 +18,9 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
-import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
-import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.AppPreferences.fastForwardSecs
+import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
+import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter

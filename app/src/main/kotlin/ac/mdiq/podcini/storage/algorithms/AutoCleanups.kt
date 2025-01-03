@@ -1,11 +1,10 @@
 package ac.mdiq.podcini.storage.algorithms
 
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.preferences.UserPreferences.putPref
+import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.isEnableAutodownload
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.screens.EpisodeCleanupOptions
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
@@ -27,9 +26,9 @@ object AutoCleanups {
     private val TAG: String = AutoCleanups::class.simpleName ?: "Anonymous"
 
     private var episodeCleanupValue: Int
-        get() = getPref(UserPreferences.Prefs.prefEpisodeCleanup, EpisodeCleanupOptions.Never.num.toString()).toIntOrNull() ?: EpisodeCleanupOptions.Never.num
+        get() = getPref(AppPreferences.AppPrefs.prefEpisodeCleanup, EpisodeCleanupOptions.Never.num.toString()).toIntOrNull() ?: EpisodeCleanupOptions.Never.num
         set(episodeCleanupValue) {
-            putPref(UserPreferences.Prefs.prefEpisodeCleanup, episodeCleanupValue.toString())
+            putPref(AppPreferences.AppPrefs.prefEpisodeCleanup, episodeCleanupValue.toString())
         }
 
     /**
@@ -89,8 +88,8 @@ object AutoCleanups {
             return counter
         }
         public override fun getDefaultCleanupParameter(): Int {
-            val cacheSize = episodeCacheSize
-            if (cacheSize > UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
+            val cacheSize = getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt()
+            if (cacheSize > AppPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
                 val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                 if (downloadedEpisodes > cacheSize) return downloadedEpisodes - cacheSize
             }
@@ -255,9 +254,9 @@ object AutoCleanups {
          * @return the number of episodes to delete in order to make room
          */
         fun getNumEpisodesToCleanup(amountOfRoomNeeded: Int): Int {
-            if (amountOfRoomNeeded >= 0 && episodeCacheSize > UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
+            if (amountOfRoomNeeded >= 0 && getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() > AppPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
                 val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-                if (downloadedEpisodes + amountOfRoomNeeded >= episodeCacheSize) return (downloadedEpisodes + amountOfRoomNeeded - episodeCacheSize)
+                if (downloadedEpisodes + amountOfRoomNeeded >= getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt()) return (downloadedEpisodes + amountOfRoomNeeded - getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt())
             }
             return 0
         }

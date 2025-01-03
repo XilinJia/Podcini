@@ -2,8 +2,8 @@ package ac.mdiq.podcini
 
 import ac.mdiq.podcini.net.download.VistaDownloaderImpl
 import ac.mdiq.podcini.preferences.PreferenceUpgrader
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.receiver.SPAReceiver
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.ui.activity.SplashActivity
@@ -96,9 +96,7 @@ class PodciniApp : Application() {
         if (!getPref(PREF_HAS_QUERIED_SP_APPS, false)) {
             appContext.sendBroadcast(Intent(SPAReceiver.ACTION_SP_APPS_QUERY_FEEDS))
             Logd("App", "Sending SP_APPS_QUERY_FEEDS intent")
-            val editor = appPrefs.edit()
-            editor.putBoolean(PREF_HAS_QUERIED_SP_APPS, true)
-            editor.apply()
+            putPref(PREF_HAS_QUERIED_SP_APPS, true)
             return true
         } else return false
     }

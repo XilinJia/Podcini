@@ -154,7 +154,7 @@ class EpisodeVM(var episode: Episode, val tag: String) {
     var downloadState by mutableIntStateOf(if (episode.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
     var viewCount by mutableIntStateOf(episode.viewCount)
     var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode))
-    var actionRes by mutableIntStateOf(actionButton.getDrawable())
+    var actionRes by mutableIntStateOf(actionButton.drawable)
     var showAltActionsDialog by mutableStateOf(false)
     var dlPercent by mutableIntStateOf(0)
     var isSelected by mutableStateOf(false)

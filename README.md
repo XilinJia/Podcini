@@ -18,7 +18,8 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 #### Podcini.R 6.5 as a major step forward brings contents from YouTube and YT Music in the app.  That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs). For more see the Youtube section below or the changelogs
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker or screen, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
-#### Podcini is no longer listed on Google Play, as apparently Google doesn't like accessing Youtube.
+
+Podcini is no longer listed on Google Play, as apparently Google doesn't like accessing Youtube.
 
 Podcini.R requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
 

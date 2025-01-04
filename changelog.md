@@ -7,6 +7,7 @@
 * enhanced episodes lists progressive loading
 * avoided crash when playing unreleased youtube media
 * added some error messages in streaming Youtube media
+* reduced font size a bit in episodes and subscriptions filter dialogs
 * encapsulated variables in some fragments
 
 # 7.2.1

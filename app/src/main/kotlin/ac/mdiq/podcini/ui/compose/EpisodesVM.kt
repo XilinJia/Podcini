@@ -1007,7 +1007,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     else if (item.values[1].filterId in filter.properties) selectedIndex = 1
                                 }
                             }
-                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor, modifier = Modifier.padding(end = 10.dp))
+                            Text(stringResource(item.nameRes) + " :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge , color = textColor, modifier = Modifier.padding(end = 10.dp))
                             Spacer(Modifier.weight(0.3f))
                             OutlinedButton(
                                 modifier = Modifier.padding(0.dp), border = BorderStroke(2.dp, if (selectedIndex != 0) textColor else Color.Green),
@@ -1047,12 +1047,12 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                             val selectedList = remember { MutableList(item.values.size) { mutableStateOf(false)} }
                             var expandRow by remember { mutableStateOf(false) }
                             Row {
-                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = textColor,
+                                Text(stringResource(item.nameRes) + ".. :", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge , color = textColor,
                                     modifier = Modifier.clickable { expandRow = !expandRow })
                                 var lowerSelected by remember { mutableStateOf(false) }
                                 var higherSelected by remember { mutableStateOf(false) }
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text("<<<", color = if (lowerSelected) Color.Green else buttonColor, style = MaterialTheme.typography.titleLarge , modifier = Modifier.clickable {
                                     val hIndex = selectedList.indexOfLast { it.value }
                                     if (hIndex < 0) return@clickable
                                     if (!lowerSelected) for (i in 0..hIndex) selectedList[i].value = true
@@ -1068,7 +1068,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     onFilterChanged(filterValues)
                                 })
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text("X", color = buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text("X", color = buttonColor, style = MaterialTheme.typography.titleLarge , modifier = Modifier.clickable {
                                     lowerSelected = false
                                     higherSelected = false
                                     for (i in item.values.indices) {
@@ -1078,7 +1078,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
                                     onFilterChanged(filterValues)
                                 })
                                 Spacer(Modifier.weight(1f))
-                                if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else buttonColor, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.clickable {
+                                if (expandRow) Text(">>>", color = if (higherSelected) Color.Green else buttonColor, style = MaterialTheme.typography.titleLarge , modifier = Modifier.clickable {
                                     val lIndex = selectedList.indexOfFirst { it.value }
                                     if (lIndex < 0) return@clickable
                                     if (!higherSelected) {

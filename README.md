@@ -98,7 +98,9 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
 
 * Subscriptions page by default has a list layout and can be opted for a grid layout for the podcasts subscribed
 * An all new sorting dialog and mechanism for Subscriptions based on title, date, and count combinable with other criteria
-* An all new way of filtering for both podcasts and episodes with expanded criteria
+* An all new way of filtering for both podcasts and episodes with expanded criteria.
+  * some multi-factor criteria options are hidden by default, tap on the criteria to show the options.
+* Near the top of Subscriptions view, there are two spinners: Tags to filter subscriptions based on tags, Queues to filter subscriptions based on associated queues.
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * FeedEpisodes has the option to show larger image on the list by changing the "Use wide layout" setting of the feed
 * Episodes view provides easy access to various filters:
@@ -116,11 +118,11 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
   * Swipe actions are brought to perform anything on the multi-select menu, and there is a Combo swipe action
 * Downward swipe triggered feeds update
   * in Subscriptions view, all feeds are updated
-  * in FeedInfo view, only the single feed is updated
+  * in FeedEpisodes view, only the single feed is updated
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Long-press on the action button on the right of any episode list brings up more options
 * Deleting and updating feeds are performed promptly
-* Local search for feeds or episodes can be separately specified on title, author(feed only), description(including transcript in episodes), and comment (My opinion)
+* Local search for feeds or episodes can be separately specified on title, author (feed only), description (including transcript in episodes), and comment (My opinion)
 
 ### Queues
 
@@ -129,13 +131,14 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
   * any episodes can be easily added/moved to the active or any designated queues
   * any queue can be associated with any podcast for customized playing experience
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* Every queue has a bin containing past episodes removed from the queue, useful for further review and handling
+* Every queue has a bin (accessible from the top bar of Queues view) containing past episodes removed from the queue, useful for further review and handling
 * Feed associated queue can be set to None, in which case:
-  * the episodes in the feed are not automatically added to any queue, instead forms a natural queue on their own
-  * the next episode to play is determined in such a way:
+  * the episodes in the feed are not automatically added to any queue, instead FeedEpisodes view forms a natural queue on their own
+  * when playing an episode in FeedEpisodes view, the next episode to play is determined in such a way:
     * if the currently playing episode had been (manually) added to the active queue, then it's the next in the queue
     * else if "prefer streaming" is set, it's the next unplayed (or Again and Forever) episode in the natural queue based on the current filter and sort order
     * else it's the next downloaded unplayed (or Again and Forever) episode
+* There is a button on the top bar of the Queues view to show associated feeds 
 * Otherwise, episode played from a list other than the queue is a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
 
 ### Player
@@ -161,7 +164,7 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
   * mark as played when finished
   * streamed media is added to queue and is resumed after restart
 * There are three modes for playing video: fullscreen, window and audio-only, they can be switched seamlessly in video player
-* Video player automatically switch to audio when app invisible
+* Video player automatically switch to audio when app invisible or when switching to other views in the app.
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
 * Episodes played to 95% of the full duration is considered completely played
 
@@ -180,10 +183,10 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
 * When subscribing to a Youtube channel, tabs can be chosen to form separate podcasts
-* Playlists and podcasts on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
+* Playlists and podcasts on Youtube or YT Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
 * Subscribed channels, playlists/podcasts can be updated as with normal podcasts
-* Single media from Youtube or Youtube Music can also be shared from other apps, and added in a chosen synthetic feed
-* All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen or in window modes or in audio only mode in the background
+* Single media from Youtube or YT Music can also be shared from other apps, and added in a chosen synthetic feed
+* All the media from Youtube or YT Music can be played (only streamed) with video in fullscreen or in window modes or in audio only mode in the background
 * Audio and video quality settings in Feed Preferences (Youtube feeds only): Global, Low, Medium, High
 	* these settings take precedence over global situations
 	* when Global is set, video is at lowest quality, and audio is at highest quality (except when prefLowQualityMedia is set for metered networks)
@@ -198,13 +201,13 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
 
 ### Automation
 
-* Auto download algorithm is changed to individual feed based.
-  * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
+* Auto download algorithm is based on settings in individual feed.
+  * When auto download is enabled in the global Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
   * Each feed also has its own download policy (Only new (with or without Replace), Newest, Oldest or Marked as Soon. 
     * Newest meaning most recent episodes, With Replace, new episodes will be downloaded and older downloaded episodes deleted
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
   * Auto downloads run after feed updates, scheduled or manual
-  * Auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue
+  * Any undownloaded episodes (regardless of feeds) added in the Default queue are always included in Auto download 
   * After auto download run, episodes with New status in the feed is changed to Unplayed.
   * in auto download feed setting:
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
@@ -213,12 +216,11 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
 
 ### Statistics
 
-* Statistics compiles the media that's been played during a specified period
-* There are usage statistics for today
+* Statistics compiles the media that's been played during a specified period and for today
 * There are 2 numbers regarding played time: duration and time spent
   * time spent is simply time spent playing a media, so play speed, rewind and forward can play a role
   * Duration shows differently under 2 settings: "including marked as play" or not
-  * In the former, it's the full duration of a media that's been played (albeit by a bit)
+  * In the former, it's the full duration of a media that's been ever started playing played
   * In the latter case, it's the max position reached in a media
 
 ### Security and reliability
@@ -243,11 +245,11 @@ Note, if you already have subscriptions in Podcini, importing the OPML file or t
   * to restore, use Combo restore 
 * Folder for downloaded media can be customized
   	* the use of customized folder can be changed or reset
-	* folder in SD card should also work (Someone try it and let me know as I can't test it)
+	* folder in SD card should also work (someone try it out)
 	* upon change, downloaded media files are moved from the previous folder to the new folder
 	* export and reconcile should also work with customized folder
-* Play history/progress can be separately exported/imported as Json files
-* Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
+* Play history/progress can be separately exported/imported as Json files (once needed when migrating from Podcini 5 with a different DB. now it doesn't seem to provide much benefit if one export/import the DB).
+* Reconcile feature (accessed from Downloads in Episodes view) is added to ensure downloaded media files are in sync with specs in DB
 * Podcasts can be selectively exported from Subscriptions view
 * There is a setting to disable/enable auto backup of OPML files to Google
 * Upon re-install of Podcini, the OPML file previously backed up to Google is not imported automatically but based on user confirmation.

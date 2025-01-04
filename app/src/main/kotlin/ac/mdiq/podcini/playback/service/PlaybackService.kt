@@ -18,13 +18,6 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 import ac.mdiq.podcini.playback.cast.CastMediaPlayer
 import ac.mdiq.podcini.playback.cast.CastStateListener
 import ac.mdiq.podcini.playback.service.PlaybackService.TaskManager.Companion.positionUpdateInterval
-import ac.mdiq.podcini.preferences.SleepTimerPreferences
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
-import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
@@ -32,13 +25,17 @@ import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.AppPreferences.prefAdaptiveProgressUpdate
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
+import ac.mdiq.podcini.preferences.SleepTimerPreferences
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
-import ac.mdiq.podcini.storage.database.Episodes.prefDeleteRemovesFromQueue
-import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -274,8 +271,8 @@ class PlaybackService : MediaLibraryService() {
         list
     }
 
-    val shouldSkipKeepEpisode by lazy { getPref(AppPreferences.AppPrefs.prefSkipKeepsEpisode, true) }
-    val shouldKeepSuperEpisode by lazy { getPref(AppPreferences.AppPrefs.prefFavoriteKeepsEpisode, true) }
+    val shouldSkipKeepEpisode by lazy { getPref(AppPrefs.prefSkipKeepsEpisode, true) }
+    val shouldKeepSuperEpisode by lazy { getPref(AppPrefs.prefFavoriteKeepsEpisode, true) }
 
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
@@ -370,8 +367,8 @@ class PlaybackService : MediaLibraryService() {
                     val isItemdeletable = (!shouldKeepSuperEpisode || (item?.isSUPER != true && item?.playState != PlayState.AGAIN.code && item?.playState != PlayState.FOREVER.code))
                     if (shouldAutoDelete && isItemdeletable) {
                         if (playable.localFileAvailable()) item = deleteMediaSync(this@PlaybackService, item!!)
-                        if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(item)
-                    } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item)
+                        if (getPref(AppPrefs.prefDeleteRemovesFromQueue, false)) removeFromAllQueuesSync(item)
+                    } else if (getPref(AppPrefs.prefRemoveFromQueueMarkedPlayed, true)) removeFromAllQueuesSync(item)
                 }
             }
         }
@@ -1505,24 +1502,24 @@ class PlaybackService : MediaLibraryService() {
          */
 //        val isPersistNotify: Boolean by lazy { getPref(UserPreferences.Prefs.prefPersistNotify.name, true) }
 
-        val isPauseOnHeadsetDisconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefPauseOnHeadsetDisconnect, true) }
+        val isPauseOnHeadsetDisconnect: Boolean by lazy { getPref(AppPrefs.prefPauseOnHeadsetDisconnect, true) }
 
-        val isUnpauseOnHeadsetReconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefUnpauseOnHeadsetReconnect, true) }
+        val isUnpauseOnHeadsetReconnect: Boolean by lazy { getPref(AppPrefs.prefUnpauseOnHeadsetReconnect, true) }
 
-        val isUnpauseOnBluetoothReconnect: Boolean by lazy { getPref(AppPreferences.AppPrefs.prefUnpauseOnBluetoothReconnect, false) }
+        val isUnpauseOnBluetoothReconnect: Boolean by lazy { getPref(AppPrefs.prefUnpauseOnBluetoothReconnect, false) }
 
-        val hardwareForwardButton: Int by lazy { getPref(AppPreferences.AppPrefs.prefHardwareForwardButton, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
+        val hardwareForwardButton: Int by lazy { getPref(AppPrefs.prefHardwareForwardButton, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt() }
 
-        val hardwarePreviousButton: Int by lazy { getPref(AppPreferences.AppPrefs.prefHardwarePreviousButton, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
+        val hardwarePreviousButton: Int by lazy { getPref(AppPrefs.prefHardwarePreviousButton, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt() }
 
         /**
          * Set to true to enable Continuous Playback
          */
         @set:VisibleForTesting
         var isFollowQueue: Boolean
-            get() = getPref(AppPreferences.AppPrefs.prefFollowQueue, true)
+            get() = getPref(AppPrefs.prefFollowQueue, true)
             set(value) {
-                putPref(AppPreferences.AppPrefs.prefFollowQueue, value)
+                putPref(AppPrefs.prefFollowQueue, value)
             }
 
         val curPositionFB: Int

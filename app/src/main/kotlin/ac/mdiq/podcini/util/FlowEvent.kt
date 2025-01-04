@@ -139,7 +139,7 @@ sealed class FlowEvent {
         }
     }
 
-    data class FeedChangeEvent(val feed: Feed) : FlowEvent()
+    data class FeedChangeEvent(val feed: Feed, val changedFields: Array<String>) : FlowEvent()
 
     data class SpeedChangedEvent(val newSpeed: Float) : FlowEvent()
 

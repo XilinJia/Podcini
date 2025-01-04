@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
@@ -30,7 +31,7 @@ import java.security.NoSuchAlgorithmException
 class OpmlBackupAgent : BackupAgentHelper() {
 
     override fun onCreate() {
-        val isAutoBackupOPML = getPref(AppPreferences.AppPrefs.prefOPMLBackup, true)
+        val isAutoBackupOPML = getPref(AppPrefs.prefOPMLBackup, true)
         if (isAutoBackupOPML) {
             Logd(TAG, "Backup of OPML enabled in preferences")
             addHelper(OPML_BACKUP_KEY, OpmlBackupHelper(this))
@@ -116,7 +117,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 if (linesRead > 0) {
                     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
                     with(sharedPreferences.edit()) {
-                        putBoolean(AppPreferences.AppPrefs.prefOPMLRestore.name, true)
+                        putBoolean(AppPrefs.prefOPMLRestore.name, true)
                         apply()
                     }
                 }
@@ -153,7 +154,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
         private const val OPML_BACKUP_KEY = "opml"
 
         val isOPMLRestored: Boolean
-            get() = getPref(AppPreferences.AppPrefs.prefOPMLRestore, false)
+            get() = getPref(AppPrefs.prefOPMLRestore, false)
 
         fun performRestore(context: Context) {
             Logd(TAG, "performRestore")

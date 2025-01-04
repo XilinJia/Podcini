@@ -9,17 +9,20 @@ import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.isStreamOverDownload
 import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.RealmDB
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
@@ -36,8 +39,6 @@ import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -70,7 +71,7 @@ import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class EpisodeActionButton internal constructor(@JvmField var item: Episode) {
+abstract class EpisodeActionButton internal constructor(@JvmField var item: Episode, label: Int, drawable: Int) {
     val TAG = this::class.simpleName ?: "ItemActionButton"
 
     open val visibility: Boolean
@@ -79,8 +80,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     var processing by mutableIntStateOf(-1)
     val actionState = mutableIntStateOf(0)
 
-    abstract val label: Int
-    abstract val drawable: Int
+    val label by mutableIntStateOf(label)
+    var drawable by mutableIntStateOf(drawable)
 
     abstract fun onClick(context: Context)
 
@@ -95,7 +96,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         Logd("ItemActionButton", "forItem: local feed: ${item.feed?.isLocalFeed} downloaded: ${item.downloaded} playing: ${isCurrentlyPlaying(item)}  ${item.title} ")
         return when {
             isCurrentlyPlaying(item) -> PauseActionButton(item)
-            item.feed != null && item.feed!!.isLocalFeed -> PlayLocalActionButton(item)
+            item.feed?.isLocalFeed == true -> PlayLocalActionButton(item)
             item.downloaded -> PlayActionButton(item)
             isDownloadingMedia -> CancelDownloadActionButton(item)
             isStreamOverDownload || item.feed == null || item.feedId == null || item.feed?.type == Feed.FeedType.YOUTUBE.name
@@ -150,7 +151,6 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
             }
         }
     }
-
     
     companion object {
         fun playVideoIfNeeded(context: Context, item: Episode) {
@@ -162,12 +162,9 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     }
 }
 
-class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
+class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item, R.string.visit_website_label, R.drawable.ic_web) {
     override val visibility: Boolean
         get() = !item.link.isNullOrEmpty()
-
-    override val label: Int = R.string.visit_website_label
-    override val drawable: Int = R.drawable.ic_web
 
     override fun onClick(context: Context) {
         if (!item.link.isNullOrEmpty()) IntentUtils.openInBrowser(context, item.link!!)
@@ -180,13 +177,7 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 }
 
-class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
-    @StringRes
-    override val label: Int = R.string.cancel_download_label
-
-    @DrawableRes
-    override val drawable: Int = R.drawable.ic_cancel
-    
+class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item, R.string.cancel_download_label, R.drawable.ic_cancel) {
     override fun onClick(context: Context) {
         DownloadServiceInterface.get()?.cancel(context, item)
         if (AppPreferences.isEnableAutodownload) {
@@ -197,11 +188,7 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 }
 
-class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val label: Int = R.string.play_label
-
-    override val drawable: Int = R.drawable.ic_play_24dp
-
+class PlayActionButton(item: Episode) : EpisodeActionButton(item, R.string.play_label, R.drawable.ic_play_24dp) {
     override fun onClick(context: Context) {
         Logd("PlayActionButton", "onClick called file: ${item.fileUrl}")
         if (!item.fileExists()) {
@@ -230,6 +217,54 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         Logd(TAG, "notifyMissingEpisodeMediaFile called")
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
         val episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
+        if (episode != null) {
+            val episode_ = upsertBlk(episode) {
+                it.downloaded = false
+                it.fileUrl = null
+            }
+            EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode_))
+        }
+        EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.error_file_not_found)))
+    }
+}
+
+class PlayPauseActionButton(item: Episode) : EpisodeActionButton(item, R.string.play_label, R.drawable.ic_play_24dp) {
+    private var isPlaying: Boolean = false
+
+    override fun onClick(context: Context) {
+        if (!isPlaying) {
+            Logd("PlayActionButton", "onClick called file: ${item.fileUrl}")
+            if (!item.fileExists()) {
+                Toast.makeText(context, R.string.error_file_not_found, Toast.LENGTH_LONG).show()
+                notifyMissingEpisodeMediaFile(context, item)
+                return
+            }
+            if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(item)) {
+                PlaybackService.playbackService?.mPlayer?.resume()
+                PlaybackService.playbackService?.taskManager?.restartSleepTimer()
+            } else {
+                PlaybackService.clearCurTempSpeed()
+                PlaybackServiceStarter(context, item).callEvenIfRunning(true).start()
+                if (item.playState < PlayState.PROGRESS.code) item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, item, false) }
+                EventFlow.postEvent(FlowEvent.PlayEvent(item))
+            }
+            playVideoIfNeeded(context, item)
+        } else {
+            if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
+        }
+        actionState.value = label
+        isPlaying = !isPlaying
+        drawable = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_24dp
+    }
+
+    /**
+     * Notifies the database about a missing EpisodeMedia file. This method will correct the EpisodeMedia object's
+     * values in the DB and send a FeedItemEvent.
+     */
+    fun notifyMissingEpisodeMediaFile(context: Context, media: Episode) {
+        Logd(TAG, "notifyMissingEpisodeMediaFile called")
+        Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
+        val episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
 //        val episode = media.episodeOrFetch()
         if (episode != null) {
             val episode_ = upsertBlk(episode) {
@@ -242,74 +277,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 }
 
-class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val visibility: Boolean
-        get() {
-            return (item.downloaded || item.feed?.isLocalFeed == true)
-        }
-
-    override val label: Int = R.string.delete_label
-    override val drawable: Int = R.drawable.ic_delete
-    
-    override fun onClick(context: Context) {
-        deleteEpisodesWarnLocal(context, listOf(item))
-        actionState.value = label
-    }
-}
-
-class NullActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val label: Int = R.string.null_label
-    override val drawable: Int = R.drawable.ic_questionmark
-    override fun onClick(context: Context) {}
-}
-
-class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val label: Int = R.string.pause_label
-    override val drawable: Int = R.drawable.ic_pause
-    
-    override fun onClick(context: Context) {
-        Logd("PauseActionButton", "onClick called")
-        if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
-//        EventFlow.postEvent(FlowEvent.PlayEvent(item, Action.END))
-        actionState.value = label
-    }
-}
-
-class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val visibility: Boolean
-        get() = item.feed?.isLocalFeed != true
-
-    override val label: Int = R.string.download_label
-    override val drawable: Int = R.drawable.ic_download
-
-    override fun onClick(context: Context) {
-        if (shouldNotDownload(item)) return
-        UsageStatistics.logAction(UsageStatistics.ACTION_DOWNLOAD)
-        if (NetworkUtils.isEpisodeDownloadAllowed) DownloadServiceInterface.get()?.downloadNow(context, item, false)
-        else {
-            val builder = MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.confirm_mobile_download_dialog_title)
-                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, false) }
-                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, true) }
-                .setNegativeButton(R.string.cancel_label, null)
-            if (NetworkUtils.isNetworkRestricted && NetworkUtils.isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
-            else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
-            builder.show()
-        }
-        actionState.value = label
-    }
-
-    private fun shouldNotDownload(media: Episode?): Boolean {
-        if (media?.downloadUrl == null) return true
-        val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
-        return isDownloading || media.downloaded
-    }
-}
-
-class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val label: Int = R.string.stream_label
-    override val drawable: Int = R.drawable.ic_stream
-    
+class StreamActionButton(item: Episode) : EpisodeActionButton(item, R.string.stream_label, R.drawable.ic_stream) {
     override fun onClick(context: Context) {
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
         UsageStatistics.logAction(UsageStatistics.ACTION_STREAM)
@@ -347,13 +315,108 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 }
 
-class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
+class StreamPauseActionButton(item: Episode) : EpisodeActionButton(item, R.string.stream_label, R.drawable.ic_stream) {
+    private var isPlaying: Boolean = false
+
+    override fun onClick(context: Context) {
+//        Logd("StreamActionButton", "item.feed: ${item.feedId}")
+        if (!isPlaying) {
+            UsageStatistics.logAction(UsageStatistics.ACTION_STREAM)
+            if (!NetworkUtils.isStreamingAllowed) {
+                StreamingConfirmationDialog(context, item).show()
+                return
+            }
+            stream(context, item)
+        } else {
+            if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
+        }
+        actionState.value = label
+        isPlaying = !isPlaying
+        drawable = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_stream
+    }
+
+    class StreamingConfirmationDialog(private val context: Context, private val playable: Episode) {
+        fun show() {
+            MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.stream_label)
+                .setMessage(R.string.confirm_mobile_streaming_notification_message)
+                .setPositiveButton(R.string.confirm_mobile_streaming_button_once) { _: DialogInterface?, _: Int -> stream(context, playable) }
+                .setNegativeButton(R.string.confirm_mobile_streaming_button_always) { _: DialogInterface?, _: Int ->
+                    NetworkUtils.isAllowMobileStreaming = true
+                    stream(context, playable)
+                }
+                .setNeutralButton(R.string.cancel_label, null)
+                .show()
+        }
+    }
+
+    companion object {
+        fun stream(context: Context, media: Episode) {
+            if (!InTheatre.isCurMedia(media)) PlaybackService.clearCurTempSpeed()
+            PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
+            val item = runBlocking { setPlayStateSync(PlayState.PROGRESS.code, media, false) }
+            EventFlow.postEvent(FlowEvent.PlayEvent(item))
+            playVideoIfNeeded(context, media)
+        }
+    }
+}
+
+class DeleteActionButton(item: Episode) : EpisodeActionButton(item, R.string.delete_label, R.drawable.ic_delete) {
+    override val visibility: Boolean
+        get() {
+            return (item.downloaded || item.feed?.isLocalFeed == true)
+        }
+    override fun onClick(context: Context) {
+        deleteEpisodesWarnLocal(context, listOf(item))
+        actionState.value = label
+    }
+}
+
+class NullActionButton(item: Episode) : EpisodeActionButton(item, R.string.null_label, R.drawable.ic_questionmark) {
+    override fun onClick(context: Context) {}
+}
+
+class PauseActionButton(item: Episode) : EpisodeActionButton(item, R.string.pause_label, R.drawable.ic_pause) {
+    override fun onClick(context: Context) {
+        Logd("PauseActionButton", "onClick called")
+        if (isCurrentlyPlaying(item)) context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
+//        EventFlow.postEvent(FlowEvent.PlayEvent(item, Action.END))
+        actionState.value = label
+    }
+}
+
+class DownloadActionButton(item: Episode) : EpisodeActionButton(item, R.string.download_label, R.drawable.ic_download) {
+    override val visibility: Boolean
+        get() = item.feed?.isLocalFeed != true
+
+    override fun onClick(context: Context) {
+        if (shouldNotDownload(item)) return
+        UsageStatistics.logAction(UsageStatistics.ACTION_DOWNLOAD)
+        if (NetworkUtils.isEpisodeDownloadAllowed) DownloadServiceInterface.get()?.downloadNow(context, item, false)
+        else {
+            val builder = MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.confirm_mobile_download_dialog_title)
+                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, false) }
+                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, true) }
+                .setNegativeButton(R.string.cancel_label, null)
+            if (NetworkUtils.isNetworkRestricted && NetworkUtils.isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
+            else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
+            builder.show()
+        }
+        actionState.value = label
+    }
+
+    private fun shouldNotDownload(media: Episode?): Boolean {
+        if (media?.downloadUrl == null) return true
+        val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!) == true
+        return isDownloading || media.downloaded
+    }
+}
+
+class TTSActionButton(item: Episode) : EpisodeActionButton(item, R.string.TTS_label, R.drawable.text_to_speech) {
     private var readerText: String? = null
     override val visibility: Boolean
         get() = !item.link.isNullOrEmpty()
-
-    override val label: Int = R.string.TTS_label
-    override val drawable: Int = R.drawable.text_to_speech
 
     override fun onClick(context: Context) {
         Logd("TTSActionButton", "onClick called")
@@ -476,10 +539,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 }
 
-class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
-    override val label: Int = R.string.play_label
-    override val drawable: Int = R.drawable.ic_play_24dp
-    
+class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item, R.string.play_label, R.drawable.ic_play_24dp) {
     override fun onClick(context: Context) {
         Logd("PlayLocalActionButton", "onClick called")
         if (PlaybackService.playbackService?.isServiceReady() == true && InTheatre.isCurMedia(item)) {

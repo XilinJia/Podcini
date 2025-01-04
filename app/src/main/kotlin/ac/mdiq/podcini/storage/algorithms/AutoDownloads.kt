@@ -8,7 +8,7 @@ import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.isEnableAutodownload
-import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
@@ -118,18 +118,21 @@ object AutoDownloads {
                             val downloadedCount = getEpisodesCount(dlFilter, f.id)
                             var allowedDLCount = f.autoDLMaxEpisodes - downloadedCount
                             Logd(TAG, "autoDownloadEpisodeMedia ${f.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
-                            if (allowedDLCount > 0) {
-//                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND downloaded == false"
+                            Logd(TAG, "autoDownloadEpisodeMedia autoDLPolicy: ${f.autoDLPolicy.name}")
+                            if (allowedDLCount > 0 || f.autoDLPolicy.replace) {
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND downloaded == false"
                                 when (f.autoDLPolicy) {
                                     Feed.AutoDownloadPolicy.ONLY_NEW -> {
                                         if (f.autoDLPolicy.replace) {
-                                            queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
-                                            episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                             allowedDLCount = f.autoDLMaxEpisodes
+                                            queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
+                                            Logd(TAG, "autoDownloadEpisodeMedia queryString: $queryString")
+                                            episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                            Logd(TAG, "autoDownloadEpisodeMedia episodes: ${episodes.size}")
                                             val numToDelete = episodes.size + downloadedCount - allowedDLCount
                                             val toDelete_ = getEpisodes(dlFilter, f.id, numToDelete)
                                             if (toDelete_.isNotEmpty()) toDelete.addAll(toDelete_)
+                                            Logd(TAG, "autoDownloadEpisodeMedia toDelete_: ${toDelete_.size}")
                                         } else {
                                             queryString += " AND playState == ${PlayState.NEW.code} SORT(pubDate DESC) LIMIT(${3 * allowedDLCount})"
                                             episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
@@ -181,13 +184,14 @@ object AutoDownloads {
                     }
                     if (candidates.isNotEmpty()) {
                         val autoDownloadableCount = candidates.size
+                        if (toDelete.isNotEmpty()) deleteEpisodesSync(context, toDelete.toList())
                         val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                         val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount - toDelete.size)
-                        val cacheIsUnlimited = getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() <= AppPreferences.EPISODE_CACHE_SIZE_UNLIMITED
+                        val appEpisodeCache = getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt()
+                        val cacheIsUnlimited = appEpisodeCache <= AppPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                         val allowedCount =
-                            if (cacheIsUnlimited || getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() >= downloadedCount + autoDownloadableCount) autoDownloadableCount
-                            else getPref(AppPrefs.prefEpisodeCacheSize, "20").toInt() - (downloadedCount - deletedCount)
-                        if (toDelete.isNotEmpty()) deleteEpisodes(context, toDelete.toList())
+                            if (cacheIsUnlimited || appEpisodeCache >= downloadedCount + autoDownloadableCount) autoDownloadableCount
+                            else appEpisodeCache - (downloadedCount - deletedCount)
                         if (allowedCount in 0..candidates.size) {
                             val itemsToDownload: MutableList<Episode> = candidates.toMutableList().subList(0, allowedCount)
                             if (itemsToDownload.isNotEmpty()) {

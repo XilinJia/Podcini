@@ -250,7 +250,7 @@ class CastMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaPl
                         if (media != null) {
                             mediaItem = null
                             mediaSource = null
-                            setDataSource(metadata, media)
+                            try { setDataSource(metadata, media) } catch (e: Throwable) { EventFlow.postEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: "")) }
                         } else setDataSource(metadata, streamurl, null, null)
                     }
                 }

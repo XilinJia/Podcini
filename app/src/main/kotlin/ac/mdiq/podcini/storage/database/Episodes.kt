@@ -48,9 +48,6 @@ object Episodes {
 
     private const val smartMarkAsPlayedPercent: Int = 95
 
-    val prefRemoveFromQueueMarkedPlayed by lazy { getPref(AppPrefs.prefRemoveFromQueueMarkedPlayed, true) }
-    val prefDeleteRemovesFromQueue by lazy { getPref(AppPrefs.prefDeleteRemovesFromQueue, false) }
-
     /**
      * @param offset The first episode that should be loaded.
      * @param limit The maximum number of episodes that should be loaded.
@@ -75,10 +72,10 @@ object Episodes {
     }
 
     fun getEpisodes(filter: EpisodeFilter?, feedId: Long = -1, limit: Int): List<Episode> {
-        Logd(TAG, "getEpisodesCount called")
+        Logd(TAG, "getEpisodes called")
         var queryString = filter?.queryString()?:"id > 0"
         if (feedId >= 0) queryString += " AND feedId == $feedId "
-        queryString += " AND SORT(pubDate ASC) LIMIT($limit) "
+        queryString += " SORT(pubDate ASC) LIMIT($limit) "
         return realm.query(Episode::class).query(queryString).find()
     }
 
@@ -127,7 +124,7 @@ object Episodes {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")
         return runOnIOScope {
             val episode_ = deleteMediaSync(context, episode)
-            if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(episode_)
+            if (getPref(AppPrefs.prefDeleteRemovesFromQueue, false)) removeFromAllQueuesSync(episode_)
         }
     }
 
@@ -136,12 +133,14 @@ object Episodes {
         Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", episode.id, episode.getEpisodeTitle(), episode.downloaded))
         var localDelete = false
         val url = episode.fileUrl
+        Logd(TAG, "deleteMediaSync $url")
         var episode = episode
         when {
             url != null && url.startsWith("content://") -> {
                 // Local feed
-                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(episode.fileUrl))
+                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(url))
                 if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
+                    Log.e(TAG, "deleteMediaSync delete media file failed: $url")
                     EventFlow.postEvent(FlowEvent.MessageEvent(getAppContext().getString(R.string.delete_local_failed)))
                     return episode
                 }
@@ -154,9 +153,14 @@ object Episodes {
             }
             url != null -> {
                 // delete downloaded media file
-                val mediaFile = File(url)
-                if (!mediaFile.delete()) {
-                    Log.e(TAG, "delete media file failed: $url")
+                val path = Uri.parse(url).path
+                if (path == null) {
+                    EventFlow.postEvent(FlowEvent.MessageEvent(getAppContext().getString(R.string.delete_local_failed)))
+                    return episode
+                }
+                val mediaFile = File(path)
+                if (mediaFile.exists() && !mediaFile.delete()) {
+                    Log.e(TAG, "deleteMediaSync delete media file failed: $url")
                     val evt = FlowEvent.MessageEvent(getAppContext().getString(R.string.delete_failed_simple) + ": $url")
                     EventFlow.postEvent(evt)
                     return episode
@@ -197,32 +201,30 @@ object Episodes {
      * Remove the listed episodes and their EpisodeMedia entries.
      * Deleting media also removes the download log entries.
      */
-    fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
-        return runOnIOScope {
-            val removedFromQueue: MutableList<Episode> = mutableListOf()
-            val queueItems = curQueue.episodes.toMutableList()
-            for (episode in episodes) {
-                if (queueItems.remove(episode)) removedFromQueue.add(episode)
-                if (episode.id == curState.curMediaId) {
-                    // Applies to both downloaded and streamed media
-                    writeNoMediaPlaying()
-                    sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-                }
-                if (episode.feed != null && !episode.feed!!.isLocalFeed) {
-                    DownloadServiceInterface.get()?.cancel(context, episode)
-                    if (episode.downloaded) deleteMediaSync(context, episode)
-                }
+    fun deleteEpisodesSync(context: Context, episodes: List<Episode>)  {
+        val removedFromQueue: MutableList<Episode> = mutableListOf()
+        val queueItems = curQueue.episodes.toMutableList()
+        for (episode in episodes) {
+            if (queueItems.remove(episode)) removedFromQueue.add(episode)
+            if (episode.id == curState.curMediaId) {
+                // Applies to both downloaded and streamed media
+                writeNoMediaPlaying()
+                sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
             }
-            if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
-            for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
-
-            // we assume we also removed download log entries for the feed or its media files.
-            // especially important if download or refresh failed, as the user should not be able
-            // to retry these
-            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
-            val backupManager = BackupManager(context)
-            backupManager.dataChanged()
+            if (episode.feed != null && !episode.feed!!.isLocalFeed) {
+                DownloadServiceInterface.get()?.cancel(context, episode)
+                if (episode.downloaded) deleteMediaSync(context, episode)
+            }
         }
+        if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
+        for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
+
+        // we assume we also removed download log entries for the feed or its media files.
+        // especially important if download or refresh failed, as the user should not be able
+        // to retry these
+        EventFlow.postEvent(FlowEvent.DownloadLogEvent())
+        val backupManager = BackupManager(context)
+        backupManager.dataChanged()
     }
 
     fun setRating(episode: Episode, rating: Int) : Job {
@@ -257,7 +259,7 @@ object Episodes {
             if (resetMediaPosition || it.playState == PlayState.PLAYED.code || it.playState == PlayState.IGNORED.code) it.setPosition(0)
         }
         Logd(TAG, "setPlayStateSync played0: ${result.playState}")
-        if (removeFromQueue && played == PlayState.PLAYED.code && prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(result)
+        if (removeFromQueue && played == PlayState.PLAYED.code && getPref(AppPrefs.prefRemoveFromQueueMarkedPlayed, true)) removeFromAllQueuesSync(result)
         Logd(TAG, "setPlayStateSync played1: ${result.playState}")
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result

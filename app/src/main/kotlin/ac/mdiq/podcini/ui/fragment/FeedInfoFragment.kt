@@ -72,33 +72,37 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 
 class FeedInfoFragment : Fragment() {
-    private lateinit var feed: Feed
 
-    private var isCallable by mutableStateOf(false)
-    private var showRemoveFeedDialog by mutableStateOf(false)
-    private var txtvAuthor by mutableStateOf("")
-    var txtvUrl by mutableStateOf<String?>(null)
-    var rating by mutableStateOf(Rating.UNRATED.code)
-    private val showConnectLocalFolderConfirm = mutableStateOf(false)
+    class FeedInfoVM {
+        internal lateinit var feed: Feed
+
+        internal var isCallable by mutableStateOf(false)
+        internal var showRemoveFeedDialog by mutableStateOf(false)
+        internal var txtvAuthor by mutableStateOf("")
+        var txtvUrl by mutableStateOf<String?>(null)
+        var rating by mutableStateOf(Rating.UNRATED.code)
+        internal val showConnectLocalFolderConfirm = mutableStateOf(false)
+    }
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
+    private val vm: FeedInfoVM = FeedInfoVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
 
-        txtvAuthor = feed.author ?: ""
-        txtvUrl = feed.downloadUrl
-        isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed.link)))
+        vm.txtvAuthor = vm.feed.author ?: ""
+        vm.txtvUrl = vm.feed.downloadUrl
+        vm.isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(vm.feed.link)))
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed), onDismissRequest = { showRemoveFeedDialog = false }) {
+                    if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
                         (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
                         // Make sure fragment is hidden before actually starting to delete
                         requireActivity().supportFragmentManager.executePendingTransactions()
                     }
-                    ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), showConnectLocalFolderConfirm) {
+                    ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), vm.showConnectLocalFolderConfirm) {
                         try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                     }
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
@@ -129,13 +133,13 @@ class FeedInfoFragment : Fragment() {
     fun HeaderUI() {
         val textColor = MaterialTheme.colorScheme.onSurface
         var showChooseRatingDialog by remember { mutableStateOf(false) }
-        if (showChooseRatingDialog) ChooseRatingDialog(listOf(feed)) {
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(vm.feed)) {
             showChooseRatingDialog = false
-            setFeed(feed)
+            setFeed(vm.feed)
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
             val (bgImage, bgColor, controlRow, imgvCover) = createRefs()
-            AsyncImage(model = feed.imageUrl ?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
+            AsyncImage(model = vm.feed.imageUrl ?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds,
                 error = painterResource(R.drawable.teaser),
                 modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp)
                     .constrainAs(bgImage) {
@@ -157,7 +161,7 @@ class FeedInfoFragment : Fragment() {
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
-                val ratingIconRes = Rating.fromCode(rating).res
+                val ratingIconRes = Rating.fromCode(vm.rating).res
                 Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
                     showChooseRatingDialog = true
@@ -165,11 +169,11 @@ class FeedInfoFragment : Fragment() {
                 Spacer(modifier = Modifier.weight(0.2f))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
-                        (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
+                        (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(vm.feed), TransitionEffect.SLIDE)
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
-                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
-                    Text(feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label))
+                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(vm.feed.id)) }) {
+                    Text(vm.feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label))
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }
@@ -179,11 +183,11 @@ class FeedInfoFragment : Fragment() {
                 end.linkTo(parent.end)
                 width = Dimension.fillToConstraints
             }) {
-                AsyncImage(model = feed.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                AsyncImage(model = vm.feed.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
                     modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp))
                 Column(Modifier.padding(top = 10.dp)) {
-                    Text(feed.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text(text = txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(vm.feed.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(text = vm.txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -194,47 +198,47 @@ class FeedInfoFragment : Fragment() {
         val scrollState = rememberScrollState()
         var showEditComment by remember { mutableStateOf(false) }
         val localTime = remember { System.currentTimeMillis() }
-        var editCommentText by remember { mutableStateOf(TextFieldValue((if (feed.comment.isBlank()) "" else feed.comment + "\n") + fullDateTimeString(localTime) + ":\n")) }
-        var commentTextState by remember { mutableStateOf(TextFieldValue(feed.comment)) }
+        var editCommentText by remember { mutableStateOf(TextFieldValue((if (vm.feed.comment.isBlank()) "" else vm.feed.comment + "\n") + fullDateTimeString(localTime) + ":\n")) }
+        var commentTextState by remember { mutableStateOf(TextFieldValue(vm.feed.comment)) }
         if (showEditComment) LargeTextEditingDialog(textState = editCommentText, onTextChange = { editCommentText = it }, onDismissRequest = {showEditComment = false},
             onSave = {
                 runOnIOScope {
-                    feed = upsert(feed) {
+                    vm.feed = upsert(vm.feed) {
                         it.comment = editCommentText.text
                         it.commentTime = localTime
                     }
-                    rating = feed.rating
+                    vm.rating = vm.feed.rating
                 }
             })
         var showFeedStats by remember { mutableStateOf(false) }
-        if (showFeedStats) FeedStatisticsDialog(feed.title?: "No title", feed.id) { showFeedStats = false }
+        if (showFeedStats) FeedStatisticsDialog(vm.feed.title?: "No title", vm.feed.id) { showFeedStats = false }
 
         Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
             val textColor = MaterialTheme.colorScheme.onSurface
-            Text(feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp))
-            Text(feed.author ?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+            Text(vm.feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp))
+            Text(vm.feed.author ?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
             Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-            Text(HtmlToPlainText.getPlainText(feed.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+            Text(HtmlToPlainText.getPlainText(vm.feed.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
                 color = MaterialTheme.colorScheme.primary, style = CustomTextStyles.titleCustom,
                 modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
             Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
 
-            if (!feed.isSynthetic()) {
+            if (!vm.feed.isSynthetic()) {
                 Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-                Text(text = txtvUrl ?: "", color = textColor, modifier = Modifier.clickable {
-                    if (feed.downloadUrl != null) {
-                        val url: String = feed.downloadUrl!!
+                Text(text = vm.txtvUrl ?: "", color = textColor, modifier = Modifier.clickable {
+                    if (vm.feed.downloadUrl != null) {
+                        val url: String = vm.feed.downloadUrl!!
                         val clipData: ClipData = ClipData.newPlainText(url, url)
                         val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         cm.setPrimaryClip(clipData)
                         if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
                     }
                 })
-                if (feed.paymentLinks.isNotEmpty()) {
+                if (vm.feed.paymentLinks.isNotEmpty()) {
                     Text(stringResource(R.string.support_funding_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
                     fun fundingText(): String {
-                        val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
+                        val fundingList: ArrayList<FeedFunding> = vm.feed.paymentLinks
                         // Filter for duplicates, but keep items in the order that they have in the feed.
                         val i: MutableIterator<FeedFunding> = fundingList.iterator()
                         while (i.hasNext()) {
@@ -261,7 +265,7 @@ class FeedInfoFragment : Fragment() {
                     Text(fundText, color = textColor)
                 }
                 Button(modifier = Modifier.padding(top = 10.dp), onClick = {
-                    val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
+                    val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
                     (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
                 }) { Text(stringResource(R.string.feeds_related_to_author)) }
             }
@@ -282,13 +286,13 @@ class FeedInfoFragment : Fragment() {
 //    }
 
     fun setFeed(feed_: Feed) {
-        feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
-        rating = feed.rating
+        vm.feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
+        vm.rating = vm.feed.rating
     }
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        feed = Feed()
+        vm.feed = Feed()
         super.onDestroyView()
     }
 
@@ -299,28 +303,28 @@ class FeedInfoFragment : Fragment() {
         TopAppBar(title = { Text("") },
             navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
             actions = {
-                if (feed.link != null && isCallable) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), feed.link!!)
+                if (vm.feed.link != null && vm.isCallable) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), vm.feed.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
-                if (!feed.isLocalFeed) IconButton(onClick = {
-                    ShareUtils.shareFeedLinkNew(requireContext(), feed)
+                if (!vm.feed.isLocalFeed) IconButton(onClick = {
+                    ShareUtils.shareFeedLinkNew(requireContext(), vm.feed)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "web") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    if (feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.reconnect_local_folder)) }, onClick = {
-                        showConnectLocalFolderConfirm.value = true
+                    if (vm.feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.reconnect_local_folder)) }, onClick = {
+                        vm.showConnectLocalFolderConfirm.value = true
                         expanded = false
                     })
-                    if (!feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {
-                        object : EditUrlSettingsDialog(activity as Activity, feed) {
+                    if (!vm.feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {
+                        object : EditUrlSettingsDialog(activity as Activity, vm.feed) {
                             override fun setUrl(url: String?) {
-                                feed.downloadUrl = url
-                                txtvUrl = feed.downloadUrl
+                                vm.feed.downloadUrl = url
+                                vm.txtvUrl = vm.feed.downloadUrl
                             }
                         }.show()
                         expanded = false
                     })
                     DropdownMenuItem(text = { Text(stringResource(R.string.remove_feed_label)) }, onClick = {
-                        showRemoveFeedDialog = true
+                        vm.showRemoveFeedDialog = true
                         expanded = false
                     })
                 }
@@ -336,8 +340,8 @@ class FeedInfoFragment : Fragment() {
                     requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
                     requireNotNull(documentFile) { "Unable to retrieve document tree" }
-                    feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
-                    updateFeed(requireContext(), feed, true)
+                    vm.feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
+                    updateFeed(requireContext(), vm.feed, true)
                 }
                 withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) }
             } catch (e: Throwable) { withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) } }
@@ -355,7 +359,7 @@ class FeedInfoFragment : Fragment() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedChangeEvent -> {
-                        setFeed(feed)
+                        setFeed(vm.feed)
 //                        feed = event.feed
                     }
                     else -> {}

@@ -54,19 +54,24 @@ import java.io.File
 import java.util.Locale
 
 class EpisodeHomeFragment : Fragment() {
-    private var startIndex = 0
-    private var ttsSpeed = 1.0f
 
-    private var readerText: String? = null
-    private var cleanedNotes by mutableStateOf<String?>(null)
-    private var readerhtml: String? = null
-    private var readMode by mutableStateOf(true)
+    class EpisodeHomeVM {
+        internal var startIndex = 0
+        internal var ttsSpeed = 1.0f
 
-    private var ttsPlaying by mutableStateOf(false)
-    private var jsEnabled by mutableStateOf(false)
-    private var webUrl by mutableStateOf("")
+        internal var readerText: String? = null
+        internal var cleanedNotes by mutableStateOf<String?>(null)
+        internal var readerhtml: String? = null
+        internal var readMode by mutableStateOf(true)
 
-    private var tts by mutableStateOf<TextToSpeech?>(null)
+        internal var ttsPlaying by mutableStateOf(false)
+        internal var jsEnabled by mutableStateOf(false)
+        internal var webUrl by mutableStateOf("")
+
+        internal var tts by mutableStateOf<TextToSpeech?>(null)
+    }
+
+    private val vm = EpisodeHomeVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -91,13 +96,13 @@ class EpisodeHomeFragment : Fragment() {
             return "#$red$green$blue"
         }
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            if (readMode) {
+            if (vm.readMode) {
                 val backgroundColor = MaterialTheme.colorScheme.background.toHex()
                 val textColor = MaterialTheme.colorScheme.onBackground.toHex()
                 val primaryColor = MaterialTheme.colorScheme.primary.toHex()
                 AndroidView(modifier = Modifier.padding(innerPadding).fillMaxSize(), factory = { context ->
                     WebView(context).apply {
-                        settings.javaScriptEnabled = jsEnabled
+                        settings.javaScriptEnabled = vm.jsEnabled
                         settings.domStorageEnabled = true
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                         webViewClient = object : WebViewClient() {
@@ -109,7 +114,7 @@ class EpisodeHomeFragment : Fragment() {
                         }
                     }
                 }, update = { webView ->
-                    webView.settings.javaScriptEnabled = jsEnabled
+                    webView.settings.javaScriptEnabled = vm.jsEnabled
                     val htmlContent = """
                             <html>
                                 <style>
@@ -121,7 +126,7 @@ class EpisodeHomeFragment : Fragment() {
                                         color: ${primaryColor};
                                     }
                                 </style>
-                                <body>${cleanedNotes ?: "No notes"}</body>
+                                <body>${vm.cleanedNotes ?: "No notes"}</body>
                             </html>
                         """.trimIndent()
                     webView.loadDataWithBaseURL("about:blank", htmlContent, "text/html", "utf-8", null)
@@ -129,7 +134,7 @@ class EpisodeHomeFragment : Fragment() {
             } else
                 AndroidView(modifier = Modifier.padding(innerPadding).fillMaxSize(), factory = {
                     WebView(it).apply {
-                        settings.javaScriptEnabled = jsEnabled
+                        settings.javaScriptEnabled = vm.jsEnabled
                         webViewClient = object : WebViewClient() {
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
@@ -141,8 +146,8 @@ class EpisodeHomeFragment : Fragment() {
                         settings.setSupportZoom(true)
                     }
                 }, update = {
-                    it.settings.javaScriptEnabled = jsEnabled
-                    it.loadUrl(webUrl)
+                    it.settings.javaScriptEnabled = vm.jsEnabled
+                    it.loadUrl(vm.webUrl)
                 })
         }
     }
@@ -154,37 +159,37 @@ class EpisodeHomeFragment : Fragment() {
         TopAppBar(title = { Text("") },
             navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
             actions = {
-                if (readMode && tts != null) {
-                    val iconRes = if (ttsPlaying) R.drawable.ic_pause else R.drawable.ic_play_24dp
+                if (vm.readMode && vm.tts != null) {
+                    val iconRes = if (vm.ttsPlaying) R.drawable.ic_pause else R.drawable.ic_play_24dp
                     IconButton(onClick = {
-                        if (tts!!.isSpeaking) tts?.stop()
-                        if (!ttsPlaying) {
-                            ttsPlaying = true
-                            if (!readerText.isNullOrEmpty()) {
-                                ttsSpeed = episode?.feed?.playSpeed ?: 1.0f
-                                tts?.setSpeechRate(ttsSpeed)
-                                while (startIndex < readerText!!.length) {
-                                    val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)
-                                    val chunk = readerText!!.substring(startIndex, endIndex)
-                                    tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
-                                    startIndex += MAX_CHUNK_LENGTH
+                        if (vm.tts!!.isSpeaking) vm.tts?.stop()
+                        if (!vm.ttsPlaying) {
+                            vm.ttsPlaying = true
+                            if (!vm.readerText.isNullOrEmpty()) {
+                                vm.ttsSpeed = episode?.feed?.playSpeed ?: 1.0f
+                                vm.tts?.setSpeechRate(vm.ttsSpeed)
+                                while (vm.startIndex < vm.readerText!!.length) {
+                                    val endIndex = minOf(vm.startIndex + MAX_CHUNK_LENGTH, vm.readerText!!.length)
+                                    val chunk = vm.readerText!!.substring(vm.startIndex, endIndex)
+                                    vm.tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
+                                    vm.startIndex += MAX_CHUNK_LENGTH
                                 }
                             }
-                        } else ttsPlaying = false
+                        } else vm.ttsPlaying = false
                     }) { Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "home") }
                 }
-                var showJSIconRes = if (readMode) R.drawable.outline_eyeglasses_24 else R.drawable.javascript_icon_245402
-                IconButton(onClick = { jsEnabled = !jsEnabled }) { Icon(imageVector = ImageVector.vectorResource(showJSIconRes), contentDescription = "JS") }
-                var homeIconRes = if (readMode) R.drawable.baseline_home_24 else R.drawable.outline_home_24
+                var showJSIconRes = if (vm.readMode) R.drawable.outline_eyeglasses_24 else R.drawable.javascript_icon_245402
+                IconButton(onClick = { vm.jsEnabled = !vm.jsEnabled }) { Icon(imageVector = ImageVector.vectorResource(showJSIconRes), contentDescription = "JS") }
+                var homeIconRes = if (vm.readMode) R.drawable.baseline_home_24 else R.drawable.outline_home_24
                 IconButton(onClick = {
-                    readMode = !readMode
-                    jsEnabled = false
+                    vm.readMode = !vm.readMode
+                    vm.jsEnabled = false
                     prepareContent()
                 }) { Icon(imageVector = ImageVector.vectorResource(homeIconRes), contentDescription = "switch home") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    if (readMode && !readerhtml.isNullOrEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.share_notes_label)) }, onClick = {
-                        val notes = readerhtml!!
+                    if (vm.readMode && !vm.readerhtml.isNullOrEmpty()) DropdownMenuItem(text = { Text(stringResource(R.string.share_notes_label)) }, onClick = {
+                        val notes = vm.readerhtml!!
                         val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                         val context = requireContext()
                         val intent = ShareCompat.IntentBuilder(context).setType("text/plain").setText(shareText).setChooserTitle(R.string.share_notes_label).createChooserIntent()
@@ -198,35 +203,35 @@ class EpisodeHomeFragment : Fragment() {
 
     private fun prepareContent() {
         when {
-            readMode -> {
+            vm.readMode -> {
                 runOnIOScope {
                     if (!episode?.link.isNullOrEmpty()) {
-                        if (cleanedNotes == null) {
+                        if (vm.cleanedNotes == null) {
                             if (episode?.transcript == null) {
                                 val url = episode!!.link!!
                                 val htmlSource = fetchHtmlSource(url)
                                 val article = Readability4JExtended(episode?.link!!, htmlSource).parse()
-                                readerText = article.textContent
-                                readerhtml = article.contentWithDocumentsCharsetOrUtf8
+                                vm.readerText = article.textContent
+                                vm.readerhtml = article.contentWithDocumentsCharsetOrUtf8
                             } else {
-                                readerhtml = episode!!.transcript
-                                readerText = HtmlCompat.fromHtml(readerhtml!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                                vm.readerhtml = episode!!.transcript
+                                vm.readerText = HtmlCompat.fromHtml(vm.readerhtml!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                             }
-                            if (!readerhtml.isNullOrEmpty()) {
+                            if (!vm.readerhtml.isNullOrEmpty()) {
                                 val shownotesCleaner = ShownotesCleaner(requireContext())
-                                cleanedNotes = shownotesCleaner.processShownotes(readerhtml!!, 0)
-                                episode = upsertBlk(episode!!) { it.setTranscriptIfLonger(readerhtml) }
+                                vm.cleanedNotes = shownotesCleaner.processShownotes(vm.readerhtml!!, 0)
+                                episode = upsertBlk(episode!!) { it.setTranscriptIfLonger(vm.readerhtml) }
                             }
                         }
                     }
-                    if (!cleanedNotes.isNullOrEmpty()) {
+                    if (!vm.cleanedNotes.isNullOrEmpty()) {
                         val file = File(context?.filesDir, "test_content.html")
-                        file.writeText(cleanedNotes ?: "No content")
-                        if (tts == null) {
-                            tts = TextToSpeech(context) { status: Int ->
+                        file.writeText(vm.cleanedNotes ?: "No content")
+                        if (vm.tts == null) {
+                            vm.tts = TextToSpeech(context) { status: Int ->
                                 if (status == TextToSpeech.SUCCESS) {
                                     if (episode?.feed?.language != null) {
-                                        val result = tts?.setLanguage(Locale(episode!!.feed!!.language!!))
+                                        val result = vm.tts?.setLanguage(Locale(episode!!.feed!!.language!!))
                                         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                                             Log.w(TAG, "TTS language not supported ${episode?.feed?.language}")
                                             requireActivity().runOnUiThread {
@@ -242,15 +247,15 @@ class EpisodeHomeFragment : Fragment() {
                             }
                         }
                         withContext(Dispatchers.Main) {
-                            readMode = true
-                            Logd(TAG, "cleanedNotes: $cleanedNotes")
+                            vm.readMode = true
+                            Logd(TAG, "vm.cleanedNotes: ${vm.cleanedNotes}")
                         }
                     } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
                 }
             }
             !episode?.link.isNullOrEmpty() -> {
-                webUrl = episode!!.link!!
-                readMode = false
+                vm.webUrl = episode!!.link!!
+                vm.readMode = false
             }
             else -> Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         }
@@ -258,9 +263,9 @@ class EpisodeHomeFragment : Fragment() {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        tts?.stop()
-        tts?.shutdown()
-        tts = null
+        vm.tts?.stop()
+        vm.tts?.shutdown()
+        vm.tts = null
         super.onDestroyView()
     }
 

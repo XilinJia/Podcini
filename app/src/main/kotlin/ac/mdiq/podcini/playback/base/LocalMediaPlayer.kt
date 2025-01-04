@@ -231,7 +231,9 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                         if (streamurl != null) {
                             mediaItem = null
                             mediaSource = null
-                            setDataSource(metadata, curEpisode!!)
+                            try { setDataSource(metadata, curEpisode!!) } catch (e: Throwable) {
+                                Log.e(TAG, "setDataSource error: [${e.localizedMessage}] [${e.message}]")
+                                EventFlow.postEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: e.message ?: "")) }
                         }
                     }
                     else -> {

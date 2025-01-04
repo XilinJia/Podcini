@@ -100,7 +100,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
     open fun createMediaPlayer() {}
 
-    @Throws(IllegalArgumentException::class, IllegalStateException::class)
     protected fun setDataSource(metadata: MediaMetadata, mediaUrl: String, user: String?, password: String?) {
         Logd(TAG, "setDataSource: $mediaUrl")
         mediaItem = MediaItem.Builder().setUri(Uri.parse(mediaUrl)).setMediaMetadata(metadata).build()
@@ -118,22 +117,22 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         if (media.feed?.type == Feed.FeedType.YOUTUBE.name) {
             isYoutubeMedia = true
             if (ytMediaSpecs.media.id != media.id) ytMediaSpecs = YoutubeMediaSpecs(media)
-            if (ytMediaSpecs.streamInfo == null) return
+            if (ytMediaSpecs.streamInfo == null) throw IllegalStateException("streamInfo is null")
             Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
                 ytMediaSpecs.buildAudioStreams()
-                if (ytMediaSpecs.audioStreamsList.isEmpty()) throw IllegalStateException()
+                if (ytMediaSpecs.audioStreamsList.isEmpty()) throw IllegalStateException("audioStreamsList empty")
                 Logd(TAG, "setDataSource1 audioStreamsList ${ytMediaSpecs.audioStreamsList.size}")
                 ytMediaSpecs.setAudioStream()
-                if (ytMediaSpecs.audioStream == null) throw IllegalStateException()
+                if (ytMediaSpecs.audioStream == null) throw IllegalStateException("audioStream is null")
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(
                     MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.audioStream!!.content)).build())
                 
                 if (media.forceVideo || media.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                     ytMediaSpecs.buildVideoStreams()
-                    if (ytMediaSpecs.videoStreamsList.isEmpty()) throw IllegalStateException()
+                    if (ytMediaSpecs.videoStreamsList.isEmpty()) throw IllegalStateException("videoStreamsList empty")
                     ytMediaSpecs.setVideoStream()
-                    if (ytMediaSpecs.videoStream == null) throw IllegalStateException()
+                    if (ytMediaSpecs.videoStream == null) throw IllegalStateException("videoStream is null")
                     val vSource = DefaultMediaSourceFactory(context).createMediaSource(
                         MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.videoStream!!.content)).build())
                     val mediaSources: MutableList<MediaSource> = ArrayList()

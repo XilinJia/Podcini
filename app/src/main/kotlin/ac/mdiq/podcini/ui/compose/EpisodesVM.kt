@@ -13,13 +13,13 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
+import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
-import ac.mdiq.podcini.storage.database.Episodes.prefDeleteRemovesFromQueue
-import ac.mdiq.podcini.storage.database.Episodes.prefRemoveFromQueueMarkedPlayed
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
@@ -110,6 +110,8 @@ import coil.request.ImageRequest
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 import java.net.URL
 import java.time.Instant
@@ -118,6 +120,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.roundToInt
+
+const val VMS_CHUNK_SIZE = 50
+const val loadThreshold = (VMS_CHUNK_SIZE * 0.8).toInt()
 
 @Composable
 fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction>, rightAction: MutableState<SwipeAction>, actionConfig: () -> Unit) {
@@ -153,7 +158,7 @@ class EpisodeVM(var episode: Episode, val tag: String) {
     var inProgressState by mutableStateOf(episode.isInProgress)
     var downloadState by mutableIntStateOf(if (episode.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
     var viewCount by mutableIntStateOf(episode.viewCount)
-    var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode))
+    var actionButton by mutableStateOf<EpisodeActionButton>(NullActionButton(episode).forItem(episode))
     var actionRes by mutableIntStateOf(actionButton.drawable)
     var showAltActionsDialog by mutableStateOf(false)
     var dlPercent by mutableIntStateOf(0)
@@ -161,13 +166,11 @@ class EpisodeVM(var episode: Episode, val tag: String) {
     var prog by mutableFloatStateOf(0f)
 
     private var episodeMonitor: Job? by mutableStateOf(null)
-//    private var mediaMonitor: Job? by mutableStateOf(null)
 
     fun stopMonitoring() {
         episodeMonitor?.cancel()
-//        mediaMonitor?.cancel()
         episodeMonitor = null
-//        mediaMonitor = null
+//        showStackTrace()
         Logd("EpisodeVM", "cancel monitoring")
     }
 
@@ -249,8 +252,8 @@ fun PlayStateDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
 //                                            item = item_
                                             if (hasAlmostEnded && shouldAutoDelete) {
                                                 item_ = deleteMediaSync(context, item_)
-                                                if (prefDeleteRemovesFromQueue) removeFromAllQueuesSync(item_)
-                                            } else if (prefRemoveFromQueueMarkedPlayed) removeFromAllQueuesSync(item_)
+                                                if (getPref(AppPrefs.prefDeleteRemovesFromQueue, false)) removeFromAllQueuesSync(item_)
+                                            } else if (getPref(AppPrefs.prefRemoveFromQueueMarkedPlayed, true)) removeFromAllQueuesSync(item_)
                                             if (item_.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                                                 // not all items have media, Gpodder only cares about those that do
                                                 if (isProviderConnected) {
@@ -411,7 +414,10 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
                                     val url = e.fileUrl
                                     when {
                                         url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
-                                        url != null -> File(url).delete()
+                                        url != null -> {
+                                            val path = Uri.parse(url).path
+                                            if (path != null) File(path).delete()
+                                        }
                                     }
                                     findLatest(feed)?.episodes?.remove(e)
                                     findLatest(e)?.let { delete(it) }
@@ -427,10 +433,10 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null, layoutMode: Int = 0,
-                      buildMoreItems: ((MutableList<EpisodeVM>)-> Unit) = {},
+                      buildMoreItems: (()-> Unit) = {},
                       isDraggable: Boolean = false, dragCB: ((Int, Int)->Unit)? = null,
                       refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
                       actionButton_: ((Episode)-> EpisodeActionButton)? = null) {
@@ -711,7 +717,7 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                     }))
             Box(Modifier.weight(1f).height(imageHeight)) {
                 TitleColumn(vm, index, modifier = Modifier.fillMaxWidth())
-                var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
+//                var actionButton by remember(vm.episode.id) { mutableStateOf(vm.actionButton.forItem(vm.episode)) }
                 fun isDownloading(): Boolean {
                     return vms[index].downloadState > DownloadStatus.State.UNKNOWN.ordinal && vms[index].downloadState < DownloadStatus.State.COMPLETED.ordinal
                 }
@@ -722,28 +728,29 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Logd(TAG, "LaunchedEffect $index isPlayingState: ${vms[index].isPlayingState} ${vm.episode.playState} ${vms[index].episode.title}")
                         Logd(TAG, "LaunchedEffect $index downloadState: ${vms[index].downloadState} ${vm.episode.downloaded} ${vm.dlPercent}")
                         vm.actionButton = vm.actionButton.forItem(vm.episode)
-                        if (vm.actionButton.label != actionButton.label) actionButton = vm.actionButton
-                        vm.actionRes = actionButton.drawable
+//                        if (vm.actionButton.label != actionButton.label) actionButton = vm.actionButton
+                        Logd(TAG, "LaunchedEffect vm.actionButton: ${vm.actionButton.TAG}")
                     }
                 } else {
                     LaunchedEffect(Unit) {
                         Logd(TAG, "LaunchedEffect init actionButton")
                         vm.actionButton = actionButton_(vm.episode)
-                        actionButton = vm.actionButton
-                        vm.actionRes = actionButton.drawable
+//                        actionButton = vm.actionButton
                     }
                 }
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.BottomEnd)
                     .pointerInput(Unit) {
-                        detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true }, onTap = { actionButton.onClick(activity) })
+                        detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true }, onTap = { vm.actionButton.onClick(activity) })
                     }) {
-                    Icon(imageVector = ImageVector.vectorResource(vm.actionRes), tint = buttonColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
+//                    val actionRes by remember(vm.actionButton.drawable) { derivedStateOf { vm.actionButton.drawable } }
+                    Logd(TAG, "actionRes: $index ${vm.actionButton.TAG}")
+                    Icon(imageVector = ImageVector.vectorResource(vm.actionButton.drawable), tint = buttonColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                     if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                         strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))
-                    if (actionButton.processing > -1) CircularProgressIndicator(progress = { 0.01f * actionButton.processing },
+                    if (vm.actionButton.processing > -1) CircularProgressIndicator(progress = { 0.01f * vm.actionButton.processing },
                         strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))
                 }
-                if (vm.showAltActionsDialog) actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
+                if (vm.showAltActionsDialog) vm.actionButton.AltActionsDialog(activity, onDismiss = { vm.showAltActionsDialog = false })
             }
         }
     }
@@ -765,9 +772,20 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
         }
     }
 
+    val isLoading = remember { mutableStateOf(false) }
+    val loadedIndices = remember { mutableSetOf<Int>() }
     LaunchedEffect(lazyListState) {
-        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-            .collect { lastVisibleIndex -> if (lastVisibleIndex == vms.size - 1) buildMoreItems(vms) }
+        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
+            .distinctUntilChanged()
+//            .debounce(300)
+            .collect { lastVisibleIndex ->
+                if (lastVisibleIndex >= 0 && lastVisibleIndex >= vms.size - loadThreshold && !isLoading.value && !loadedIndices.contains(lastVisibleIndex)) {
+                    loadedIndices.add(lastVisibleIndex)
+                    isLoading.value = true
+                    buildMoreItems()
+                    isLoading.value = false
+                }
+            }
     }
 
     var refreshing by remember { mutableStateOf(false)}

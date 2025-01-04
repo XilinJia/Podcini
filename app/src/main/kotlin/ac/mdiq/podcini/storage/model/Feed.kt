@@ -293,12 +293,18 @@ class Feed : RealmObject {
 
     @Ignore
     var autoDLPolicy: AutoDownloadPolicy = AutoDownloadPolicy.ONLY_NEW
-        get() = AutoDownloadPolicy.fromCode(autoDLPolicyCode)
+        get() {
+            val value = AutoDownloadPolicy.fromCode(autoDLPolicyCode)
+            value.replace = autoDLPolicyReplace
+            return value
+        }
         set(value) {
             field = value
             autoDLPolicyCode = value.code
+            autoDLPolicyReplace = value.replace
         }
     var autoDLPolicyCode: Int = AutoDownloadPolicy.ONLY_NEW.code
+    var autoDLPolicyReplace: Boolean = false
 
     fun fillPreferences(autoDownload: Boolean, autoDeleteAction: AutoDeleteAction,
                 volumeAdaptionSetting: VolumeAdaptionSetting?, username: String?, password: String?) {

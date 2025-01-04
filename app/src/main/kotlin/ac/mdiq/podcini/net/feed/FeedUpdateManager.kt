@@ -14,6 +14,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.net.utils.NetworkUtils.prepareUrl
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
@@ -75,7 +76,7 @@ object FeedUpdateManager {
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
     private val updateInterval: Long
-        get() = getPref(AppPreferences.AppPrefs.prefAutoUpdateIntervall, "12").toInt().toLong()
+        get() = getPref(AppPrefs.prefAutoUpdateIntervall, "12").toInt().toLong()
 
     private val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L

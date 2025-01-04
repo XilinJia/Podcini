@@ -7,7 +7,7 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
-import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodesSync
 import ac.mdiq.podcini.storage.database.Feeds.EpisodeAssistant.searchEpisodeByIdentifyingValue
 import ac.mdiq.podcini.storage.database.Feeds.EpisodeDuplicateGuesser.canonicalizeTitle
 import ac.mdiq.podcini.storage.database.Feeds.EpisodeDuplicateGuesser.datesLookSimilar
@@ -116,7 +116,8 @@ object Feeds {
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                        EventFlow.postEvent(FlowEvent.FeedChangeEvent(changes.obj))
+                        if (changes.changedFields.isNotEmpty() && (changes.changedFields.size > 1 || changes.changedFields[0] != "lastPlayed"))
+                            EventFlow.postEvent(FlowEvent.FeedChangeEvent(changes.obj, changes.changedFields))
                     }
 //                    is DeletedObject -> {
 //                        Logd(TAG, "monitorFeed DeletedObject ${feed.title}")
@@ -303,7 +304,7 @@ object Feeds {
         resultFeed = savedFeed
         try {
             upsertBlk(savedFeed) {}
-            if (removeUnlistedItems && unlistedItems.isNotEmpty()) runBlocking { deleteEpisodes(context, unlistedItems).join() }
+            if (removeUnlistedItems && unlistedItems.isNotEmpty()) deleteEpisodesSync(context, unlistedItems)
         } catch (e: InterruptedException) { e.printStackTrace()
         } catch (e: ExecutionException) { e.printStackTrace() }
         return resultFeed
@@ -434,7 +435,10 @@ object Feeds {
                         when {
                             // Local feed
                             url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
-                            url != null -> File(url).delete()
+                            url != null -> {
+                                val path = Uri.parse(url).path
+                                if (path != null) File(path).delete()
+                            }
                         }
                         delete(episode)
                     }

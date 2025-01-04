@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import android.content.Context
 import androidx.core.app.NotificationChannelCompat
@@ -22,18 +23,6 @@ object NotificationUtils {
         group_errors,
         group_news
     }
-
-    /**
-     * Used for migration of the preference to system notification channels.
-     */
-    val showDownloadReportRaw: Boolean
-        get() = getPref(AppPreferences.AppPrefs.prefShowDownloadReport, true)
-
-    /**
-     * Used for migration of the preference to system notification channels.
-     */
-    val gpodnetNotificationsEnabledRaw: Boolean
-        get() = getPref(AppPreferences.AppPrefs.pref_gpodnet_notifications, true)
 
     fun createChannels(context: Context) {
         val mNotificationManager = NotificationManagerCompat.from(context)
@@ -92,10 +81,8 @@ object NotificationUtils {
             .setDescription(c.getString(R.string.notification_channel_download_error_description))
             .setGroup(GROUP_ID.group_errors.name)
 
-        if (!showDownloadReportRaw) {
-            // Migration from app managed setting: disable notification
-            notificationChannel.setImportance(NotificationManagerCompat.IMPORTANCE_NONE)
-        }
+        // Migration from app managed setting: disable notification
+        if (!getPref(AppPrefs.prefShowDownloadReport, true)) notificationChannel.setImportance(NotificationManagerCompat.IMPORTANCE_NONE)
         return notificationChannel.build()
     }
 
@@ -106,17 +93,12 @@ object NotificationUtils {
             .setDescription(c.getString(R.string.notification_channel_sync_error_description))
             .setGroup(GROUP_ID.group_errors.name)
 
-        if (!gpodnetNotificationsEnabledRaw) {
-            // Migration from app managed setting: disable notification
-            notificationChannel.setImportance(NotificationManagerCompat.IMPORTANCE_NONE)
-        }
+        // Migration from app managed setting: disable notification
+        if (!getPref(AppPrefs.pref_gpodnet_notifications, true)) notificationChannel.setImportance(NotificationManagerCompat.IMPORTANCE_NONE)
         return notificationChannel.build()
     }
 
     private fun createGroupErrors(c: Context): NotificationChannelGroupCompat {
-        return NotificationChannelGroupCompat.Builder(GROUP_ID.group_errors.name)
-            .setName(c.getString(R.string.notification_group_errors))
-            .build()
+        return NotificationChannelGroupCompat.Builder(GROUP_ID.group_errors.name).setName(c.getString(R.string.notification_group_errors)).build()
     }
-
 }

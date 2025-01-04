@@ -9,6 +9,7 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
@@ -357,7 +358,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.downloadUrl)
-            if (getPref(AppPreferences.AppPrefs.prefEnqueueDownloaded, true)) {
+            if (getPref(AppPrefs.prefEnqueueDownloaded, true)) {
                 if (item.feed?.queue != null) runBlocking { Queues.addToQueueSync(item, item.feed?.queue) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }

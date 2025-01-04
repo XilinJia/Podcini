@@ -12,6 +12,7 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow.AuthenticationCallback
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.fragments.WifiAuthenticationFragment
@@ -66,7 +67,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
     fun NextcloudAuthenticationDialog(onDismissRequest: ()->Unit) {
         var nextcloudLoginFlow = remember<NextcloudLoginFlow?> { null }
         var showUrlEdit by remember { mutableStateOf(true) }
-        var serverUrlText by remember { mutableStateOf(getPref(AppPreferences.AppPrefs.pref_nextcloud_server_address, "")!!) }
+        var serverUrlText by remember { mutableStateOf(getPref(AppPrefs.pref_nextcloud_server_address, "")!!) }
         var errorText by remember { mutableStateOf("") }
         var showChooseHost by remember { mutableStateOf(serverUrlText.isNotBlank()) }
 
@@ -113,7 +114,7 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
             },
             confirmButton = {
                 if (showChooseHost) TextButton(onClick = {
-                    putPref(AppPreferences.AppPrefs.pref_nextcloud_server_address, serverUrlText)
+                    putPref(AppPrefs.pref_nextcloud_server_address, serverUrlText)
                     nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), serverUrlText, activity, nextCloudAuthCallback)
                     errorText = ""
                     showChooseHost = false

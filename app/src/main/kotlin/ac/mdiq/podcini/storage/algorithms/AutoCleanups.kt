@@ -26,9 +26,9 @@ object AutoCleanups {
     private val TAG: String = AutoCleanups::class.simpleName ?: "Anonymous"
 
     private var episodeCleanupValue: Int
-        get() = getPref(AppPreferences.AppPrefs.prefEpisodeCleanup, EpisodeCleanupOptions.Never.num.toString()).toIntOrNull() ?: EpisodeCleanupOptions.Never.num
+        get() = getPref(AppPrefs.prefEpisodeCleanup, EpisodeCleanupOptions.Never.num.toString()).toIntOrNull() ?: EpisodeCleanupOptions.Never.num
         set(episodeCleanupValue) {
-            putPref(AppPreferences.AppPrefs.prefEpisodeCleanup, episodeCleanupValue.toString())
+            putPref(AppPrefs.prefEpisodeCleanup, episodeCleanupValue.toString())
         }
 
     /**

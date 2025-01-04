@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.clearQueue
-import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs.pref_gpodnet_notifications
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context
@@ -57,7 +57,7 @@ object SynchronizationCredentials {
         }
 
     fun setGpodnetNotificationsEnabled() {
-        putPref(pref_gpodnet_notifications, true)
+        putPref(AppPrefs.pref_gpodnet_notifications, true)
     }
 
     @Synchronized

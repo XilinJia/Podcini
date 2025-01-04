@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.storage.database.Episodes
@@ -14,7 +14,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.utils.StorageUtils.customMediaUriString
@@ -67,59 +66,63 @@ import kotlin.math.min
 class EpisodesFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
 
-    private var displayUpArrow = false
+    class EpisodesVM {
+        internal var displayUpArrow = false
 
-    private var infoBarText = mutableStateOf("")
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var showSwipeActionsDialog by mutableStateOf(false)
+        internal var infoBarText = mutableStateOf("")
+        internal var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var showSwipeActionsDialog by mutableStateOf(false)
 
-    lateinit var swipeActions: SwipeActions
+        lateinit var swipeActions: SwipeActions
 
-    val episodes = mutableListOf<Episode>()
-    private val vms = mutableStateListOf<EpisodeVM>()
-    var showFilterDialog by mutableStateOf(false)
-    var showSortDialog by mutableStateOf(false)
-    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
-    private var showDatesFilter by mutableStateOf(false)
+        val episodes = mutableListOf<Episode>()
+        internal val vms = mutableStateListOf<EpisodeVM>()
+        var showFilterDialog by mutableStateOf(false)
+        var showSortDialog by mutableStateOf(false)
+        var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+        internal var showDatesFilter by mutableStateOf(false)
 
-    var actionButtonToPass by mutableStateOf<((Episode) -> EpisodeActionButton)?>(null)
+        var actionButtonToPass by mutableStateOf<((Episode) -> EpisodeActionButton)?>(null)
 
-    private val spinnerTexts = QuickAccess.entries.map { it.name }
-    private var curIndex by mutableIntStateOf(0)
+        internal val spinnerTexts = QuickAccess.entries.map { it.name }
+        internal var curIndex by mutableIntStateOf(0)
 
-    private var startDate : Long = 0L
-    private var endDate : Long = Date().time
+        internal var startDate: Long = 0L
+        internal var endDate: Long = Date().time
 
-    private val showClearHistoryDialog = mutableStateOf(false)
+        internal val showClearHistoryDialog = mutableStateOf(false)
 
-    private var episodesSortOrder: EpisodeSortOrder
-        get() = EpisodeSortOrder.fromCodeString(getPref(AppPreferences.AppPrefs.prefEpisodesSort, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
-        set(s) {
-            putPref(AppPreferences.AppPrefs.prefEpisodesSort, "" + s.code)
-        }
-    private var prefFilterEpisodes: String
-        get() = getPref(AppPreferences.AppPrefs.prefEpisodesFilter, "")
-        set(filter) {
-            putPref(AppPreferences.AppPrefs.prefEpisodesFilter, filter)
-        }
-    private var prefFilterDownloads: String
-        get() = getPref(AppPreferences.AppPrefs.prefDownloadsFilter, EpisodeFilter.States.downloaded.name)
-        set(filter) {
-            putPref(AppPreferences.AppPrefs.prefDownloadsFilter, filter)
-        }
+        internal var episodesSortOrder: EpisodeSortOrder
+            get() = EpisodeSortOrder.fromCodeString(getPref(AppPrefs.prefEpisodesSort, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
+            set(s) {
+                putPref(AppPrefs.prefEpisodesSort, "" + s.code)
+            }
+        internal var prefFilterEpisodes: String
+            get() = getPref(AppPrefs.prefEpisodesFilter, "")
+            set(filter) {
+                putPref(AppPrefs.prefEpisodesFilter, filter)
+            }
+        internal var prefFilterDownloads: String
+            get() = getPref(AppPrefs.prefDownloadsFilter, EpisodeFilter.States.downloaded.name)
+            set(filter) {
+                putPref(AppPrefs.prefDownloadsFilter, filter)
+            }
+    }
+
+    private val vm = EpisodesVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-        swipeActions = SwipeActions(this, TAG)
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
-        lifecycle.addObserver(swipeActions)
+        vm.swipeActions = SwipeActions(this, TAG)
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
+        lifecycle.addObserver(vm.swipeActions)
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
@@ -127,18 +130,18 @@ class EpisodesFragment : Fragment() {
                     OpenDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                                buildMoreItems = { buildMoreItems(it) },
+                            InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
+                            EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
+                                buildMoreItems = { buildMoreItems() },
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it)
+                                    if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                    else vm.leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it)
+                                    if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                    else vm.rightActionState.value.performAction(it)
                                 },
-                                actionButton_ = actionButtonToPass
+                                actionButton_ = vm.actionButtonToPass
                             )
                         }
                     }
@@ -146,8 +149,8 @@ class EpisodesFragment : Fragment() {
             }
         }
         refreshSwipeTelltale()
-        curIndex = prefs.getInt("curIndex", 0)
-        sortOrder = episodesSortOrder
+        vm.curIndex = prefs.getInt("curIndex", 0)
+        vm.sortOrder = vm.episodesSortOrder
         updateToolbar()
         return composeView
     }
@@ -166,9 +169,9 @@ class EpisodesFragment : Fragment() {
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
 //        _binding = null
-        episodes.clear()
-        stopMonitor(vms)
-        vms.clear()
+        vm.episodes.clear()
+        stopMonitor(vm.vms)
+        vm.vms.clear()
         super.onDestroyView()
     }
 
@@ -184,8 +187,8 @@ class EpisodesFragment : Fragment() {
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            val pos: Int = Episodes.indexOfItemWithDownloadUrl(vm.episodes, url)
+            if (pos >= 0) vm.vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 
@@ -233,8 +236,8 @@ class EpisodesFragment : Fragment() {
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
     }
 
     private var loadJob: Job? = null
@@ -242,50 +245,50 @@ class EpisodesFragment : Fragment() {
         Logd(TAG, "loadItems() called")
         if (loadJob != null) {
             loadJob?.cancel()
-            stopMonitor(vms)
-            vms.clear()
+            stopMonitor(vm.vms)
+            vm.vms.clear()
         }
         loadJob = lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    episodes.clear()
-                    episodes.addAll(loadData())
+                    vm.episodes.clear()
+                    vm.episodes.addAll(loadData())
                 }
                 withContext(Dispatchers.Main) {
-                    stopMonitor(vms)
-                    vms.clear()
-                    buildMoreItems(vms)
-//                    for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
+                    stopMonitor(vm.vms)
+                    vm.vms.clear()
+                    buildMoreItems()
+//                    for (e in vm.episodes) { vm.vms.add(EpisodeVM(e, TAG)) }
                     updateToolbar()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { loadJob = null } }
     }
 
-    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
-        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
-        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
+    fun buildMoreItems() {
+        val nextItems = (vm.vms.size until min(vm.vms.size + VMS_CHUNK_SIZE, vm.episodes.size)).map { EpisodeVM(vm.episodes[it], FeedEpisodesFragment.Companion.TAG) }
+        if (nextItems.isNotEmpty()) vm.vms.addAll(nextItems)
     }
 
     @Composable
     fun OpenDialog() {
-        if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
-            swipeActions.actions = actions
+        if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+            vm.swipeActions.actions = actions
             refreshSwipeTelltale()
         }
-        if (showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
-            onDismissRequest = { showFilterDialog = false }) { onFilterChanged(it) }
-        if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { order, _ -> onSort(order) }
-        swipeActions.ActionOptionsDialog()
-        ComfirmDialog(titleRes = R.string.clear_history_label, message = stringResource(R.string.clear_playback_history_msg), showDialog = showClearHistoryDialog) { clearHistory() }
-        if (showDatesFilter) DatesFilterDialogCompose(inclPlayed = false, oldestDate = 0L, onDismissRequest = { showDatesFilter = false} ) {timeFilterFrom, timeFilterTo, _ ->
-            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder, timeFilterFrom, timeFilterTo))
+        if (vm.showFilterDialog) EpisodesFilterDialog(filter = getFilter(), filtersDisabled = filtersDisabled(),
+            onDismissRequest = { vm.showFilterDialog = false }) { onFilterChanged(it) }
+        if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, onDismissRequest = { vm.showSortDialog = false }) { order, _ -> onSort(order) }
+        vm.swipeActions.ActionOptionsDialog()
+        ComfirmDialog(titleRes = R.string.clear_history_label, message = stringResource(R.string.clear_playback_history_msg), showDialog = vm.showClearHistoryDialog) { clearHistory() }
+        if (vm.showDatesFilter) DatesFilterDialogCompose(inclPlayed = false, oldestDate = 0L, onDismissRequest = { vm.showDatesFilter = false} ) {timeFilterFrom, timeFilterTo, _ ->
+            EventFlow.postEvent(FlowEvent.HistoryEvent(vm.sortOrder, timeFilterFrom, timeFilterTo))
         }
     }
     /**
      * Loads the playback history from the database. A FeedItem is in the playback history if playback of the correpsonding episode
      * has been played ot completed at least once.
-     * @param limit The maximum number of episodes to return.
+     * @param limit The maximum number of vm.episodes to return.
      * @return The playback history. The FeedItems are sorted by their media's playbackCompletionDate in descending order.
      */
     fun getHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time,
@@ -300,21 +303,21 @@ class EpisodesFragment : Fragment() {
     }
 
     fun loadData(): List<Episode> {
-        return when (spinnerTexts[curIndex]) {
-            QuickAccess.New.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.new.name), episodesSortOrder, false)
-            QuickAccess.Planned.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.soon.name, EpisodeFilter.States.later.name), episodesSortOrder, false)
-            QuickAccess.Repeats.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.again.name, EpisodeFilter.States.forever.name), episodesSortOrder, false)
-            QuickAccess.Liked.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.good.name, EpisodeFilter.States.superb.name), episodesSortOrder, false)
-            QuickAccess.Commented.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.has_comments.name), episodesSortOrder, false)
-            QuickAccess.History.name -> getHistory(0, Int.MAX_VALUE, sortOrder = episodesSortOrder).toMutableList()
-            QuickAccess.Downloaded.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(prefFilterDownloads), episodesSortOrder, false)
-            QuickAccess.All.name -> getEpisodes(0, Int.MAX_VALUE, getFilter(), episodesSortOrder, false)
-            else -> getEpisodes(0, Int.MAX_VALUE, getFilter(), episodesSortOrder, false)
+        return when (vm.spinnerTexts[vm.curIndex]) {
+            QuickAccess.New.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.new.name), vm.episodesSortOrder, false)
+            QuickAccess.Planned.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.soon.name, EpisodeFilter.States.later.name), vm.episodesSortOrder, false)
+            QuickAccess.Repeats.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.again.name, EpisodeFilter.States.forever.name), vm.episodesSortOrder, false)
+            QuickAccess.Liked.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.good.name, EpisodeFilter.States.superb.name), vm.episodesSortOrder, false)
+            QuickAccess.Commented.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.has_comments.name), vm.episodesSortOrder, false)
+            QuickAccess.History.name -> getHistory(0, Int.MAX_VALUE, sortOrder = vm.episodesSortOrder).toMutableList()
+            QuickAccess.Downloaded.name -> getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(vm.prefFilterDownloads), vm.episodesSortOrder, false)
+            QuickAccess.All.name -> getEpisodes(0, Int.MAX_VALUE, getFilter(), vm.episodesSortOrder, false)
+            else -> getEpisodes(0, Int.MAX_VALUE, getFilter(), vm.episodesSortOrder, false)
         }
     }
 
     fun getFilter(): EpisodeFilter {
-        return EpisodeFilter(prefFilterEpisodes)
+        return EpisodeFilter(vm.prefFilterEpisodes)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -322,15 +325,15 @@ class EpisodesFragment : Fragment() {
     fun MyTopAppBar() {
         var expanded by remember { mutableStateOf(false) }
         TopAppBar(title = {
-            SpinnerExternalSet(items = spinnerTexts, selectedIndex = curIndex) { index: Int ->
+            SpinnerExternalSet(items = vm.spinnerTexts, selectedIndex = vm.curIndex) { index: Int ->
                 Logd(QueuesFragment.Companion.TAG, "Item selected: $index")
-                curIndex = index
+                vm.curIndex = index
                 prefs.edit().putInt("curIndex", index).apply()
-                actionButtonToPass = if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name)  {it -> DeleteActionButton(it) } else null
+                vm.actionButtonToPass = if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name)  {it -> DeleteActionButton(it) } else null
                 loadItems()
             }
         },
-            navigationIcon = if (displayUpArrow) {
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), contentDescription = "Open Drawer") } }
@@ -338,25 +341,25 @@ class EpisodesFragment : Fragment() {
             actions = {
                 IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
-                IconButton(onClick = { showSortDialog = true
+                IconButton(onClick = { vm.showSortDialog = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "sort") }
-                if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.All.name) IconButton(onClick = { showFilterDialog = true
+                if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.All.name) IconButton(onClick = { vm.showFilterDialog = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
-                if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name) IconButton(onClick = { showDatesFilter = true
+                if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.History.name) IconButton(onClick = { vm.showDatesFilter = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.History.name)
+                    if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.History.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.clear_history_label)) }, onClick = {
-                            showClearHistoryDialog.value = true
+                            vm.showClearHistoryDialog.value = true
                             expanded = false
                         })
-                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
+                    if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.reconcile_label)) }, onClick = {
                             reconcile()
                             expanded = false
                         })
-                    if (vms.isNotEmpty() && spinnerTexts[curIndex] == QuickAccess.New.name)
+                    if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.New.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.clear_new_label)) }, onClick = {
                             clearNew()
                             expanded = false
@@ -368,21 +371,21 @@ class EpisodesFragment : Fragment() {
 
     var progressing by mutableStateOf(false)
     fun updateToolbar() {
-        var info = "${episodes.size} episodes"
-        if (spinnerTexts[curIndex] == QuickAccess.All.name && getFilter().properties.isNotEmpty()) info += " - ${getString(R.string.filtered_label)}"
-        else if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name && episodes.isNotEmpty()) {
+        var info = "${vm.episodes.size} vm.episodes"
+        if (vm.spinnerTexts[vm.curIndex] == QuickAccess.All.name && getFilter().properties.isNotEmpty()) info += " - ${getString(R.string.filtered_label)}"
+        else if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name && vm.episodes.isNotEmpty()) {
             var sizeMB: Long = 0
-            for (item in episodes) sizeMB += item.size
+            for (item in vm.episodes) sizeMB += item.size
             info += " • " + (sizeMB / 1000000) + " MB"
         }
         if (progressing) info += " - ${getString(R.string.progressing_label)}"
-        infoBarText.value = info
+        vm.infoBarText.value = info
     }
 
     private fun clearNew() {
         runOnIOScope {
             progressing = true
-            for (e in episodes) if (e.isNew) upsert(e) { it.setPlayed(false) }
+            for (e in vm.episodes) if (e.isNew) upsert(e) { it.setPlayed(false) }
             withContext(Dispatchers.Main) {
                 progressing = false
                 Toast.makeText(requireContext(), "History cleared", Toast.LENGTH_LONG).show()
@@ -435,7 +438,7 @@ class EpisodesFragment : Fragment() {
 //            val items = realm.query(Episode::class).query("media.episode == nil").find()
 //            Logd(TAG, "number of episode with null backlink: ${items.size}")
             nameEpisodeMap.clear()
-            for (e in episodes) {
+            for (e in vm.episodes) {
                 var fileUrl = e.fileUrl ?: continue
                 fileUrl = fileUrl.substring(fileUrl.lastIndexOf('/') + 1)
                 Logd(TAG, "reconcile: fileUrl: $fileUrl")
@@ -482,49 +485,49 @@ class EpisodesFragment : Fragment() {
     }
 
     fun onFilterChanged(filterValues: Set<String>) {
-        if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name || spinnerTexts[curIndex] == QuickAccess.All.name) {
+        if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name || vm.spinnerTexts[vm.curIndex] == QuickAccess.All.name) {
             val fSet = filterValues.toMutableSet()
-            if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) fSet.add(EpisodeFilter.States.downloaded.name)
-            prefFilterEpisodes = StringUtils.join(fSet, ",")
+            if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name) fSet.add(EpisodeFilter.States.downloaded.name)
+            vm.prefFilterEpisodes = StringUtils.join(fSet, ",")
             loadItems()
         }
     }
 
     fun onSort(order: EpisodeSortOrder) {
-        episodesSortOrder = order
+        vm.episodesSortOrder = order
         loadItems()
     }
 
     fun filtersDisabled(): MutableSet<EpisodeFilter.EpisodesFilterGroup> {
-        return if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name)
+        return if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name)
 //            mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA)
             mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED)
         else mutableSetOf()
     }
 
     fun onHistoryEvent(event: FlowEvent.HistoryEvent) {
-        if (spinnerTexts[curIndex] == QuickAccess.History.name) {
-            sortOrder = event.sortOrder
-            if (event.startDate > 0) startDate = event.startDate
-            endDate = event.endDate
+        if (vm.spinnerTexts[vm.curIndex] == QuickAccess.History.name) {
+            vm.sortOrder = event.sortOrder
+            if (event.startDate > 0) vm.startDate = event.startDate
+            vm.endDate = event.endDate
             loadItems()
             updateToolbar()
         }
     }
 
     fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
-        if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) {
+        if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name) {
             var i = 0
             val size: Int = event.episodes.size
             while (i < size) {
                 val item: Episode = event.episodes[i++]
-                val pos = Episodes.indexOfItemWithId(episodes, item.id)
+                val pos = Episodes.indexOfItemWithId(vm.episodes, item.id)
                 if (pos >= 0) {
-                    episodes.removeAt(pos)
-                    vms.removeAt(pos)
+                    vm.episodes.removeAt(pos)
+                    vm.vms.removeAt(pos)
                     if (item.downloaded) {
-                        episodes.add(pos, item)
-                        vms.add(pos, EpisodeVM(item, TAG))
+                        vm.episodes.add(pos, item)
+                        vm.vms.add(pos, EpisodeVM(item, TAG))
                     }
                 }
             }
@@ -533,18 +536,18 @@ class EpisodesFragment : Fragment() {
     }
 
     fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
-        if (spinnerTexts[curIndex] == QuickAccess.Downloaded.name) {
+        if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name) {
             var i = 0
             val size: Int = event.episodes.size
             while (i < size) {
                 val item: Episode = event.episodes[i++]
-                val pos = Episodes.indexOfItemWithId(episodes, item.id)
+                val pos = Episodes.indexOfItemWithId(vm.episodes, item.id)
                 if (pos >= 0) {
-                    episodes.removeAt(pos)
-                    vms.removeAt(pos)
+                    vm.episodes.removeAt(pos)
+                    vm.vms.removeAt(pos)
                     if (item.downloaded) {
-                        episodes.add(pos, item)
-                        vms.add(pos, EpisodeVM(item, TAG))
+                        vm.episodes.add(pos, item)
+                        vm.vms.add(pos, EpisodeVM(item, TAG))
                     }
                 }
             }
@@ -553,7 +556,7 @@ class EpisodesFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
     }
 

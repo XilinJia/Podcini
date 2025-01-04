@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.AppPreferences.isEnableAutodownload
+import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
@@ -551,9 +552,10 @@ class FeedSettingsFragment : Fragment() {
                         }
                         if (selectedOption == AutoDownloadPolicy.ONLY_NEW && item == selectedOption)
                             Row(Modifier.fillMaxWidth().padding(start = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-                                var replaceChecked by remember { mutableStateOf(item.replace) }
+                                var replaceChecked by remember { mutableStateOf(selectedOption.replace) }
                                 Checkbox(checked = replaceChecked, onCheckedChange = {
                                     replaceChecked = it
+                                    selectedOption.replace = it
                                     item.replace = it
                                 })
                                 Text(text = stringResource(R.string.replace), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.padding(start = 16.dp))
@@ -570,38 +572,6 @@ class FeedSettingsFragment : Fragment() {
             },
             dismissButton = { TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
         )
-
-
-//        Dialog(onDismissRequest = { onDismissRequest() }) {
-//            Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
-//                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-//                    AutoDownloadPolicy.entries.forEach { item ->
-//                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-//                            Checkbox(checked = (item == selectedOption),
-//                                onCheckedChange = {
-//                                    Logd(TAG, "row clicked: $item $selectedOption")
-//                                    if (item != selectedOption) {
-//                                        onOptionSelected(item)
-//                                        feed = upsertBlk(feed!!) { it.autoDLPolicy = item }
-//                                        onDismissRequest()
-//                                    }
-//                                }
-//                            )
-//                            Text(text = stringResource(item.resId), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
-//                        }
-//                        if (item == AutoDownloadPolicy.ONLY_NEW) Row(Modifier.fillMaxWidth().padding(start = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-//                            var replaceChecked by remember { mutableStateOf(item.replace) }
-//                            Checkbox(checked = replaceChecked, onCheckedChange = {
-//                                replaceChecked = it
-//                                item.replace = it
-//                                feed = upsertBlk(feed!!) { it.autoDLPolicy = item }
-//                            })
-//                            Text(text = stringResource(R.string.replace), style = MaterialTheme.typography.bodyMedium.merge(), modifier = Modifier.padding(start = 16.dp))
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
 
     @Composable
@@ -904,6 +874,7 @@ class FeedSettingsFragment : Fragment() {
     @JvmName("setFeedFunction")
     fun setFeed(feed_: Feed) {
         feed = feed_
+        feed = getFeed(feed_.id)
 //        if (feed!!.preferences == null) {
 //            feed!!.preferences = FeedPreferences(feed!!.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
 //            persistFeedPreferences(feed!!)

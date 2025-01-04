@@ -67,148 +67,152 @@ import java.util.concurrent.Semaphore
 import kotlin.math.min
 
 class FeedEpisodesFragment : Fragment() {
-    private lateinit var swipeActions: SwipeActions
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var showSwipeActionsDialog by mutableStateOf(false)
 
-    private var infoBarText = mutableStateOf("")
-    private var infoTextFiltered = ""
-    private var infoTextUpdate = ""
-    private var displayUpArrow by mutableStateOf(false)
-    private var headerCreated = false
-    private var feedID: Long = 0
-    private var feed by mutableStateOf<Feed?>(null)
-    var rating by mutableStateOf(Rating.UNRATED.code)
+    class FeedEpisodesVM {
+        internal lateinit var swipeActions: SwipeActions
+        internal var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var showSwipeActionsDialog by mutableStateOf(false)
 
-    private val episodes = mutableStateListOf<Episode>()
-    private val vms = mutableStateListOf<EpisodeVM>()
+        internal var infoBarText = mutableStateOf("")
+        internal var infoTextFiltered = ""
+        internal var infoTextUpdate = ""
+        internal var displayUpArrow by mutableStateOf(false)
+        internal var headerCreated = false
+        internal var feedID: Long = 0
+        internal var feed by mutableStateOf<Feed?>(null)
+        var rating by mutableStateOf(Rating.UNRATED.code)
 
-    private var ieMap: Map<Long, Int> = mapOf()
-    private var ueMap: Map<String, Int> = mapOf()
+        internal val episodes = mutableStateListOf<Episode>()
+        internal val vms = mutableStateListOf<EpisodeVM>()
 
-    private var enableFilter: Boolean = true
-    private var filterButtonColor = mutableStateOf(Color.White)
+        internal var ieMap: Map<Long, Int> = mapOf()
+        internal var ueMap: Map<String, Int> = mapOf()
 
-    private var showRemoveFeedDialog by mutableStateOf(false)
-    private var showFilterDialog by mutableStateOf(false)
-    private var showRenameDialog by mutableStateOf(false)
-    var showSortDialog by mutableStateOf(false)
-    var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
-    var layoutModeIndex by mutableIntStateOf(0)
+        internal var enableFilter: Boolean = true
+        internal var filterButtonColor = mutableStateOf(Color.White)
 
-    private val ioScope = CoroutineScope(Dispatchers.IO)
-    private var onInit: Boolean = true
+        internal var showRemoveFeedDialog by mutableStateOf(false)
+        internal var showFilterDialog by mutableStateOf(false)
+        internal var showRenameDialog by mutableStateOf(false)
+        var showSortDialog by mutableStateOf(false)
+        var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+        var layoutModeIndex by mutableIntStateOf(0)
+
+        internal var onInit: Boolean = true
+    }
+
+    private val vm = FeedEpisodesVM()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val args: Bundle? = arguments
-        if (args != null) feedID = args.getLong(ARGUMENT_FEED_ID)
+        if (args != null) vm.feedID = args.getLong(ARGUMENT_FEED_ID)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
 
-        sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        NavDrawerFragment.saveLastNavFragment(TAG, feedID.toString())
-        swipeActions = SwipeActions(this, TAG)
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
-        lifecycle.addObserver(swipeActions)
+        vm.sortOrder = vm.feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        NavDrawerFragment.saveLastNavFragment(TAG, vm.feedID.toString())
+        vm.swipeActions = SwipeActions(this, TAG)
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
+        lifecycle.addObserver(vm.swipeActions)
 
         var filterJob: Job? = null
         fun filterLongClick() {
-            if (feed == null) return
-            enableFilter = !enableFilter
+            if (vm.feed == null) return
+            vm.enableFilter = !vm.enableFilter
             if (filterJob != null) {
                 filterJob?.cancel()
-                stopMonitor(vms)
-                vms.clear()
+                stopMonitor(vm.vms)
+                vm.vms.clear()
             }
             filterJob = lifecycleScope.launch {
                 val eListTmp = mutableListOf<Episode>()
                 withContext(Dispatchers.IO) {
-                    if (enableFilter) {
-                        filterButtonColor.value = Color.White
-                        val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
+                    if (vm.enableFilter) {
+                        vm.filterButtonColor.value = Color.White
+                        val episodes_ = realm.query(Episode::class).query("feedId == ${vm.feed!!.id}").query(vm.feed!!.episodeFilter.queryString()).find()
                         eListTmp.addAll(episodes_)
                     } else {
-                        filterButtonColor.value = Color.Red
-                        eListTmp.addAll(feed!!.episodes)
+                        vm.filterButtonColor.value = Color.Red
+                        eListTmp.addAll(vm.feed!!.episodes)
                     }
-                    getPermutor(fromCode(feed?.sortOrderCode ?: 0)).reorder(eListTmp)
-                    episodes.clear()
-                    episodes.addAll(eListTmp)
-                    ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                    ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
+                    getPermutor(fromCode(vm.feed?.sortOrderCode ?: 0)).reorder(eListTmp)
+                    vm.episodes.clear()
+                    vm.episodes.addAll(eListTmp)
+                    vm.ieMap = vm.episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                    vm.ueMap = vm.episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                 }
                 withContext(Dispatchers.Main) {
-                    stopMonitor(vms)
-                    vms.clear()
-                    for (e in eListTmp) vms.add(EpisodeVM(e, TAG))
+                    stopMonitor(vm.vms)
+                    vm.vms.clear()
+                    for (e in eListTmp) vm.vms.add(EpisodeVM(e, TAG))
                 }
             }.apply { invokeOnCompletion { filterJob = null } }
         }
 
-        layoutModeIndex = if (feed?.useWideLayout == true) 1 else 0
+        vm.layoutModeIndex = if (vm.feed?.useWideLayout == true) 1 else 0
 
         val composeView = ComposeView(requireContext()).apply {
             setContent {
                 CustomTheme(requireContext()) {
-                    if (showRemoveFeedDialog) RemoveFeedDialog(listOf(feed!!), onDismissRequest = { showRemoveFeedDialog = false }) {
+                    if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed!!), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
                         (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
                         // Make sure fragment is hidden before actually starting to delete
                         requireActivity().supportFragmentManager.executePendingTransactions()
                     }
-                    if (showFilterDialog) EpisodesFilterDialog(filter = feed!!.episodeFilter,
+                    if (vm.showFilterDialog) EpisodesFilterDialog(filter = vm.feed!!.episodeFilter,
 //                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
-                        onDismissRequest = { showFilterDialog = false }) { filterValues ->
-                        if (feed != null) {
-                            Logd(TAG, "persist Episode Filter(): feedId = [${feed?.id}], filterValues = [$filterValues]")
+                        onDismissRequest = { vm.showFilterDialog = false }) { filterValues ->
+                        if (vm.feed != null) {
+                            Logd(TAG, "persist Episode Filter(): feedId = [${vm.feed?.id}], filterValues = [$filterValues]")
                             runOnIOScope {
-                                val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
+                                val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
                                 if (feed_ != null) {
-                                    feed = upsert(feed_) { it.filterString = filterValues.joinToString() }
+                                    vm.feed = upsert(feed_) { it.filterString = filterValues.joinToString() }
 //                                loadFeed()
                                 }
                             }
                         }
                     }
-                    if (showRenameDialog) RenameOrCreateSyntheticFeed(feed) { showRenameDialog = false }
-                    if (showSortDialog) EpisodeSortDialog(initOrder = sortOrder, onDismissRequest = { showSortDialog = false }) { sortOrder_, _ ->
-                        if (feed != null) {
+                    if (vm.showRenameDialog) RenameOrCreateSyntheticFeed(vm.feed) { vm.showRenameDialog = false }
+                    if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, onDismissRequest = { vm.showSortDialog = false }) { sortOrder_, _ ->
+                        if (vm.feed != null) {
                             Logd(TAG, "persist Episode SortOrder_")
-                            sortOrder = sortOrder_
+                            vm.sortOrder = sortOrder_
                             runOnIOScope {
-                                val feed_ = realm.query(Feed::class, "id == ${feed!!.id}").first().find()
-                                if (feed_ != null) feed = upsert(feed_) { it.sortOrder = sortOrder_ }
+                                val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
+                                if (feed_ != null) vm.feed = upsert(feed_) { it.sortOrder = sortOrder_ }
                             }
                         }
                     }
-                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
-                        swipeActions.actions = actions
+                    if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+                        vm.swipeActions.actions = actions
                         refreshSwipeTelltale()
                     }
-                    swipeActions.ActionOptionsDialog()
+                    vm.swipeActions.ActionOptionsDialog()
                     Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = filterButtonColor.value, filterClickCB = {
-                                if (enableFilter && feed != null) showFilterDialog = true
+                            FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = vm.filterButtonColor.value, filterClickCB = {
+                                if (vm.enableFilter && vm.feed != null) vm.showFilterDialog = true
                             }, filterLongClickCB = { filterLongClick() })
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vms, feed = feed, layoutMode = layoutModeIndex,
-                                buildMoreItems = { buildMoreItems(it) },
-                                refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
+                            InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
+                            EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, feed = vm.feed, layoutMode = vm.layoutModeIndex,
+                                buildMoreItems = { buildMoreItems() },
+                                refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), vm.feed) },
                                 leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it)
+                                    if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                    else vm.leftActionState.value.performAction(it)
                                 },
                                 rightSwipeCB = {
-                                    Logd(TAG, "rightActionState: ${rightActionState.value.getId()}")
-                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it)
+                                    Logd(TAG, "vm.rightActionState: ${vm.rightActionState.value.getId()}")
+                                    if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                    else vm.rightActionState.value.performAction(it)
                                 },
                             )
                         }
@@ -217,7 +221,7 @@ class FeedEpisodesFragment : Fragment() {
             }
         }
 
-        lifecycle.addObserver(swipeActions)
+        lifecycle.addObserver(vm.swipeActions)
         refreshSwipeTelltale()
         return composeView
     }
@@ -240,14 +244,14 @@ class FeedEpisodesFragment : Fragment() {
     fun FeedEpisodesHeader(activity: MainActivity, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
         val textColor = MaterialTheme.colorScheme.onSurface
         var showChooseRatingDialog by remember { mutableStateOf(false) }
-        if (showChooseRatingDialog) ChooseRatingDialog(listOf(feed!!)) {
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(vm.feed!!)) {
             showChooseRatingDialog = false
-            feed = realm.query(Feed::class).query("id == $0", feed!!.id).first().find()!!
-            rating = feed!!.rating
+            vm.feed = realm.query(Feed::class).query("id == $0", vm.feed!!.id).first().find()!!
+            vm.rating = vm.feed!!.rating
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
             val (bgImage, bgColor, controlRow, imgvCover) = createRefs()
-            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds, error = painterResource(R.drawable.teaser),
+            AsyncImage(model = vm.feed?.imageUrl?:"", contentDescription = "bgImage", contentScale = ContentScale.FillBounds, error = painterResource(R.drawable.teaser),
                 modifier = Modifier.fillMaxSize().blur(radiusX = 15.dp, radiusY = 15.dp).constrainAs(bgImage) {
                     bottom.linkTo(parent.bottom)
                     top.linkTo(parent.top)
@@ -264,25 +268,25 @@ class FeedEpisodesFragment : Fragment() {
                 width = Dimension.fillToConstraints
             }) {
                 Spacer(modifier = Modifier.weight(0.7f))
-                val ratingIconRes = Rating.fromCode(rating).res
+                val ratingIconRes = Rating.fromCode(vm.rating).res
                 Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = { showChooseRatingDialog = true }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), tint = textColor, contentDescription = "butSort",
-                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = { showSortDialog = true }))
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = { vm.showSortDialog = true }))
                 Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter_white), tint = if (filterButColor == Color.White) textColor else filterButColor, contentDescription = "butFilter",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
                 Spacer(modifier = Modifier.width(15.dp))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
-                        if (feed != null) {
-                            val fragment = FeedSettingsFragment.newInstance(feed!!)
+                        if (vm.feed != null) {
+                            val fragment = FeedSettingsFragment.newInstance(vm.feed!!)
                             activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
                         }
                     }))
                 Spacer(modifier = Modifier.weight(0.4f))
-                Text(episodes.size.toString() + " / " + feed?.episodes?.size?.toString(), textAlign = TextAlign.End, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                Text(vm.episodes.size.toString() + " / " + vm.feed?.episodes?.size?.toString(), textAlign = TextAlign.End, color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
             }
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).constrainAs(imgvCover) {
                 top.linkTo(parent.top)
@@ -290,16 +294,16 @@ class FeedEpisodesFragment : Fragment() {
                 end.linkTo(parent.end)
                 width = Dimension.fillToConstraints
             }) {
-                AsyncImage(model = feed?.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                AsyncImage(model = vm.feed?.imageUrl ?: "", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
                     modifier = Modifier.width(100.dp).height(100.dp).padding(start = 16.dp, end = 16.dp).clickable(onClick = {
-                        if (feed != null) {
-                            val fragment = FeedInfoFragment.newInstance(feed!!)
+                        if (vm.feed != null) {
+                            val fragment = FeedInfoFragment.newInstance(vm.feed!!)
                             activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
                         }
                     }))
                 Column(Modifier.padding(top = 10.dp)) {
-                    Text(feed?.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text(feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(vm.feed?.title ?: "", color = textColor, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(vm.feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -324,14 +328,14 @@ class FeedEpisodesFragment : Fragment() {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        ioScope.cancel()
+//        ioScope.cancel()
 
-        feed = null
-        ieMap = mapOf()
-        ueMap = mapOf()
-        episodes.clear()
-        stopMonitor(vms)
-        vms.clear()
+        vm.feed = null
+        vm.ieMap = mapOf()
+        vm.ueMap = mapOf()
+        vm.episodes.clear()
+        stopMonitor(vm.vms)
+        vm.vms.clear()
         tts?.stop()
         tts?.shutdown()
         ttsWorking = false
@@ -342,7 +346,7 @@ class FeedEpisodesFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
     }
 
@@ -358,7 +362,7 @@ class FeedEpisodesFragment : Fragment() {
     fun MyTopAppBar() {
         var expanded by remember { mutableStateOf(false) }
         TopAppBar(title = { Text("") },
-            navigationIcon = if (displayUpArrow) {
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
@@ -369,23 +373,23 @@ class FeedEpisodesFragment : Fragment() {
                     (activity as MainActivity).loadChildFragment(qFrag)
                     (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "queue") }
-                if (feed != null) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
+                if (vm.feed != null) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(vm.feed!!.id, vm.feed!!.title))
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
-                if (!feed?.link.isNullOrBlank()) IconButton(onClick = {
-                    IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
+                if (!vm.feed?.link.isNullOrBlank()) IconButton(onClick = {
+                    IntentUtils.openInBrowser(requireContext(), vm.feed!!.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
-                if (feed != null) {
+                if (vm.feed != null) {
                     IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         DropdownMenuItem(text = { Text(stringResource(R.string.refresh_label)) }, onClick = {
-                            FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
+                            FeedUpdateManager.runOnceOrAsk(requireContext(), vm.feed)
                             expanded = false
                         })
-                        if (feed?.isPaged == true) DropdownMenuItem(text = { Text(stringResource(R.string.load_complete_feed)) }, onClick = {
+                        if (vm.feed?.isPaged == true) DropdownMenuItem(text = { Text(stringResource(R.string.load_complete_feed)) }, onClick = {
                             Thread {
                                 try {
-                                    if (feed != null) {
-                                        val feed_ = upsertBlk(feed!!) {
+                                    if (vm.feed != null) {
+                                        val feed_ = upsertBlk(vm.feed!!) {
                                             it.nextPageLink = it.downloadUrl
                                             it.pageNr = 0
                                         }
@@ -397,15 +401,15 @@ class FeedEpisodesFragment : Fragment() {
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.share_label)) }, onClick = {
-                            ShareUtils.shareFeedLinkNew(requireContext(), feed!!)
+                            ShareUtils.shareFeedLinkNew(requireContext(), vm.feed!!)
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.rename_feed_label)) }, onClick = {
-                            showRenameDialog = true
+                            vm.showRenameDialog = true
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.remove_feed_label)) }, onClick = {
-                            showRemoveFeedDialog = true
+                            vm.showRemoveFeedDialog = true
                             expanded = false
                         })
                     }
@@ -415,24 +419,25 @@ class FeedEpisodesFragment : Fragment() {
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-        if (feed != null) {
-            val pos: Int = ieMap[event.episode.id] ?: -1
+        if (vm.feed != null) {
+            val pos: Int = vm.ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
-                if (!isFilteredOut(event.episode)) vms[pos].isPlayingState = event.isPlaying()
-                if (event.isPlaying()) upsertBlk(feed!!) { it.lastPlayed = Date().time }
+                // TODO: vm.vms[pos] may be out of bound
+                if (!isFilteredOut(event.episode)) vm.vms[pos].isPlayingState = event.isPlaying()
+                if (event.isPlaying()) upsertBlk(vm.feed!!) { it.lastPlayed = Date().time }
             }
         }
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEpisodeDownloadEvent() called with ${event.TAG}")
-        if (feed == null || episodes.isEmpty()) return
+        if (vm.feed == null || vm.episodes.isEmpty()) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = ueMap[url] ?: -1
+            val pos: Int = vm.ueMap[url] ?: -1
             if (pos >= 0) {
-                Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].downloaded} ${episodes[pos].title}")
-                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+                Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${vm.episodes[pos].downloaded} ${vm.episodes[pos].title}")
+                vm.vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
         }
     }
@@ -454,10 +459,8 @@ class FeedEpisodesFragment : Fragment() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.FeedChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
-//                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
-                    is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadFeed()
-//                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    is FlowEvent.FeedChangeEvent -> if (vm.feed?.id == event.feed.id) loadFeed()
+                    is FlowEvent.FeedListEvent -> if (vm.feed != null && event.contains(vm.feed!!)) loadFeed()
                     else -> {}
                 }
             }
@@ -481,37 +484,37 @@ class FeedEpisodesFragment : Fragment() {
     }
 
     private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
-        infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
-        infoBarText.value = "$infoTextFiltered $infoTextUpdate"
+        vm.infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
+        vm.infoBarText.value = "${vm.infoTextFiltered} ${vm.infoTextUpdate}"
         if (!event.isRunning) loadFeed()
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
     }
 
     private fun refreshHeaderView() {
-        if (feed == null) {
+        if (vm.feed == null) {
             Log.e(TAG, "Unable to refresh header view")
             return
         }
-        if (!headerCreated) headerCreated = true
-        infoTextFiltered = ""
-        if (!feed?.filterString.isNullOrEmpty()) {
-            val filter: EpisodeFilter = feed!!.episodeFilter
-            if (filter.properties.isNotEmpty()) infoTextFiltered = this.getString(R.string.filtered_label)
+        if (!vm.headerCreated) vm.headerCreated = true
+        vm.infoTextFiltered = ""
+        if (!vm.feed?.filterString.isNullOrEmpty()) {
+            val filter: EpisodeFilter = vm.feed!!.episodeFilter
+            if (filter.properties.isNotEmpty()) vm.infoTextFiltered = this.getString(R.string.filtered_label)
         }
-        infoBarText.value = "$infoTextFiltered $infoTextUpdate"
+        vm.infoBarText.value = "${vm.infoTextFiltered} ${vm.infoTextUpdate}"
     }
 
     private fun isFilteredOut(episode: Episode): Boolean {
-        if (enableFilter && !feed?.filterString.isNullOrEmpty()) {
-            val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
+        if (vm.enableFilter && !vm.feed?.filterString.isNullOrEmpty()) {
+            val episodes_ = realm.query(Episode::class).query("feedId == ${vm.feed!!.id}").query(vm.feed!!.episodeFilter.queryString()).find()
             if (!episodes_.contains(episode)) {
-                episodes.remove(episode)
-                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.downloadUrl?.let { it to index } }.toMap()
+                vm.episodes.remove(episode)
+                vm.ieMap = vm.episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                vm.ueMap = vm.episodes.mapIndexedNotNull { index, episode_ -> episode_.downloadUrl?.let { it to index } }.toMap()
                 return true
             }
             return false
@@ -524,45 +527,44 @@ class FeedEpisodesFragment : Fragment() {
         Logd(TAG, "loadFeed called")
         if (loadJob != null) {
             loadJob?.cancel()
-            stopMonitor(vms)
-            vms.clear()
+            stopMonitor(vm.vms)
+            vm.vms.clear()
         }
         loadJob = lifecycleScope.launch {
             try {
-                feed = withContext(Dispatchers.IO) {
-                    val feed_ = getFeed(feedID)
+                vm.feed = withContext(Dispatchers.IO) {
+                    val feed_ = getFeed(vm.feedID)
                     if (feed_ != null) {
                         Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                         val eListTmp = mutableListOf<Episode>()
-                        if (enableFilter && feed_.filterString.isNotEmpty()) {
+                        if (vm.enableFilter && feed_.filterString.isNotEmpty()) {
                             Logd(TAG, "episodeFilter: ${feed_.episodeFilter.queryString()}")
                             val episodes_ = realm.query(Episode::class).query("feedId == ${feed_.id}").query(feed_.episodeFilter.queryString()).find()
                             eListTmp.addAll(episodes_)
                         } else eListTmp.addAll(feed_.episodes)
-                        sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
-                        getPermutor(sortOrder).reorder(eListTmp)
-                        episodes.clear()
-                        episodes.addAll(eListTmp)
-                        ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
+                        vm.sortOrder = feed_.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
+                        getPermutor(vm.sortOrder).reorder(eListTmp)
+                        vm.episodes.clear()
+                        vm.episodes.addAll(eListTmp)
+                        vm.ieMap = vm.episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                        vm.ueMap = vm.episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                         withContext(Dispatchers.Main) {
-                            layoutModeIndex = if (feed_.useWideLayout == true) 1 else 0
-                            stopMonitor(vms)
-                            vms.clear()
-                            buildMoreItems(vms)
-//                            for (e in eListTmp) { vms.add(EpisodeVM(e, TAG)) }
+                            vm.layoutModeIndex = if (feed_.useWideLayout == true) 1 else 0
+                            stopMonitor(vm.vms)
+                            vm.vms.clear()
+                            buildMoreItems()
                         }
-                        if (onInit) {
+                        if (vm.onInit) {
                             var hasNonMediaItems = false
                             // TODO: ensure
-//                            for (item in episodes) {
+//                            for (item in vm.episodes) {
 //                                if (item.media == null) {
 //                                    hasNonMediaItems = true
 //                                    break
 //                                }
 //                            }
                             if (hasNonMediaItems) {
-                                ioScope.launch {
+                                lifecycleScope.launch {
                                     withContext(Dispatchers.IO) {
                                         if (!ttsReady) {
                                             initializeTTS(requireContext())
@@ -571,27 +573,27 @@ class FeedEpisodesFragment : Fragment() {
                                     }
                                 }
                             }
-                            onInit = false
+                            vm.onInit = false
                         }
                     }
                     feed_
                 }
                 withContext(Dispatchers.Main) {
-                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
-                    rating = feed?.rating ?: Rating.UNRATED.code
+                    Logd(TAG, "loadItems subscribe called ${vm.feed?.title}")
+                    vm.rating = vm.feed?.rating ?: Rating.UNRATED.code
                     refreshHeaderView()
                 }
             } catch (e: Throwable) {
-                feed = null
+                vm.feed = null
                 refreshHeaderView()
                 Log.e(TAG, Log.getStackTraceString(e))
             } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { loadJob = null } }
     }
 
-    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
-        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
-        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
+    fun buildMoreItems() {
+        val nextItems = (vm.vms.size until min(vm.vms.size + VMS_CHUNK_SIZE, vm.episodes.size)).map { EpisodeVM(vm.episodes[it], TAG) }
+        if (nextItems.isNotEmpty()) vm.vms.addAll(nextItems)
     }
 
 //    private fun onKeyUp(event: KeyEvent) {

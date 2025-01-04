@@ -7,6 +7,7 @@ import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
 import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
@@ -168,7 +169,11 @@ class Episode : RealmObject {
         get() {
             if (field == null) {
                 if (downloadUrl == null) return null
-                field = StreamInfo.getInfo(Vista.getService(0), downloadUrl!!)
+                try { field = StreamInfo.getInfo(Vista.getService(0), downloadUrl!!)
+                } catch (e: Throwable) {
+                    Log.e(TAG, "get streamInfo failed: ${e.message}")
+                    return null
+                }
             }
             return field
         }
@@ -850,7 +855,7 @@ class Episode : RealmObject {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
 
         val useEpisodeCoverSetting: Boolean
-            get() = getPref(AppPreferences.AppPrefs.prefEpisodeCover, true)
+            get() = getPref(AppPrefs.prefEpisodeCover, true)
 
         // from EpisodeMedia
         const val INVALID_TIME: Int = -1

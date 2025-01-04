@@ -130,7 +130,6 @@ class AudioPlayerFragment : Fragment() {
     private var imgLocLarge by mutableStateOf<String?>(null)
     private var txtvPlaybackSpeed by mutableStateOf("")
     private var curPlaybackSpeed by mutableStateOf(1f)
-    private var remainingTime by mutableIntStateOf(0)
     private var isVideoScreen = false
     private var playButRes by mutableIntStateOf(R.drawable.ic_play_48dp)
     private var currentPosition by mutableIntStateOf(0)

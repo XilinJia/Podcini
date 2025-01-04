@@ -63,7 +63,7 @@ class OnlineEpisodesFragment: Fragment() {
                         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                             InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
                             EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                                buildMoreItems = { buildMoreItems(it) },
+                                buildMoreItems = { buildMoreItems() },
                                 leftSwipeCB = {
                                     if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                     else leftActionState.value.performAction(it)
@@ -82,8 +82,8 @@ class OnlineEpisodesFragment: Fragment() {
         return composeView
     }
 
-    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
-        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
+    fun buildMoreItems() {
+        val nextItems = (vms.size until min(vms.size + VMS_CHUNK_SIZE, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
         if (nextItems.isNotEmpty()) vms.addAll(nextItems)
     }
 
@@ -103,7 +103,7 @@ class OnlineEpisodesFragment: Fragment() {
         super.onStart()
         stopMonitor(vms)
         vms.clear()
-        buildMoreItems(vms)
+        buildMoreItems()
 //        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
         infoBarText.value = "${episodes.size} episodes"
     }

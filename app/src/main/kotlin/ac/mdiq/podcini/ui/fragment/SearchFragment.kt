@@ -132,7 +132,7 @@ class SearchFragment : Fragment() {
                             when (selectedTabIndex.value) {
                                 0 -> {
                                     InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
-                                    EpisodeLazyColumn(activity as MainActivity, vms = vms, buildMoreItems = { buildMoreItems(it) },
+                                    EpisodeLazyColumn(activity as MainActivity, vms = vms, buildMoreItems = { buildMoreItems() },
                                         leftSwipeCB = {
                                             if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
                                             else leftActionState.value.performAction(it)
@@ -176,8 +176,8 @@ class SearchFragment : Fragment() {
         super.onDestroyView()
     }
 
-    fun buildMoreItems(vms: MutableList<EpisodeVM>) {
-        val nextItems = (vms.size until min(vms.size + 100, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
+    fun buildMoreItems() {
+        val nextItems = (vms.size until min(vms.size + VMS_CHUNK_SIZE, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
         if (nextItems.isNotEmpty()) vms.addAll(nextItems)
     }
 
@@ -265,7 +265,7 @@ class SearchFragment : Fragment() {
                     vms.clear()
                     if (first_.isNotEmpty()) {
                         episodes.addAll(first_)
-                        buildMoreItems(vms)
+                        buildMoreItems()
                     }
                     infoBarText.value = "${episodes.size} episodes"
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {

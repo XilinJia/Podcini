@@ -1,3 +1,14 @@
+# 7.2.2
+
+* likely fixed FeedEpisodes opening with null episodes
+* likely fixed action button becoming question mark in FeedEpisodes
+* fixed failures of deleting media files using uri strings
+* fixed auto download replace policy
+* enhanced episodes lists progressive loading
+* avoided crash when playing unreleased youtube media
+* added some error messages in streaming Youtube media
+* encapsulated variables in some fragments
+
 # 7.2.1
 
 * cleaned UserPreferences

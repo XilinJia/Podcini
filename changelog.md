@@ -1,3 +1,9 @@
+# 7.2.3
+
+* fixed crash when opening FeedInfo with feed.link == null
+* encapsulated variables in more fragments
+* some more Compose migrations
+
 # 7.2.2
 
 * likely fixed FeedEpisodes opening with null episodes

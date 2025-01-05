@@ -81,78 +81,74 @@ import java.util.*
  */
 class OnlineFeedFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
-
-    private var displayUpArrow = false
-
     var feedSource: String = ""
-    private var feedUrl: String = ""
-    private var urlToLog: String = ""
-    private lateinit var feedBuilder: FeedBuilder
-    private var showYTChannelDialog by mutableStateOf(false)
 
-    private var isShared: Boolean = false
+    class OnlineFeedVM {
+        internal var displayUpArrow = false
 
-    private var showFeedDisplay by mutableStateOf(false)
-    private var showProgress by mutableStateOf(true)
-    private var autoDownloadChecked by mutableStateOf(false)
-    private var enableSubscribe by mutableStateOf(true)
-    private var enableEpisodes by mutableStateOf(true)
-    private var subButTextRes by mutableIntStateOf(R.string.subscribe_label)
+        internal var feedUrl: String = ""
+        internal var urlToLog: String = ""
+        internal lateinit var feedBuilder: FeedBuilder
+        internal var showYTChannelDialog by mutableStateOf(false)
 
-    private val feedId: Long
-        get() {
-            if (feeds == null) return 0
-            for (f in feeds!!) {
-                if (f.downloadUrl == selectedDownloadUrl) return f.id
+        internal var isShared: Boolean = false
+
+        internal var showFeedDisplay by mutableStateOf(false)
+        internal var showProgress by mutableStateOf(true)
+        internal var autoDownloadChecked by mutableStateOf(false)
+        internal var enableSubscribe by mutableStateOf(true)
+        internal var enableEpisodes by mutableStateOf(true)
+        internal var subButTextRes by mutableIntStateOf(R.string.subscribe_label)
+
+        internal val feedId: Long
+            get() {
+                if (feeds == null) return 0
+                for (f in feeds!!) if (f.downloadUrl == selectedDownloadUrl) return f.id
+                return 0
             }
-            return 0
-        }
 
-    @Volatile
-    private var feeds: List<Feed>? = null
-    private var feed by mutableStateOf<Feed?>(null)
-    private var selectedDownloadUrl: String? = null
-//    private var downloader: Downloader? = null
-    private var username: String? = null
-    private var password: String? = null
+        @Volatile
+        internal var feeds: List<Feed>? = null
+        internal var feed by mutableStateOf<Feed?>(null)
+        internal var selectedDownloadUrl: String? = null
+        //    private var downloader: Downloader? = null
+        internal var username: String? = null
+        internal var password: String? = null
 
-    private var isPaused = false
-    private var didPressSubscribe = false
-    private var isFeedFoundBySearch = false
+        internal var isPaused = false
+        internal var didPressSubscribe = false
+        internal var isFeedFoundBySearch = false
 
-    private var dialog: Dialog? = null
+        internal var dialog: Dialog? = null
+    }
+
+    private val vm = OnlineFeedVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-        feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
-        isShared = requireArguments().getBoolean("isShared")
-        Logd(TAG, "feedUrl: $feedUrl")
-        feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
+        vm.feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
+        vm.isShared = requireArguments().getBoolean("isShared")
+        Logd(TAG, "feedUrl: ${vm.feedUrl}")
+        vm.feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (showYTChannelDialog) feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = { showYTChannelDialog = false }) { feed, map -> handleFeed(feed, map) }
-                    MainView()
-                }
-            }
-        }
-        if (feedUrl.isEmpty()) {
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { OnlineFeedScreen() } } }
+
+        if (vm.feedUrl.isEmpty()) {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
         } else {
-            Logd(TAG, "Activity was started with url $feedUrl")
-            showProgress = true
+            Logd(TAG, "Activity was started with url ${vm.feedUrl}")
+            vm.showProgress = true
             // Remove subscribeonandroid.com from feed URL in order to subscribe to the actual feed URL
-            if (feedUrl.contains("subscribeonandroid.com")) feedUrl = feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
+            if (vm.feedUrl.contains("subscribeonandroid.com")) vm.feedUrl = vm.feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
             if (savedInstanceState != null) {
-                username = savedInstanceState.getString("username")
-                password = savedInstanceState.getString("password")
+                vm.username = savedInstanceState.getString("username")
+                vm.password = savedInstanceState.getString("password")
             }
-            lookupUrlAndBuild(feedUrl)
+            lookupUrlAndBuild(vm.feedUrl)
         }
         return composeView
     }
@@ -161,7 +157,7 @@ class OnlineFeedFragment : Fragment() {
     @Composable
     fun MyTopAppBar() {
         TopAppBar(title = { Text(text = "") },
-            navigationIcon = if (displayUpArrow) {
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
@@ -171,35 +167,35 @@ class OnlineFeedFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        isPaused = false
+        vm.isPaused = false
         procFlowEvents()
     }
 
     override fun onStop() {
         super.onStop()
-        isPaused = true
+        vm.isPaused = true
         cancelFlowEvents()
 //        if (downloader != null && !downloader!!.isFinished) downloader!!.cancel()
-        if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
+        if (vm.dialog != null && vm.dialog!!.isShowing) vm.dialog!!.dismiss()
     }
 
     override fun onDestroy() {
-        feeds = null
+        vm.feeds = null
         super.onDestroy()
     }
 
      override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
-        outState.putString("username", username)
-        outState.putString("password", password)
+        outState.putString("username", vm.username)
+        outState.putString("password", vm.password)
     }
 
     private fun handleFeed(feed_: Feed, map: Map<String, String>) {
-        selectedDownloadUrl = feedBuilder.selectedDownloadUrl
-        feed = feed_
-        if (isShared) {
-            val log = realm.query(ShareLog::class).query("url == $0", urlToLog).first().find()
+        vm.selectedDownloadUrl = vm.feedBuilder.selectedDownloadUrl
+        vm.feed = feed_
+        if (vm.isShared) {
+            val log = realm.query(ShareLog::class).query("url == $0", vm.urlToLog).first().find()
             if (log != null) upsertBlk(log) {
                 it.title = feed_.title
                 it.author = feed_.author
@@ -210,21 +206,21 @@ class OnlineFeedFragment : Fragment() {
 
     private fun lookupUrlAndBuild(url: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            urlToLog = url
+            vm.urlToLog = url
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
             Logd(TAG, "lookupUrlAndBuild: urlString: ${urlString}")
             try {
-                feeds = getFeedList()
-                if (feedBuilder.isYoutube(urlString)) {
-                    if (feedBuilder.isYoutubeChannel()) {
-                        val nTabs = feedBuilder.youtubeChannelValidTabs()
-                        if (nTabs > 1) showYTChannelDialog = true
-                        else feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
-                    } else feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
+                vm.feeds = getFeedList()
+                if (vm.feedBuilder.isYoutube(urlString)) {
+                    if (vm.feedBuilder.isYoutubeChannel()) {
+                        val nTabs = vm.feedBuilder.youtubeChannelValidTabs()
+                        if (nTabs > 1) vm.showYTChannelDialog = true
+                        else vm.feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
+                    } else vm.feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
                 } else {
                     val urlFinal = getFinalRedirectedUrl(urlString)?:""
                     Logd(TAG, "lookupUrlAndBuild: urlFinal: ${urlFinal}")
-                    feedBuilder.buildPodcast(urlFinal, username, password) { feed_, map -> handleFeed(feed_, map) }
+                    vm.feedBuilder.buildPodcast(urlFinal, vm.username, vm.password) { feed_, map -> handleFeed(feed_, map) }
                 }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
@@ -251,17 +247,17 @@ class OnlineFeedFragment : Fragment() {
                 }
             }
             if (url != null) {
-                urlToLog = url
+                vm.urlToLog = url
                 Logd(TAG, "Successfully retrieve feed url")
-                isFeedFoundBySearch = true
-                feeds = getFeedList()
-                if (feedBuilder.isYoutube(url)) {
-                    if (feedBuilder.isYoutubeChannel()) {
-                        val nTabs = feedBuilder.youtubeChannelValidTabs()
-                        if (nTabs > 1) showYTChannelDialog = true
-                        else feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
-                    } else feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
-                } else feedBuilder.buildPodcast(url, username, password) { feed_, map -> handleFeed(feed_, map) }
+                vm.isFeedFoundBySearch = true
+                vm.feeds = getFeedList()
+                if (vm.feedBuilder.isYoutube(url)) {
+                    if (vm.feedBuilder.isYoutubeChannel()) {
+                        val nTabs = vm.feedBuilder.youtubeChannelValidTabs()
+                        if (nTabs > 1) vm.showYTChannelDialog = true
+                        else vm.feedBuilder.buildYTChannel(0, "") { feed_, map -> handleFeed(feed_, map) }
+                    } else vm.feedBuilder.buildYTPlaylist { feed_, map -> handleFeed(feed_, map) }
+                } else vm.feedBuilder.buildPodcast(url, vm.username, vm.password) { feed_, map -> handleFeed(feed_, map) }
             } else {
                 showNoPodcastFoundError()
                 Logd(TAG, "Failed to retrieve feed url")
@@ -315,7 +311,7 @@ class OnlineFeedFragment : Fragment() {
             try {
                 val feeds = withContext(Dispatchers.IO) { getFeedList() }
                 withContext(Dispatchers.Main) {
-                    this@OnlineFeedFragment.feeds = feeds
+                    this@OnlineFeedFragment.vm.feeds = feeds
                     handleUpdatedFeedStatus()
                 }
             } catch (e: Throwable) {
@@ -330,9 +326,9 @@ class OnlineFeedFragment : Fragment() {
      * This method is executed on the GUI thread.
      */
      private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
-        showProgress = false
-        showFeedDisplay = true
-        if (isFeedFoundBySearch) {
+        vm.showProgress = false
+        vm.showFeedDisplay = true
+        if (vm.isFeedFoundBySearch) {
             val resId = R.string.no_feed_url_podcast_found_by_search
             Snackbar.make(requireView(), resId, Snackbar.LENGTH_LONG).show()
         }
@@ -368,17 +364,18 @@ class OnlineFeedFragment : Fragment() {
     }
 
     @Composable
-    fun MainView() {
+    fun OnlineFeedScreen() {
         val textColor = MaterialTheme.colorScheme.onSurface
+        if (vm.showYTChannelDialog) vm.feedBuilder.ConfirmYTChannelTabsDialog(onDismissRequest = { vm.showYTChannelDialog = false }) { feed, map -> handleFeed(feed, map) }
         val feedLogsMap_ = feedLogsMap!!
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            if (showProgress) Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            if (vm.showProgress) Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                 CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp).align(Alignment.Center))
             }
             else Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(start = 10.dp, end = 10.dp)) {
-                if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(100.dp).background(MaterialTheme.colorScheme.surface)) {
+                if (vm.showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(100.dp).background(MaterialTheme.colorScheme.surface)) {
                     val (coverImage, taColumn, buttons) = createRefs()
-                    AsyncImage(model = feed?.imageUrl ?: "", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
+                    AsyncImage(model = vm.feed?.imageUrl ?: "", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
                         modifier = Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
@@ -387,8 +384,8 @@ class OnlineFeedFragment : Fragment() {
                         top.linkTo(coverImage.top)
                         start.linkTo(coverImage.end)
                     }) {
-                        Text(feed?.title ?: "No title", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text(feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(vm.feed?.title ?: "No title", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(vm.feed?.author ?: "", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Row(Modifier.constrainAs(buttons) {
                         start.linkTo(coverImage.end)
@@ -396,40 +393,40 @@ class OnlineFeedFragment : Fragment() {
                         end.linkTo(parent.end)
                     }) {
                         Spacer(modifier = Modifier.weight(0.2f))
-                        if (enableSubscribe) Button(onClick = {
-                            if (feedInFeedlist() || isSubscribed(feed!!)) {
-                                if (isShared) {
-                                    val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
+                        if (vm.enableSubscribe) Button(onClick = {
+                            if (feedInFeedlist() || isSubscribed(vm.feed!!)) {
+                                if (vm.isShared) {
+                                    val log = realm.query(ShareLog::class).query("url == $0", vm.feedUrl).first().find()
                                     if (log != null) upsertBlk(log) { it.status = ShareLog.Status.EXISTING.ordinal }
                                 }
-                                val feed = getFeedByTitleAndAuthor(feed?.eigenTitle ?: "", feed?.author ?: "")
+                                val feed = getFeedByTitleAndAuthor(vm.feed?.eigenTitle ?: "", vm.feed?.author ?: "")
                                 if (feed != null) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
                             } else {
-                                enableSubscribe = false
-                                enableEpisodes = false
+                                vm.enableSubscribe = false
+                                vm.enableEpisodes = false
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    feedBuilder.subscribe(feed!!)
-                                    if (isShared) {
-                                        val log = realm.query(ShareLog::class).query("url == $0", feedUrl).first().find()
+                                    vm.feedBuilder.subscribe(vm.feed!!)
+                                    if (vm.isShared) {
+                                        val log = realm.query(ShareLog::class).query("url == $0", vm.feedUrl).first().find()
                                         if (log != null) upsertBlk(log) { it.status = ShareLog.Status.SUCCESS.ordinal }
                                     }
                                     withContext(Dispatchers.Main) {
-                                        enableSubscribe = true
-                                        didPressSubscribe = true
+                                        vm.enableSubscribe = true
+                                        vm.didPressSubscribe = true
                                         handleUpdatedFeedStatus()
                                     }
                                 }
                             }
-                        }) { Text(stringResource(subButTextRes)) }
+                        }) { Text(stringResource(vm.subButTextRes)) }
                         Spacer(modifier = Modifier.weight(0.1f))
-                        if (enableEpisodes && feed != null) Button(onClick = { showEpisodes(feed!!.episodes) }) { Text(stringResource(R.string.episodes_label)) }
+                        if (vm.enableEpisodes && vm.feed != null) Button(onClick = { showEpisodes(vm.feed!!.episodes) }) { Text(stringResource(R.string.episodes_label)) }
                         Spacer(modifier = Modifier.weight(0.2f))
                     }
                 }
                 Column {
 //                    alternate_urls_spinner
                     if (feedSource != "VistaGuide" && isEnableAutodownload) Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = autoDownloadChecked, onCheckedChange = { autoDownloadChecked = it })
+                        Checkbox(checked = vm.autoDownloadChecked, onCheckedChange = { vm.autoDownloadChecked = it })
                         Text(text = stringResource(R.string.auto_download_label),
                             style = MaterialTheme.typography.bodyMedium.merge(), color = textColor,
                             modifier = Modifier.padding(start = 16.dp)
@@ -437,11 +434,11 @@ class OnlineFeedFragment : Fragment() {
                     }
                 }
                 val scrollState = rememberScrollState()
-                var numEpisodes by remember { mutableIntStateOf(feed?.episodes?.size ?: 0) }
+                var numEpisodes by remember { mutableIntStateOf(vm.feed?.episodes?.size ?: 0) }
                 LaunchedEffect(Unit) {
                     while (true) {
                         delay(1000)
-                        numEpisodes = feed?.episodes?.size ?: 0
+                        numEpisodes = vm.feed?.episodes?.size ?: 0
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
@@ -449,8 +446,8 @@ class OnlineFeedFragment : Fragment() {
                         modifier = Modifier.padding(top = 5.dp, bottom = 10.dp))
                     Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(HtmlToPlainText.getPlainText(feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
-                    val sLog = remember { feedLogsMap_[feed?.downloadUrl ?: ""] }
+                    Text(HtmlToPlainText.getPlainText(vm.feed?.description ?: ""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    val sLog = remember { feedLogsMap_[vm.feed?.downloadUrl ?: ""] }
                     if (sLog != null) {
                         val commentTextState by remember { mutableStateOf(TextFieldValue(sLog.comment)) }
                         val context = LocalContext.current
@@ -467,10 +464,10 @@ class OnlineFeedFragment : Fragment() {
                                 modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
                         }
                     }
-                    Text(feed?.mostRecentItem?.title ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text("${feed?.language ?: ""} ${feed?.type ?: ""} ${feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(feed?.link ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
-                    Text(feed?.downloadUrl ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(vm.feed?.mostRecentItem?.title ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text("${vm.feed?.language ?: ""} ${vm.feed?.type ?: ""} ${vm.feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(vm.feed?.link ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(vm.feed?.downloadUrl ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
                 }
             }
         }
@@ -491,56 +488,56 @@ class OnlineFeedFragment : Fragment() {
 
      private fun handleUpdatedFeedStatus() {
         val dli = DownloadServiceInterface.get()
-        if (dli == null || selectedDownloadUrl == null) return
+        if (dli == null || vm.selectedDownloadUrl == null) return
 
         when {
 //            feedSource != "VistaGuide" -> {
 //                binding.subscribeButton.isEnabled = false
 //            }
-            dli.isDownloadingEpisode(selectedDownloadUrl!!) -> {
-                enableSubscribe = false
-                subButTextRes = R.string.subscribe_label
+            dli.isDownloadingEpisode(vm.selectedDownloadUrl!!) -> {
+                vm.enableSubscribe = false
+                vm.subButTextRes = R.string.subscribe_label
             }
             feedInFeedlist() -> {
-                enableSubscribe = true
-                subButTextRes = R.string.open
-                if (didPressSubscribe) {
-                    didPressSubscribe = false
-                    val feed1 = getFeed(feedId, true)?: return
+                vm.enableSubscribe = true
+                vm.subButTextRes = R.string.open
+                if (vm.didPressSubscribe) {
+                    vm.didPressSubscribe = false
+                    val feed1 = getFeed(vm.feedId, true)?: return
 //                    if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
 //                        FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                     if (feedSource == "VistaGuide") {
                         feed1.prefStreamOverDownload = true
                         feed1.autoDownload = false
                     } else if (isEnableAutodownload) {
-                        val autoDownload = autoDownloadChecked
+                        val autoDownload = vm.autoDownloadChecked
                         feed1.autoDownload = autoDownload
                         val editor = prefs.edit()
                         editor?.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
                         editor?.apply()
                     }
-                    if (username != null) {
-                        feed1.username = username
-                        feed1.password = password
+                    if (vm.username != null) {
+                        feed1.username = vm.username
+                        feed1.password = vm.password
                     }
                     runOnIOScope { upsert(feed1) {} }
 //                    openFeed()
                 }
             }
             else -> {
-                enableSubscribe = true
-                subButTextRes = R.string.subscribe_label
+                vm.enableSubscribe = true
+                vm.subButTextRes = R.string.subscribe_label
             }
         }
     }
 
     private fun feedInFeedlist(): Boolean {
-        return feedId != 0L
+        return vm.feedId != 0L
     }
 
     @UiThread
     private fun showErrorDialog(errorMsg: String?, details: String) {
-        if (!isRemoving && !isPaused) {
+        if (!isRemoving && !vm.isPaused) {
             val builder = MaterialAlertDialogBuilder(requireContext())
             builder.setTitle(R.string.error_label)
             if (errorMsg != null) {
@@ -562,8 +559,8 @@ class OnlineFeedFragment : Fragment() {
 //                setResult(RESULT_ERROR)
 //                finish()
             }
-            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
-            dialog = builder.show()
+            if (vm.dialog != null && vm.dialog!!.isShowing) vm.dialog!!.dismiss()
+            vm.dialog = builder.show()
         }
     }
 

@@ -124,35 +124,35 @@ class EpisodesFragment : Fragment() {
         vm.rightActionState.value = vm.swipeActions.actions.right[0]
         lifecycle.addObserver(vm.swipeActions)
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    OpenDialog()
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
-                                buildMoreItems = { buildMoreItems() },
-                                leftSwipeCB = {
-                                    if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.leftActionState.value.performAction(it)
-                                },
-                                rightSwipeCB = {
-                                    if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.rightActionState.value.performAction(it)
-                                },
-                                actionButton_ = vm.actionButtonToPass
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { EpisodesScreen() } } }
+
         refreshSwipeTelltale()
         vm.curIndex = prefs.getInt("curIndex", 0)
         vm.sortOrder = vm.episodesSortOrder
         updateToolbar()
         return composeView
+    }
+
+    @Composable
+    fun EpisodesScreen() {
+        OpenDialog()
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
+                EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
+                    buildMoreItems = { buildMoreItems() },
+                    leftSwipeCB = {
+                        if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.leftActionState.value.performAction(it)
+                    },
+                    rightSwipeCB = {
+                        if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.rightActionState.value.performAction(it)
+                    },
+                    actionButton_ = vm.actionButtonToPass
+                )
+            }
+        }
     }
 
     override fun onStart() {

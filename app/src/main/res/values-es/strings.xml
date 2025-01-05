@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Actualizar Suscripciones</string>
     <string name="feeds">Alimentos</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">Pódcasts</string>
     <string name="statistics_label">Estadísticas</string>
     <string name="add_feed_label">Añadir pódcast</string>

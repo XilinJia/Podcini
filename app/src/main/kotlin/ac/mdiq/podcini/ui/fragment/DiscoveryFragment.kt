@@ -2,25 +2,25 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
 import ac.mdiq.podcini.net.feed.searcher.ItunesTopListLoader
 import ac.mdiq.podcini.net.feed.searcher.PodcastSearchResult
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,16 +36,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
 class DiscoveryFragment : Fragment() {
-    val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
+    internal val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
 
     class DiscoveryVM {
         internal var topList: List<PodcastSearchResult>? = listOf()
@@ -59,68 +60,92 @@ class DiscoveryFragment : Fragment() {
         internal var retryQerry by mutableStateOf("")
         internal var showProgress by mutableStateOf(true)
         internal var noResultText by mutableStateOf("")
+
+        internal var showSelectCounrty by mutableStateOf(false)
     }
 
-    private val vm = DiscoveryVM()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        vm.countryCode = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
-        vm.hidden = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
-        vm.needsConfirm = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
-    }
+    private lateinit var vm: DiscoveryVM
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    val textColor = MaterialTheme.colorScheme.onSurface
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        ConstraintLayout(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            val (gridView, progressBar, empty, txtvError, butRetry) = createRefs()
-                            if (vm.showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
-                            val lazyListState = rememberLazyListState()
-                            if (vm.searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
-                                .constrainAs(gridView) {
-                                    top.linkTo(parent.top)
-                                    bottom.linkTo(parent.bottom)
-                                    start.linkTo(parent.start)
-                                },
-                                verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(vm.searchResults.size) { index -> OnlineFeedItem(activity = activity as MainActivity, vm.searchResults[index]) }
-                            }
-                            if (vm.searchResults.isEmpty()) Text(vm.noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
-                            if (vm.errorText.isNotEmpty()) Text(vm.errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
-                            if (vm.retryQerry.isNotEmpty()) Button(
-                                modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom) },
-                                onClick = {
-                                    if (vm.needsConfirm) {
-                                        prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
-                                        vm.needsConfirm = false
-                                    }
-                                    loadToplist(vm.countryCode)
-                                },
-                            ) { Text(stringResource(id = R.string.retry_label)) }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { DiscoveryScreen() } } }
+        return composeView
+    }
+
+    @Composable
+    fun DiscoveryScreen() {
+        if (!::vm.isInitialized) vm = remember { DiscoveryVM() }
+
+        val lifecycleOwner = LocalLifecycleOwner.current
+
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_CREATE -> {
+                        Logd(TAG, "ON_CREATE")
+                        vm.countryCode = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
+                        vm.hidden = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
+                        vm.needsConfirm = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
+                        loadToplist(vm.countryCode)
+                    }
+                    Lifecycle.Event.ON_START -> {
+                        Logd(TAG, "ON_START")
+                    }
+                    Lifecycle.Event.ON_STOP -> {
+                        Logd(TAG, "ON_STOP")
+                    }
+                    Lifecycle.Event.ON_DESTROY -> {
+                        Logd(TAG, "ON_DESTROY")
+                        vm.searchResults.clear()
+                        vm.topList = null
+                    }
+                    else -> {}
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+
+        val textColor = MaterialTheme.colorScheme.onSurface
+
+        if (vm.showSelectCounrty == true) SelectCountryDialog { vm.showSelectCounrty = false }
+
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            ConstraintLayout(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                val (gridView, progressBar, empty, txtvError, butRetry) = createRefs()
+                if (vm.showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
+                val lazyListState = rememberLazyListState()
+                if (vm.searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+                    .constrainAs(gridView) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                    },
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(vm.searchResults.size) { index -> OnlineFeedItem(activity = activity as MainActivity, vm.searchResults[index]) }
+                }
+                if (vm.searchResults.isEmpty()) Text(vm.noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
+                if (vm.errorText.isNotEmpty()) Text(vm.errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
+                if (vm.retryQerry.isNotEmpty()) Button(
+                    modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom) },
+                    onClick = {
+                        if (vm.needsConfirm) {
+                            prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                            vm.needsConfirm = false
+                        }
+                        loadToplist(vm.countryCode)
+                    },
+                ) { Text(stringResource(id = R.string.retry_label)) }
 //                Text( getString(R.string.search_powered_by, searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(
 //                    Color.LightGray)
 //                    .constrainAs(powered) {
 //                        bottom.linkTo(parent.bottom)
 //                        end.linkTo(parent.end)
 //                    })
-                        }
-                    }
-                }
             }
         }
-        loadToplist(vm.countryCode)
-        return composeView
-    }
-
-    override fun onDestroy() {
-        vm.searchResults.clear()
-        vm.topList = null
-        super.onDestroy()
     }
 
     private fun loadToplist(country: String?) {
@@ -189,7 +214,7 @@ class DiscoveryFragment : Fragment() {
                         expanded = false
                     })
                     DropdownMenuItem(text = { Text(stringResource(R.string.select_country)) }, onClick = {
-                        selectCountry()
+                        vm.showSelectCounrty = true
                         expanded = false
                     })
                 }
@@ -197,59 +222,74 @@ class DiscoveryFragment : Fragment() {
         )
     }
 
-    private fun selectCountry() {
-        val inflater = layoutInflater
-        val selectCountryDialogView = inflater.inflate(R.layout.select_country_dialog, null)
-        val builder = MaterialAlertDialogBuilder(requireContext())
-        builder.setView(selectCountryDialogView)
+    @Composable
+    fun SelectCountryDialog(onDismiss: () -> Unit) {
+        val countryNameCodeMap: MutableMap<String, String> = remember { hashMapOf() }
+        val countryCodeNameMap: MutableMap<String?, String> = remember { hashMapOf() }
+        val countryNamesSort = remember { mutableStateListOf<String>() }
+        var selectedCountry by remember { mutableStateOf("") }
+        var textInput by remember { mutableStateOf("") }
 
-        val countryCodeArray: List<String> = listOf(*Locale.getISOCountries())
-        val countryCodeNames: MutableMap<String?, String> = HashMap()
-        val countryNameCodes: MutableMap<String, String> = HashMap()
-        for (code in countryCodeArray) {
-            val locale = Locale("", code)
-            val countryName = locale.displayCountry
-            countryCodeNames[code] = countryName
-            countryNameCodes[countryName] = code
+        LaunchedEffect(Unit) {
+            val countryCodeArray: List<String> = listOf(*Locale.getISOCountries())
+            for (code in countryCodeArray) {
+                val locale = Locale("", code)
+                val countryName = locale.displayCountry
+                Logd(TAG, "code: $code countryName: $countryName")
+                countryCodeNameMap[code] = countryName
+                countryNameCodeMap[countryName] = code
+            }
+            countryNamesSort.addAll(countryCodeNameMap.values)
+            countryNamesSort.sort()
+            selectedCountry = countryCodeNameMap[vm.countryCode] ?: ""
+            textInput = selectedCountry
         }
-
-        val countryNamesSort: MutableList<String> = ArrayList(countryCodeNames.values)
-        countryNamesSort.sort()
-
-        val dataAdapter = ArrayAdapter(this.requireContext(), android.R.layout.simple_list_item_1, countryNamesSort)
-        val scBinding = SelectCountryDialogBinding.bind(selectCountryDialogView)
-        val textInput = scBinding.countryTextInput
-        val editText = textInput.editText as? MaterialAutoCompleteTextView
-        editText!!.setAdapter(dataAdapter)
-        editText.setText(countryCodeNames[vm.countryCode])
-        editText.setOnClickListener {
-            if (editText.text.isNotEmpty()) {
-                editText.setText("")
-                editText.postDelayed({ editText.showDropDown() }, 100)
+        @OptIn(ExperimentalMaterial3Api::class)
+        @Composable
+        fun CountrySelection() {
+            val filteredCountries = remember { countryNamesSort.toMutableStateList() }
+            var expanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                TextField(value = textInput, modifier = Modifier.fillMaxWidth().padding(20.dp).menuAnchor(MenuAnchorType.PrimaryNotEditable, false), readOnly = false,
+                    onValueChange = { input ->
+                        textInput = input
+                        if (textInput.length > 1) {
+                            filteredCountries.clear()
+                            filteredCountries.addAll(countryNamesSort.filter { it.contains(input, ignoreCase = true) }.take(5))
+                            Logd(TAG, "input: $input filteredCountries: ${filteredCountries.size}")
+                            expanded = filteredCountries.isNotEmpty()
+                        }
+                    },
+                    label = { Text(stringResource(id = R.string.select_country)) })
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    filteredCountries.forEach { country ->
+                        DropdownMenuItem(text = { Text(text = country) }, onClick = {
+                            selectedCountry = country
+                            textInput = country
+                            expanded = false
+                        })
+                    }
+                }
             }
         }
-        editText.onFocusChangeListener = View.OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-            if (hasFocus) {
-                editText.setText("")
-                editText.postDelayed({ editText.showDropDown() }, 100)
-            }
-        }
-
-        builder.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-            val countryName = editText.text.toString()
-            if (countryNameCodes.containsKey(countryName)) {
-                vm.countryCode = countryNameCodes[countryName]
-                vm.hidden = false
-            }
-
-            prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, vm.hidden).apply()
-            prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, vm.countryCode).apply()
-
-            EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
-            loadToplist(vm.countryCode)
-        }
-        builder.setNegativeButton(R.string.cancel_label, null)
-        builder.show()
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismiss() },
+            title = { Text(stringResource(R.string.pref_custom_media_dir_title), style = CustomTextStyles.titleCustom) },
+            text = { CountrySelection() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (countryNameCodeMap.containsKey(selectedCountry)) {
+                        vm.countryCode = countryNameCodeMap[selectedCountry]
+                        vm.hidden = false
+                    }
+                    prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, vm.hidden).apply()
+                    prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, vm.countryCode).apply()
+                    EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
+                    loadToplist(vm.countryCode)
+                    onDismiss()
+                }) { Text(stringResource(R.string.confirm_label)) }
+            },
+            dismissButton = { TextButton(onClick = { onDismiss() }) { Text(stringResource(R.string.cancel_label)) } }
+        )
     }
 
     companion object {

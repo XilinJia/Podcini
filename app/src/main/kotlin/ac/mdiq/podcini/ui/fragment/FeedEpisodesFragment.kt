@@ -81,7 +81,7 @@ class FeedEpisodesFragment : Fragment() {
         internal var headerCreated = false
         internal var feedID: Long = 0
         internal var feed by mutableStateOf<Feed?>(null)
-        var rating by mutableStateOf(Rating.UNRATED.code)
+        internal var rating by mutableStateOf(Rating.UNRATED.code)
 
         internal val episodes = mutableStateListOf<Episode>()
         internal val vms = mutableStateListOf<EpisodeVM>()
@@ -95,11 +95,25 @@ class FeedEpisodesFragment : Fragment() {
         internal var showRemoveFeedDialog by mutableStateOf(false)
         internal var showFilterDialog by mutableStateOf(false)
         internal var showRenameDialog by mutableStateOf(false)
-        var showSortDialog by mutableStateOf(false)
-        var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
-        var layoutModeIndex by mutableIntStateOf(0)
+        internal var showSortDialog by mutableStateOf(false)
+        internal var sortOrder by mutableStateOf(EpisodeSortOrder.DATE_NEW_OLD)
+        internal var layoutModeIndex by mutableIntStateOf(0)
 
         internal var onInit: Boolean = true
+        internal var filterJob: Job? = null
+
+        internal var eventSink: Job? = null
+        internal var eventStickySink: Job? = null
+        internal var eventKeySink: Job?     = null
+        internal fun cancelFlowEvents() {
+            eventSink?.cancel()
+            eventSink = null
+            eventStickySink?.cancel()
+            eventStickySink = null
+            eventKeySink?.cancel()
+            eventKeySink = null
+        }
+
     }
 
     private val vm = FeedEpisodesVM()
@@ -122,108 +136,106 @@ class FeedEpisodesFragment : Fragment() {
         vm.rightActionState.value = vm.swipeActions.actions.right[0]
         lifecycle.addObserver(vm.swipeActions)
 
-        var filterJob: Job? = null
-        fun filterLongClick() {
-            if (vm.feed == null) return
-            vm.enableFilter = !vm.enableFilter
-            if (filterJob != null) {
-                filterJob?.cancel()
-                stopMonitor(vm.vms)
-                vm.vms.clear()
-            }
-            filterJob = lifecycleScope.launch {
-                val eListTmp = mutableListOf<Episode>()
-                withContext(Dispatchers.IO) {
-                    if (vm.enableFilter) {
-                        vm.filterButtonColor.value = Color.White
-                        val episodes_ = realm.query(Episode::class).query("feedId == ${vm.feed!!.id}").query(vm.feed!!.episodeFilter.queryString()).find()
-                        eListTmp.addAll(episodes_)
-                    } else {
-                        vm.filterButtonColor.value = Color.Red
-                        eListTmp.addAll(vm.feed!!.episodes)
-                    }
-                    getPermutor(fromCode(vm.feed?.sortOrderCode ?: 0)).reorder(eListTmp)
-                    vm.episodes.clear()
-                    vm.episodes.addAll(eListTmp)
-                    vm.ieMap = vm.episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                    vm.ueMap = vm.episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
-                }
-                withContext(Dispatchers.Main) {
-                    stopMonitor(vm.vms)
-                    vm.vms.clear()
-                    for (e in eListTmp) vm.vms.add(EpisodeVM(e, TAG))
-                }
-            }.apply { invokeOnCompletion { filterJob = null } }
-        }
-
         vm.layoutModeIndex = if (vm.feed?.useWideLayout == true) 1 else 0
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed!!), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
-                        (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
-                        // Make sure fragment is hidden before actually starting to delete
-                        requireActivity().supportFragmentManager.executePendingTransactions()
-                    }
-                    if (vm.showFilterDialog) EpisodesFilterDialog(filter = vm.feed!!.episodeFilter,
-//                    filtersDisabled = mutableSetOf(EpisodeFilter.EpisodesFilterGroup.DOWNLOADED, EpisodeFilter.EpisodesFilterGroup.MEDIA),
-                        onDismissRequest = { vm.showFilterDialog = false }) { filterValues ->
-                        if (vm.feed != null) {
-                            Logd(TAG, "persist Episode Filter(): feedId = [${vm.feed?.id}], filterValues = [$filterValues]")
-                            runOnIOScope {
-                                val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
-                                if (feed_ != null) {
-                                    vm.feed = upsert(feed_) { it.filterString = filterValues.joinToString() }
-//                                loadFeed()
-                                }
-                            }
-                        }
-                    }
-                    if (vm.showRenameDialog) RenameOrCreateSyntheticFeed(vm.feed) { vm.showRenameDialog = false }
-                    if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, onDismissRequest = { vm.showSortDialog = false }) { sortOrder_, _ ->
-                        if (vm.feed != null) {
-                            Logd(TAG, "persist Episode SortOrder_")
-                            vm.sortOrder = sortOrder_
-                            runOnIOScope {
-                                val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
-                                if (feed_ != null) vm.feed = upsert(feed_) { it.sortOrder = sortOrder_ }
-                            }
-                        }
-                    }
-                    if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
-                        vm.swipeActions.actions = actions
-                        refreshSwipeTelltale()
-                    }
-                    vm.swipeActions.ActionOptionsDialog()
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = vm.filterButtonColor.value, filterClickCB = {
-                                if (vm.enableFilter && vm.feed != null) vm.showFilterDialog = true
-                            }, filterLongClickCB = { filterLongClick() })
-                            InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, feed = vm.feed, layoutMode = vm.layoutModeIndex,
-                                buildMoreItems = { buildMoreItems() },
-                                refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), vm.feed) },
-                                leftSwipeCB = {
-                                    if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.leftActionState.value.performAction(it)
-                                },
-                                rightSwipeCB = {
-                                    Logd(TAG, "vm.rightActionState: ${vm.rightActionState.value.getId()}")
-                                    if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.rightActionState.value.performAction(it)
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { FeedEpisodesScreen() } } }
 
         lifecycle.addObserver(vm.swipeActions)
         refreshSwipeTelltale()
         return composeView
+    }
+
+    fun filterLongClick() {
+        if (vm.feed == null) return
+        vm.enableFilter = !vm.enableFilter
+        if (vm.filterJob != null) {
+            Logd(TAG, "filterLongClick")
+            vm.filterJob?.cancel()
+            stopMonitor(vm.vms)
+            vm.vms.clear()
+        }
+        vm.filterJob = lifecycleScope.launch {
+            val eListTmp = mutableListOf<Episode>()
+            withContext(Dispatchers.IO) {
+                if (vm.enableFilter) {
+                    vm.filterButtonColor.value = Color.White
+                    val episodes_ = realm.query(Episode::class).query("feedId == ${vm.feed!!.id}").query(vm.feed!!.episodeFilter.queryString()).find()
+                    eListTmp.addAll(episodes_)
+                } else {
+                    vm.filterButtonColor.value = Color.Red
+                    eListTmp.addAll(vm.feed!!.episodes)
+                }
+                getPermutor(fromCode(vm.feed?.sortOrderCode ?: 0)).reorder(eListTmp)
+                vm.episodes.clear()
+                vm.episodes.addAll(eListTmp)
+                vm.ieMap = vm.episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                vm.ueMap = vm.episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
+            }
+            withContext(Dispatchers.Main) {
+                stopMonitor(vm.vms)
+                vm.vms.clear()
+                for (e in eListTmp) vm.vms.add(EpisodeVM(e, TAG))
+            }
+        }.apply { invokeOnCompletion { vm.filterJob = null } }
+    }
+
+    @Composable
+    fun FeedEpisodesScreen() {
+        if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed!!), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
+            (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
+            // Make sure fragment is hidden before actually starting to delete
+            requireActivity().supportFragmentManager.executePendingTransactions()
+        }
+        if (vm.showFilterDialog) EpisodesFilterDialog(filter = vm.feed!!.episodeFilter,
+            onDismissRequest = { vm.showFilterDialog = false }) { filterValues ->
+            if (vm.feed != null) {
+                Logd(TAG, "persist Episode Filter(): feedId = [${vm.feed?.id}], filterValues = [$filterValues]")
+                runOnIOScope {
+                    val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
+                    if (feed_ != null) {
+                        vm.feed = upsert(feed_) { it.filterString = filterValues.joinToString() }
+//                                loadFeed()
+                    }
+                }
+            }
+        }
+        if (vm.showRenameDialog) RenameOrCreateSyntheticFeed(vm.feed) { vm.showRenameDialog = false }
+        if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, onDismissRequest = { vm.showSortDialog = false }) { sortOrder_, _ ->
+            if (vm.feed != null) {
+                Logd(TAG, "persist Episode SortOrder_")
+                vm.sortOrder = sortOrder_
+                runOnIOScope {
+                    val feed_ = realm.query(Feed::class, "id == ${vm.feed!!.id}").first().find()
+                    if (feed_ != null) vm.feed = upsert(feed_) { it.sortOrder = sortOrder_ }
+                }
+            }
+        }
+        if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+            vm.swipeActions.actions = actions
+            refreshSwipeTelltale()
+        }
+        vm.swipeActions.ActionOptionsDialog()
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                FeedEpisodesHeader(activity = (activity as MainActivity), filterButColor = vm.filterButtonColor.value, filterClickCB = {
+                    if (vm.enableFilter && vm.feed != null) vm.showFilterDialog = true
+                }, filterLongClickCB = { filterLongClick() })
+                InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true  })
+                EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, feed = vm.feed, layoutMode = vm.layoutModeIndex,
+                    buildMoreItems = { buildMoreItems() },
+                    refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), vm.feed) },
+                    leftSwipeCB = {
+                        if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.leftActionState.value.performAction(it)
+                    },
+                    rightSwipeCB = {
+                        Logd(TAG, "vm.rightActionState: ${vm.rightActionState.value.getId()}")
+                        if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.rightActionState.value.performAction(it)
+                    },
+                )
+            }
+        }
     }
 
     override fun onStart() {
@@ -236,7 +248,7 @@ class FeedEpisodesFragment : Fragment() {
     override fun onStop() {
         Logd(TAG, "onStop() called")
         super.onStop()
-        cancelFlowEvents()
+        vm.cancelFlowEvents()
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -375,8 +387,7 @@ class FeedEpisodesFragment : Fragment() {
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "queue") }
                 if (vm.feed != null) IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(vm.feed!!.id, vm.feed!!.title))
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
-                if (!vm.feed?.link.isNullOrBlank()) IconButton(onClick = {
-                    IntentUtils.openInBrowser(requireContext(), vm.feed!!.link!!)
+                if (!vm.feed?.link.isNullOrBlank()) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), vm.feed!!.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
                 if (vm.feed != null) {
                     IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
@@ -442,19 +453,8 @@ class FeedEpisodesFragment : Fragment() {
         }
     }
 
-    private var eventSink: Job? = null
-    private var eventStickySink: Job? = null
-    private var eventKeySink: Job?     = null
-    private fun cancelFlowEvents() {
-        eventSink?.cancel()
-        eventSink = null
-        eventStickySink?.cancel()
-        eventStickySink = null
-        eventKeySink?.cancel()
-        eventKeySink = null
-    }
     private fun procFlowEvents() {
-        if (eventSink == null) eventSink = lifecycleScope.launch {
+        if (vm.eventSink == null) vm.eventSink = lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
@@ -465,7 +465,7 @@ class FeedEpisodesFragment : Fragment() {
                 }
             }
         }
-        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
+        if (vm.eventStickySink == null) vm.eventStickySink = lifecycleScope.launch {
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
@@ -475,12 +475,12 @@ class FeedEpisodesFragment : Fragment() {
                 }
             }
         }
-        if (eventKeySink == null) eventKeySink = lifecycleScope.launch {
-            EventFlow.keyEvents.collectLatest { event ->
-                Logd(TAG, "Received key event: $event, ignored")
-//                onKeyUp(event)
-            }
-        }
+//        if (vm.eventKeySink == null) vm.eventKeySink = lifecycleScope.launch {
+//            EventFlow.keyEvents.collectLatest { event ->
+//                Logd(TAG, "Received key event: $event, ignored")
+////                onKeyUp(event)
+//            }
+//        }
     }
 
     private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {

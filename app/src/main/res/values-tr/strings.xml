@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Abonelikleri güncelle</string>
     <string name="feeds">Feeds</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">Podcastler</string>
     <string name="statistics_label">İstatistikler</string>
     <string name="add_feed_label">Podcast ekle</string>

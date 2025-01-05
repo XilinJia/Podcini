@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Обновить подписки</string>
     <string name="feeds">Ленты</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">Подкасты</string>
     <string name="statistics_label">Статистика</string>
     <string name="add_feed_label">Добавить подкаст</string>

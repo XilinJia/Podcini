@@ -61,26 +61,37 @@ import java.util.*
 class OnlineSearchFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE) }
 
-    private var mainAct: MainActivity? = null
-    private var displayUpArrow = false
+    class OnlineSearchVM {
+        internal var mainAct: MainActivity? = null
+        internal var displayUpArrow = false
 
-    private var showError by mutableStateOf(false)
-    private var errorText by mutableStateOf("")
-    private var showPowerBy by mutableStateOf(false)
-    private var showRetry by mutableStateOf(false)
-    private var retryTextRes by mutableIntStateOf(0)
-    private var showGrid by mutableStateOf(false)
+        internal var showError by mutableStateOf(false)
+        internal var errorText by mutableStateOf("")
+        internal var showPowerBy by mutableStateOf(false)
+        internal var showRetry by mutableStateOf(false)
+        internal var retryTextRes by mutableIntStateOf(0)
+        internal var showGrid by mutableStateOf(false)
 
-    private val showOPMLRestoreDialog = mutableStateOf(false)
-    private var numColumns by mutableIntStateOf(4)
-    private val searchResult = mutableStateListOf<PodcastSearchResult>()
+        internal val showOPMLRestoreDialog = mutableStateOf(false)
+        internal var numColumns by mutableIntStateOf(4)
+        internal val searchResult = mutableStateListOf<PodcastSearchResult>()
 
-    private var showOpmlImportSelectionDialog by mutableStateOf(false)
-    private val readElements = mutableStateListOf<OpmlElement>()
+        internal var showOpmlImportSelectionDialog by mutableStateOf(false)
+        internal val readElements = mutableStateListOf<OpmlElement>()
+
+        internal var eventSink: Job?     = null
+        internal fun cancelFlowEvents() {
+            eventSink?.cancel()
+            eventSink = null
+        }
+    }
+
+    private val vm = OnlineSearchVM()
+
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri == null) return@registerForActivityResult
-        OpmlTransporter.startImport(requireContext(), uri) { readElements.addAll(it) }
-        showOpmlImportSelectionDialog = true
+        OpmlTransporter.startImport(requireContext(), uri) { vm.readElements.addAll(it) }
+        vm.showOpmlImportSelectionDialog = true
     }
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? ->
@@ -106,31 +117,31 @@ class OnlineSearchFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (feed != null) {
                         val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                        mainAct?.loadChildFragment(fragment)
+                        vm.mainAct?.loadChildFragment(fragment)
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                mainAct?.showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
+                vm.mainAct?.showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
             }
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        mainAct = activity as? MainActivity
+        vm.mainAct = activity as? MainActivity
         Logd(TAG, "fragment onCreateView")
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         val displayMetrics: DisplayMetrics = requireContext().resources.displayMetrics
         val screenWidthDp: Float = displayMetrics.widthPixels / displayMetrics.density
-        if (screenWidthDp > 600) numColumns = 6
+        if (screenWidthDp > 600) vm.numColumns = 6
 
         // Fill with dummy elements to have a fixed height and
         // prevent the UI elements below from jumping on slow connections
-        for (i in 0 until NUM_SUGGESTIONS) searchResult.add(PodcastSearchResult.dummy())
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
+        for (i in 0 until NUM_SUGGESTIONS) vm.searchResult.add(PodcastSearchResult.dummy())
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { OnlineSearchScreen() } } }
 
         val PAFeed = realm.query(PAFeed::class).find()
 //        for (p in directory) {
@@ -138,16 +149,16 @@ class OnlineSearchFragment : Fragment() {
 //        }
         Logd(TAG, "size of directory: ${PAFeed.size}")
         loadToplist()
-        if (isOPMLRestored && feedCount == 0) showOPMLRestoreDialog.value = true
+        if (isOPMLRestored && feedCount == 0) vm.showOPMLRestoreDialog.value = true
         return composeView
     }
 
     @Composable
-    fun MainView() {
+    fun OnlineSearchScreen() {
         val textColor = MaterialTheme.colorScheme.onSurface
         val actionColor = MaterialTheme.colorScheme.tertiary
         val scrollState = rememberScrollState()
-        ComfirmDialog(R.string.restore_subscriptions_label, stringResource(R.string.restore_subscriptions_summary), showOPMLRestoreDialog) {
+        ComfirmDialog(R.string.restore_subscriptions_label, stringResource(R.string.restore_subscriptions_summary), vm.showOPMLRestoreDialog) {
             performRestore(requireContext())
             parentFragmentManager.popBackStack()
         }
@@ -160,20 +171,20 @@ class OnlineSearchFragment : Fragment() {
                     try { addLocalFolderLauncher.launch(null)
                     } catch (e: ActivityNotFoundException) {
                         e.printStackTrace()
-                        mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                        vm.mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
                     }
                 }))
-                Text(stringResource(R.string.search_vistaguide_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_itunes_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_fyyd_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_vistaguide_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_itunes_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java)) }))
+                Text(stringResource(R.string.search_fyyd_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java)) }))
 //                Text(stringResource(R.string.gpodnet_search_hint), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
-                Text(stringResource(R.string.search_podcastindex_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
-                if (showOpmlImportSelectionDialog) OpmlImportSelectionDialog(readElements) { showOpmlImportSelectionDialog = false }
+                Text(stringResource(R.string.search_podcastindex_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }))
+                if (vm.showOpmlImportSelectionDialog) OpmlImportSelectionDialog(vm.readElements) { vm.showOpmlImportSelectionDialog = false }
                 Text(stringResource(R.string.opml_add_podcast_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
                     try { chooseOpmlImportPathLauncher.launch("*/*")
                     } catch (e: ActivityNotFoundException) {
                         e.printStackTrace()
-                        mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                        vm.mainAct?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
                     }
                 }))
             }
@@ -186,9 +197,9 @@ class OnlineSearchFragment : Fragment() {
         TopAppBar(title = { SearchBarRow(R.string.search_podcast_hint) { queryText ->
             if (queryText.isBlank()) return@SearchBarRow
             if (queryText.matches("http[s]?://.*".toRegex())) addUrl(queryText)
-            else mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
+            else vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
         } },
-            navigationIcon = if (displayUpArrow) {
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
@@ -203,7 +214,7 @@ class OnlineSearchFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        cancelFlowEvents()
+        vm.cancelFlowEvents()
     }
 
     @Composable
@@ -218,39 +229,34 @@ class OnlineSearchFragment : Fragment() {
                 Text(stringResource(R.string.discover_more), color = actionColor, modifier = Modifier.clickable(onClick = {(activity as MainActivity).loadChildFragment(DiscoveryFragment())}))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                if (showGrid) NonlazyGrid(columns = numColumns, itemCount = searchResult.size, modifier = Modifier.fillMaxWidth()) { index ->
-                    AsyncImage(model = ImageRequest.Builder(context).data(searchResult[index].imageUrl)
+                if (vm.showGrid) NonlazyGrid(columns = vm.numColumns, itemCount = vm.searchResult.size, modifier = Modifier.fillMaxWidth()) { index ->
+                    AsyncImage(model = ImageRequest.Builder(context).data(vm.searchResult[index].imageUrl)
                         .memoryCachePolicy(CachePolicy.ENABLED).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).build(),
                         contentDescription = "imgvCover", modifier = Modifier.padding(top = 8.dp)
                             .clickable(onClick = {
                                 Logd(TAG, "icon clicked!")
-                                val podcast: PodcastSearchResult? = searchResult[index]
+                                val podcast: PodcastSearchResult? = vm.searchResult[index]
                                 if (!podcast?.feedUrl.isNullOrEmpty()) {
                                     val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
                                     (activity as MainActivity).loadChildFragment(fragment)
                                 }
                             }))
                 }
-                if (showError) Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    Text(errorText, color = textColor)
-                    if (showRetry) Button(onClick = {
+                if (vm.showError) Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(vm.errorText, color = textColor)
+                    if (vm.showRetry) Button(onClick = {
                         prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
                         loadToplist()
-                    }) { Text(stringResource(retryTextRes)) }
+                    }) { Text(stringResource(vm.retryTextRes)) }
                 }
             }
             Text(stringResource(R.string.discover_powered_by_itunes), color = textColor, modifier = Modifier.align(Alignment.End))
         }
     }
 
-    private var eventSink: Job?     = null
-    private fun cancelFlowEvents() {
-        eventSink?.cancel()
-        eventSink = null
-    }
     private fun procFlowEvents() {
-        if (eventSink != null) return
-        eventSink = lifecycleScope.launch {
+        if (vm.eventSink != null) return
+        vm.eventSink = lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
@@ -262,26 +268,26 @@ class OnlineSearchFragment : Fragment() {
     }
 
     private fun loadToplist() {
-        showError = false
-        showPowerBy = true
-        showRetry = false
-        retryTextRes = R.string.retry_label
+        vm.showError = false
+        vm.showPowerBy = true
+        vm.showRetry = false
+        vm.retryTextRes = R.string.retry_label
         val loader = ItunesTopListLoader(requireContext())
         val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
         if (prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
-            showError = true
-            errorText = requireContext().getString(R.string.discover_is_hidden)
-            showPowerBy = false
-            showRetry = false
+            vm.showError = true
+            vm.errorText = requireContext().getString(R.string.discover_is_hidden)
+            vm.showPowerBy = false
+            vm.showRetry = false
             return
         }
         if (BuildConfig.FLAVOR == "free" && prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true) == true) {
-            showError = true
-            errorText = ""
-            showGrid = true
-            showRetry = true
-            retryTextRes = R.string.discover_confirm
-            showPowerBy = true
+            vm.showError = true
+            vm.errorText = ""
+            vm.showGrid = true
+            vm.showRetry = true
+            vm.retryTextRes = R.string.discover_confirm
+            vm.showPowerBy = true
             return
         }
 
@@ -289,29 +295,29 @@ class OnlineSearchFragment : Fragment() {
             try {
                 val searchResults_ = withContext(Dispatchers.IO) { loader.loadToplist(countryCode, NUM_SUGGESTIONS, getFeedList()) }
                 withContext(Dispatchers.Main) {
-                    showError = false
+                    vm.showError = false
                     if (searchResults_.isEmpty()) {
-                        errorText = requireContext().getString(R.string.search_status_no_results)
-                        showError = true
-                        showGrid = false
+                        vm.errorText = requireContext().getString(R.string.search_status_no_results)
+                        vm.showError = true
+                        vm.showGrid = false
                     } else {
-                        showGrid = true
-                        searchResult.clear()
-                        searchResult.addAll(searchResults_)
+                        vm.showGrid = true
+                        vm.searchResult.clear()
+                        vm.searchResult.addAll(searchResults_)
                     }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                showError = true
-                showGrid = false
-                showRetry = true
-                errorText = e.localizedMessage ?: ""
+                vm.showError = true
+                vm.showGrid = false
+                vm.showRetry = true
+                vm.errorText = e.localizedMessage ?: ""
             }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
     }
 
@@ -335,7 +341,7 @@ class OnlineSearchFragment : Fragment() {
 
     private fun addUrl(url: String) {
         val fragment: Fragment = OnlineFeedFragment.newInstance(url)
-        mainAct?.loadChildFragment(fragment)
+        vm.mainAct?.loadChildFragment(fragment)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,0 +1,5 @@
+ Version 7.2.3
+
+* fixed crash when opening FeedInfo with feed.link == null
+* encapsulated variables in more fragments
+* some more Compose migrations

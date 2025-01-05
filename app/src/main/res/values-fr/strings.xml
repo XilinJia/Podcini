@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Mettre à jour les abonnements</string>
     <string name="feeds">Flux</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Statistiques</string>
     <string name="add_feed_label">Ajouter un podcast</string>

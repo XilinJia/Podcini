@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">구독 업데이트</string>
     <string name="feeds">Feeds</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">팟캐스트</string>
     <string name="statistics_label">통계</string>
     <string name="add_feed_label">팟캐스트 추가</string>

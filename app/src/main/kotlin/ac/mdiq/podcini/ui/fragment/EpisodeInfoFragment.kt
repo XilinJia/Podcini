@@ -112,7 +112,7 @@ class EpisodeInfoFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { EpisodeInfoScreen() } } }
         vm.shownotesCleaner = ShownotesCleaner(requireContext())
         updateAppearance()
         load()
@@ -120,7 +120,7 @@ class EpisodeInfoFragment : Fragment() {
     }
 
     @Composable
-    fun MainView() {
+    fun EpisodeInfoScreen() {
         val textColor = MaterialTheme.colorScheme.onSurface
 
         var showEditComment by remember { mutableStateOf(false) }

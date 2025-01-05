@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">更新订阅</string>
     <string name="feeds">订阅源</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">播客</string>
     <string name="statistics_label">统计</string>
     <string name="add_feed_label">添加播客</string>

@@ -77,7 +77,7 @@ class EpisodeHomeFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { HomeView() } } }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { EpisodeHomeView() } } }
 
         if (!episode?.link.isNullOrEmpty()) prepareContent()
         else {
@@ -88,7 +88,7 @@ class EpisodeHomeFragment : Fragment() {
     }
 
     @Composable
-    fun HomeView() {
+    fun EpisodeHomeView() {
         fun Color.toHex(): String {
             val red = (red * 255).toInt().toString(16).padStart(2, '0')
             val green = (green * 255).toInt().toString(16).padStart(2, '0')

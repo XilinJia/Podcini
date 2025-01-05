@@ -79,9 +79,15 @@ class FeedInfoFragment : Fragment() {
         internal var isCallable by mutableStateOf(false)
         internal var showRemoveFeedDialog by mutableStateOf(false)
         internal var txtvAuthor by mutableStateOf("")
-        var txtvUrl by mutableStateOf<String?>(null)
-        var rating by mutableStateOf(Rating.UNRATED.code)
+        internal var txtvUrl by mutableStateOf<String?>(null)
+        internal var rating by mutableStateOf(Rating.UNRATED.code)
         internal val showConnectLocalFolderConfirm = mutableStateOf(false)
+
+        internal var eventSink: Job? = null
+        internal fun cancelFlowEvents() {
+            eventSink?.cancel()
+            eventSink = null
+        }
     }
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
@@ -92,29 +98,26 @@ class FeedInfoFragment : Fragment() {
 
         vm.txtvAuthor = vm.feed.author ?: ""
         vm.txtvUrl = vm.feed.downloadUrl
-        vm.isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(vm.feed.link)))
+        if (!vm.feed.link.isNullOrEmpty()) vm.isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(vm.feed.link)))
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { FeedInfoScreen() } } }
+        return composeView
+    }
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
-                        (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
-                        // Make sure fragment is hidden before actually starting to delete
-                        requireActivity().supportFragmentManager.executePendingTransactions()
-                    }
-                    ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), vm.showConnectLocalFolderConfirm) {
-                        try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
-                    }
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            HeaderUI()
-                            DetailUI()
-                        }
-                    }
-                }
+    @Composable
+    fun FeedInfoScreen() {
+        if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
+            (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
+            requireActivity().supportFragmentManager.executePendingTransactions()   // Make sure fragment is hidden before actually starting to delete
+        }
+        ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), vm.showConnectLocalFolderConfirm) {
+            try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
+        }
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                HeaderUI()
+                DetailUI()
             }
         }
-        return composeView
     }
 
     override fun onStart() {
@@ -126,7 +129,19 @@ class FeedInfoFragment : Fragment() {
     override fun onStop() {
         Logd(TAG, "onStop() called")
         super.onStop()
-        cancelFlowEvents()
+        vm.cancelFlowEvents()
+    }
+
+    private fun procFlowEvents() {
+        if (vm.eventSink == null) vm.eventSink = lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.FeedChangeEvent -> setFeed(vm.feed)    // reload from DB
+                    else -> {}
+                }
+            }
+        }
     }
 
     @Composable
@@ -305,8 +320,7 @@ class FeedInfoFragment : Fragment() {
             actions = {
                 if (vm.feed.link != null && vm.isCallable) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), vm.feed.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
-                if (!vm.feed.isLocalFeed) IconButton(onClick = {
-                    ShareUtils.shareFeedLinkNew(requireContext(), vm.feed)
+                if (!vm.feed.isLocalFeed) IconButton(onClick = { ShareUtils.shareFeedLinkNew(requireContext(), vm.feed)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "web") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -345,26 +359,6 @@ class FeedInfoFragment : Fragment() {
                 }
                 withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) }
             } catch (e: Throwable) { withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) } }
-        }
-    }
-
-    private var eventSink: Job? = null
-    private fun cancelFlowEvents() {
-        eventSink?.cancel()
-        eventSink = null
-    }
-    private fun procFlowEvents() {
-        if (eventSink == null) eventSink = lifecycleScope.launch {
-            EventFlow.events.collectLatest { event ->
-                Logd(TAG, "Received event: ${event.TAG}")
-                when (event) {
-                    is FlowEvent.FeedChangeEvent -> {
-                        setFeed(vm.feed)
-//                        feed = event.feed
-                    }
-                    else -> {}
-                }
-            }
         }
     }
 

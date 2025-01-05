@@ -155,67 +155,66 @@ class QueuesFragment : Fragment() {
         lifecycle.addObserver(vm.swipeActions)
         lifecycle.addObserver(vm.swipeActionsBin)
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(if (vm.showBin) vm.swipeActionsBin else vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
-                        vm.swipeActions.actions = actions
-                        refreshSwipeTelltale()
-                    }
-                    ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = vm.showClearQueueDialog) { clearQueue() }
-                    if (vm.shouldShowLockWarningDiwload) ShowLockWarning { vm.shouldShowLockWarningDiwload = false }
-                    RenameQueueDialog(showDialog = vm.showRenameQueueDialog.value, onDismiss = { vm.showRenameQueueDialog.value = false })
-                    AddQueueDialog(showDialog = vm.showAddQueueDialog.value, onDismiss = { vm.showAddQueueDialog.value = false })
-                    vm.swipeActions.ActionOptionsDialog()
-                    vm.swipeActionsBin.ActionOptionsDialog()
-
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        if (vm.showBin) {
-                            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                                InforBar(vm.infoBarText, leftAction = vm.leftActionStateBin, rightAction = vm.rightActionStateBin, actionConfig = { vm.showSwipeActionsDialog = true })
-                                val leftCB = { episode: Episode ->
-                                    if (vm.leftActionStateBin.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.leftActionStateBin.value.performAction(episode)
-                                }
-                                val rightCB = { episode: Episode ->
-                                    if (vm.rightActionStateBin.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                    else vm.rightActionStateBin.value.performAction(episode)
-                                }
-                                EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
-                            }
-                        } else {
-                            if (vm.showFeeds) Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) { FeedsGrid() }
-                            else {
-                                Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                                    if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, showKeepSorted = true, onDismissRequest = { vm.showSortDialog = false }) { sortOrder, keep ->
-                                        if (sortOrder != EpisodeSortOrder.RANDOM && sortOrder != EpisodeSortOrder.RANDOM1) isQueueKeepSorted = keep
-                                        queueKeepSortedOrder = sortOrder
-                                        reorderQueue(sortOrder, true)
-                                    }
-
-                                    InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true })
-                                    val leftCB = { episode: Episode ->
-                                        if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                        else vm.leftActionState.value.performAction(episode)
-                                    }
-                                    val rightCB = { episode: Episode ->
-                                        if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
-                                        else vm.rightActionState.value.performAction(episode)
-                                    }
-                                    EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
-                                        isDraggable = vm.dragDropEnabled, dragCB = { iFrom, iTo -> runOnIOScope { moveInQueueSync(iFrom, iTo, true) } },
-                                        leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { QueuesScreen() } } }
 
         lifecycle.addObserver(vm.swipeActions)
         refreshSwipeTelltale()
         return composeView
+    }
+
+    @Composable
+    fun QueuesScreen() {
+        if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(if (vm.showBin) vm.swipeActionsBin else vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+            vm.swipeActions.actions = actions
+            refreshSwipeTelltale()
+        }
+        ComfirmDialog(titleRes = R.string.clear_queue_label, message = stringResource(R.string.clear_queue_confirmation_msg), showDialog = vm.showClearQueueDialog) { clearQueue() }
+        if (vm.shouldShowLockWarningDiwload) ShowLockWarning { vm.shouldShowLockWarningDiwload = false }
+        RenameQueueDialog(showDialog = vm.showRenameQueueDialog.value, onDismiss = { vm.showRenameQueueDialog.value = false })
+        AddQueueDialog(showDialog = vm.showAddQueueDialog.value, onDismiss = { vm.showAddQueueDialog.value = false })
+        vm.swipeActions.ActionOptionsDialog()
+        vm.swipeActionsBin.ActionOptionsDialog()
+
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            if (vm.showBin) {
+                Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                    InforBar(vm.infoBarText, leftAction = vm.leftActionStateBin, rightAction = vm.rightActionStateBin, actionConfig = { vm.showSwipeActionsDialog = true })
+                    val leftCB = { episode: Episode ->
+                        if (vm.leftActionStateBin.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.leftActionStateBin.value.performAction(episode)
+                    }
+                    val rightCB = { episode: Episode ->
+                        if (vm.rightActionStateBin.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.rightActionStateBin.value.performAction(episode)
+                    }
+                    EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                }
+            } else {
+                if (vm.showFeeds) Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) { FeedsGrid() }
+                else {
+                    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                        if (vm.showSortDialog) EpisodeSortDialog(initOrder = vm.sortOrder, showKeepSorted = true, onDismissRequest = { vm.showSortDialog = false }) { sortOrder, keep ->
+                            if (sortOrder != EpisodeSortOrder.RANDOM && sortOrder != EpisodeSortOrder.RANDOM1) isQueueKeepSorted = keep
+                            queueKeepSortedOrder = sortOrder
+                            reorderQueue(sortOrder, true)
+                        }
+
+                        InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true })
+                        val leftCB = { episode: Episode ->
+                            if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                            else vm.leftActionState.value.performAction(episode)
+                        }
+                        val rightCB = { episode: Episode ->
+                            if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                            else vm.rightActionState.value.performAction(episode)
+                        }
+                        EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
+                            isDraggable = vm.dragDropEnabled, dragCB = { iFrom, iTo -> runOnIOScope { moveInQueueSync(iFrom, iTo, true) } },
+                            leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                    }
+                }
+            }
+        }
     }
 
     override fun onStart() {

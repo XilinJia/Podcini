@@ -42,66 +42,71 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SearchResultsFragment : Fragment() {
-    private var searchProvider: PodcastSearcher? = null
 
-    private val feedLogs = getFeedLogMap()
+    class SearchResultsVM {
+        internal var searchProvider: PodcastSearcher? = null
 
-    private var defaultText by mutableStateOf("")
-    private var searchResults = mutableStateListOf<PodcastSearchResult>()
-    private var errorText by mutableStateOf("")
-    private var retryQerry by mutableStateOf("")
-    private var showProgress by mutableStateOf(true)
-    private var noResultText by mutableStateOf("")
+        internal val feedLogs = getFeedLogMap()
+
+        internal var defaultText by mutableStateOf("")
+        internal var searchResults = mutableStateListOf<PodcastSearchResult>()
+        internal var errorText by mutableStateOf("")
+        internal var retryQerry by mutableStateOf("")
+        internal var showProgress by mutableStateOf(true)
+        internal var noResultText by mutableStateOf("")
+    }
+
+    private val vm = SearchResultsVM()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         for (info in PodcastSearcherRegistry.searchProviders) {
             Logd(TAG, "searchProvider: $info")
             if (info.searcher.javaClass.getName() == requireArguments().getString(ARG_SEARCHER)) {
-                searchProvider = info.searcher
+                vm.searchProvider = info.searcher
                 break
             }
         }
-        if (searchProvider == null) Logd(TAG,"Podcast searcher not found")
-        defaultText = requireArguments().getString(ARG_QUERY, "")
-        search(defaultText)
+        if (vm.searchProvider == null) Logd(TAG,"Podcast searcher not found")
+        vm.defaultText = requireArguments().getString(ARG_QUERY, "")
+        search(vm.defaultText)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { SearchResultsScreen() } } }
         return composeView
     }
 
     @Composable
-    fun MainView() {
+    fun SearchResultsScreen() {
         val textColor = MaterialTheme.colorScheme.onSurface
         Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
             ConstraintLayout(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                 val (gridView, progressBar, empty, txtvError, butRetry, powered) = createRefs()
-                if (showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
+                if (vm.showProgress) CircularProgressIndicator(progress = { 0.6f }, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
                 val lazyListState = rememberLazyListState()
-                if (searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+                if (vm.searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
                     .constrainAs(gridView) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                     },
                     verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(searchResults.size) { index ->
-                        val result = searchResults[index]
+                    items(vm.searchResults.size) { index ->
+                        val result = vm.searchResults[index]
                         val urlPrepared by remember { mutableStateOf(prepareUrl(result.feedUrl!!)) }
-                        val sLog = remember { mutableStateOf(feedLogs[urlPrepared]) }
+                        val sLog = remember { mutableStateOf(vm.feedLogs[urlPrepared]) }
 //                    Logd(TAG, "result: ${result.feedUrl} ${feedLogs[urlPrepared]}")
                         OnlineFeedItem(activity = activity as MainActivity, result, sLog.value)
                     }
                 }
-                if (searchResults.isEmpty()) Text(noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
-                if (errorText.isNotEmpty()) Text(errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
-                if (retryQerry.isNotEmpty()) Button(modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom) }, onClick = { search(retryQerry) }) {
+                if (vm.searchResults.isEmpty()) Text(vm.noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
+                if (vm.errorText.isNotEmpty()) Text(vm.errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
+                if (vm.retryQerry.isNotEmpty()) Button(modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom) }, onClick = { search(vm.retryQerry) }) {
                     Text(stringResource(id = R.string.retry_label))
                 }
-                Text(getString(R.string.search_powered_by, searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(Color.LightGray)
+                Text(getString(R.string.search_powered_by, vm.searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(Color.LightGray)
                     .constrainAs(powered) {
                         bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end)
@@ -119,7 +124,7 @@ class SearchResultsFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        searchResults.clear()
+        vm.searchResults.clear()
         super.onDestroy()
     }
 
@@ -129,7 +134,7 @@ class SearchResultsFragment : Fragment() {
         if (query.isBlank()) return
         if (searchJob != null) {
             searchJob?.cancel()
-            searchResults.clear()
+            vm.searchResults.clear()
         }
         showOnlyProgressBar()
         searchJob = lifecycleScope.launch(Dispatchers.IO) {
@@ -139,13 +144,13 @@ class SearchResultsFragment : Fragment() {
                 return 0L
             }
             try {
-                val result = searchProvider?.search(query) ?: listOf()
+                val result = vm.searchProvider?.search(query) ?: listOf()
                 for (r in result) r.feedId = feedId(r)
-                searchResults.clear()
-                searchResults.addAll(result)
+                vm.searchResults.clear()
+                vm.searchResults.addAll(result)
                 withContext(Dispatchers.Main) {
-                    showProgress = false
-                    noResultText = getString(R.string.no_results_for_query, query)
+                    vm.showProgress = false
+                    vm.noResultText = getString(R.string.no_results_for_query, query)
                 }
             } catch (e: Exception) { handleSearchError(e, query) }
         }.apply { invokeOnCompletion { searchJob = null } }
@@ -153,15 +158,15 @@ class SearchResultsFragment : Fragment() {
 
     private fun handleSearchError(e: Throwable, query: String) {
         Logd(TAG, "exception: ${e.message}")
-        showProgress = false
-        errorText = e.toString()
-        retryQerry = query
+        vm.showProgress = false
+        vm.errorText = e.toString()
+        vm.retryQerry = query
     }
 
     private fun showOnlyProgressBar() {
-        errorText = ""
-        retryQerry = ""
-        showProgress = true
+        vm.errorText = ""
+        vm.retryQerry = ""
+        vm.showProgress = true
     }
 
 //    private fun showInputMethod(view: View) {

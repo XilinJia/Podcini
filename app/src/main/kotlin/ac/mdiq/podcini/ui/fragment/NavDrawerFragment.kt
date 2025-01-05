@@ -62,12 +62,13 @@ import kotlin.math.roundToInt
 
 class NavDrawerFragment : Fragment() {
     val TAG = this::class.simpleName ?: "Anonymous"
+
     private val feeds = mutableStateListOf<Feed>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         getRecentPodcasts()
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { MainView() } } }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { NavDrawerScreen() } } }
 
         Logd(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(composeView)
@@ -95,7 +96,7 @@ class NavDrawerFragment : Fragment() {
     }
 
     @Composable
-    fun MainView() {
+    fun NavDrawerScreen() {
         Column(modifier = Modifier.padding(start = 20.dp, end = 10.dp, top = 20.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             for (nav in navMap.values) {

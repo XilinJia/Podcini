@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences.screens
 
+import ac.mdiq.podcini.PodciniApp.Companion.getAppContext
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.sync.SyncService
@@ -8,36 +9,46 @@ import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.setWifiSyncEnabled
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow.AuthenticationCallback
-import ac.mdiq.podcini.preferences.AppPreferences
+import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
-import ac.mdiq.podcini.preferences.fragments.WifiAuthenticationFragment
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTextStyles
 import ac.mdiq.podcini.ui.compose.CustomToast
 import ac.mdiq.podcini.ui.compose.IconTitleSummaryActionRow
 import ac.mdiq.podcini.ui.compose.TitleSummaryActionColumn
+import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
+import android.content.Context.WIFI_SERVICE
+import android.net.wifi.WifiManager
 import android.text.format.DateUtils
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
@@ -156,6 +167,113 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
         )
     }
 
+    @Composable
+    fun WifiAuthenticationDialog(onDismissRequest: ()->Unit) {
+        val TAG = "WifiAuthenticationDialog"
+        val textColor = MaterialTheme.colorScheme.onSurface
+        val context = LocalContext.current
+        var progressMessage by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf("") }
+        val scope = rememberCoroutineScope()
+        scope.launch {
+            EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.SyncServiceEvent -> {
+                        when (event.messageResId) {
+                            R.string.sync_status_error -> {
+                                errorMessage = event.message
+                                Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                                onDismissRequest()
+                            }
+                            R.string.sync_status_success -> {
+                                Toast.makeText(context, R.string.sync_status_success, Toast.LENGTH_LONG).show()
+                                onDismissRequest()
+                            }
+                            R.string.sync_status_in_progress -> progressMessage = event.message
+                            else -> {
+                                Logd(TAG, "Sync result unknow ${event.messageResId}")
+                            }
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+        var portNum by remember { mutableIntStateOf(SynchronizationCredentials.hostport) }
+        var isGuest by remember { mutableStateOf<Boolean?>(null) }
+        var hostAddress by remember { mutableStateOf(SynchronizationCredentials.hosturl?:"") }
+        var showHostAddress by remember { mutableStateOf(true)  }
+        var portString by remember { mutableStateOf(SynchronizationCredentials.hostport.toString()) }
+        var showProgress by remember { mutableStateOf(false) }
+        var showConfirm by remember { mutableStateOf(true)  }
+        var showCancel by remember { mutableStateOf(true)  }
+        AlertDialog(modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { onDismissRequest() },
+            title = { Text(stringResource(R.string.connect_to_peer), style = CustomTextStyles.titleCustom) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.wifisync_explanation_message), style = MaterialTheme.typography.bodySmall)
+                    Row {
+                        TextButton(onClick = {
+                            val wifiManager = context.getSystemService(WIFI_SERVICE) as WifiManager
+                            val ipAddress = wifiManager.connectionInfo.ipAddress
+                            val ipString = String.format(Locale.US, "%d.%d.%d.%d", ipAddress and 0xff, ipAddress shr 8 and 0xff, ipAddress shr 16 and 0xff, ipAddress shr 24 and 0xff)
+                            hostAddress = ipString
+                            showHostAddress = false
+                            portNum = portString.toInt()
+                            isGuest = false
+                            SynchronizationCredentials.hostport = portNum
+                        }) { Text(stringResource(R.string.host_butLabel)) }
+                        Spacer(Modifier.weight(1f))
+                        TextButton(onClick = {
+                            SynchronizationCredentials.hosturl = hostAddress
+                            showHostAddress = true
+                            portNum = portString.toInt()
+                            isGuest = true
+                            SynchronizationCredentials.hostport = portNum
+                        }) { Text(stringResource(R.string.guest_butLabel)) }
+                    }
+                    Row {
+                        if (showHostAddress) TextField(value = hostAddress, modifier = Modifier.weight(0.6f),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            onValueChange = { input -> hostAddress = input },
+                            label = { Text(stringResource(id = R.string.synchronization_host_address_label)) })
+                        TextField(value = portString, modifier = Modifier.weight(0.4f).padding(start = 3.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            onValueChange = { input ->
+                                portString = input
+                                portNum = input.toInt()
+                            },
+                            label = { Text(stringResource(id = R.string.synchronization_host_port_label)) })
+                    }
+                    if (showProgress)  {
+                        CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, color = textColor, modifier = Modifier.size(50.dp))
+                        Text(stringResource(R.string.wifisync_progress_message) + " " + progressMessage, color = textColor)
+                    }
+                    Text(errorMessage, style = MaterialTheme.typography.bodyMedium)
+                }
+            },
+            confirmButton = {
+                if (showConfirm) TextButton(onClick = {
+                    Logd(TAG, "confirm button pressed")
+                    if (isGuest == null) {
+                        Toast.makeText(getAppContext(), R.string.host_or_guest, Toast.LENGTH_LONG).show()
+                        return@TextButton
+                    }
+                    showProgress = true
+                    showConfirm = false
+                    showCancel = false
+                    setWifiSyncEnabled(true)
+                    startInstantSync(getAppContext(), portNum, hostAddress, isGuest!!)
+                }) { Text(stringResource(R.string.confirm_label)) }
+            },
+            dismissButton = { if (showCancel) TextButton(onClick = { onDismissRequest() }) { Text(stringResource(R.string.cancel_label)) } }
+        )
+    }
+
+    var ShowWifiAuthenticationDialog by remember { mutableStateOf(false) }
+    if (ShowWifiAuthenticationDialog) WifiAuthenticationDialog { ShowWifiAuthenticationDialog = false }
+
     var ChooseProviderAndLoginDialog by remember { mutableStateOf(false) }
     if (ChooseProviderAndLoginDialog) ChooseProviderAndLoginDialog { ChooseProviderAndLoginDialog = false }
 
@@ -168,7 +286,10 @@ fun SynchronizationPreferencesScreen(activity: PreferenceActivity) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val scrollState = rememberScrollState()
     Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
-        IconTitleSummaryActionRow(R.drawable.wifi_sync, R.string.wifi_sync, R.string.wifi_sync_summary_unchoosen) { WifiAuthenticationFragment().show(activity.supportFragmentManager, WifiAuthenticationFragment.TAG) }
+        IconTitleSummaryActionRow(R.drawable.wifi_sync, R.string.wifi_sync, R.string.wifi_sync_summary_unchoosen) {
+            ShowWifiAuthenticationDialog = true
+//            WifiAuthenticationFragment().show(activity.supportFragmentManager, WifiAuthenticationFragment.TAG)
+        }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
             var titleRes by remember { mutableStateOf(0) }
             var summaryRes by remember { mutableIntStateOf(R.string.synchronization_summary_unchoosen) }

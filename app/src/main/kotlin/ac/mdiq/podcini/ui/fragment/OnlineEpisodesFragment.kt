@@ -28,70 +28,74 @@ import androidx.fragment.app.Fragment
 import kotlin.math.min
 
 class OnlineEpisodesFragment: Fragment() {
-    private var displayUpArrow = false
 
-    private var infoBarText = mutableStateOf("")
-    private lateinit var swipeActions: SwipeActions
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    class OnlineEpisodesVM {
+        internal var displayUpArrow = false
 
-    private var showSwipeActionsDialog by mutableStateOf(false)
+        internal var infoBarText = mutableStateOf("")
+        internal lateinit var swipeActions: SwipeActions
+        internal var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
 
-    val episodes = mutableListOf<Episode>()
-    val vms = mutableStateListOf<EpisodeVM>()
+        internal var showSwipeActionsDialog by mutableStateOf(false)
+
+        internal val episodes = mutableListOf<Episode>()
+        internal val vms = mutableStateListOf<EpisodeVM>()
+    }
+
+    private val vm = OnlineEpisodesVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-        swipeActions = SwipeActions(this, TAG)
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
-        lifecycle.addObserver(swipeActions)
+        vm.swipeActions = SwipeActions(this, TAG)
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
+        lifecycle.addObserver(vm.swipeActions)
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
-                        swipeActions.actions = actions
-                        refreshSwipeTelltale()
-                    }
-                    swipeActions.ActionOptionsDialog()
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
-                            EpisodeLazyColumn(activity as MainActivity, vms = vms,
-                                buildMoreItems = { buildMoreItems() },
-                                leftSwipeCB = {
-                                    if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else leftActionState.value.performAction(it)
-                                },
-                                rightSwipeCB = {
-                                    if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                    else rightActionState.value.performAction(it)
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { OnlineEpisodesScreen() } } }
         refreshSwipeTelltale()
         return composeView
     }
 
+    @Composable
+    fun OnlineEpisodesScreen() {
+        if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+            vm.swipeActions.actions = actions
+            refreshSwipeTelltale()
+        }
+        vm.swipeActions.ActionOptionsDialog()
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true })
+                EpisodeLazyColumn(activity as MainActivity, vms = vm.vms,
+                    buildMoreItems = { buildMoreItems() },
+                    leftSwipeCB = {
+                        if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.leftActionState.value.performAction(it)
+                    },
+                    rightSwipeCB = {
+                        if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                        else vm.rightActionState.value.performAction(it)
+                    },
+                )
+            }
+        }
+    }
+
     fun buildMoreItems() {
-        val nextItems = (vms.size until min(vms.size + VMS_CHUNK_SIZE, episodes.size)).map { EpisodeVM(episodes[it], FeedEpisodesFragment.Companion.TAG) }
-        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
+        val nextItems = (vm.vms.size until min(vm.vms.size + VMS_CHUNK_SIZE, vm.episodes.size)).map { EpisodeVM(vm.episodes[it], FeedEpisodesFragment.Companion.TAG) }
+        if (nextItems.isNotEmpty()) vm.vms.addAll(nextItems)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
         TopAppBar(title = { Text(stringResource(R.string.online_episodes_label)) },
-            navigationIcon = if (displayUpArrow) {
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(Icons.Filled.Menu, contentDescription = "Open Drawer") } }
@@ -101,33 +105,33 @@ class OnlineEpisodesFragment: Fragment() {
 
     override fun onStart() {
         super.onStart()
-        stopMonitor(vms)
-        vms.clear()
+        stopMonitor(vm.vms)
+        vm.vms.clear()
         buildMoreItems()
 //        for (e in episodes) { vms.add(EpisodeVM(e, TAG)) }
-        infoBarText.value = "${episodes.size} episodes"
+        vm.infoBarText.value = "${vm.episodes.size} episodes"
     }
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        episodes.clear()
-        stopMonitor(vms)
-        vms.clear()
+        vm.episodes.clear()
+        stopMonitor(vm.vms)
+        vm.vms.clear()
         super.onDestroyView()
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
     }
 
     fun setEpisodes(episodeList_: MutableList<Episode>) {
-        episodes.clear()
-        episodes.addAll(episodeList_)
+        vm.episodes.clear()
+        vm.episodes.addAll(episodeList_)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
     }
 

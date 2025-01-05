@@ -65,71 +65,73 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class LogsFragment : Fragment() {
-    private val shareLogs = mutableStateListOf<ShareLog>()
-    private val subscriptionLogs = mutableStateListOf<SubscriptionLog>()
-    private val downloadLogs = mutableStateListOf<DownloadResult>()
-    private var title by mutableStateOf("")
 
-    private var displayUpArrow = false
+    class LogsVM {
+        internal val shareLogs = mutableStateListOf<ShareLog>()
+        internal val subscriptionLogs = mutableStateListOf<SubscriptionLog>()
+        internal val downloadLogs = mutableStateListOf<DownloadResult>()
+        internal var title by mutableStateOf("")
+        internal var displayUpArrow = false
+        internal var showDeleteConfirmDialog = mutableStateOf(false)
+    }
 
-    private var showDeleteConfirmDialog = mutableStateOf(false)
+    private val vm = LogsVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            ComfirmDialog(R.string.confirm_delete_logs_label, stringResource(R.string.confirm_delete_logs_message), showDeleteConfirmDialog) {
-                                runOnIOScope {
-                                    when {
-                                        shareLogs.isNotEmpty() -> {
-                                            realm.write {
-                                                val items = query(ShareLog::class).find()
-                                                delete(items)
-                                            }
-                                            shareLogs.clear()
-                                            loadShareLog()
-                                        }
-                                        subscriptionLogs.isNotEmpty() -> {
-                                            realm.write {
-                                                val items = query(SubscriptionLog::class).find()
-                                                delete(items)
-                                            }
-                                            subscriptionLogs.clear()
-                                            loadSubscriptionLog()
-                                        }
-                                        downloadLogs.isNotEmpty() -> {
-                                            realm.write {
-                                                val items = query(DownloadResult::class).find()
-                                                delete(items)
-                                            }
-                                            downloadLogs.clear()
-                                            loadDownloadLog()
-                                        }
-                                    }
-                                }
-                            }
-                            when {
-                                downloadLogs.isNotEmpty() -> DownloadLogView()
-                                shareLogs.isNotEmpty() -> SharedLogView()
-                                subscriptionLogs.isNotEmpty() -> SubscriptionLogView()
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { LogsScreen() } } }
         loadDownloadLog()
         return composeView
     }
 
+    @Composable
+    fun LogsScreen() {
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                ComfirmDialog(R.string.confirm_delete_logs_label, stringResource(R.string.confirm_delete_logs_message), vm.showDeleteConfirmDialog) {
+                    runOnIOScope {
+                        when {
+                            vm.shareLogs.isNotEmpty() -> {
+                                realm.write {
+                                    val items = query(ShareLog::class).find()
+                                    delete(items)
+                                }
+                                vm.shareLogs.clear()
+                                loadShareLog()
+                            }
+                            vm.subscriptionLogs.isNotEmpty() -> {
+                                realm.write {
+                                    val items = query(SubscriptionLog::class).find()
+                                    delete(items)
+                                }
+                                vm.subscriptionLogs.clear()
+                                loadSubscriptionLog()
+                            }
+                            vm.downloadLogs.isNotEmpty() -> {
+                                realm.write {
+                                    val items = query(DownloadResult::class).find()
+                                    delete(items)
+                                }
+                                vm.downloadLogs.clear()
+                                loadDownloadLog()
+                            }
+                        }
+                    }
+                }
+                when {
+                    vm.downloadLogs.isNotEmpty() -> DownloadLogView()
+                    vm.shareLogs.isNotEmpty() -> SharedLogView()
+                    vm.subscriptionLogs.isNotEmpty() -> SubscriptionLogView()
+                }
+            }
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
+        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
         super.onSaveInstanceState(outState)
     }
 
@@ -153,7 +155,7 @@ class LogsFragment : Fragment() {
 
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(shareLogs) { position, log ->
+            itemsIndexed(vm.shareLogs) { position, log ->
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Row (modifier = Modifier.clickable {
                     if (log.status < ShareLog.Status.SUCCESS.ordinal) {
@@ -233,7 +235,7 @@ class LogsFragment : Fragment() {
 
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(subscriptionLogs) { position, log ->
+            itemsIndexed(vm.subscriptionLogs) { position, log ->
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Row (verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp, end = 10.dp).clickable {
                     dialogParam.value = log
@@ -260,7 +262,7 @@ class LogsFragment : Fragment() {
 
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(downloadLogs) { position, status ->
+            itemsIndexed(vm.downloadLogs) { position, status ->
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Row (modifier = Modifier.clickable {
                     showDialog.value = true
@@ -288,7 +290,7 @@ class LogsFragment : Fragment() {
                     }
                     fun newerWasSuccessful(downloadStatusIndex: Int, feedTypeId: Int, id: Long): Boolean {
                         for (i in 0 until downloadStatusIndex) {
-                            val status_: DownloadResult = downloadLogs[i]
+                            val status_: DownloadResult = vm.downloadLogs[i]
                             if (status_.feedfileType == feedTypeId && status_.feedfileId == id && status_.isSuccessful) return true
                         }
                         return false
@@ -324,34 +326,34 @@ class LogsFragment : Fragment() {
     }
 
     private fun clearAllLogs() {
-        subscriptionLogs.clear()
-        shareLogs.clear()
-        downloadLogs.clear()
+        vm.subscriptionLogs.clear()
+        vm.shareLogs.clear()
+        vm.downloadLogs.clear()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
-        TopAppBar(title = { Text(title) },
-            navigationIcon = if (displayUpArrow) {
+        TopAppBar(title = { Text(vm.title) },
+            navigationIcon = if (vm.displayUpArrow) {
                 { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
             } else {
                 { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_history), contentDescription = "Open Drawer") } }
             },
             actions = {
-                if (title != "Downloads log") IconButton(onClick = {
+                if (vm.title != "Downloads log") IconButton(onClick = {
                     clearAllLogs()
                     loadDownloadLog()
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_download), contentDescription = "download") }
-                if (title != "Shares log") IconButton(onClick = {
+                if (vm.title != "Shares log") IconButton(onClick = {
                     clearAllLogs()
                     loadShareLog()
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "share") }
-                if (title != "Subscriptions log") IconButton(onClick = {
+                if (vm.title != "Subscriptions log") IconButton(onClick = {
                     clearAllLogs()
                     loadSubscriptionLog()
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_subscriptions), contentDescription = "subscriptions") }
-                IconButton(onClick = { showDeleteConfirmDialog.value = true
+                IconButton(onClick = { vm.showDeleteConfirmDialog.value = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_delete), contentDescription = "clear history") }
             }
         )
@@ -365,8 +367,8 @@ class LogsFragment : Fragment() {
                     realm.query(ShareLog::class).sort("id", Sort.DESCENDING).find().toMutableList()
                 }
                 withContext(Dispatchers.Main) {
-                    shareLogs.addAll(result)
-                    title = "Shares log"
+                    vm.shareLogs.addAll(result)
+                    vm.title = "Shares log"
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
@@ -380,8 +382,8 @@ class LogsFragment : Fragment() {
                     realm.query(SubscriptionLog::class).sort("id", Sort.DESCENDING).find().toMutableList()
                 }
                 withContext(Dispatchers.Main) {
-                    subscriptionLogs.addAll(result)
-                    title = "Subscriptions log"
+                    vm.subscriptionLogs.addAll(result)
+                    vm.title = "Subscriptions log"
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
@@ -398,8 +400,8 @@ class LogsFragment : Fragment() {
                     dlog
                 }
                 withContext(Dispatchers.Main) {
-                    downloadLogs.addAll(result)
-                    title = "Downloads log"
+                    vm.downloadLogs.addAll(result)
+                    vm.title = "Downloads log"
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }

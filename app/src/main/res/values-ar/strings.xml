@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">تحديث الاشتراكات</string>
     <string name="feeds">التحديثات</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">البودكاستات</string>
     <string name="statistics_label">الإحصائيات</string>
     <string name="add_feed_label">إضافة بودكاست</string>

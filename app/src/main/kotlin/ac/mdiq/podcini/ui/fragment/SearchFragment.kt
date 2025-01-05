@@ -66,95 +66,99 @@ import java.text.NumberFormat
 import kotlin.math.min
 
 class SearchFragment : Fragment() {
-    private lateinit var automaticSearchDebouncer: Handler
 
-    private val pafeeds = mutableStateListOf<PAFeed>()
+    class SearchVM {
+        internal lateinit var automaticSearchDebouncer: Handler
 
-    private val feeds = mutableStateListOf<Feed>()
-    private val episodes = mutableListOf<Episode>()
-    private val vms = mutableStateListOf<EpisodeVM>()
-    private var infoBarText = mutableStateOf("")
-    private var searchInFeed by mutableStateOf(false)
-    private var feedName by mutableStateOf("")
-    private var queryText by mutableStateOf("")
+        internal val pafeeds = mutableStateListOf<PAFeed>()
 
-    private var showSwipeActionsDialog by mutableStateOf(false)
-    private lateinit var swipeActions: SwipeActions
-    private var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
-    private var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal val feeds = mutableStateListOf<Feed>()
+        internal val episodes = mutableListOf<Episode>()
+        internal val vms = mutableStateListOf<EpisodeVM>()
+        internal var infoBarText = mutableStateOf("")
+        internal var searchInFeed by mutableStateOf(false)
+        internal var feedName by mutableStateOf("")
+        internal var queryText by mutableStateOf("")
+
+        internal var showSwipeActionsDialog by mutableStateOf(false)
+        internal lateinit var swipeActions: SwipeActions
+        internal var leftActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+        internal var rightActionState = mutableStateOf<SwipeAction>(NoActionSwipeAction())
+    }
+
+    private val vm = SearchVM()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        automaticSearchDebouncer = Handler(Looper.getMainLooper())
+        vm.automaticSearchDebouncer = Handler(Looper.getMainLooper())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        swipeActions = SwipeActions(this, TAG)
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
-        lifecycle.addObserver(swipeActions)
+        vm.swipeActions = SwipeActions(this, TAG)
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
+        lifecycle.addObserver(vm.swipeActions)
 
         if (requireArguments().getLong(ARG_FEED, 0) > 0L) {
-            searchInFeed = true
-            feedName = requireArguments().getString(ARG_FEED_NAME, "")
+            vm.searchInFeed = true
+            vm.feedName = requireArguments().getString(ARG_FEED_NAME, "")
         }
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    if (showSwipeActionsDialog) SwipeActionsSettingDialog(swipeActions, onDismissRequest = { showSwipeActionsDialog = false }) { actions ->
-                        swipeActions.actions = actions
-                        refreshSwipeTelltale()
-                    }
-                    swipeActions.ActionOptionsDialog()
-                    val tabTitles = listOf(R.string.episodes_label, R.string.feeds, R.string.pafeeds)
-                    val tabCounts = listOf<Int>(episodes.size, feeds.size, pafeeds.size)
-                    val selectedTabIndex = remember { mutableIntStateOf(0) }
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            if (searchInFeed) FilterChip(onClick = { }, label = { Text(feedName) }, selected = searchInFeed,
-                                trailingIcon = {
-                                    Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = {
-                                        requireArguments().putLong(ARG_FEED, 0)
-                                        searchInFeed = false
-                                    }))
-                                }
-                            )
-                            CriteriaList()
-                            TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
-                                Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
-                            }) {
-                                tabTitles.forEachIndexed { index, titleRes ->
-                                    Tab(text = { Text(stringResource(titleRes)+"(${tabCounts[index]})") }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
-                                }
-                            }
-                            when (selectedTabIndex.value) {
-                                0 -> {
-                                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { showSwipeActionsDialog = true })
-                                    EpisodeLazyColumn(activity as MainActivity, vms = vms, buildMoreItems = { buildMoreItems() },
-                                        leftSwipeCB = {
-                                            if (leftActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                            else leftActionState.value.performAction(it)
-                                        },
-                                        rightSwipeCB = {
-                                            if (rightActionState.value is NoActionSwipeAction) showSwipeActionsDialog = true
-                                            else rightActionState.value.performAction(it)
-                                        },
-                                    )
-                                }
-                                1 -> FeedsColumn()
-                                2 -> PAFeedsColumn()
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { SearchScreen() } } }
         refreshSwipeTelltale()
         val arg = requireArguments().getString(ARG_QUERY, "")
         if (arg.isNotBlank()) search(arg)
         return composeView
+    }
+
+    @Composable
+    fun SearchScreen() {
+        if (vm.showSwipeActionsDialog) SwipeActionsSettingDialog(vm.swipeActions, onDismissRequest = { vm.showSwipeActionsDialog = false }) { actions ->
+            vm.swipeActions.actions = actions
+            refreshSwipeTelltale()
+        }
+        vm.swipeActions.ActionOptionsDialog()
+        val tabTitles = listOf(R.string.episodes_label, R.string.feeds, R.string.pafeeds)
+        val tabCounts = listOf<Int>(vm.episodes.size, vm.feeds.size, vm.pafeeds.size)
+        val selectedTabIndex = remember { mutableIntStateOf(0) }
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                if (vm.searchInFeed) FilterChip(onClick = { }, label = { Text(vm.feedName) }, selected = vm.searchInFeed,
+                    trailingIcon = {
+                        Icon(imageVector = Icons.Filled.Close, contentDescription = "Close icon", modifier = Modifier.size(FilterChipDefaults.IconSize).clickable(onClick = {
+                            requireArguments().putLong(ARG_FEED, 0)
+                            vm.searchInFeed = false
+                        }))
+                    }
+                )
+                CriteriaList()
+                TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
+                    Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
+                }) {
+                    tabTitles.forEachIndexed { index, titleRes ->
+                        Tab(text = { Text(stringResource(titleRes)+"(${tabCounts[index]})") }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
+                    }
+                }
+                when (selectedTabIndex.value) {
+                    0 -> {
+                        InforBar(vm.infoBarText, leftAction = vm.leftActionState, rightAction = vm.rightActionState, actionConfig = { vm.showSwipeActionsDialog = true })
+                        EpisodeLazyColumn(activity as MainActivity, vms = vm.vms, buildMoreItems = { buildMoreItems() },
+                            leftSwipeCB = {
+                                if (vm.leftActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                else vm.leftActionState.value.performAction(it)
+                            },
+                            rightSwipeCB = {
+                                if (vm.rightActionState.value is NoActionSwipeAction) vm.showSwipeActionsDialog = true
+                                else vm.rightActionState.value.performAction(it)
+                            },
+                        )
+                    }
+                    1 -> FeedsColumn()
+                    2 -> PAFeedsColumn()
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -169,29 +173,29 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        episodes.clear()
-        feeds.clear()
-        stopMonitor(vms)
-        vms.clear()
+        vm.episodes.clear()
+        vm.feeds.clear()
+        stopMonitor(vm.vms)
+        vm.vms.clear()
         super.onDestroyView()
     }
 
     fun buildMoreItems() {
-        val nextItems = (vms.size until min(vms.size + VMS_CHUNK_SIZE, episodes.size)).map { EpisodeVM(episodes[it], TAG) }
-        if (nextItems.isNotEmpty()) vms.addAll(nextItems)
+        val nextItems = (vm.vms.size until min(vm.vms.size + VMS_CHUNK_SIZE, vm.episodes.size)).map { EpisodeVM(vm.episodes[it], TAG) }
+        if (nextItems.isNotEmpty()) vm.vms.addAll(nextItems)
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions.left[0]
-        rightActionState.value = swipeActions.actions.right[0]
+        vm.leftActionState.value = vm.swipeActions.actions.left[0]
+        vm.rightActionState.value = vm.swipeActions.actions.right[0]
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
         TopAppBar(title = { SearchBarRow(R.string.search_label) {
-            queryText = it
-            search(queryText)
+            vm.queryText = it
+            search(vm.queryText)
         }},
             navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
         )
@@ -210,7 +214,7 @@ class SearchFragment : Fragment() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent -> search(queryText)
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent -> search(vm.queryText)
 //                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
@@ -229,8 +233,8 @@ class SearchFragment : Fragment() {
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
-            val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            val pos: Int = Episodes.indexOfItemWithDownloadUrl(vm.episodes, url)
+            if (pos >= 0) vm.vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 
@@ -242,8 +246,8 @@ class SearchFragment : Fragment() {
         if (query.isBlank()) return
         if (searchJob != null) {
             searchJob?.cancel()
-            stopMonitor(vms)
-            vms.clear()
+            stopMonitor(vm.vms)
+            vm.vms.clear()
         }
         searchJob = lifecycleScope.launch {
             try {
@@ -260,20 +264,20 @@ class SearchFragment : Fragment() {
                 }
                 withContext(Dispatchers.Main) {
                     val first_ = results_.episodes
-                    episodes.clear()
-                    stopMonitor(vms)
-                    vms.clear()
+                    vm.episodes.clear()
+                    stopMonitor(vm.vms)
+                    vm.vms.clear()
                     if (first_.isNotEmpty()) {
-                        episodes.addAll(first_)
+                        vm.episodes.addAll(first_)
                         buildMoreItems()
                     }
-                    infoBarText.value = "${episodes.size} episodes"
+                    vm.infoBarText.value = "${vm.episodes.size} episodes"
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                        feeds.clear()
-                        if (results_.feeds.isNotEmpty()) feeds.addAll(results_.feeds)
-                    } else feeds.clear()
-                    pafeeds.clear()
-                    if (results_.pafeeds.isNotEmpty()) pafeeds.addAll(results_.pafeeds)
+                        vm.feeds.clear()
+                        if (results_.feeds.isNotEmpty()) vm.feeds.addAll(results_.feeds)
+                    } else vm.feeds.clear()
+                    vm.pafeeds.clear()
+                    if (results_.pafeeds.isNotEmpty()) vm.pafeeds.addAll(results_.pafeeds)
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { searchJob = null } }
@@ -319,7 +323,7 @@ class SearchFragment : Fragment() {
         val context = LocalContext.current
         val lazyListState = rememberLazyListState()
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(feeds, key = { _, feed -> feed.id }) { index, feed ->
+            itemsIndexed(vm.feeds, key = { _, feed -> feed.id }) { index, feed ->
                 Row(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     val imgLoc = remember(feed) { feed.imageUrl }
                     AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
@@ -368,7 +372,7 @@ class SearchFragment : Fragment() {
         val context = LocalContext.current
         val lazyListState = rememberLazyListState()
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(pafeeds, key = { _, feed -> feed.id }) { index, feed ->
+            itemsIndexed(vm.pafeeds, key = { _, feed -> feed.id }) { index, feed ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val imgLoc = remember(feed) { feed.imageUrl }
                     AsyncImage(model = ImageRequest.Builder(context).data(imgLoc)
@@ -523,7 +527,7 @@ class SearchFragment : Fragment() {
 //    }
 
     private fun searchOnline() {
-        val query = queryText
+        val query = vm.queryText
         if (query.matches("http[s]?://.*".toRegex())) {
             val fragment: Fragment = OnlineFeedFragment.newInstance(query)
             (activity as MainActivity).loadChildFragment(fragment)

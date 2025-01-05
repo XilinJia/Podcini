@@ -3,7 +3,7 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Aktualizuj subskrypcje</string>
     <string name="feeds">Kanały</string>
-    <string name="pafeeds">PAFeeds</string>
+
     <string name="feeds_label">Podcasty</string>
     <string name="statistics_label">Statystyki</string>
     <string name="add_feed_label">Dodaj podcast</string>

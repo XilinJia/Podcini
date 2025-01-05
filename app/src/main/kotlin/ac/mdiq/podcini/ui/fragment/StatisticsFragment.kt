@@ -62,71 +62,74 @@ import kotlin.math.min
 class StatisticsFragment : Fragment() {
     val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
 
-    private var includeMarkedAsPlayed by mutableStateOf(false)
-    private var statisticsState by mutableIntStateOf(0)
-    private val selectedTabIndex = mutableIntStateOf(0)
-    private var showFilter by mutableStateOf(false)
+    class StatisticsVM {
+        internal var includeMarkedAsPlayed by mutableStateOf(false)
+        internal var statisticsState by mutableIntStateOf(0)
+        internal val selectedTabIndex = mutableIntStateOf(0)
+        internal var showFilter by mutableStateOf(false)
 
-    lateinit var statsResult: StatisticsResult
+        lateinit var statsResult: StatisticsResult
 
-    private val showResetDialog = mutableStateOf(false)
+        internal val showResetDialog = mutableStateOf(false)
+    }
+
+    private val vm = StatisticsVM()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val composeView = ComposeView(requireContext()).apply {
-            setContent {
-                CustomTheme(requireContext()) {
-                    ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = showResetDialog) {
-                        prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                while (realm.query(Episode::class).query("playedDuration != 0 || timeSpent != 0").count().find() > 0) {
-                                    realm.write {
-                                        var mediaAll = query(Episode::class).query("playedDuration != 0 || timeSpent != 0").find()
-                                        if (mediaAll.isNotEmpty()) {
-                                            Logd(TAG, "mediaAll: ${mediaAll.size}")
-                                            for (m in mediaAll) {
-                                                Logd(TAG, "m: ${m.title}")
-                                                m.playedDuration = 0
-                                                m.timeSpent = 0
-                                                m.timeSpentOnStart = 0
-                                                m.startTime = 0
-                                            }
-                                        }
-                                    }
+        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { StatisticsScreen() } } }
+        return composeView
+    }
+
+    @Composable
+    fun StatisticsScreen() {
+        ComfirmDialog(titleRes = R.string.statistics_reset_data, message = stringResource(R.string.statistics_reset_data_msg), showDialog = vm.showResetDialog) {
+            prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)?.putLong(PREF_FILTER_FROM, 0)?.putLong(PREF_FILTER_TO, Long.MAX_VALUE)?.apply()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    while (realm.query(Episode::class).query("playedDuration != 0 || timeSpent != 0").count().find() > 0) {
+                        realm.write {
+                            var mediaAll = query(Episode::class).query("playedDuration != 0 || timeSpent != 0").find()
+                            if (mediaAll.isNotEmpty()) {
+                                Logd(TAG, "mediaAll: ${mediaAll.size}")
+                                for (m in mediaAll) {
+                                    Logd(TAG, "m: ${m.title}")
+                                    m.playedDuration = 0
+                                    m.timeSpent = 0
+                                    m.timeSpentOnStart = 0
+                                    m.startTime = 0
                                 }
-                                statisticsState++
-                            } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
-                        }
-                    }
-                    if (showFilter) DatesFilterDialogCompose(inclPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false), from = prefs.getLong(PREF_FILTER_FROM, 0), to = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE),
-                        oldestDate = statsResult.oldestDate, onDismissRequest = {showFilter = false} ) { timeFilterFrom, timeFilterTo, includeMarkedAsPlayed_ ->
-                        prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)?.putLong(PREF_FILTER_FROM, timeFilterFrom)?.putLong(PREF_FILTER_TO, timeFilterTo)?.apply()
-                        includeMarkedAsPlayed = includeMarkedAsPlayed_
-                        statisticsState++
-                    }
-                    val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
-                    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-                        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                            TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
-                                Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]).height(4.dp).background(Color.Blue))
-                            }) {
-                                tabTitles.forEachIndexed { index, titleRes ->
-                                    Tab(text = { Text(stringResource(titleRes)) }, selected = selectedTabIndex.value == index, onClick = { selectedTabIndex.value = index })
-                                }
-                            }
-                            when (selectedTabIndex.value) {
-                                0 -> PlayedTime()
-                                1 -> MonthlyStats()
-                                2 -> DownloadStats()
                             }
                         }
                     }
+                    vm.statisticsState++
+                } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
+            }
+        }
+        if (vm.showFilter) DatesFilterDialogCompose(inclPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false), from = prefs.getLong(PREF_FILTER_FROM, 0), to = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE),
+            oldestDate = vm.statsResult.oldestDate, onDismissRequest = {vm.showFilter = false} ) { timeFilterFrom, timeFilterTo, includeMarkedAsPlayed_ ->
+            prefs.edit()?.putBoolean(PREF_INCLUDE_MARKED_PLAYED, includeMarkedAsPlayed_)?.putLong(PREF_FILTER_FROM, timeFilterFrom)?.putLong(PREF_FILTER_TO, timeFilterTo)?.apply()
+            vm.includeMarkedAsPlayed = includeMarkedAsPlayed_
+            vm.statisticsState++
+        }
+        val tabTitles = listOf(R.string.subscriptions_label, R.string.months_statistics_label, R.string.downloads_label)
+        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                TabRow(modifier = Modifier.fillMaxWidth(), selectedTabIndex = vm.selectedTabIndex.value, divider = {}, indicator = { tabPositions ->
+                    Box(modifier = Modifier.tabIndicatorOffset(tabPositions[vm.selectedTabIndex.value]).height(4.dp).background(Color.Blue))
+                }) {
+                    tabTitles.forEachIndexed { index, titleRes ->
+                        Tab(text = { Text(stringResource(titleRes)) }, selected = vm.selectedTabIndex.value == index, onClick = { vm.selectedTabIndex.value = index })
+                    }
+                }
+                when (vm.selectedTabIndex.value) {
+                    0 -> PlayedTime()
+                    1 -> MonthlyStats()
+                    2 -> DownloadStats()
                 }
             }
         }
-        return composeView
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -136,12 +139,12 @@ class StatisticsFragment : Fragment() {
         TopAppBar(title = { Text(stringResource(R.string.statistics_label)) },
             navigationIcon = { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "Open Drawer") } },
             actions = {
-                if (selectedTabIndex.value == 0) IconButton(onClick = { showFilter = true
+                if (vm.selectedTabIndex.value == 0) IconButton(onClick = { vm.showFilter = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    if (selectedTabIndex.value == 0 || selectedTabIndex.value == 1) DropdownMenuItem(text = { Text(stringResource(R.string.statistics_reset_data)) }, onClick = {
-                        showResetDialog.value = true
+                    if (vm.selectedTabIndex.value == 0 || vm.selectedTabIndex.value == 1) DropdownMenuItem(text = { Text(stringResource(R.string.statistics_reset_data)) }, onClick = {
+                        vm.showResetDialog.value = true
                         expanded = false
                     })
                 }
@@ -160,13 +163,13 @@ class StatisticsFragment : Fragment() {
         var timeSpentToday = 0L
 
         fun setTimeFilter(includeMarkedAsPlayed_: Boolean, timeFilterFrom_: Long, timeFilterTo_: Long) {
-            includeMarkedAsPlayed = includeMarkedAsPlayed_
+            vm.includeMarkedAsPlayed = includeMarkedAsPlayed_
             timeFilterFrom = timeFilterFrom_
             timeFilterTo = timeFilterTo_
         }
         fun loadStatistics() {
-            includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
-            val statsToday = getStatistics(includeMarkedAsPlayed, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), Long.MAX_VALUE)
+            vm.includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+            val statsToday = getStatistics(vm.includeMarkedAsPlayed, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), Long.MAX_VALUE)
             for (item in statsToday.statsItems) {
                 timePlayedToday += item.timePlayed
                 timeSpentToday += item.timeSpent
@@ -174,22 +177,22 @@ class StatisticsFragment : Fragment() {
             timeFilterFrom = prefs.getLong(PREF_FILTER_FROM, 0)
             timeFilterTo = prefs.getLong(PREF_FILTER_TO, Long.MAX_VALUE)
             try {
-                statsResult = getStatistics(includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
-                statsResult.statsItems.sortWith { item1: StatisticsItem, item2: StatisticsItem -> item2.timePlayed.compareTo(item1.timePlayed) }
-                val dataValues = MutableList(statsResult.statsItems.size){0f}
-                for (i in statsResult.statsItems.indices) {
-                    val item = statsResult.statsItems[i]
+                vm.statsResult = getStatistics(vm.includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
+                vm.statsResult.statsItems.sortWith { item1: StatisticsItem, item2: StatisticsItem -> item2.timePlayed.compareTo(item1.timePlayed) }
+                val dataValues = MutableList(vm.statsResult.statsItems.size){0f}
+                for (i in vm.statsResult.statsItems.indices) {
+                    val item = vm.statsResult.statsItems[i]
                     dataValues[i] = item.timePlayed.toFloat()
                     timeSpentSum += item.timeSpent
                 }
                 chartData = LineChartData(dataValues)
                 // When "from" is "today", set it to today
-                setTimeFilter(includeMarkedAsPlayed,
-                    max(min(timeFilterFrom.toDouble(), System.currentTimeMillis().toDouble()), statsResult.oldestDate.toDouble()).toLong(),
+                setTimeFilter(vm.includeMarkedAsPlayed,
+                    max(min(timeFilterFrom.toDouble(), System.currentTimeMillis().toDouble()), vm.statsResult.oldestDate.toDouble()).toLong(),
                     min(timeFilterTo.toDouble(), System.currentTimeMillis().toDouble()).toLong())
             } catch (error: Throwable) { Log.e(TAG, Log.getStackTraceString(error)) }
         }
-        if (statisticsState >= 0) loadStatistics()
+        if (vm.statisticsState >= 0) loadStatistics()
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.statistics_today), color = MaterialTheme.colorScheme.onSurface)
@@ -198,7 +201,7 @@ class StatisticsFragment : Fragment() {
                 Spacer(Modifier.width(20.dp))
                 Text( stringResource(R.string.spent) + ": " + getDurationStringShort(timeSpentToday.toInt()*1000, true), color = MaterialTheme.colorScheme.onSurface)
             }
-            val headerCaption = if (includeMarkedAsPlayed) stringResource(R.string.statistics_counting_total)
+            val headerCaption = if (vm.includeMarkedAsPlayed) stringResource(R.string.statistics_counting_total)
             else {
                 if (timeFilterFrom != 0L || timeFilterTo != Long.MAX_VALUE) {
                     val skeleton = DateFormat.getBestDateTimePattern(Locale.getDefault(), "MMM yyyy")
@@ -216,7 +219,7 @@ class StatisticsFragment : Fragment() {
                 Text( stringResource(R.string.spent) + ": " + durationInHours(timeSpentSum), color = MaterialTheme.colorScheme.onSurface)
             }
             HorizontalLineChart(chartData)
-            StatsList(statsResult, chartData) { item ->
+            StatsList(vm.statsResult, chartData) { item ->
                 context.getString(R.string.duration) + ": " + durationInHours(item.timePlayed) + " \t " + context.getString(R.string.spent) + ": " + durationInHours(item.timeSpent)
             }
         }
@@ -229,7 +232,7 @@ class StatisticsFragment : Fragment() {
 
         fun loadMonthlyStatistics() {
             try {
-                includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
+                vm.includeMarkedAsPlayed = prefs.getBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
                 val months: MutableList<MonthlyStatisticsItem> = ArrayList()
                 val medias = realm.query(Episode::class).query("lastPlayedTime > 0").find()
                 val groupdMedias = medias.groupBy {
@@ -253,7 +256,7 @@ class StatisticsFragment : Fragment() {
                     for (m in medias_) {
                         dur += if (m.playedDuration > 0) m.playedDuration
                         else {
-                            if (includeMarkedAsPlayed) {
+                            if (vm.includeMarkedAsPlayed) {
                                 if (m.playbackCompletionTime > 0 || m.playState >= PlayState.SKIPPED.code) m.duration
                                 else if (m.position > 0) m.position else 0
                             } else m.position
@@ -303,7 +306,7 @@ class StatisticsFragment : Fragment() {
                 }
             }
         }
-        if (statisticsState >= 0) loadMonthlyStatistics()
+        if (vm.statisticsState >= 0) loadMonthlyStatistics()
         Column {
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp)) { BarChart() }
             Spacer(Modifier.height(20.dp))

@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Aggiorna iscrizioni</string>
     <string name="feeds">Feed</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcast</string>
     <string name="statistics_label">Statistiche</string>
     <string name="add_feed_label">Aggiungi podcast</string>

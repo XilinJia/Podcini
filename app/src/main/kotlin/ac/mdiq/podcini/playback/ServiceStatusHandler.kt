@@ -7,6 +7,7 @@ import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isRunning
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
  * Communicates with the playback service. GUI classes should use this class to
  * control playback instead of communicating with the PlaybackService directly.
  */
-abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
+abstract class ServiceStatusHandler(private val activity: MainActivity) {
 
     private var mediaInfoLoaded = false
     private var loadedFeedMediaId: Long = -1

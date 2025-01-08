@@ -26,6 +26,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.*
@@ -66,7 +67,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import javax.xml.parsers.DocumentBuilderFactory
 
-class PreferenceActivity : AppCompatActivity() {
+class PreferenceActivity : ComponentActivity() {
     var copyrightNoticeText by mutableStateOf("")
     var showToast by  mutableStateOf(false)
     var toastMassege by mutableStateOf("")
@@ -140,15 +141,15 @@ class PreferenceActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            if (supportFragmentManager.backStackEntryCount == 0) finish()
-            else {
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                var view = currentFocus
-                //If no view currently has focus, create a new one, just so we can grab a window token from it
-                if (view == null) view = View(this)
-                imm.hideSoftInputFromWindow(view.windowToken, 0)
-                supportFragmentManager.popBackStack()
-            }
+//            if (supportFragmentManager.backStackEntryCount == 0) finish()
+//            else {
+//                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+//                var view = currentFocus
+//                //If no view currently has focus, create a new one, just so we can grab a window token from it
+//                if (view == null) view = View(this)
+//                imm.hideSoftInputFromWindow(view.windowToken, 0)
+//                supportFragmentManager.popBackStack()
+//            }
             return true
         }
         return false

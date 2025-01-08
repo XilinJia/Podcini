@@ -1,3 +1,11 @@
+# 7.3.1
+
+* likely fixed episodes list out of bound crashes
+* fixed search in feed not being enabled
+* sleep timer and url edit dialogs are in Compose
+* all activities derive from ComponentActivity instead of AppCompatActivity
+* androidx.fragment dependency removed
+
 # 7.3.0
 
 * last major step migrating to Jetpack Compose

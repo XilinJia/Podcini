@@ -546,8 +546,6 @@ fun AudioPlayerScreen() {
                 modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
                     .clickable(onClick = {
                         Logd(TAG, "playerUi icon was clicked")
-//                        vm.onExpanded()
-//                        expandBottomSheet()
                         if (vm.isCollapsed) {
                             val media = curEpisode
                             if (media != null) {
@@ -720,6 +718,9 @@ fun AudioPlayerScreen() {
         }
     }
 
+    var showSleepTimeDialog by remember { mutableStateOf(false) }
+    if (showSleepTimeDialog) SleepTimerDialog { showSleepTimeDialog = false }
+
     @Composable
     fun Toolbar() {
         val context = LocalContext.current
@@ -756,7 +757,7 @@ fun AudioPlayerScreen() {
             if (vm.controller != null) {
                 val sleepRes = if (vm.sleepTimerActive) R.drawable.ic_sleep_off else R.drawable.ic_sleep
                 Icon(imageVector = ImageVector.vectorResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable {
-                    // TODO
+                   showSleepTimeDialog = true
 //                SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
                 })
             }

@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
@@ -37,7 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SubscriptionShortcutActivity : AppCompatActivity() {
+class SubscriptionShortcutActivity : ComponentActivity() {
     private val listItems = mutableStateListOf<Feed>()
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -14,6 +14,7 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.nio.charset.Charset
 
-class BugReportActivity : AppCompatActivity() {
+class BugReportActivity : ComponentActivity() {
     private var crashDetailsTextView by mutableStateOf("")
     var showToast by  mutableStateOf(false)
     var toastMassege by mutableStateOf("")

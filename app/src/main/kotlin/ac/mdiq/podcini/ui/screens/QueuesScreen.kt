@@ -201,8 +201,10 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
 //                            queueItems[pos].stopMonitoring.value = true
                             queueItems.removeAt(pos)
-                            vms[pos].stopMonitoring()
-                            vms.removeAt(pos)
+                            if (pos < vms.size) {
+                                vms[pos].stopMonitoring()
+                                vms.removeAt(pos)
+                            }
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -232,7 +234,7 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         val pos: Int = Episodes.indexOfItemWithId(queueItems, event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
-        if (pos >= 0) vms[pos].isPlayingState = event.isPlaying()
+        if (pos >= 0 && pos < vms.size) vms[pos].isPlayingState = event.isPlaying()
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
@@ -241,7 +243,7 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = Episodes.indexOfItemWithDownloadUrl(queueItems.toList(), url)
-            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            if (pos >= 0 && pos < vms.size) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
 
         }
     }

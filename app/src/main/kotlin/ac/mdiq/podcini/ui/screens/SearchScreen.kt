@@ -20,6 +20,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.curSearchString
 import ac.mdiq.podcini.ui.utils.feedOnDisplay
+import ac.mdiq.podcini.ui.utils.feedToSearchIn
 import ac.mdiq.podcini.ui.utils.setOnlineFeedUrl
 import ac.mdiq.podcini.ui.utils.setOnlineSearchTerms
 import ac.mdiq.podcini.util.EventFlow
@@ -87,6 +88,11 @@ class SearchVM(val context: Context, val lcScope: CoroutineScope) {
 
     init {
         queryText = curSearchString
+        if (feedToSearchIn != null) {
+            this.searchInFeed = true
+            feedId = feedToSearchIn!!.id
+            feedName = feedToSearchIn?.title ?: "Feed has no title"
+        }
         automaticSearchDebouncer = Handler(Looper.getMainLooper())
         swipeActions = SwipeActions(context, TAG)
         leftActionState.value = swipeActions.actions.left[0]
@@ -135,7 +141,7 @@ class SearchVM(val context: Context, val lcScope: CoroutineScope) {
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
             val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            if (pos >= 0 && pos < vms.size) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 

@@ -1,13 +1,38 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
-import android.app.Activity
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.lastTimerValue
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setAutoEnable
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setAutoEnableFrom
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setAutoEnableTo
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setLastTimer
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setShakeToReset
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.utils.DurationConverter.convertOnSpeed
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.lcScope
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.view.View
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +41,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +50,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -34,9 +60,16 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+import kotlin.collections.set
+import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -288,15 +321,6 @@ fun MediaPlayerErrorDialog(activity: Context, message: String, showDialog: Mutab
 }
 
 @Composable
-fun ComposableLifecycle(lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current, onEvent: (LifecycleOwner, Lifecycle.Event) -> Unit) {
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { source, event -> onEvent(source, event) }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-}
-
-@Composable
 fun SearchBarRow(hintTextRes: Int, defaultText: String = "", performSearch: (String) -> Unit) {
     val textColor = MaterialTheme.colorScheme.onSurface
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -307,4 +331,144 @@ fun SearchBarRow(hintTextRes: Int, defaultText: String = "", performSearch: (Str
         Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), tint = textColor, contentDescription = "right_action_icon",
             modifier = Modifier.width(40.dp).height(40.dp).padding(start = 5.dp).clickable(onClick = { performSearch(queryText) }))
     }
+}
+
+@Composable
+fun SleepTimerDialog(onDismiss: () -> Unit) {
+    val lcScope = rememberCoroutineScope()
+    val timeLeft = remember { (playbackService?.taskManager?.sleepTimerTimeLeft?:0) }
+    var showTimeDisplay by remember { mutableStateOf(false) }
+    var showTimeSetup by remember { mutableStateOf(true) }
+    var timerText by remember { mutableStateOf(getDurationStringLong(timeLeft.toInt())) }
+
+    fun timerUpdated(event: FlowEvent.SleepTimerUpdatedEvent) {
+        showTimeDisplay = !event.isOver && !event.isCancelled
+        showTimeSetup = event.isOver || event.isCancelled
+        timerText = getDurationStringLong(event.getTimeLeft().toInt())
+    }
+
+    var eventSink: Job? = remember { null }
+    fun cancelFlowEvents() {
+        eventSink?.cancel()
+        eventSink = null
+    }
+    fun procFlowEvents() {
+        if (eventSink != null) return
+        eventSink = lcScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SleepTimerUpdatedEvent -> timerUpdated(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { procFlowEvents() }
+    DisposableEffect(Unit) { onDispose { cancelFlowEvents() } }
+
+    var toEnd by remember { mutableStateOf(false) }
+    var etxtTime by remember { mutableStateOf(lastTimerValue()?:"") }
+    fun setSleepTimer(time: Long) {
+        playbackService?.taskManager?.setSleepTimer(time)
+    }
+    fun extendSleepTimer(extendTime: Long) {
+        val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: Episode.INVALID_TIME.toLong()
+        if (timeLeft != Episode.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
+    }
+
+    val scrollState = rememberScrollState()
+    AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { Text(stringResource(R.string.sleep_timer_label)) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
+                if (showTimeSetup) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp)) {
+                        Checkbox(checked = toEnd, onCheckedChange = { toEnd = it })
+                        Text(stringResource(R.string.end_episode), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 10.dp))
+                    }
+                    if (!toEnd) TextField(value = etxtTime, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number), label = { Text(stringResource(R.string.time_minutes)) }, singleLine = true,
+                        onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) etxtTime = it })
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                        if (!PlaybackService.isRunning) {
+//                        Snackbar.make(content, R.string.no_media_playing_label, Snackbar.LENGTH_LONG).show()
+                            return@Button
+                        }
+                        try {
+                            val time = if (toEnd) {
+                                val curPosition = curEpisode?.position ?: 0
+                                val duration = curEpisode?.duration ?: 0
+                                TimeUnit.MILLISECONDS.toMinutes(convertOnSpeed(max((duration - curPosition).toDouble(), 0.0).toInt(), curSpeedFB).toLong()) // ms to minutes
+                            } else etxtTime.toLong()
+                            Logd("SleepTimerDialog", "Sleep timer set: $time")
+                            if (time == 0L) throw NumberFormatException("Timer must not be zero")
+                            setLastTimer(time.toString())
+                            setSleepTimer(timerMillis())
+                            showTimeSetup = false
+                            showTimeDisplay = true
+//                        closeKeyboard(content)
+                        } catch (e: NumberFormatException) {
+                            e.printStackTrace()
+//                        Snackbar.make(content, R.string.time_dialog_invalid_input, Snackbar.LENGTH_LONG).show()
+                        }
+                    }) { Text(stringResource(R.string.set_sleeptimer_label)) }
+                }
+                if (showTimeDisplay || timeLeft > 0) {
+                    Text(timerText, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = { playbackService?.taskManager?.disableSleepTimer()
+                    }) { Text(stringResource(R.string.disable_sleeptimer_label)) }
+                    Row {
+                        Button(onClick = { extendSleepTimer((10 * 1000 * 60).toLong())
+                        }) { Text(stringResource(R.string.extend_sleep_timer_label, 10)) }
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = { extendSleepTimer((30 * 1000 * 60).toLong())
+                        }) { Text(stringResource(R.string.extend_sleep_timer_label, 30)) }
+                    }
+                }
+                var cbShakeToReset by remember { mutableStateOf(shakeToReset()) }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp)) {
+                    Checkbox(checked = cbShakeToReset, onCheckedChange = {
+                        cbShakeToReset = it
+                        setShakeToReset(it)
+                    })
+                    Text(stringResource(R.string.shake_to_reset_label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 10.dp))
+                }
+                var cbVibrate by remember { mutableStateOf(vibrate()) }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp)) {
+                    Checkbox(checked = cbVibrate, onCheckedChange = {
+                        cbVibrate = it
+                        setVibrate(it)
+                    })
+                    Text(stringResource(R.string.timer_vibration_label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 10.dp))
+                }
+                var chAutoEnable by remember { mutableStateOf(autoEnable()) }
+                var enableChangeTime by remember { mutableStateOf(chAutoEnable) }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp)) {
+                    Checkbox(checked = chAutoEnable, onCheckedChange = {
+                        chAutoEnable = it
+                        setAutoEnable(it)
+                        enableChangeTime = it
+                    })
+                    Text(stringResource(R.string.auto_enable_label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 10.dp))
+                }
+                if (enableChangeTime) {
+                    var from by remember { mutableStateOf(autoEnableFrom().toString()) }
+                    var to by remember { mutableStateOf(autoEnableTo().toString()) }
+                    Text(stringResource(R.string.auto_enable_sum), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp).fillMaxWidth()) {
+                        TextField(value = from, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number),
+                            label = { Text("From") }, singleLine = true, modifier = Modifier.weight(1f).padding(end = 8.dp),
+                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) from = it })
+                        TextField(value = to, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number),
+                            label = { Text("To") }, singleLine = true, modifier = Modifier.weight(1f).padding(end = 8.dp),
+                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) to = it })
+                        IconButton(onClick = {
+                            setAutoEnableFrom(from.toInt())
+                            setAutoEnableTo(to.toInt())
+                        }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings), contentDescription = "setting") }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onDismiss() }) { Text(stringResource(R.string.close_label)) } }
+    )
 }

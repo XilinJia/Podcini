@@ -38,8 +38,8 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 7. Promotes auto-download governed by policy and limit settings of individual feed (podcast).
 8. Supports casting Youtube audio/video contents to a Chromecast speaker/screen (the play app)
 9. Spotlights `instant sync` across devices without a server.
-10. Offers Readability and Text-to-Speech for RSS contents,
-11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines, EventBus with SharedFlow and fragments with screens,
+10. Offers Readability and Text-to-Speech for RSS contents.
+11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines, EventBus with SharedFlow, and fragments with screens.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 

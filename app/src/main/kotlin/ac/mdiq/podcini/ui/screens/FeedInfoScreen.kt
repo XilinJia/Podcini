@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.screens
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
@@ -20,21 +19,13 @@ import ac.mdiq.podcini.ui.utils.feedOnDisplay
 import ac.mdiq.podcini.ui.utils.setOnlineSearchTerms
 import ac.mdiq.podcini.util.*
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
-import android.R.string
-import android.app.Activity
 import android.content.*
 import android.net.Uri
-import android.os.CountDownTimer
 import android.util.Log
-import android.view.LayoutInflater
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -61,12 +52,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
-import java.lang.ref.WeakReference
-import java.util.*
 import java.util.concurrent.ExecutionException
 
 
@@ -342,6 +330,52 @@ fun FeedInfoScreen() {
         }
     }
 
+    var showEidtConfirmDialog by remember { mutableStateOf(false) }
+    var editedUrl by remember { mutableStateOf("") }
+    @Composable
+    fun EditUrlSettingsDialog(onDismiss: () -> Unit) {
+        var url by remember { mutableStateOf(vm.feed.downloadUrl ?: "") }
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { Text(stringResource(R.string.edit_url_menu)) },
+            text = {
+                TextField(value = url, onValueChange = { url = it }, modifier = Modifier.fillMaxWidth())
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    editedUrl = url
+                    showEidtConfirmDialog = true
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_label)) } }
+        )
+    }
+    @Composable
+    fun EidtConfirmDialog(onDismiss: () -> Unit) {
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { Text(stringResource(R.string.edit_url_menu)) },
+            text = {
+                Text(stringResource(R.string.edit_url_confirmation_msg))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    try {
+                        runBlocking { updateFeedDownloadURL(vm.feed.downloadUrl?:"", editedUrl).join() }
+                        vm.feed.downloadUrl = editedUrl
+                        runOnce(context, vm.feed)
+                    } catch (e: ExecutionException) { throw RuntimeException(e)
+                    } catch (e: InterruptedException) { throw RuntimeException(e) }
+                    vm.feed.downloadUrl = editedUrl
+                    vm.txtvUrl = vm.feed.downloadUrl
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_label)) } }
+        )
+    }
+
+    var showEditUrlSettingsDialog by remember { mutableStateOf(false) }
+    if (showEditUrlSettingsDialog) EditUrlSettingsDialog { showEditUrlSettingsDialog = false }
+    if (showEidtConfirmDialog) EidtConfirmDialog { showEidtConfirmDialog = false }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
@@ -362,12 +396,7 @@ fun FeedInfoScreen() {
                         expanded = false
                     })
                     if (!vm.feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {
-                        object : EditUrlSettingsDialog(context as Activity, vm.feed) {
-                            override fun setUrl(url: String?) {
-                                vm.feed.downloadUrl = url
-                                vm.txtvUrl = vm.feed.downloadUrl
-                            }
-                        }.show()
+                        showEditUrlSettingsDialog = true
                         expanded = false
                     })
                     DropdownMenuItem(text = { Text(stringResource(R.string.remove_feed_label)) }, onClick = {
@@ -385,54 +414,6 @@ fun FeedInfoScreen() {
             DetailUI()
         }
     }
-}
-
-abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
-    private val activityRef = WeakReference(activity)
-
-    fun show() {
-        val activity = activityRef.get() ?: return
-        val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
-        binding.editText.setText(feed.downloadUrl)
-        MaterialAlertDialogBuilder(activity)
-            .setView(binding.root)
-            .setTitle(R.string.edit_url_menu)
-            .setPositiveButton(string.ok) { _: DialogInterface?, _: Int -> showConfirmAlertDialog(binding.editText.text.toString()) }
-            .setNegativeButton(R.string.cancel_label, null)
-            .show()
-    }
-    private fun onConfirmed(original: String, updated: String) {
-        try {
-            runBlocking { updateFeedDownloadURL(original, updated).join() }
-            feed.downloadUrl = updated
-            runOnce(activityRef.get()!!, feed)
-        } catch (e: ExecutionException) { throw RuntimeException(e)
-        } catch (e: InterruptedException) { throw RuntimeException(e) }
-    }
-    private fun showConfirmAlertDialog(url: String) {
-        val activity = activityRef.get()
-        val alertDialog = MaterialAlertDialogBuilder(activity!!)
-            .setTitle(R.string.edit_url_menu)
-            .setMessage(R.string.edit_url_confirmation_msg)
-            .setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
-                onConfirmed(feed.downloadUrl?:"", url)
-                setUrl(url)
-            }
-            .setNegativeButton(R.string.cancel_label, null)
-            .show()
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-        object : CountDownTimer(15000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text = String.format(Locale.getDefault(), "%s (%d)",
-                    activity.getString(string.ok), millisUntilFinished / 1000 + 1)
-            }
-            override fun onFinish() {
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(string.ok)
-            }
-        }.start()
-    }
-    protected abstract fun setUrl(url: String?)
 }
 
 private const val TAG: String = "FeedInfoScreen"

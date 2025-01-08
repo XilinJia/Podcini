@@ -115,7 +115,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            if (pos >= 0 && pos < vms.size) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 
@@ -387,7 +387,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
                 val pos = Episodes.indexOfItemWithId(episodes, item.id)
                 if (pos >= 0) {
                     episodes.removeAt(pos)
-                    vms.removeAt(pos)
+                    if (pos < vms.size) vms.removeAt(pos)
                     if (item.downloaded) {
                         episodes.add(pos, item)
                         vms.add(pos, EpisodeVM(item, TAG))
@@ -407,7 +407,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
                 val pos = Episodes.indexOfItemWithId(episodes, item.id)
                 if (pos >= 0) {
                     episodes.removeAt(pos)
-                    vms.removeAt(pos)
+                    if (pos < vms.size) vms.removeAt(pos)
                     if (item.downloaded) {
                         episodes.add(pos, item)
                         vms.add(pos, EpisodeVM(item, TAG))

@@ -123,8 +123,7 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
         if (feed != null) {
             val pos: Int = ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
-                // TODO: vms[pos] may be out of bound
-                if (!isFilteredOut(event.episode)) vms[pos].isPlayingState = event.isPlaying()
+                if (!isFilteredOut(event.episode) && pos < vms.size) vms[pos].isPlayingState = event.isPlaying()
                 if (event.isPlaying()) upsertBlk(feed!!) { it.lastPlayed = Date().time }
             }
         }
@@ -136,7 +135,7 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = ueMap[url] ?: -1
-            if (pos >= 0) {
+            if (pos >= 0 && pos < vms.size) {
                 Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].downloaded} ${episodes[pos].title}")
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }

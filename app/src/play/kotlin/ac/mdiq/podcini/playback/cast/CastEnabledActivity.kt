@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.playback.cast
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -18,7 +19,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 /**
  * Activity that allows for showing the MediaRouter button whenever there's a cast device in the network.
  */
-abstract class CastEnabledActivity : AppCompatActivity() {
+abstract class CastEnabledActivity : ComponentActivity() {
     private var canCast by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {

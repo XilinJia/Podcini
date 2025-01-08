@@ -17,16 +17,15 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerAc
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.AppPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -99,6 +98,8 @@ class VideoplayerActivity : CastEnabledActivity() {
     val showErrorDialog = mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
+    var showSleepTimeDialog by mutableStateOf(false)
+
     var showShareDialog by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,6 +141,8 @@ class VideoplayerActivity : CastEnabledActivity() {
                     if (feedItem != null) ShareDialog(feedItem, this@VideoplayerActivity) { showShareDialog = false }
                     else showShareDialog = false
                 }
+
+                if (showSleepTimeDialog) SleepTimerDialog { showSleepTimeDialog = false }
 
                 LaunchedEffect(curMediaId) { cleanedNotes = null }
 
@@ -344,7 +347,8 @@ class VideoplayerActivity : CastEnabledActivity() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.SleepTimerUpdatedEvent -> if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
+                    // TODO
+//                    is FlowEvent.SleepTimerUpdatedEvent -> if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
                     is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()
                     is FlowEvent.MessageEvent -> onEventMainThread(event)
                     is FlowEvent.PlayerErrorEvent -> {
@@ -380,7 +384,8 @@ class VideoplayerActivity : CastEnabledActivity() {
             actions = {
                 if (!landscape) {
                     var sleepIconRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.drawable.ic_sleep else R.drawable.ic_sleep_off) }
-                    IconButton(onClick = { SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
+                    IconButton(onClick = { showSleepTimeDialog = true
+//                        SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                     }) { Icon(imageVector = ImageVector.vectorResource(sleepIconRes), contentDescription = "sleeper") }
                     IconButton(onClick = { showSpeedDialog = true
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), contentDescription = "open podcast") }
@@ -405,7 +410,8 @@ class VideoplayerActivity : CastEnabledActivity() {
                     if (landscape) {
                         var sleeperRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.string.set_sleeptimer_label else R.string.sleep_timer_label) }
                         DropdownMenuItem(text = { Text(stringResource(sleeperRes)) }, onClick = {
-                            SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
+                            showSleepTimeDialog = true
+//                            SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.player_switch_to_audio_only)) }, onClick = {

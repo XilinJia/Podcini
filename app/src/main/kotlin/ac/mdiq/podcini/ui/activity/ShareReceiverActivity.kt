@@ -14,15 +14,15 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.net.URL
 import java.net.URLDecoder
 
-class ShareReceiverActivity : AppCompatActivity() {
+class ShareReceiverActivity : ComponentActivity() {
     private var sharedUrl: String? = null
 
      override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +103,7 @@ class ShareReceiverActivity : AppCompatActivity() {
         const val ARG_FEEDURL: String = "arg.feedurl"
         private const val RESULT_ERROR = 2
 
-        fun receiveShared(sharedUrl: String, activity: AppCompatActivity, finish: Boolean, mediaCB: ()->Unit) {
+        fun receiveShared(sharedUrl: String, activity: ComponentActivity, finish: Boolean, mediaCB: ()->Unit) {
             val url = URL(sharedUrl)
             val log = realm.query(ShareLog::class).query("url == $0", sharedUrl).first().find()
             when {

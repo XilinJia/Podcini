@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">به‌روز رسانی اشتراک‌ها</string>
     <string name="feeds">Feeds</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">پادکست‌ها</string>
     <string name="statistics_label">آمار</string>
     <string name="add_feed_label">افزودن پادکست</string>

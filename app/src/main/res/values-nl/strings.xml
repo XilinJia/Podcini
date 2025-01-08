@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Abonnementen bijwerken</string>
     <string name="feeds">Feeds</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Statistieken</string>
     <string name="add_feed_label">Podcast toevoegen</string>

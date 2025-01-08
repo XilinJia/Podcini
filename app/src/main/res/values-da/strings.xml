@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Opdatér abonnementer</string>
     <string name="feeds">Feeds</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Statistik</string>
     <string name="add_feed_label">Tilføj podcast</string>

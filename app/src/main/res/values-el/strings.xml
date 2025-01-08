@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Ενημέρωση συνδρομών</string>
     <string name="feeds">Ροές</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Στατιστικά</string>
     <string name="add_feed_label">Προσθήκη podcast</string>

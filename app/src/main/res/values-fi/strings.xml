@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Päivitä tilaukset</string>
     <string name="feeds">Syötteet</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcastit</string>
     <string name="statistics_label">Tilastot</string>
     <string name="add_feed_label">Lisää podcast</string>

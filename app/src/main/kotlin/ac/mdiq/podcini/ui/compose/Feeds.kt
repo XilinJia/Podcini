@@ -10,14 +10,15 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.prefPlaybackSpeed
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
-import ac.mdiq.podcini.preferences.OpmlTransporter
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPrefOrNull
 import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
+import ac.mdiq.podcini.preferences.OpmlTransporter
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
+import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -27,8 +28,10 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.model.SubscriptionLog
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
-import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
+import ac.mdiq.podcini.ui.utils.feedOnDisplay
+import ac.mdiq.podcini.ui.utils.setOnlineFeedUrl
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -202,12 +205,17 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
         onClick = {
             if (feed.feedUrl != null) {
                 if (feed.feedId > 0) {
-                    val fragment = FeedEpisodesFragment.newInstance(feed.feedId)
-                    activity.loadChildFragment(fragment)
+                    val feed_ = getFeed(feed.feedId) ?: return@combinedClickable
+                    feedOnDisplay = feed_
+                    mainNavController.navigate(Screens.FeedEpisodes.name)
+//                    val fragment = FeedEpisodesFragment.newInstance(feed.feedId)
+//                    activity.loadChildFragment(fragment)
                 } else {
-                    val fragment = OnlineFeedFragment.newInstance(feed.feedUrl)
-                    fragment.feedSource = feed.source
-                    activity.loadChildFragment(fragment)
+                    setOnlineFeedUrl(feed.feedUrl, source = feed.source)
+                    mainNavController.navigate(Screens.OnlineFeed.name)
+//                    val fragment = OnlineFeedFragment.newInstance(feed.feedUrl)
+//                    fragment.feedSource = feed.source
+//                    activity.loadChildFragment(fragment)
                 }
             }
         }, onLongClick = { showSubscribeDialog.value = true })) {

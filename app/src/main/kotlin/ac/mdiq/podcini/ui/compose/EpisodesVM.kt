@@ -43,9 +43,10 @@ import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.NullActionButton
 import ac.mdiq.podcini.ui.actions.SwipeAction
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
-import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
+import ac.mdiq.podcini.ui.utils.episodeOnDisplay
+import ac.mdiq.podcini.ui.utils.feedOnDisplay
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -110,7 +111,6 @@ import coil.request.ImageRequest
 import io.realm.kotlin.notifications.SingleQueryChange
 import io.realm.kotlin.notifications.UpdatedObject
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 import java.net.URL
@@ -435,7 +435,7 @@ fun EraseEpisodesDialog(selected: List<Episode>, feed: Feed?, onDismissRequest: 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
-fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed: Feed? = null, layoutMode: Int = 0,
+fun EpisodeLazyColumn(activity: Context, vms: MutableList<EpisodeVM>, feed: Feed? = null, layoutMode: Int = 0,
                       buildMoreItems: (()-> Unit) = {},
                       isDraggable: Boolean = false, dragCB: ((Int, Int)->Unit)? = null,
                       refreshCB: (()->Unit)? = null, leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null,
@@ -623,7 +623,10 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
             .combinedClickable(onClick = {
                 Logd(TAG, "clicked: ${vm.episode.title}")
                 if (selectMode) toggleSelected(vm)
-                else activity.loadChildFragment(EpisodeInfoFragment.newInstance(vm.episode))
+                else {
+                    episodeOnDisplay = vm.episode
+                    mainNavController.navigate(Screens.EpisodeInfo.name)
+                }
             }, onLongClick = {
                 selectMode = !selectMode
                 vm.isSelected = selectMode
@@ -711,8 +714,14 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: MutableList<EpisodeVM>, feed:
                         Logd(TAG, "icon clicked!")
                         when {
                             selectMode -> toggleSelected(vm)
-                            vm.episode.feed != null && vm.episode.feed?.isSynthetic() != true -> activity.loadChildFragment(FeedInfoFragment.newInstance(vm.episode.feed!!))
-                            else -> activity.loadChildFragment(EpisodeInfoFragment.newInstance(vm.episode))
+                            vm.episode.feed != null && vm.episode.feed?.isSynthetic() != true -> {
+                                feedOnDisplay = vm.episode.feed!!
+                                mainNavController.navigate(Screens.FeedInfo.name)
+                            }
+                            else -> {
+                                episodeOnDisplay = vm.episode
+                                mainNavController.navigate(Screens.EpisodeInfo.name)
+                            }
                         }
                     }))
             Box(Modifier.weight(1f).height(imageHeight)) {

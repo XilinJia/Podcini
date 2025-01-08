@@ -16,7 +16,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
@@ -44,7 +43,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.snackbar.Snackbar
@@ -64,7 +62,7 @@ interface SwipeAction {
     fun performAction(item: Episode)
 }
 
-class SwipeActions(private val fragment: Fragment, private val tag: String) : DefaultLifecycleObserver {
+class SwipeActions(private val context: Context, private val tag: String) : DefaultLifecycleObserver {
 //    val prefs: SharedPreferences by lazy { fragment.requireContext().getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)}
 
     val actionsList: List<SwipeAction> = listOf(
@@ -213,7 +211,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
                 item = runBlocking { setPlayStateSync(PlayState.PLAYED.code, item, resetMediaPosition = true, removeFromQueue = false) }
             if (almostEnded) item = upsertBlk(item) { it.playbackCompletionDate = Date() }
 
-            deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
+            deleteEpisodesWarnLocal(context, listOf(item))
         }
     }
 
@@ -319,8 +317,8 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             val lastPlayedDate = item.lastPlayedTime
             setHistoryDates(item)
 
-            (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
-                .setAction(fragment.getString(R.string.undo)) { if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate, playbackCompletionDate) }
+//            (context as? MainActivity)?.showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
+//                ?.setAction(context.getString(R.string.undo)) { if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate, playbackCompletionDate) }
         }
         private fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
             runOnIOScope {
@@ -399,7 +397,7 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
             return getAppContext().getString(R.string.download_label)
         }
         override fun performAction(item: Episode) {
-            if (!item.downloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(fragment.requireContext())
+            if (!item.downloaded && item.feed != null && !item.feed!!.isLocalFeed) DownloadActionButton(item).onClick(context)
         }
     }
 
@@ -533,19 +531,19 @@ class SwipeActions(private val fragment: Fragment, private val tag: String) : De
 
             if (!showPickerDialog) Dialog(onDismissRequest = { onDismissRequest() }) {
                 val forFragment = remember(sa.tag) {
-                    if (sa.tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_QUEUE.name }
+//                    if (sa.tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_QUEUE.name }
                     when (sa.tag) {
-                    EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
-                    OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)
-                    SearchFragment.TAG -> context.getString(R.string.search_label)
-                    FeedEpisodesFragment.TAG -> {
-                        keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name }
-                        context.getString(R.string.subscription)
-                    }
-                    QueuesFragment.TAG -> {
-                        keys = keys.filter { a: SwipeAction -> (a.getId() != ActionTypes.ADD_TO_QUEUE.name && a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name) }
-                        context.getString(R.string.queue_label)
-                    }
+//                    EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
+//                    OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)
+//                    SearchFragment.TAG -> context.getString(R.string.search_label)
+//                    FeedEpisodesFragment.TAG -> {
+//                        keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name }
+//                        context.getString(R.string.subscription)
+//                    }
+//                    QueuesFragment.TAG -> {
+//                        keys = keys.filter { a: SwipeAction -> (a.getId() != ActionTypes.ADD_TO_QUEUE.name && a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name) }
+//                        context.getString(R.string.queue_label)
+//                    }
                     else -> { "" }
                 } }
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {

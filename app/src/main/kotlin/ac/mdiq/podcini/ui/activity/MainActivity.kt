@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.MainActivityBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
@@ -11,30 +10,37 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.defaultPage
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.autoBackup
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
+import ac.mdiq.podcini.storage.database.Feeds.cancelMonitorFeeds
+import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.RatingDialog
-import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getLastNavFragmentArg
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
-import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.screens.*
+import ac.mdiq.podcini.ui.utils.feedOnDisplay
+import ac.mdiq.podcini.ui.utils.setOnlineFeedUrl
+import ac.mdiq.podcini.ui.utils.setOnlineSearchTerms
+import ac.mdiq.podcini.ui.utils.setSearchTerms
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.*
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
@@ -47,59 +53,36 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlin.math.min
 
 class MainActivity : CastEnabledActivity() {
-    private var drawerLayout: DrawerLayout? = null
-
-    private var _binding: MainActivityBinding? = null
-    private val binding get() = _binding!!
-
-    private lateinit var mainView: View
-    private lateinit var navDrawerFragment: NavDrawerFragment
-    private lateinit var audioPlayerFragment: AudioPlayerFragment
-    private lateinit var audioPlayerView: View
-    private lateinit var navDrawer: View
-    private lateinit var dummyView : View
-//    private lateinit var controllerFuture: ListenableFuture<MediaController>
-    lateinit var bottomSheet: BottomSheetBehavior<*>
-        private set
-
-    private var drawerToggle: ActionBarDrawerToggle? = null
-
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
 
@@ -118,35 +101,10 @@ class MainActivity : CastEnabledActivity() {
             .show()
     }
 
-    private var prevState: Int = 0
-    private val bottomSheetCallback: BottomSheetCallback =  object : BottomSheetCallback() {
-        override fun onStateChanged(view: View, state: Int) {
-            Logd(TAG, "bottomSheet onStateChanged $state ${view.id}")
-            when (state) {
-                BottomSheetBehavior.STATE_COLLAPSED -> {
-                    audioPlayerFragment.onCollaped()
-                    onSlide(view,0.0f)
-                    prevState = state
-                }
-                BottomSheetBehavior.STATE_EXPANDED -> {
-                    audioPlayerFragment.onExpanded()
-                    onSlide(view, 1.0f)
-                    prevState = state
-                }
-                else -> {}
-            }
-        }
-        override fun onSlide(view: View, slideOffset: Float) {
-//            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
-//            if (slideOffset == 0.0f) { //STATE_COLLAPSED
-//                audioPlayer.scrollToTop()
-//            }
-//            audioPlayer.fadePlayerToToolbar(slideOffset)
-        }
-    }
+    var showUnrestrictedBackgroundPermissionDialog by mutableStateOf(false)
 
-    private val isDrawerOpen: Boolean
-        get() = drawerLayout?.isDrawerOpen(navDrawer) == true
+//    private val isDrawerOpen: Boolean
+//        get() = drawerLayout?.isDrawerOpen(navDrawer) == true
 
     private val screenWidth: Int
         get() {
@@ -154,6 +112,25 @@ class MainActivity : CastEnabledActivity() {
             windowManager.defaultDisplay.getMetrics(displayMetrics)
             return displayMetrics.widthPixels
         }
+
+    enum class Screens {
+        Subscriptions,
+        FeedEpisodes,
+        FeedInfo,
+        FeedSettings,
+        Episodes,
+        EpisodeInfo,
+        EpisodeHome,
+        Queues,
+        Search,
+        OnlineSearch,
+        OnlineFeed,
+        OnlineEpisodes,
+        Discovery,
+        SearchResults,
+        Logs,
+        Statistics
+    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         lastTheme = getNoTitleTheme(this)
@@ -167,27 +144,19 @@ class MainActivity : CastEnabledActivity() {
             StrictMode.setThreadPolicy(builder.build())
         }
 
-        val ioScope = CoroutineScope(Dispatchers.IO)
-        ioScope.launch {
-//            RealmDB.apply { }
-//            NavDrawerFragment.getSharedPrefs(this@MainActivity)
-//            SwipeActions.getSharedPrefs(this@MainActivity)
-            buildTags()
-            monitorFeeds()
-        }
+        lifecycleScope.launch((Dispatchers.IO)) { buildTags() }
 
         if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        _binding = MainActivityBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-//        recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
-        dummyView = object : View(this) {}
-        drawerLayout = findViewById(R.id.main_layout)
-        navDrawer = findViewById(R.id.navDrawerFragment)
-        setNavDrawerSize()
-        mainView = findViewById(R.id.main_view)
+
+        setContent {
+            CustomTheme(this) {
+//                if (showToast) CustomToast(message = toastMassege, onDismiss = { showToast = false })
+                MainActivityUI()
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
 //            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -198,39 +167,7 @@ class MainActivity : CastEnabledActivity() {
                 .show()
         } else checkAndRequestUnrestrictedBackgroundActivity(this)
 
-        // Consume navigation bar insets - we apply them in setPlayerVisible()
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { _: View?, insets: WindowInsetsCompat ->
-            navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            updateInsets()
-            WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.NONE).build()
-        }
-
-        val fm = supportFragmentManager
-        if (fm.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {
-            if (defaultPage != AppPreferences.DefaultPages.Remember.name) loadFragment(defaultPage, null)
-            else {
-                val lastFragment = NavDrawerFragment.getLastNavFragment()
-                Logd(TAG, "lastFragment: $lastFragment")
-                if (NavDrawerFragment.navMap.keys.contains(lastFragment) || lastFragment == FeedEpisodesFragment.TAG) loadFragment(lastFragment, null)
-                else loadFragment(SubscriptionsFragment.TAG, null)
-            }
-        }
-
-        val transaction = fm.beginTransaction()
-        navDrawerFragment = NavDrawerFragment()
-        transaction.replace(R.id.navDrawerFragment, navDrawerFragment, NavDrawerFragment.TAG)
-        audioPlayerFragment = AudioPlayerFragment()
-        transaction.replace(R.id.audioplayerFragment, audioPlayerFragment, AudioPlayerFragment.TAG)
-        transaction.commit()
-        navDrawer = findViewById(R.id.navDrawerFragment)
-        audioPlayerView = findViewById(R.id.audioplayerFragment)
-
         runOnIOScope {  checkFirstLaunch() }
-
-        this.bottomSheet = BottomSheetBehavior.from(audioPlayerView)
-        this.bottomSheet.isHideable = false
-        this.bottomSheet.isDraggable = false
-        this.bottomSheet.addBottomSheetCallback(bottomSheetCallback)
 
         restartUpdateAlarm(this, false)
         runOnIOScope {  SynchronizationQueueSink.syncNowIfNotSyncedRecently() }
@@ -249,6 +186,54 @@ class MainActivity : CastEnabledActivity() {
                 EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(isRefreshingFeeds))
             }
         observeDownloads()
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MainActivityUI() {
+        lcScope = rememberCoroutineScope()
+        val navController = rememberNavController()
+        mainNavController = navController
+        val scaffoldState = rememberBottomSheetScaffoldState()
+        bottomSheetScaffoldState.value = scaffoldState
+
+        if (showUnrestrictedBackgroundPermissionDialog) UnrestrictedBackgroundPermissionDialog { showUnrestrictedBackgroundPermissionDialog = false }
+
+        ModalNavigationDrawer(drawerState = drawerState, modifier = Modifier.fillMaxHeight(), drawerContent = { NavDrawerScreen() }) {
+            BottomSheetScaffold(scaffoldState = scaffoldState, sheetPeekHeight = 160.dp, sheetDragHandle = {}, topBar = {},
+                sheetSwipeEnabled = false, sheetShape = RectangleShape,
+                sheetContent = { AudioPlayerScreen() }
+            ) { paddingValues ->
+                Box(modifier = Modifier.fillMaxSize().padding(
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    top = paddingValues.calculateTopPadding(),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                    bottom = 110.dp
+                )) {
+                    CompositionLocalProvider(LocalNavController provides navController) {
+                        NavHost(navController = navController, startDestination = Screens.Subscriptions.name) {
+                            composable(Screens.Subscriptions.name) { SubscriptionsScreen() }
+                            composable(Screens.FeedEpisodes.name) { FeedEpisodesScreen() }
+                            composable(Screens.FeedInfo.name) { FeedInfoScreen() }
+                            composable(Screens.FeedSettings.name) { FeedSettingsScreen() }
+                            composable(Screens.EpisodeInfo.name) { EpisodeInfoScreen() }
+                            composable(Screens.EpisodeHome.name) { EpisodeHomeScreen() }
+                            composable(Screens.Episodes.name) { EpisodesScreen() }
+                            composable(Screens.Queues.name) { QueuesScreen() }
+                            composable(Screens.Search.name) { SearchScreen() }
+                            composable(Screens.OnlineSearch.name) { OnlineSearchScreen() }
+                            composable(Screens.Discovery.name) { DiscoveryScreen() }
+                            composable(Screens.OnlineFeed.name) { OnlineFeedScreen() }
+                            composable(Screens.OnlineEpisodes.name) { OnlineEpisodesScreen() }
+                            composable(Screens.SearchResults.name) { SearchResultsScreen() }
+                            composable(Screens.Logs.name) { LogsScreen() }
+                            composable(Screens.Statistics.name) { StatisticsScreen() }
+                            composable("DefaultPage") { SubscriptionsScreen() }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Composable
@@ -283,10 +268,11 @@ class MainActivity : CastEnabledActivity() {
         val isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
         val dontAskAgain = prefs.getBoolean("dont_ask_again_unrestricted_background", false)
         if (!isIgnoringBatteryOptimizations && !dontAskAgain) {
-            val composeView = ComposeView(this).apply {
-                setContent { UnrestrictedBackgroundPermissionDialog(onDismiss = { (parent as? ViewGroup)?.removeView(this) }) }
-            }
-            (window.decorView as? ViewGroup)?.addView(composeView)
+            showUnrestrictedBackgroundPermissionDialog = true
+//            val composeView = ComposeView(this).apply {
+//                setContent { UnrestrictedBackgroundPermissionDialog(onDismiss = { (parent as? ViewGroup)?.removeView(this) }) }
+//            }
+//            (window.decorView as? ViewGroup)?.addView(composeView)
         }
     }
 
@@ -358,39 +344,38 @@ class MainActivity : CastEnabledActivity() {
         outState.putInt(Extras.generated_view_id.name, View.generateViewId())
     }
 
-    fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
-        Logd(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
-        // Tablet layout does not have a drawer
-        when {
-            drawerLayout != null -> {
-                if (drawerToggle != null) drawerLayout!!.removeDrawerListener(drawerToggle!!)
-                drawerToggle = object : ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
-                    override fun onDrawerOpened(drawerView: View) {
-                        super.onDrawerOpened(drawerView)
-                        Logd(TAG, "Drawer opened")
-                        navDrawerFragment.loadData()
-                    }
-                }
-                drawerLayout!!.addDrawerListener(drawerToggle!!)
-                drawerToggle!!.syncState()
-                drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
-                drawerToggle!!.toolbarNavigationClickListener = View.OnClickListener { supportFragmentManager.popBackStack() }
-            }
-            !displayUpArrow -> toolbar.navigationIcon = null
-            else -> {
-                toolbar.setNavigationIcon(getDrawableFromAttr(this, androidx.appcompat.R.attr.homeAsUpIndicator))
-                toolbar.setNavigationOnClickListener { supportFragmentManager.popBackStack() }
-            }
-        }
-    }
+//    fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
+//        Logd(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
+//        // Tablet layout does not have a drawer
+//        when {
+//            drawerLayout != null -> {
+//                if (drawerToggle != null) drawerLayout!!.removeDrawerListener(drawerToggle!!)
+//                drawerToggle = object : ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
+//                    override fun onDrawerOpened(drawerView: View) {
+//                        super.onDrawerOpened(drawerView)
+//                        Logd(TAG, "Drawer opened")
+////                        navDrawerFragment.loadData()
+//                    }
+//                }
+//                drawerLayout!!.addDrawerListener(drawerToggle!!)
+//                drawerToggle!!.syncState()
+//                drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
+//                drawerToggle!!.toolbarNavigationClickListener = View.OnClickListener { supportFragmentManager.popBackStack() }
+//            }
+//            !displayUpArrow -> toolbar.navigationIcon = null
+//            else -> {
+//                toolbar.setNavigationIcon(getDrawableFromAttr(this, androidx.appcompat.R.attr.homeAsUpIndicator))
+//                toolbar.setNavigationOnClickListener { supportFragmentManager.popBackStack() }
+//            }
+//        }
+//    }
 
     override fun onDestroy() {
         Logd(TAG, "onDestroy")
 //        WorkManager.getInstance(this).pruneWork()
-        _binding = null
 //        realm.close()
-        bottomSheet.removeBottomSheetCallback(bottomSheetCallback)
-        if (drawerToggle != null) drawerLayout?.removeDrawerListener(drawerToggle!!)
+//        bottomSheet.removeBottomSheetCallback(bottomSheetCallback)
+//        if (drawerToggle != null) drawerLayout?.removeDrawerListener(drawerToggle!!)
 //        MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }
@@ -405,156 +390,85 @@ class MainActivity : CastEnabledActivity() {
     }
 
     private fun updateInsets() {
-        setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
+//        setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
         val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
         Logd(TAG, "playerHeight: $playerHeight ${navigationBarInsets.bottom}")
-        bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
+//        bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
 
     fun setPlayerVisible(visible_: Boolean?) {
         Logd(TAG, "setPlayerVisible $visible_")
-        val visible = visible_ ?: (bottomSheet.state != BottomSheetBehavior.STATE_COLLAPSED)
+//        val visible = visible_ ?: (bottomSheet.state != BottomSheetBehavior.STATE_COLLAPSED)
 
 //        bottomSheet.setLocked(!visible)
-        if (visible) bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)    // Update toolbar visibility
-        else bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+//        if (visible) bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)    // Update toolbar visibility
+//        else bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
 
-        val params = mainView.layoutParams as MarginLayoutParams
-        val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
-        Logd(TAG, "externalPlayerHeight: $externalPlayerHeight ${navigationBarInsets.bottom}")
-        params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
-        mainView.layoutParams = params
-        audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
+//        val params = mainView.layoutParams as MarginLayoutParams
+//        val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
+//        Logd(TAG, "externalPlayerHeight: $externalPlayerHeight ${navigationBarInsets.bottom}")
+//        params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
+//        mainView.layoutParams = params
+//        audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
-    fun isPlayerVisible(): Boolean = audioPlayerView.visibility == View.VISIBLE
+    fun isPlayerVisible(): Boolean = true
+//        audioPlayerView.visibility == View.VISIBLE
 
-    fun loadFragment(tag: String?, args: Bundle?) {
+    fun loadScreen(tag: String?, args: Bundle?) {
         var tag = tag
         var args = args
         Logd(TAG, "loadFragment(tag: $tag, args: $args)")
-        val fragment: Fragment = when (tag) {
-            QueuesFragment.TAG -> QueuesFragment()
-            EpisodesFragment.TAG -> EpisodesFragment()
-            LogsFragment.TAG -> LogsFragment()
-            OnlineSearchFragment.TAG -> OnlineSearchFragment()
-            SubscriptionsFragment.TAG -> SubscriptionsFragment()
-            StatisticsFragment.TAG -> StatisticsFragment()
-            FeedEpisodesFragment.TAG -> {
+        when (tag) {
+            Screens.Subscriptions.name, Screens.Queues.name, Screens.Logs.name, Screens.OnlineSearch.name, Screens.Episodes.name, Screens.Statistics.name ->
+                mainNavController.navigate(tag)
+            Screens.FeedEpisodes.name -> {
                 if (args == null) {
-                    val feedId = getLastNavFragmentArg().toLongOrNull()
-                    if (feedId != null) FeedEpisodesFragment.newInstance(feedId) else SubscriptionsFragment()
-                } else FeedEpisodesFragment()
+                    val feedId = getLastNavScreenArg().toLongOrNull()
+                    if (feedId != null) {
+                        val feed = getFeed(feedId)
+                        if (feed != null) {
+                            feedOnDisplay = feed
+                            mainNavController.navigate(tag)
+                        }
+                    } else mainNavController.navigate(Screens.Subscriptions.name)
+                } else mainNavController.navigate(Screens.Subscriptions.name)
             }
             else -> {
-                tag = SubscriptionsFragment.TAG
-                args = null
-                SubscriptionsFragment()
+                tag = Screens.Subscriptions.name
+                mainNavController.navigate(tag)
             }
         }
-        if (args != null) fragment.arguments = args
-        runOnIOScope { NavDrawerFragment.saveLastNavFragment(tag) }
-        loadFragment(fragment)
+        runOnIOScope { saveLastNavScreen(tag) }
     }
 
-    fun loadFeedFragmentById(feedId: Long, args: Bundle?) {
-        val fragment: Fragment = FeedEpisodesFragment.newInstance(feedId)
-        if (args != null) fragment.arguments = args
-        NavDrawerFragment.saveLastNavFragment(FeedEpisodesFragment.TAG, feedId.toString())
-        loadFragment(fragment)
-    }
-
-    private fun loadFragment(fragment: Fragment) {
-        val fragmentManager = supportFragmentManager
-        // clear back stack
-        for (i in 0 until fragmentManager.backStackEntryCount) fragmentManager.popBackStack()
-        val t = fragmentManager.beginTransaction()
-        t.replace(R.id.main_view, fragment, MAIN_FRAGMENT_TAG)
-        fragmentManager.popBackStack()
-        // TODO: we have to allow state loss here
-        // since this function can get called from an AsyncTask which
-        // could be finishing after our app has already committed state
-        // and is about to get shutdown.  What we *should* do is
-        // not commit anything in an AsyncTask, but that's a bigger
-        // change than we want now.
-        t.commitAllowingStateLoss()
-        mainView = findViewById(R.id.main_view)
-
-        // Tablet layout does not have a drawer
-        drawerLayout?.closeDrawer(navDrawer)
-    }
-
-    @JvmOverloads
-    fun loadChildFragment(fragment: Fragment, transition: TransitionEffect? = TransitionEffect.NONE) {
-        val transaction = supportFragmentManager.beginTransaction()
-        when (transition) {
-            TransitionEffect.FADE -> transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-            TransitionEffect.SLIDE -> transaction.setCustomAnimations(R.anim.slide_right_in, R.anim.slide_left_out, R.anim.slide_left_in, R.anim.slide_right_out)
-            TransitionEffect.NONE -> {}
-            null -> {}
-        }
-        transaction
-            .hide(supportFragmentManager.findFragmentByTag(MAIN_FRAGMENT_TAG)!!)
-            .add(R.id.main_view, fragment, MAIN_FRAGMENT_TAG)
-            .addToBackStack(null)
-            .commit()
-        mainView = findViewById(R.id.main_view)
-    }
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        drawerToggle?.syncState()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        drawerToggle?.onConfigurationChanged(newConfig)
-        setNavDrawerSize()
-    }
-
-    private fun setNavDrawerSize() {
-        // Tablet layout does not have a drawer
-        if (drawerLayout == null) return
-        val screenPercent = resources.getInteger(R.integer.nav_drawer_screen_size_percent) * 0.01f
-        val width = (screenWidth * screenPercent).toInt()
-        val maxWidth = resources.getDimension(R.dimen.nav_drawer_max_screen_size).toInt()
-        navDrawer.layoutParams.width = min(width.toDouble(), maxWidth.toDouble()).toInt()
-        Logd(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) bottomSheetCallback.onSlide(dummyView, 1.0f)
-    }
+//    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+//        super.onRestoreInstanceState(savedInstanceState)
+////        if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) bottomSheetCallback.onSlide(dummyView, 1.0f)
+//    }
 
     public override fun onStart() {
         super.onStart()
         procFlowEvents()
         RatingDialog.init(this)
-//        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-//        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-//        controllerFuture.addListener({
-//            media3Controller = controllerFuture.get()
-////            Logd(TAG, "controllerFuture.addListener: $mediaController")
-//        }, MoreExecutors.directExecutor())
+        monitorFeeds(lifecycleScope)
     }
 
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
+        cancelMonitorFeeds()
     }
 
     override fun onResume() {
         super.onResume()
         autoBackup(this)
-
         handleNavIntent()
         RatingDialog.check()
         if (lastTheme != getNoTitleTheme(this)) {
             finish()
             startActivity(Intent(this, MainActivity::class.java))
         }
-//        if (hiddenDrawerItems.contains(NavDrawerFragment.getLastNavFragment())) loadFragment(defaultPage, null)
     }
 
     @Deprecated("Deprecated in Java")
@@ -566,33 +480,29 @@ class MainActivity : CastEnabledActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Logd(TAG, "onOptionsItemSelected ${item.title}")
         when {
-            drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item) -> return true // Tablet layout does not have a drawer
-            item.itemId == android.R.id.home -> {
-                if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
-                return true
-            }
+//            drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item) -> return true // Tablet layout does not have a drawer
+//            item.itemId == android.R.id.home -> {
+//                if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
+//                return true
+//            }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         when {
-            isDrawerOpen -> drawerLayout?.closeDrawer(navDrawer)
-            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-            supportFragmentManager.backStackEntryCount != 0 -> super.onBackPressed()
+            isDrawerOpen -> closeDrawer()
+            isBottomSheetExpanded -> collapseBottomSheet()
+//            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            mainNavController.previousBackStackEntry != null -> mainNavController.popBackStack()
             else -> {
                 val toPage = defaultPage
-                if (NavDrawerFragment.getLastNavFragment() == toPage || AppPreferences.DefaultPages.Remember.name == toPage) {
-                    if (getPref(AppPrefs.prefBackButtonOpensDrawer, false)) drawerLayout?.openDrawer(navDrawer)
+                if (getLastNavScreen() == toPage || AppPreferences.DefaultPages.Remember.name == toPage) {
+                    if (getPref(AppPrefs.prefBackButtonOpensDrawer, false)) openDrawer()
                     else super.onBackPressed()
-                } else loadFragment(toPage, null)
+                } else loadScreen(toPage, null)
             }
         }
-    }
-
-    fun openDrawer() {
-        drawerLayout?.openDrawer(navDrawer)
     }
 
     private var eventSink: Job?     = null
@@ -609,8 +519,8 @@ class MainActivity : CastEnabledActivity() {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.MessageEvent -> {
-                        val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)
-                        if (event.action != null) snackbar.setAction(event.actionText) { event.action.accept(this@MainActivity) }
+//                        val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)
+//                        if (event.action != null) snackbar.setAction(event.actionText) { event.action.accept(this@MainActivity) }
                     }
                     else -> {}
                 }
@@ -627,43 +537,53 @@ class MainActivity : CastEnabledActivity() {
         when {
             intent.hasExtra(Extras.fragment_feed_id.name) -> {
                 val feedId = intent.getLongExtra(Extras.fragment_feed_id.name, 0)
-                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
+//                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
                 Logd(TAG, "handleNavIntent: feedId: $feedId")
                 if (feedId > 0) {
                     val startedFromShare = intent.getBooleanExtra(Extras.started_from_share.name, false)
                     val addToBackStack = intent.getBooleanExtra(Extras.add_to_back_stack.name, false)
                     Logd(TAG, "handleNavIntent: startedFromShare: $startedFromShare addToBackStack: $addToBackStack")
-                    if (startedFromShare || addToBackStack) loadChildFragment(FeedEpisodesFragment.newInstance(feedId))
-                    else loadFeedFragmentById(feedId, args)
+                    if (startedFromShare || addToBackStack) {
+                        feedOnDisplay = getFeed(feedId) ?: Feed()
+                        mainNavController.navigate(Screens.FeedEpisodes.name)
+                    }
+                    else {
+                        feedOnDisplay = getFeed(feedId) ?: Feed()
+                        mainNavController.navigate(Screens.FeedEpisodes.name)
+                    }
                 }
-                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+                collapseBottomSheet()
+//                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
             intent.hasExtra(Extras.fragment_feed_url.name) -> {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
                 val isShared = intent.getBooleanExtra(Extras.isShared.name, false)
-                if (feedurl != null) loadChildFragment(OnlineFeedFragment.newInstance(feedurl, isShared))
+                if (feedurl != null) {
+                    setOnlineFeedUrl(feedurl, shared = isShared)
+                    mainNavController.navigate(Screens.OnlineFeed.name)
+                }
             }
             intent.hasExtra(Extras.search_string.name) -> {
                 val query = intent.getStringExtra(Extras.search_string.name)
-                if (query != null) loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
+                setOnlineSearchTerms(CombinedSearcher::class.java, query)
+                mainNavController.navigate(Screens.SearchResults.name)
             }
-            intent.hasExtra(MainActivityStarter.Extras.fragment_tag.name) -> {
-                val tag = intent.getStringExtra(MainActivityStarter.Extras.fragment_tag.name)
-                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
-                if (tag != null) loadFragment(tag, args)
-                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-            }
+//            intent.hasExtra(MainActivityStarter.Extras.fragment_tag.name) -> {
+//                val tag = intent.getStringExtra(MainActivityStarter.Extras.fragment_tag.name)
+//                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
+//                if (tag != null) loadScreen(tag, args)
+//                collapseBottomSheet()
+////                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+//            }
             intent.getBooleanExtra(MainActivityStarter.Extras.open_player.name, false) -> {
+                expandBottomSheet()
 //                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
 //                bottomSheetCallback.onSlide(dummyView, 1.0f)
             }
             else -> handleDeeplink(intent.data)
         }
-        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_drawer.name, false)) drawerLayout?.open()
-//        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_download_logs.name, false))
-//            DownloadLogFragment().show(supportFragmentManager, null)
-        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_logs.name, false))
-            loadChildFragment(LogsFragment())
+//        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_drawer.name, false)) drawerLayout?.open()
+//        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_logs.name, false)) mainNavController.navigate(Screens.Logs.name)
         if (intent.getBooleanExtra(Extras.refresh_on_start.name, false)) runOnceOrAsk(this)
 
         // to avoid handling the intent twice when the configuration changes
@@ -677,19 +597,19 @@ class MainActivity : CastEnabledActivity() {
         handleNavIntent()
     }
 
-    fun showSnackbarAbovePlayer(text: CharSequence, duration: Int): Snackbar {
-        val s: Snackbar
-        if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
-            s = Snackbar.make(mainView, text, duration)
-            if (audioPlayerView.visibility == View.VISIBLE) s.anchorView = audioPlayerView
-        } else s = Snackbar.make(binding.root, text, duration)
-        s.show()
-        return s
-    }
+//    fun showSnackbarAbovePlayer(text: CharSequence, duration: Int): Snackbar {
+//        val s: Snackbar
+//        if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
+//            s = Snackbar.make(mainView, text, duration)
+//            if (audioPlayerView.visibility == View.VISIBLE) s.anchorView = audioPlayerView
+//        } else s = Snackbar.make(mainView, text, duration)
+//        s.show()
+//        return s
+//    }
 
-    fun showSnackbarAbovePlayer(text: Int, duration: Int): Snackbar {
-        return showSnackbarAbovePlayer(resources.getText(text), duration)
-    }
+//    fun showSnackbarAbovePlayer(text: Int, duration: Int): Snackbar {
+//        return showSnackbarAbovePlayer(resources.getText(text), duration)
+//    }
 
     /**
      * Handles the deep link incoming via App Actions.
@@ -702,17 +622,18 @@ class MainActivity : CastEnabledActivity() {
         when (uri.path) {
             "/deeplink/search" -> {
                 val query = uri.getQueryParameter("query") ?: return
-                this.loadChildFragment(SearchFragment.newInstance(query))
+                setSearchTerms(query)
+                mainNavController.navigate(Screens.Search.name)
             }
             "/deeplink/main" -> {
                 val feature = uri.getQueryParameter("page") ?: return
                 when (feature) {
-                    "EPISODES" -> loadFragment(EpisodesFragment.TAG, null)
-                    "QUEUE" -> loadFragment(QueuesFragment.TAG, null)
-                    "SUBSCRIPTIONS" -> loadFragment(SubscriptionsFragment.TAG, null)
-                    "STATISTCS" -> loadFragment(StatisticsFragment.TAG, null)
+                    "EPISODES" -> mainNavController.navigate(Screens.Episodes.name)
+                    "QUEUE" -> mainNavController.navigate(Screens.Queues.name)
+                    "SUBSCRIPTIONS" -> mainNavController.navigate(Screens.Subscriptions.name)
+                    "STATISTCS" -> mainNavController.navigate(Screens.Statistics.name)
                     else -> {
-                        showSnackbarAbovePlayer(getString(R.string.app_action_not_found)+feature, Snackbar.LENGTH_LONG)
+//                        showSnackbarAbovePlayer(getString(R.string.app_action_not_found)+feature, Snackbar.LENGTH_LONG)
                         return
                     }
                 }
@@ -774,6 +695,40 @@ class MainActivity : CastEnabledActivity() {
 
         const val REQUEST_CODE_FIRST_PERMISSION = 1001
         const val REQUEST_CODE_SECOND_PERMISSION = 1002
+
+        lateinit var mainNavController: NavHostController
+        val LocalNavController = staticCompositionLocalOf<NavController> { error("NavController not provided") }
+
+        private val drawerState = DrawerState(initialValue = DrawerValue.Closed)
+        var lcScope: CoroutineScope? = null
+
+        fun openDrawer() {
+            lcScope?.launch { drawerState.open() }
+        }
+
+        fun closeDrawer() {
+            lcScope?.launch { drawerState.close() }
+        }
+
+        val isDrawerOpen: Boolean
+            get() = drawerState.isOpen
+
+        @OptIn(ExperimentalMaterial3Api::class)
+        val bottomSheetScaffoldState = mutableStateOf<BottomSheetScaffoldState?>(null)
+
+        @OptIn(ExperimentalMaterial3Api::class)
+        fun expandBottomSheet() {
+            lcScope?.launch { bottomSheetScaffoldState.value?.bottomSheetState?.expand() }
+        }
+
+        @OptIn(ExperimentalMaterial3Api::class)
+        fun collapseBottomSheet() {
+            lcScope?.launch { bottomSheetScaffoldState.value?.bottomSheetState?.partialExpand() }
+        }
+
+        @OptIn(ExperimentalMaterial3Api::class)
+        val isBottomSheetExpanded: Boolean
+            get() = bottomSheetScaffoldState.value?.bottomSheetState?.hasExpandedState == true
 
         @JvmStatic
         fun getIntentToOpenFeed(context: Context, feedId: Long): Intent {

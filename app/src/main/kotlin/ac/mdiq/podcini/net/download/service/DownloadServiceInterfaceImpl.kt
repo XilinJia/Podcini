@@ -8,7 +8,6 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Episodes
@@ -19,11 +18,11 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
-
 import ac.mdiq.podcini.storage.model.Episode.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.StorageUtils.ensureMediaFileExists
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -236,7 +235,10 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
             EventFlow.postEvent(FlowEvent.MessageEvent(
                 applicationContext.getString(if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying, episodeTitle),
-                { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() },
+                { ctx: Context -> {
+                    mainNavController.navigate(MainActivity.Screens.Logs.name)
+//                    MainActivityStarter(ctx).withDownloadLogsOpen().start()
+                } },
                 applicationContext.getString(R.string.download_error_details)))
         }
 //        private fun getDownloadLogsIntent(context: Context): PendingIntent {

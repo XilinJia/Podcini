@@ -22,7 +22,6 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.utils.DurationConverter.convertOnSpeed
 
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
@@ -54,6 +53,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.*
 
 class SleepTimerDialog : DialogFragment() {
+    private val TAG = "SleepTimerDialog"
     private var _binding: TimeDialogBinding? = null
     private val binding get() = _binding!!
 

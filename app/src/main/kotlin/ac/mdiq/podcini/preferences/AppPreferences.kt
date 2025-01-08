@@ -3,6 +3,7 @@ package ac.mdiq.podcini.preferences
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.storage.utils.StorageUtils.createNoMediaFile
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.Context
@@ -129,7 +130,7 @@ object AppPreferences {
         }
 
     var defaultPage: String?
-        get() = getPref(AppPrefs.prefDefaultPage, "SubscriptionsFragment")
+        get() = getPref(AppPrefs.prefDefaultPage, MainActivity.Screens.Subscriptions.name)
         set(defaultPage) {
             putPref(AppPrefs.prefDefaultPage, defaultPage)
         }
@@ -212,11 +213,11 @@ object AppPreferences {
     }
 
     enum class DefaultPages(val res: Int) {
-        SubscriptionsFragment(R.string.subscriptions_label),
-        QueuesFragment(R.string.queue_label),
-        EpisodesFragment(R.string.episodes_label),
-        AddFeedFragment(R.string.add_feed_label),
-        StatisticsFragment(R.string.statistics_label),
+        Subscriptions(R.string.subscriptions_label),
+        Queues(R.string.queue_label),
+        Episodes(R.string.episodes_label),
+        OnlineSearch(R.string.add_feed_label),
+        Statistics(R.string.statistics_label),
         Remember(R.string.remember_last_page);
     }
 

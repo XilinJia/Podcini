@@ -25,7 +25,7 @@ import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.storage.utils.AudioMediaTools
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
-import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
+import ac.mdiq.podcini.ui.screens.FEObj
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils
@@ -440,13 +440,13 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item, R.string.TTS_la
             processing = 1
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
             if (!readerText.isNullOrEmpty()) {
-                while (!FeedEpisodesFragment.ttsReady) runBlocking { delay(100) }
+                while (!FEObj.ttsReady) runBlocking { delay(100) }
                 processing = 15
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
-                while (FeedEpisodesFragment.ttsWorking) runBlocking { delay(100) }
-                FeedEpisodesFragment.ttsWorking = true
+                while (FEObj.ttsWorking) runBlocking { delay(100) }
+                FEObj.ttsWorking = true
                 if (item.feed?.language != null) {
-                    val result = FeedEpisodesFragment.tts?.setLanguage(Locale(item.feed!!.language!!))
+                    val result = FEObj.tts?.setLanguage(Locale(item.feed!!.language!!))
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.w(TAG, "TTS language not supported ${item.feed!!.language} $result")
                         withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${item.feed!!.language} $result", Toast.LENGTH_LONG).show() }
@@ -455,7 +455,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item, R.string.TTS_la
 
                 var j = 0
                 val mediaFile = File(item.getMediafilePath(), item.getMediafilename())
-                FeedEpisodesFragment.tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                FEObj.tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {
                         Logd(TAG, "onStart $utteranceId")
                     }
@@ -488,7 +488,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item, R.string.TTS_la
                     try {
                         val tempFile = File.createTempFile("tts_temp_${i}_", ".wav")
                         parts.add(tempFile.absolutePath)
-                        status = FeedEpisodesFragment.tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
+                        status = FEObj.tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
                         Logd(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
                         if (status == TextToSpeech.ERROR) {
                             withContext(Dispatchers.Main) { Toast.makeText(context, "Error generating audio file $tempFile.absolutePath", Toast.LENGTH_LONG).show() }
@@ -527,7 +527,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item, R.string.TTS_la
                     val f = File(p)
                     f.delete()
                 }
-                FeedEpisodesFragment.ttsWorking = false
+                FEObj.ttsWorking = false
             } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show() }
 
             item = upsertBlk(item) { it.playState = PlayState.UNPLAYED.code }

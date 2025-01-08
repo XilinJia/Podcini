@@ -72,12 +72,23 @@ object Feeds {
         }
     }
 
-    fun monitorFeeds() {
+    private var monitorJob: Job? = null
+    private val monitorJobs = mutableListOf<Job>()
+    fun cancelMonitorFeeds() {
+        monitorJobs.forEach { it.cancel() }
+        monitorJobs.clear()
+        monitorJob?.cancel()
+        monitorJob = null
+    }
+
+    fun monitorFeeds(scope: CoroutineScope) {
+        if (monitorJob != null) return
+
         val feeds = realm.query(Feed::class).find()
-        for (f in feeds) monitorFeed(f)
+        for (f in feeds) monitorJobs.add(monitorFeed(f, scope))
 
         val feedQuery = realm.query(Feed::class)
-        CoroutineScope(Dispatchers.Default).launch {
+        monitorJob = scope.launch(Dispatchers.IO) {
             val feedsFlow = feedQuery.asFlow()
             feedsFlow.collect { changes: ResultsChange<Feed> ->
                 when (changes) {
@@ -86,7 +97,7 @@ object Feeds {
                             changes.insertions.isNotEmpty() -> {
                                 for (i in changes.insertions) {
                                     Logd(TAG, "monitorFeeds inserted feed: ${changes.list[i].title}")
-                                    monitorFeed(changes.list[i])
+                                    monitorJobs.add(monitorFeed(changes.list[i], scope))
                                 }
                                 EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
                             }
@@ -109,8 +120,8 @@ object Feeds {
         }
     }
 
-    private fun monitorFeed(feed: Feed) {
-        CoroutineScope(Dispatchers.Default).launch {
+    private fun monitorFeed(feed: Feed, scope: CoroutineScope): Job {
+        return scope.launch(Dispatchers.IO) {
             val feedFlow = feed.asFlow()
             feedFlow.collect { changes: SingleQueryChange<Feed> ->
                 when (changes) {

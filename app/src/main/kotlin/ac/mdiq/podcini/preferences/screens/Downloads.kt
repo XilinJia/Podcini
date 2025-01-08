@@ -8,7 +8,6 @@ import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.preferences.MediaFilesTransporter
-import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.appPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
@@ -378,7 +377,7 @@ fun DownloadsPreferencesScreen(activity: PreferenceActivity, navController: NavC
             }
             if (useCustomMediaDir) TextButton(onClick = { showResetCustomFolderDialog = true }) { Text(stringResource(R.string.reset)) }
         }
-        TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) { navController.navigate(Screens.autodownload.tag) }
+        TitleSummaryActionColumn(R.string.pref_automatic_download_title, R.string.pref_automatic_download_sum) { navController.navigate(Screens.AutoDownloadScreen.name) }
         TitleSummarySwitchPrefRow(R.string.pref_auto_delete_title, R.string.pref_auto_delete_sum, AppPrefs.prefAutoDelete.name)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 10.dp)) {
             Column(modifier = Modifier.weight(1f)) {

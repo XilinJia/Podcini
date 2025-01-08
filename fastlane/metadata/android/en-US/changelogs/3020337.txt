@@ -1,0 +1,8 @@
+ Version 7.3.0
+
+* last major step migrating to Jetpack Compose
+	* no more fragments
+	* navigation is in Compose
+	* drawer and bottom sheet are in Compose
+	* fully Compose based with minimal View components
+* made monitoring of feeds less aggressive, possibly improving efficiency

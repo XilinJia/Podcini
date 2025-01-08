@@ -49,8 +49,8 @@ import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PAUSED
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PLAYING
 import ac.mdiq.podcini.storage.model.Episode.Companion.PLAYABLE_TYPE_FEEDMEDIA
 import ac.mdiq.podcini.storage.model.Feed.AutoDeleteAction
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.utils.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent

@@ -1,11 +1,10 @@
-package ac.mdiq.podcini.ui.fragment
+package ac.mdiq.podcini.ui.screens
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.searcher.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
-import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -14,24 +13,22 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Rating
-import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.fragment.StatisticsFragment.Companion.FeedStatisticsDialog
-import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.utils.feedOnDisplay
+import ac.mdiq.podcini.ui.utils.setOnlineSearchTerms
 import ac.mdiq.podcini.util.*
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.R.string
 import android.app.Activity
 import android.content.*
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,12 +40,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -59,11 +57,11 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
@@ -71,77 +69,116 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-class FeedInfoFragment : Fragment() {
 
-    class FeedInfoVM {
-        internal lateinit var feed: Feed
+class FeedInfoVM(val context: Context, val lcScope: CoroutineScope) {
+    internal var feed: Feed
 
-        internal var isCallable by mutableStateOf(false)
-        internal var showRemoveFeedDialog by mutableStateOf(false)
-        internal var txtvAuthor by mutableStateOf("")
-        internal var txtvUrl by mutableStateOf<String?>(null)
-        internal var rating by mutableStateOf(Rating.UNRATED.code)
-        internal val showConnectLocalFolderConfirm = mutableStateOf(false)
+    internal var isCallable by mutableStateOf(false)
+    internal var showRemoveFeedDialog by mutableStateOf(false)
+    internal var txtvAuthor by mutableStateOf("")
+    internal var txtvUrl by mutableStateOf<String?>(null)
+    internal var rating by mutableStateOf(Rating.UNRATED.code)
+    internal val showConnectLocalFolderConfirm = mutableStateOf(false)
 
-        internal var eventSink: Job? = null
-        internal fun cancelFlowEvents() {
-            eventSink?.cancel()
-            eventSink = null
-        }
+    init {
+        feed = feedOnDisplay
     }
 
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
-    private val vm: FeedInfoVM = FeedInfoVM()
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Logd(TAG, "fragment onCreateView")
-
-        vm.txtvAuthor = vm.feed.author ?: ""
-        vm.txtvUrl = vm.feed.downloadUrl
-        if (!vm.feed.link.isNullOrEmpty()) vm.isCallable = IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(vm.feed.link)))
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { FeedInfoScreen() } } }
-        return composeView
+    internal var eventSink: Job? = null
+    internal fun cancelFlowEvents() {
+        eventSink?.cancel()
+        eventSink = null
     }
-
-    @Composable
-    fun FeedInfoScreen() {
-        if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
-            (activity as MainActivity).loadFragment(AppPreferences.defaultPage, null)
-            requireActivity().supportFragmentManager.executePendingTransactions()   // Make sure fragment is hidden before actually starting to delete
-        }
-        ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), vm.showConnectLocalFolderConfirm) {
-            try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
-        }
-        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                HeaderUI()
-                DetailUI()
-            }
-        }
-    }
-
-    override fun onStart() {
-        Logd(TAG, "onStart() called")
-        super.onStart()
-        procFlowEvents()
-    }
-
-    override fun onStop() {
-        Logd(TAG, "onStop() called")
-        super.onStop()
-        vm.cancelFlowEvents()
-    }
-
-    private fun procFlowEvents() {
-        if (vm.eventSink == null) vm.eventSink = lifecycleScope.launch {
+    internal fun procFlowEvents() {
+        if (eventSink == null) eventSink = lcScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedChangeEvent -> setFeed(vm.feed)    // reload from DB
+                    is FlowEvent.FeedChangeEvent -> setFeed(feed)    // reload from DB
                     else -> {}
                 }
             }
         }
+    }
+    fun setFeed(feed_: Feed) {
+        feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
+        rating = feed.rating
+    }
+
+    internal fun addLocalFolderResult(uri: Uri?) {
+        if (uri == null) return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    val documentFile = DocumentFile.fromTreeUri(context, uri)
+                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
+                    feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
+                    updateFeed(context, feed, true)
+                }
+//                withContext(Dispatchers.Main) { (context as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) }
+            } catch (e: Throwable) { withContext(Dispatchers.Main) {
+                Log.e(TAG, e.localizedMessage?:"No message")
+//                (context as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG)
+            } }
+        }
+    }
+}
+
+@Composable
+fun FeedInfoScreen() {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val vm = remember(feedOnDisplay.id) { FeedInfoVM(context, scope) }
+
+    val addLocalFolderLauncher: ActivityResultLauncher<Uri?> = rememberLauncherForActivityResult(contract = AddLocalFolder()) { uri: Uri? -> vm.addLocalFolderResult(uri) }
+
+//        val displayUpArrow by remember { derivedStateOf { navController.backQueue.size > 1 } }
+//        var upArrowVisible by rememberSaveable { mutableStateOf(displayUpArrow) }
+//        LaunchedEffect(navController.backQueue) { upArrowVisible = displayUpArrow }
+
+    var displayUpArrow by rememberSaveable { mutableStateOf(false) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    Logd(TAG, "ON_CREATE")
+                    vm.txtvAuthor = vm.feed.author ?: ""
+                    vm.txtvUrl = vm.feed.downloadUrl
+                    if (!vm.feed.link.isNullOrEmpty()) vm.isCallable = IntentUtils.isCallable(context, Intent(Intent.ACTION_VIEW, Uri.parse(vm.feed.link)))
+                }
+                Lifecycle.Event.ON_START -> {
+                    Logd(TAG, "ON_START")
+                    vm.procFlowEvents()
+                }
+                Lifecycle.Event.ON_RESUME -> {
+                    Logd(TAG, "ON_RESUME")
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    Logd(TAG, "ON_STOP")
+                    vm.cancelFlowEvents()
+                }
+                Lifecycle.Event.ON_DESTROY -> {
+                    Logd(TAG, "ON_DESTROY")
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            vm.feed = Feed()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    if (vm.showRemoveFeedDialog) RemoveFeedDialog(listOf(vm.feed), onDismissRequest = { vm.showRemoveFeedDialog = false }) {
+        mainNavController.navigate("DefaultPage")
+//        (context as MainActivity).loadFragment(AppPreferences.defaultPage, null)
+//        context.supportFragmentManager.executePendingTransactions()   // Make sure fragment is hidden before actually starting to delete
+    }
+    ComfirmDialog(0, stringResource(R.string.reconnect_local_folder_warning), vm.showConnectLocalFolderConfirm) {
+        try { addLocalFolderLauncher.launch(null) } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
     }
 
     @Composable
@@ -150,7 +187,7 @@ class FeedInfoFragment : Fragment() {
         var showChooseRatingDialog by remember { mutableStateOf(false) }
         if (showChooseRatingDialog) ChooseRatingDialog(listOf(vm.feed)) {
             showChooseRatingDialog = false
-            setFeed(vm.feed)
+            vm.setFeed(vm.feed)
         }
         ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
             val (bgImage, bgColor, controlRow, imgvCover) = createRefs()
@@ -179,15 +216,21 @@ class FeedInfoFragment : Fragment() {
                 val ratingIconRes = Rating.fromCode(vm.rating).res
                 Icon(imageVector = ImageVector.vectorResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
                     modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).width(30.dp).height(30.dp).clickable(onClick = {
-                    showChooseRatingDialog = true
-                }))
+                        showChooseRatingDialog = true
+                    }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_settings_white), tint = textColor, contentDescription = "butShowSettings",
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
-                        (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(vm.feed), TransitionEffect.SLIDE)
+                        feedOnDisplay = vm.feed
+                        mainNavController.navigate(Screens.FeedSettings.name)
+//                    (context as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(vm.feed), TransitionEffect.SLIDE)
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
-                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(vm.feed.id)) }) {
+                Button(onClick = {
+                    feedOnDisplay = vm.feed
+                    mainNavController.navigate(Screens.FeedEpisodes.name)
+//                (context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(vm.feed.id))
+                }) {
                     Text(vm.feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label))
                 }
                 Spacer(modifier = Modifier.width(15.dp))
@@ -210,6 +253,7 @@ class FeedInfoFragment : Fragment() {
 
     @Composable
     fun DetailUI() {
+        val context = LocalContext.current
         val scrollState = rememberScrollState()
         var showEditComment by remember { mutableStateOf(false) }
         val localTime = remember { System.currentTimeMillis() }
@@ -245,9 +289,9 @@ class FeedInfoFragment : Fragment() {
                     if (vm.feed.downloadUrl != null) {
                         val url: String = vm.feed.downloadUrl!!
                         val clipData: ClipData = ClipData.newPlainText(url, url)
-                        val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         cm.setPrimaryClip(clipData)
-                        if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
+//                    if (Build.VERSION.SDK_INT <= 32) (context as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
                     }
                 })
                 if (vm.feed.paymentLinks.isNotEmpty()) {
@@ -269,7 +313,7 @@ class FeedInfoFragment : Fragment() {
                         }
                         val str = StringBuilder()
                         for (funding in fundingList) {
-                            str.append(if (funding.content == null || funding.content!!.isEmpty()) requireContext().resources.getString(
+                            str.append(if (funding.content == null || funding.content!!.isEmpty()) context.resources.getString(
                                 R.string.support_podcast)
                             else funding.content).append(" ").append(funding.url)
                             str.append("\n")
@@ -280,47 +324,36 @@ class FeedInfoFragment : Fragment() {
                     Text(fundText, color = textColor)
                 }
                 Button(modifier = Modifier.padding(top = 10.dp), onClick = {
-                    val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
-                    (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+                    setOnlineSearchTerms(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
+                    mainNavController.navigate(Screens.SearchResults.name)
+//                val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
+//                (context as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
                 }) { Text(stringResource(R.string.feeds_related_to_author)) }
             }
             Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             Row {
                 Button({ showFeedStats = true }) { Text(stringResource(R.string.statistics_view_this)) }
                 Spacer(Modifier.weight(1f))
-                Button({ (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE) }) { Text(stringResource(R.string.statistics_view_all)) }
+                Button({
+                    mainNavController.navigate(Screens.Statistics.name)
+//                (context as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
+                }) { Text(stringResource(R.string.statistics_view_all)) }
             }
         }
-    }
-
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        super.onConfigurationChanged(newConfig)
-////        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-////        binding.header.root.setPadding(horizontalSpacing, binding.header.root.paddingTop, horizontalSpacing, binding.header.root.paddingBottom)
-////        binding.infoContainer.setPadding(horizontalSpacing, binding.infoContainer.paddingTop, horizontalSpacing, binding.infoContainer.paddingBottom)
-//    }
-
-    fun setFeed(feed_: Feed) {
-        vm.feed = realm.query(Feed::class).query("id == $0", feed_.id).first().find()!!
-        vm.rating = vm.feed.rating
-    }
-
-    override fun onDestroyView() {
-        Logd(TAG, "onDestroyView")
-        vm.feed = Feed()
-        super.onDestroyView()
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MyTopAppBar() {
+        val context = LocalContext.current
         var expanded by remember { mutableStateOf(false) }
         TopAppBar(title = { Text("") },
-            navigationIcon = { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
+            navigationIcon = { IconButton(onClick = { if (mainNavController.previousBackStackEntry != null) mainNavController.popBackStack()
+            }) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "") } },
             actions = {
-                if (vm.feed.link != null && vm.isCallable) IconButton(onClick = { IntentUtils.openInBrowser(requireContext(), vm.feed.link!!)
+                if (vm.feed.link != null && vm.isCallable) IconButton(onClick = { IntentUtils.openInBrowser(context, vm.feed.link!!)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_web), contentDescription = "web") }
-                if (!vm.feed.isLocalFeed) IconButton(onClick = { ShareUtils.shareFeedLinkNew(requireContext(), vm.feed)
+                if (!vm.feed.isLocalFeed) IconButton(onClick = { ShareUtils.shareFeedLinkNew(context, vm.feed)
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_share), contentDescription = "web") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -329,7 +362,7 @@ class FeedInfoFragment : Fragment() {
                         expanded = false
                     })
                     if (!vm.feed.isLocalFeed) DropdownMenuItem(text = { Text(stringResource(R.string.edit_url_menu)) }, onClick = {
-                        object : EditUrlSettingsDialog(activity as Activity, vm.feed) {
+                        object : EditUrlSettingsDialog(context as Activity, vm.feed) {
                             override fun setUrl(url: String?) {
                                 vm.feed.downloadUrl = url
                                 vm.txtvUrl = vm.feed.downloadUrl
@@ -346,84 +379,60 @@ class FeedInfoFragment : Fragment() {
         )
     }
 
-    private fun addLocalFolderResult(uri: Uri?) {
-        if (uri == null) return
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
-                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
-                    vm.feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
-                    updateFeed(requireContext(), vm.feed, true)
-                }
-                withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) }
-            } catch (e: Throwable) { withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) } }
-        }
-    }
-
-    private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {
-        override fun createIntent(context: Context, input: Uri?): Intent {
-            return super.createIntent(context, input).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-    }
-
-    abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
-        val TAG = this::class.simpleName ?: "Anonymous"
-        private val activityRef = WeakReference(activity)
-
-        fun show() {
-            val activity = activityRef.get() ?: return
-            val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
-            binding.editText.setText(feed.downloadUrl)
-            MaterialAlertDialogBuilder(activity)
-                .setView(binding.root)
-                .setTitle(R.string.edit_url_menu)
-                .setPositiveButton(string.ok) { _: DialogInterface?, _: Int -> showConfirmAlertDialog(binding.editText.text.toString()) }
-                .setNegativeButton(R.string.cancel_label, null)
-                .show()
-        }
-         private fun onConfirmed(original: String, updated: String) {
-            try {
-                runBlocking { updateFeedDownloadURL(original, updated).join() }
-                feed.downloadUrl = updated
-                runOnce(activityRef.get()!!, feed)
-            } catch (e: ExecutionException) { throw RuntimeException(e)
-            } catch (e: InterruptedException) { throw RuntimeException(e) }
-        }
-         private fun showConfirmAlertDialog(url: String) {
-            val activity = activityRef.get()
-            val alertDialog = MaterialAlertDialogBuilder(activity!!)
-                .setTitle(R.string.edit_url_menu)
-                .setMessage(R.string.edit_url_confirmation_msg)
-                .setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
-                    onConfirmed(feed.downloadUrl?:"", url)
-                    setUrl(url)
-                }
-                .setNegativeButton(R.string.cancel_label, null)
-                .show()
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-            object : CountDownTimer(15000, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text = String.format(Locale.getDefault(), "%s (%d)",
-                        activity.getString(string.ok), millisUntilFinished / 1000 + 1)
-                }
-                override fun onFinish() {
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(string.ok)
-                }
-            }.start()
-        }
-        protected abstract fun setUrl(url: String?)
-    }
-
-    companion object {
-        private val TAG: String = FeedInfoFragment::class.simpleName ?: "Anonymous"
-
-        fun newInstance(feed: Feed): FeedInfoFragment {
-            val fragment = FeedInfoFragment()
-            fragment.setFeed(feed)
-            return fragment
+    Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            HeaderUI()
+            DetailUI()
         }
     }
 }
+
+abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
+    private val activityRef = WeakReference(activity)
+
+    fun show() {
+        val activity = activityRef.get() ?: return
+        val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
+        binding.editText.setText(feed.downloadUrl)
+        MaterialAlertDialogBuilder(activity)
+            .setView(binding.root)
+            .setTitle(R.string.edit_url_menu)
+            .setPositiveButton(string.ok) { _: DialogInterface?, _: Int -> showConfirmAlertDialog(binding.editText.text.toString()) }
+            .setNegativeButton(R.string.cancel_label, null)
+            .show()
+    }
+    private fun onConfirmed(original: String, updated: String) {
+        try {
+            runBlocking { updateFeedDownloadURL(original, updated).join() }
+            feed.downloadUrl = updated
+            runOnce(activityRef.get()!!, feed)
+        } catch (e: ExecutionException) { throw RuntimeException(e)
+        } catch (e: InterruptedException) { throw RuntimeException(e) }
+    }
+    private fun showConfirmAlertDialog(url: String) {
+        val activity = activityRef.get()
+        val alertDialog = MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.edit_url_menu)
+            .setMessage(R.string.edit_url_confirmation_msg)
+            .setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
+                onConfirmed(feed.downloadUrl?:"", url)
+                setUrl(url)
+            }
+            .setNegativeButton(R.string.cancel_label, null)
+            .show()
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
+        object : CountDownTimer(15000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text = String.format(Locale.getDefault(), "%s (%d)",
+                    activity.getString(string.ok), millisUntilFinished / 1000 + 1)
+            }
+            override fun onFinish() {
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(string.ok)
+            }
+        }.start()
+    }
+    protected abstract fun setUrl(url: String?)
+}
+
+private const val TAG: String = "FeedInfoScreen"

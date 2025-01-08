@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import android.app.Activity
+import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -262,7 +263,7 @@ fun ComfirmDialog(titleRes: Int, message: String, showDialog: MutableState<Boole
 }
 
 @Composable
-fun MediaPlayerErrorDialog(activity: Activity, message: String, showDialog: MutableState<Boolean>) {
+fun MediaPlayerErrorDialog(activity: Context, message: String, showDialog: MutableState<Boolean>) {
     if (showDialog.value) {
         AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDialog.value = false },
             title = { Text(stringResource(R.string.error_label)) },

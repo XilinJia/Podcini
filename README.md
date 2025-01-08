@@ -29,7 +29,7 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 
 ### Compared to AntennaPod this project:
 
-1. Is mono-modular, purely in `Kotlin`, mostly in Jetpack Compose, based on `media3` with `AudioOffloadMode` enabled (nicer to device battery).
+1. Is mono-modular, purely in `Kotlin`, based in Jetpack Compose, using on `media3` with `AudioOffloadMode` enabled (nicer to device battery).
 2. Handles contents from YouTube and YT Music, as well as normal podcasts and plain RSS.
 3. Features multiple, natural and circular play queues associable with any podcast.
 4. Presents synthetic podcasts and allows episodes to be shelved to any synthetic podcast.
@@ -39,7 +39,7 @@ This project was developed from a fork of [AntennaPod](<https://github.com/Anten
 8. Supports casting Youtube audio/video contents to a Chromecast speaker/screen (the play app)
 9. Spotlights `instant sync` across devices without a server.
 10. Offers Readability and Text-to-Speech for RSS contents,
-11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines , and EventBus with SharedFlow,
+11. Replaced SQLite with modern object-base Realm DB, Glide with Coil, RxJava and threads with coroutines, EventBus with SharedFlow and fragments with screens,
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 

@@ -99,37 +99,39 @@ class PreferenceActivity : AppCompatActivity() {
                         else onBackPressed()
                     }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }) }
                 ) { innerPadding ->
-                    NavHost(navController = navController, startDestination = "Main", Modifier.padding(innerPadding)) {
-                        composable(Screens.main.tag) {
-                            topAppBarTitle = stringResource(Screens.main.titleRes)
+                    NavHost(navController = navController, startDestination = Screens.Main.name, Modifier.padding(innerPadding)) {
+                        composable(Screens.Main.name) {
+                            topAppBarTitle = stringResource(Screens.Main.titleRes)
                             MainPreferencesScreen(navController) }
-                        composable(Screens.ui.tag) {
-                            topAppBarTitle = stringResource(Screens.ui.titleRes)
+                        composable(Screens.InterfaceScreen.name) {
+                            topAppBarTitle = stringResource(Screens.InterfaceScreen.titleRes)
                             UserInterfacePreferencesScreen() }
-                        composable(Screens.downloads.tag) {
-                            topAppBarTitle = stringResource(Screens.downloads.titleRes)
+                        composable(Screens.DownloadScreen.name) {
+                            topAppBarTitle = stringResource(Screens.DownloadScreen.titleRes)
                             DownloadsPreferencesScreen(this@PreferenceActivity, navController) }
-                        composable(Screens.ie.tag) {
-                            topAppBarTitle = stringResource(Screens.ie.titleRes)
+                        composable(Screens.ImportExportScreen.name) {
+                            topAppBarTitle = stringResource(Screens.ImportExportScreen.titleRes)
                             ImportExportPreferencesScreen(this@PreferenceActivity) }
-                        composable(Screens.autodownload.tag) {
-                            topAppBarTitle = stringResource(Screens.autodownload.titleRes)
+                        composable(Screens.AutoDownloadScreen.name) {
+                            topAppBarTitle = stringResource(Screens.AutoDownloadScreen.titleRes)
                             AutoDownloadPreferencesScreen() }
-                        composable(Screens.synchronization.tag) {
-                            topAppBarTitle = stringResource(Screens.synchronization.titleRes)
+                        composable(Screens.SynchronizationScreen.name) {
+                            topAppBarTitle = stringResource(Screens.SynchronizationScreen.titleRes)
                             SynchronizationPreferencesScreen(this@PreferenceActivity) }
-                        composable(Screens.playback.tag) {
-                            topAppBarTitle = stringResource(Screens.playback.titleRes)
+                        composable(Screens.PlaybackScreen.name) {
+                            topAppBarTitle = stringResource(Screens.PlaybackScreen.titleRes)
                             PlaybackPreferencesScreen() }
-                        composable(Screens.notifications.tag) {
-                            topAppBarTitle = stringResource(Screens.notifications.titleRes)
+                        composable(Screens.NotificationScreen.name) {
+                            topAppBarTitle = stringResource(Screens.NotificationScreen.titleRes)
                             NotificationPreferencesScreen() }
-                        composable(Screens.about.tag) {
-                            topAppBarTitle = stringResource(Screens.about.titleRes)
-                            AboutScreen(navController) }
-                        composable(Screens.license.tag) {
-                            topAppBarTitle = stringResource(Screens.license.titleRes)
-                            LicensesScreen() }
+                        composable(Screens.AboutScreen.name) {
+                            topAppBarTitle = stringResource(Screens.AboutScreen.titleRes)
+                            this@PreferenceActivity.AboutScreen(navController)
+                        }
+                        composable(Screens.LicensesScreen.name) {
+                            topAppBarTitle = stringResource(Screens.LicensesScreen.titleRes)
+                            this@PreferenceActivity.LicensesScreen()
+                        }
                     }
                 }
             }
@@ -221,12 +223,12 @@ class PreferenceActivity : AppCompatActivity() {
                     Text(copyrightNoticeText, color = textColor)
                 }
             }
-            IconTitleSummaryScreenRow(R.drawable.ic_appearance, R.string.user_interface_label, R.string.user_interface_sum, Screens.ui.tag)
-            IconTitleSummaryScreenRow(R.drawable.ic_play_24dp, R.string.playback_pref, R.string.playback_pref_sum, Screens.playback.tag)
-            IconTitleSummaryScreenRow(R.drawable.ic_download, R.string.downloads_pref, R.string.downloads_pref_sum, Screens.downloads.tag)
-            IconTitleSummaryScreenRow(R.drawable.ic_cloud, R.string.synchronization_pref, R.string.synchronization_sum, Screens.synchronization.tag)
-            IconTitleSummaryScreenRow(R.drawable.ic_storage, R.string.import_export_pref, R.string.import_export_summary, Screens.ie.tag)
-            IconTitleActionRow(R.drawable.ic_notifications, R.string.notification_pref_fragment) { navController.navigate(Screens.notifications.tag) }
+            IconTitleSummaryScreenRow(R.drawable.ic_appearance, R.string.user_interface_label, R.string.user_interface_sum, Screens.InterfaceScreen.name)
+            IconTitleSummaryScreenRow(R.drawable.ic_play_24dp, R.string.playback_pref, R.string.playback_pref_sum, Screens.PlaybackScreen.name)
+            IconTitleSummaryScreenRow(R.drawable.ic_download, R.string.downloads_pref, R.string.downloads_pref_sum, Screens.DownloadScreen.name)
+            IconTitleSummaryScreenRow(R.drawable.ic_cloud, R.string.synchronization_pref, R.string.synchronization_sum, Screens.SynchronizationScreen.name)
+            IconTitleSummaryScreenRow(R.drawable.ic_storage, R.string.import_export_pref, R.string.import_export_summary, Screens.ImportExportScreen.name)
+            IconTitleActionRow(R.drawable.ic_notifications, R.string.notification_pref_fragment) { navController.navigate(Screens.NotificationScreen.name) }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.pref_backup_on_google_title), color = textColor, style = CustomTextStyles.titleCustom, fontWeight = FontWeight.Bold)
@@ -248,7 +250,7 @@ class PreferenceActivity : AppCompatActivity() {
             IconTitleActionRow(R.drawable.ic_contribute, R.string.pref_contribute) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini") }
             IconTitleActionRow(R.drawable.ic_bug, R.string.bug_report_title) { startActivity(Intent(this@PreferenceActivity, BugReportActivity::class.java)) }
             IconTitleActionRow(R.drawable.ic_info, R.string.about_pref) {
-                navController.navigate(Screens.about.tag)
+                navController.navigate(Screens.AboutScreen.name)
             }
         }
     }
@@ -275,7 +277,7 @@ class PreferenceActivity : AppCompatActivity() {
             }
             IconTitleSummaryActionRow(R.drawable.ic_questionmark, R.string.online_help, R.string.online_help_sum) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/") }
             IconTitleSummaryActionRow(R.drawable.ic_info, R.string.privacy_policy, R.string.privacy_policy) { openInBrowser(this@PreferenceActivity, "https://github.com/XilinJia/Podcini/blob/main/PrivacyPolicy.md") }
-            IconTitleSummaryActionRow(R.drawable.ic_info, R.string.licenses, R.string.licenses_summary) { navController.navigate(Screens.license.tag) }
+            IconTitleSummaryActionRow(R.drawable.ic_info, R.string.licenses, R.string.licenses_summary) { navController.navigate(Screens.LicensesScreen.name) }
             IconTitleSummaryActionRow(R.drawable.baseline_mail_outline_24, R.string.email_developer, R.string.email_sum) {
                 val emailIntent = Intent(Intent.ACTION_SEND).apply {
                     putExtra(Intent.EXTRA_EMAIL, arrayOf("xilin.vw@gmail.com"))
@@ -434,7 +436,7 @@ class PreferenceActivity : AppCompatActivity() {
             TitleSummarySwitchPrefRow(R.string.pref_show_notification_skip_title, R.string.pref_show_notification_skip_sum, AppPrefs.prefShowSkip.name, true)
             Text(stringResource(R.string.behavior), color = textColor, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 15.dp))
             var showDefaultPageOptions by remember { mutableStateOf(false) }
-            var tempSelectedOption by remember { mutableStateOf(getPref(AppPrefs.prefDefaultPage, DefaultPages.SubscriptionsFragment.name)) }
+            var tempSelectedOption by remember { mutableStateOf(getPref(AppPrefs.prefDefaultPage, DefaultPages.Subscriptions.name)) }
             TitleSummaryActionColumn(R.string.pref_default_page, R.string.pref_default_page_sum) { showDefaultPageOptions = true }
             if (showDefaultPageOptions) {
                 AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = { showDefaultPageOptions = false },
@@ -482,18 +484,17 @@ class PreferenceActivity : AppCompatActivity() {
         }
     }
 
-    @Suppress("EnumEntryName")
-    enum class Screens(val titleRes: Int, val tag: String) {
-        main(R.string.settings_label, "Main"),
-        ui(R.string.user_interface_label, "InterfaceScreen"),
-        playback(R.string.playback_pref, "PlaybackScreen"),
-        downloads(R.string.downloads_pref, "DownloadScreen"),
-        synchronization(R.string.synchronization_pref, "SynchronizationScreen"),
-        ie(R.string.import_export_pref, "ImportExportScreen"),
-        notifications(R.string.notification_pref_fragment, "NotificationScreen"),
-        autodownload(R.string.pref_automatic_download_title, "AutoDownloadScreen"),
-        about(R.string.about_pref, "AboutScreen"),
-        license(R.string.licenses, "LicensesScreen"),
-        swipe(R.string.swipeactions_label, "SwipeScreen");
+    enum class Screens(val titleRes: Int) {
+        Main(R.string.settings_label),
+        InterfaceScreen(R.string.user_interface_label),
+        PlaybackScreen(R.string.playback_pref),
+        DownloadScreen(R.string.downloads_pref),
+        SynchronizationScreen(R.string.synchronization_pref),
+        ImportExportScreen(R.string.import_export_pref),
+        NotificationScreen(R.string.notification_pref_fragment),
+        AutoDownloadScreen(R.string.pref_automatic_download_title),
+        AboutScreen(R.string.about_pref),
+        LicensesScreen(R.string.licenses),
+        SwipeScreen(R.string.swipeactions_label);
     }
 }

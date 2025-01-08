@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.fragment
+package ac.mdiq.podcini.ui.screens
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
@@ -19,24 +19,21 @@ import ac.mdiq.podcini.storage.model.Feed.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.Feed.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
-import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOptions
+import ac.mdiq.podcini.ui.utils.feedOnDisplay
+import ac.mdiq.podcini.ui.utils.setSearchTerms
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import android.app.Activity.RESULT_OK
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
@@ -56,12 +53,12 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -74,12 +71,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
@@ -87,11 +84,11 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class SubscriptionsFragment : Fragment() {
-    val prefs: SharedPreferences by lazy { requireContext().getSharedPreferences("SubscriptionsFragmentPrefs", Context.MODE_PRIVATE) }
+class SubscriptionsVM(val context: Context, val lcScope: CoroutineScope) {
+    val prefs: SharedPreferences by lazy { context.getSharedPreferences("SubscriptionsFragmentPrefs", Context.MODE_PRIVATE) }
 
     private var _feedsFilter: String? = null
-    private var feedsFilter: String
+    internal var feedsFilter: String
         get() {
             if (_feedsFilter == null) _feedsFilter = prefs.getString("feedsFilter", "") ?: ""
             return _feedsFilter ?: ""
@@ -102,7 +99,7 @@ class SubscriptionsFragment : Fragment() {
         }
 
     private var _tagFilterIndex: Int = -1
-    private var tagFilterIndex: Int
+    internal var tagFilterIndex: Int
         get() {
             if (_tagFilterIndex < 0) _tagFilterIndex = prefs.getInt("tagFilterIndex", 0)
             return _tagFilterIndex
@@ -112,7 +109,7 @@ class SubscriptionsFragment : Fragment() {
             prefs.edit().putInt("tagFilterIndex", index).apply()
         }
     private var _queueFilterIndex: Int = -1
-    private var queueFilterIndex: Int
+    internal var queueFilterIndex: Int
         get() {
             if (_queueFilterIndex < 0) _queueFilterIndex = prefs.getInt("queueFilterIndex", 0)
             return _queueFilterIndex
@@ -122,118 +119,42 @@ class SubscriptionsFragment : Fragment() {
             prefs.edit().putInt("queueFilterIndex", index).apply()
         }
 
-    class SubscriptionsVM {
-        internal val tags: MutableList<String> = mutableListOf()
-        internal val queueIds: MutableList<Long> = mutableListOf()
-        internal val spinnerTexts: MutableList<String> = mutableListOf("Any queue", "No queue")
+    internal val tags: MutableList<String> = mutableListOf()
+    internal val queueIds: MutableList<Long> = mutableListOf()
+    internal val spinnerTexts: MutableList<String> = mutableListOf("Any queue", "No queue")
 
-        internal var infoTextFiltered = ""
-        internal var infoTextUpdate = ""
+    private var infoTextFiltered = ""
+    private var infoTextUpdate = ""
 
-        //    TODO: currently not used
-        internal var displayedFolder by mutableStateOf("")
-        internal var displayUpArrow = false
+    //    TODO: currently not used
+    internal var displayedFolder by mutableStateOf("")
 
-        internal var txtvInformation by mutableStateOf("")
-        internal var feedCount by mutableStateOf("")
-        internal var feedSorted by mutableIntStateOf(0)
+    internal var txtvInformation by mutableStateOf("")
+    internal var feedCount by mutableStateOf("")
+    internal var feedSorted by mutableIntStateOf(0)
 
-        internal var sortIndex by mutableStateOf(0)
-        internal var titleAscending by mutableStateOf(true)
-        internal var dateAscending by mutableStateOf(true)
-        internal var countAscending by mutableStateOf(true)
-        internal var dateSortIndex by mutableStateOf(0)
-        internal val playStateSort = MutableList(PlayState.entries.size) { mutableStateOf(false) }
-        internal val playStateCodeSet = mutableSetOf<String>()
-        internal val ratingSort = MutableList(Rating.entries.size) { mutableStateOf(false) }
-        internal val ratingCodeSet = mutableSetOf<String>()
-        internal var downlaodedSortIndex by mutableStateOf(-1)
-        internal var commentedSortIndex by mutableStateOf(-1)
+    internal var sortIndex by mutableStateOf(0)
+    internal var titleAscending by mutableStateOf(true)
+    internal var dateAscending by mutableStateOf(true)
+    internal var countAscending by mutableStateOf(true)
+    internal var dateSortIndex by mutableStateOf(0)
+    internal val playStateSort = MutableList(PlayState.entries.size) { mutableStateOf(false) }
+    internal val playStateCodeSet = mutableSetOf<String>()
+    internal val ratingSort = MutableList(Rating.entries.size) { mutableStateOf(false) }
+    internal val ratingCodeSet = mutableSetOf<String>()
+    internal var downlaodedSortIndex by mutableStateOf(-1)
+    internal var commentedSortIndex by mutableStateOf(-1)
 
-        internal var feedListFiltered = mutableStateListOf<Feed>()
-        internal var showFilterDialog by mutableStateOf(false)
-        internal var showSortDialog by mutableStateOf(false)
-        internal var noSubscription by mutableStateOf(false)
-        internal var showNewSynthetic by mutableStateOf(false)
+    internal var feedListFiltered = mutableStateListOf<Feed>()
+    internal var showFilterDialog by mutableStateOf(false)
+    internal var showSortDialog by mutableStateOf(false)
+    internal var noSubscription by mutableStateOf(false)
+    internal var showNewSynthetic by mutableStateOf(false)
 
-        internal var useGrid by mutableStateOf<Boolean?>(null)
-        internal val useGridLayout by mutableStateOf(getPref(AppPrefs.prefFeedGridLayout, false))
+    internal var useGrid by mutableStateOf<Boolean?>(null)
+    internal val useGridLayout by mutableStateOf(getPref(AppPrefs.prefFeedGridLayout, false))
 
-        internal var selectMode by mutableStateOf(false)
-    }
-
-    private val vm = SubscriptionsVM()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        retainInstance = true
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Logd(TAG, "fragment onCreateView")
-        vm.displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) vm.displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        getSortingPrefs()
-        if (arguments != null) vm.displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
-        resetTags()
-
-        val queues = realm.query(PlayQueue::class).find()
-        vm.queueIds.addAll(queues.map { it.id })
-        vm.spinnerTexts.addAll(queues.map { it.name })
-
-        val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { SubscriptionsScreen() } } }
-        vm.feedCount = vm.feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
-        loadSubscriptions()
-        return composeView
-    }
-
-    @Composable
-    fun SubscriptionsScreen() {
-        if (vm.showFilterDialog) FilterDialog(FeedFilter(feedsFilter)) { vm.showFilterDialog = false }
-        if (vm.showSortDialog) SortDialog { vm.showSortDialog = false }
-        if (vm.showNewSynthetic) RenameOrCreateSyntheticFeed { vm.showNewSynthetic = false }
-        Scaffold(topBar = { MyTopAppBar() }) { innerPadding ->
-            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                InforBar()
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
-                    Spinner(items = vm.spinnerTexts, selectedIndex = queueFilterIndex) { index: Int ->
-                        queueFilterIndex = index
-                        loadSubscriptions()
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Spinner(items = vm.tags, selectedIndex = tagFilterIndex) { index: Int ->
-                        tagFilterIndex = index
-                        loadSubscriptions()
-                    }
-                }
-                if (vm.noSubscription) Text(stringResource(R.string.no_subscriptions_label))
-                else LazyList()
-            }
-        }
-    }
-
-    override fun onStart() {
-        Logd(TAG, "onStart()")
-        super.onStart()
-        procFlowEvents()
-    }
-
-    override fun onStop() {
-        Logd(TAG, "onStop()")
-        super.onStop()
-        cancelFlowEvents()
-    }
-
-    override fun onDestroyView() {
-        Logd(TAG, "onDestroyView")
-        vm.feedListFiltered.clear()
-        super.onDestroyView()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(KEY_UP_ARROW, vm.displayUpArrow)
-        super.onSaveInstanceState(outState)
-    }
+    internal var selectMode by mutableStateOf(false)
 
     private fun queryStringOfTags() : String {
         return when (tagFilterIndex) {
@@ -241,7 +162,7 @@ class SubscriptionsFragment : Fragment() {
 //            TODO: #root appears not used in RealmDB, is it a SQLite specialty
             1 ->  " (tags.@count == 0 OR (tags.@count != 0 AND ALL tags == '#root' )) "
             else -> {   // feeds with the chosen tag
-                val tag = vm.tags[tagFilterIndex]
+                val tag = tags[tagFilterIndex]
                 " ANY tags == '$tag' "
             }
         }
@@ -252,29 +173,29 @@ class SubscriptionsFragment : Fragment() {
             0 ->  ""    // All feeds
             1 -> " queueId == -2 "
             else -> {   // feeds associated with the chosen queue
-                val qid = vm.queueIds[queueFilterIndex-2]
+                val qid = queueIds[queueFilterIndex-2]
                 " queueId == '$qid' "
             }
         }
     }
 
-    private fun resetTags() {
-        vm.tags.clear()
-        vm.tags.add("All tags")
-        vm.tags.add("Untagged")
-        vm.tags.addAll(getTags())
+    internal fun resetTags() {
+        tags.clear()
+        tags.add("All tags")
+        tags.add("Untagged")
+        tags.addAll(getTags())
     }
 
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
-    private fun cancelFlowEvents() {
+    internal fun cancelFlowEvents() {
         eventSink?.cancel()
         eventSink = null
         eventStickySink?.cancel()
         eventStickySink = null
     }
-    private fun procFlowEvents() {
-        if (eventSink == null) eventSink = lifecycleScope.launch {
+    internal fun procFlowEvents() {
+        if (eventSink == null) eventSink = lcScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
@@ -286,14 +207,14 @@ class SubscriptionsFragment : Fragment() {
                 }
             }
         }
-        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
+        if (eventStickySink == null) eventStickySink = lcScope.launch {
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedUpdatingEvent -> {
                         Logd(TAG, "FeedUpdateRunningEvent: ${event.isRunning}")
-                        vm.infoTextUpdate = if (event.isRunning) " " + getString(R.string.refreshing_label) else ""
-                        vm.txtvInformation = (vm.infoTextFiltered + vm.infoTextUpdate)
+                        infoTextUpdate = if (event.isRunning) " " + context.getString(R.string.refreshing_label) else ""
+                        txtvInformation = (infoTextFiltered + infoTextUpdate)
                         if (!event.isRunning && event.id != prevFeedUpdatingEvent?.id) loadSubscriptions()
                         prevFeedUpdatingEvent = event
                     }
@@ -303,51 +224,13 @@ class SubscriptionsFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun MyTopAppBar() {
-        var expanded by remember { mutableStateOf(false) }
-        TopAppBar(title = { Text( if (vm.displayedFolder.isNotEmpty()) vm.displayedFolder else "") },
-            navigationIcon = if (vm.displayUpArrow) {
-                { IconButton(onClick = { parentFragmentManager.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
-            } else {
-                { IconButton(onClick = { (activity as? MainActivity)?.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_subscriptions), contentDescription = "Open Drawer") } }
-            },
-            actions = {
-                IconButton(onClick = { (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
-                IconButton(onClick = { vm.showFilterDialog = true
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
-                IconButton(onClick = { vm.showSortDialog = true
-                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "sort") }
-//                IconButton(onClick = {
-//                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "statistics") }
-                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    DropdownMenuItem(text = { Text(stringResource(R.string.new_synth_label)) }, onClick = {
-                        vm.showNewSynthetic = true
-                        expanded = false
-                    })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.refresh_label)) }, onClick = {
-                        FeedUpdateManager.runOnceOrAsk(requireContext(), fullUpdate = true)
-                        expanded = false
-                    })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.toggle_grid_list)) }, onClick = {
-                        vm.useGrid = if (vm.useGrid == null) !vm.useGridLayout else !vm.useGrid!!
-                        expanded = false
-                    })
-                }
-            }
-        )
-    }
-
     private var loadingJob: Job? = null
-    private fun loadSubscriptions() {
+    internal fun loadSubscriptions() {
         if (loadingJob != null) {
             loadingJob?.cancel()
-            vm.feedListFiltered.clear()
+            feedListFiltered.clear()
         }
-        loadingJob = lifecycleScope.launch {
+        loadingJob = lcScope.launch {
             val feedList: List<Feed>
             try {
                 withContext(Dispatchers.IO) {
@@ -355,13 +238,13 @@ class SubscriptionsFragment : Fragment() {
                     feedList = fetchAndSort(false)
                 }
                 withContext(Dispatchers.Main) {
-                    vm.noSubscription = feedList.isEmpty()
-                    vm.feedListFiltered.clear()
-                    vm.feedListFiltered.addAll(feedList)
-                    vm.feedCount = vm.feedListFiltered.size.toString() + " / " + NavDrawerFragment.feedCount.toString()
-                    vm.infoTextFiltered = " "
-                    if (feedsFilter.isNotEmpty()) vm.infoTextFiltered = getString(R.string.filtered_label)
-                    vm.txtvInformation = (vm.infoTextFiltered + vm.infoTextUpdate)
+                    noSubscription = feedList.isEmpty()
+                    feedListFiltered.clear()
+                    feedListFiltered.addAll(feedList)
+                    feedCount = feedListFiltered.size.toString() + " / " + feedCount.toString()
+                    infoTextFiltered = " "
+                    if (feedsFilter.isNotEmpty()) infoTextFiltered = context.getString(R.string.filtered_label)
+                    txtvInformation = (infoTextFiltered + infoTextUpdate)
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }.apply { invokeOnCompletion { loadingJob = null } }
@@ -380,6 +263,269 @@ class SubscriptionsFragment : Fragment() {
         }
     }
 
+    internal fun exportOPML(uri: Uri?, selectedItems: List<Feed>) {
+        try {
+            runBlocking {
+                Logd(TAG, "selectedFeeds: ${selectedItems.size}")
+                if (uri == null) ExportWorker(OpmlWriter(), context).exportFile(selectedItems)
+                else {
+                    val worker = DocumentFileExportWorker(OpmlWriter(), context, uri)
+                    worker.exportFile(selectedItems)
+                }
+            }
+        } catch (e: Exception) { Log.e(TAG, "exportOPML error: ${e.message}") }
+    }
+
+    private fun sortArrays2CodeSet() {
+        playStateCodeSet.clear()
+        for (i in playStateSort.indices) {
+            if (playStateSort[i].value) playStateCodeSet.add(PlayState.entries[i].code.toString())
+        }
+        ratingCodeSet.clear()
+        for (i in ratingSort.indices) {
+            if (ratingSort[i].value) ratingCodeSet.add(Rating.entries[i].code.toString())
+        }
+    }
+    private fun sortArraysFromCodeSet() {
+        for (i in playStateSort.indices) playStateSort[i].value = false
+        for (c in playStateCodeSet) playStateSort[PlayState.fromCode(c.toInt()).ordinal].value = true
+        for (i in ratingSort.indices) ratingSort[i].value = false
+        for (c in ratingCodeSet) ratingSort[Rating.fromCode(c.toInt()).ordinal].value = true
+    }
+
+    private fun saveSortingPrefs() {
+        prefs.edit().putInt("sortIndex", sortIndex).apply()
+        prefs.edit().putBoolean("titleAscending", titleAscending).apply()
+        prefs.edit().putBoolean("dateAscending", dateAscending).apply()
+        prefs.edit().putBoolean("countAscending", countAscending).apply()
+        prefs.edit().putInt("dateSortIndex", dateSortIndex).apply()
+        prefs.edit().putInt("downlaodedSortIndex", downlaodedSortIndex).apply()
+        prefs.edit().putInt("commentedSortIndex", commentedSortIndex).apply()
+        sortArrays2CodeSet()
+        prefs.edit().putStringSet("playStateCodeSet", playStateCodeSet).apply()
+        prefs.edit().putStringSet("ratingCodeSet", ratingCodeSet).apply()
+    }
+
+    internal fun getSortingPrefs() {
+        sortIndex = prefs.getInt("sortIndex", 0)
+        titleAscending = prefs.getBoolean("titleAscending", true)
+        dateAscending = prefs.getBoolean("dateAscending", true)
+        countAscending = prefs.getBoolean("countAscending", true)
+        dateSortIndex = prefs.getInt("dateSortIndex", 0)
+        downlaodedSortIndex = prefs.getInt("downlaodedSortIndex", -1)
+        commentedSortIndex = prefs.getInt("commentedSortIndex", -1)
+        playStateCodeSet.clear()
+        playStateCodeSet.addAll(prefs.getStringSet("playStateCodeSet", setOf())!!)
+        ratingCodeSet.clear()
+        ratingCodeSet.addAll(prefs.getStringSet("ratingCodeSet", setOf())!!)
+        sortArraysFromCodeSet()
+    }
+
+    internal fun fetchAndSort(build: Boolean = true): List<Feed> {
+        fun getFeedList(): MutableList<Feed> {
+            var fQueryStr = FeedFilter(feedsFilter).queryString()
+            val tagsQueryStr = queryStringOfTags()
+            if (tagsQueryStr.isNotEmpty())  fQueryStr += " AND $tagsQueryStr"
+            val queuesQueryStr = queryStringOfQueues()
+            if (queuesQueryStr.isNotEmpty())  fQueryStr += " AND $queuesQueryStr"
+            Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
+            return getFeedList(fQueryStr).toMutableList()
+        }
+
+        val feedList_ = getFeedList()
+        for (f in feedList_) f.sortInfo = ""
+        val comparator = when (sortIndex) {
+            0 -> {
+                val dir = if (titleAscending) 1 else -1
+                Comparator { lhs: Feed, rhs: Feed ->
+                    val t1 = lhs.title
+                    val t2 = rhs.title
+                    when {
+                        t1 == null -> dir
+                        t2 == null -> -dir
+                        else -> t1.compareTo(t2, ignoreCase = true) * dir
+                    }
+                }
+            }
+            1 -> {
+                val dir = if (dateAscending) 1 else -1
+                when (dateSortIndex) {
+                    0 -> {  // date publish
+                        var playStateQueries = ""
+                        for (i in playStateSort.indices) {
+                            if (playStateSort[i].value) {
+                                if (playStateQueries.isNotEmpty()) playStateQueries += " OR "
+                                playStateQueries += " playState == ${PlayState.entries[i].code} "
+                            }
+                        }
+                        var queryString = "feedId == $0"
+                        if (playStateQueries.isNotEmpty()) queryString += " AND ($playStateQueries)"
+                        queryString += " SORT(pubDate DESC)"
+                        Logd(TAG, "queryString: $queryString")
+                        val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                        for (f in feedList_) {
+                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
+                            counterMap[f.id] = d
+                            f.sortInfo = formatDateTimeFlex(Date(d))
+                        }
+                        comparator(counterMap, dir)
+                    }
+                    1 -> {  // date downloaded
+                        val queryString = "feedId == $0 SORT(downloadTime DESC)"
+                        val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                        for (f in feedList_) {
+                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.downloadTime ?: 0L
+                            counterMap[f.id] = d
+                            f.sortInfo = "Downloaded: " + formatDateTimeFlex(Date(d))
+                        }
+                        Logd(TAG, "queryString: $queryString")
+                        comparator(counterMap, dir)
+                    }
+                    else -> comparator(mutableMapOf(), 0)
+                }
+            }
+            else -> {   // count
+                val dir = if (countAscending) 1 else -1
+                var playStateQueries = ""
+                for (i in playStateSort.indices) {
+                    if (playStateSort[i].value) {
+                        if (playStateQueries.isNotEmpty()) playStateQueries += " OR "
+                        playStateQueries += " playState == ${PlayState.entries[i].code} "
+                    }
+                }
+                var ratingQueries = ""
+                for (i in ratingSort.indices) {
+                    if (ratingSort[i].value) {
+                        if (ratingQueries.isNotEmpty()) ratingQueries += " OR "
+                        ratingQueries += " rating == ${Rating.entries[i].code} "
+                    }
+                }
+                val downloadedQuery = if (downlaodedSortIndex == 0) " downloaded == true " else if (downlaodedSortIndex == 1) " downloaded == false " else ""
+                val commentedQuery = if (commentedSortIndex == 0) " comment != '' " else if (commentedSortIndex == 1) " comment == '' " else ""
+
+                var queryString = "feedId == $0"
+                if (playStateQueries.isNotEmpty()) queryString += " AND ($playStateQueries)"
+                if (ratingQueries.isNotEmpty()) queryString += " AND ($ratingQueries)"
+                if (downloadedQuery.isNotEmpty()) queryString += " AND ($downloadedQuery)"
+                if (commentedQuery.isNotEmpty()) queryString += " AND ($commentedQuery)"
+                Logd(TAG, "queryString: $queryString")
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feedList_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = "$c counts"
+                }
+                comparator(counterMap, dir)
+            }
+        }
+        feedSorted++
+        if (!build) return feedList_.sortedWith(comparator)
+
+        saveSortingPrefs()
+        feedListFiltered.clear()
+        feedListFiltered.addAll(feedList_.sortedWith(comparator))
+        return listOf()
+    }
+
+}
+
+@Composable
+fun SubscriptionsScreen() {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val vm = remember { SubscriptionsVM(context, scope) }
+
+//        val displayUpArrow by remember { derivedStateOf { navController.backQueue.size > 1 } }
+//        var upArrowVisible by rememberSaveable { mutableStateOf(displayUpArrow) }
+//        LaunchedEffect(navController.backQueue) { upArrowVisible = displayUpArrow }
+
+    var displayUpArrow by rememberSaveable { mutableStateOf(false) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    Logd(TAG, "ON_CREATE")
+//                        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+//                        displayUpArrow = savedInstanceState?.getBoolean(KEY_UP_ARROW) ?: false
+                    vm.getSortingPrefs()
+//                    if (arguments != null) vm.displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
+                    vm.resetTags()
+
+                    val queues = realm.query(PlayQueue::class).find()
+                    vm.queueIds.addAll(queues.map { it.id })
+                    vm.spinnerTexts.addAll(queues.map { it.name })
+                    vm.feedCount = vm.feedListFiltered.size.toString() + " / " + feedCount.toString()
+                    vm.loadSubscriptions()
+                }
+                Lifecycle.Event.ON_START -> {
+                    Logd(TAG, "ON_START")
+                    vm.procFlowEvents()
+                }
+                Lifecycle.Event.ON_RESUME -> {
+                    Logd(TAG, "ON_RESUME")
+                    vm.cancelFlowEvents()
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    Logd(TAG, "ON_STOP")
+                }
+                Lifecycle.Event.ON_DESTROY -> {
+                    Logd(TAG, "ON_DESTROY")
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            vm.feedListFiltered.clear()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    BackHandler { mainNavController.popBackStack() }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MyTopAppBar(displayUpArrow: Boolean) {
+        var expanded by remember { mutableStateOf(false) }
+        TopAppBar(title = { Text( if (vm.displayedFolder.isNotEmpty()) vm.displayedFolder else "") },
+            navigationIcon = if (displayUpArrow) {
+                { IconButton(onClick = { if (mainNavController.previousBackStackEntry != null) mainNavController.popBackStack()
+                }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            } else {
+                { IconButton(onClick = { MainActivity.openDrawer() }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_subscriptions), contentDescription = "Open Drawer") } }
+            },
+            actions = {
+                IconButton(onClick = {
+                    setSearchTerms("")
+                    mainNavController.navigate(Screens.Search.name)
+//                (vm.context as MainActivity).loadChildFragment(SearchFragment.newInstance())
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
+                IconButton(onClick = { vm.showFilterDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
+                IconButton(onClick = { vm.showSortDialog = true
+                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.arrows_sort), contentDescription = "sort") }
+//                IconButton(onClick = {
+//                }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_chart_box), contentDescription = "statistics") }
+                IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.new_synth_label)) }, onClick = {
+                        vm.showNewSynthetic = true
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.refresh_label)) }, onClick = {
+                        FeedUpdateManager.runOnceOrAsk(vm.context, fullUpdate = true)
+                        expanded = false
+                    })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.toggle_grid_list)) }, onClick = {
+                        vm.useGrid = if (vm.useGrid == null) !vm.useGridLayout else !vm.useGrid!!
+                        expanded = false
+                    })
+                }
+            }
+        )
+    }
+
     @Composable
     fun InforBar() {
         Row(Modifier.padding(start = 20.dp, end = 20.dp)) {
@@ -387,7 +533,7 @@ class SubscriptionsFragment : Fragment() {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_info), contentDescription = "info", tint = textColor)
             Spacer(Modifier.weight(1f))
             Text(vm.txtvInformation, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.clickable {
-                if (feedsFilter.isNotEmpty()) vm.showFilterDialog = true
+                if (vm.feedsFilter.isNotEmpty()) vm.showFilterDialog = true
             } )
             Spacer(Modifier.weight(1f))
             Text(vm.feedCount, color = textColor)
@@ -408,7 +554,7 @@ class SubscriptionsFragment : Fragment() {
         fun saveFeed(cbBlock: (Feed)->Unit) {
             runOnIOScope { for (feed in selected) upsert(feed) { cbBlock(it) } }
             val numItems = selected.size
-            (activity as MainActivity).showSnackbarAbovePlayer(activity!!.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
+//        (vm.context as MainActivity).showSnackbarAbovePlayer(vm.context.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
         }
 
         @Composable
@@ -620,15 +766,16 @@ class SubscriptionsFragment : Fragment() {
                         .setType(exportType.contentType)
                         .putExtra(Intent.EXTRA_TITLE, title)
                     try {
-                        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                        val actMain: MainActivity? = generateSequence(vm.context) { if (it is ContextWrapper) it.baseContext else null }.filterIsInstance<MainActivity>().firstOrNull()
+                        actMain?.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
                             if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
                             val uri = result.data!!.data
-                            exportOPML(uri, selected)
-                        }.launch(intentPickAction)
+                            vm.exportOPML(uri, selected)
+                        }?.launch(intentPickAction)
                         return@clickable
-                    } catch (e: ActivityNotFoundException) { Log.e(Companion.TAG, "No activity found. Should never happen...") }
+                    } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
                     // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
-                    exportOPML(null, selected)
+                    vm.exportOPML(null, selected)
                 }) {
                     Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_import_export_24), "")
                     Text(stringResource(id = R.string.opml_export_label)) } },
@@ -646,9 +793,9 @@ class SubscriptionsFragment : Fragment() {
 
         PullToRefreshBox(modifier = Modifier.fillMaxWidth(), isRefreshing = refreshing, indicator = {}, onRefresh = {
 //            coroutineScope.launch {
-                refreshing = true
-                if (getPref(AppPrefs.prefSwipeToRefreshAll, true)) FeedUpdateManager.runOnceOrAsk(requireContext())
-                refreshing = false
+            refreshing = true
+            if (getPref(AppPrefs.prefSwipeToRefreshAll, true)) FeedUpdateManager.runOnceOrAsk(vm.context)
+            refreshing = false
 //            }
         }) {
             val context = LocalContext.current
@@ -673,7 +820,10 @@ class SubscriptionsFragment : Fragment() {
                                 Logd(TAG, "clicked: ${feed.title}")
                                 if (!feed.isBuilding) {
                                     if (vm.selectMode) toggleSelected()
-                                    else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                    else {
+                                        feedOnDisplay = feed
+                                        mainNavController.navigate(Screens.FeedEpisodes.name)
+                                    }
                                 }
                             }, onLongClick = {
                                 if (!feed.isBuilding) {
@@ -709,10 +859,10 @@ class SubscriptionsFragment : Fragment() {
                                     })
                                 if (feed.rating != Rating.UNRATED.code)
                                     Icon(imageVector = ImageVector.vectorResource(Rating.fromCode(feed.rating).res), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating",
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
-                                        start.linkTo(coverImage.start)
-                                        bottom.linkTo(coverImage.bottom)
-                                    })
+                                        modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer).constrainAs(rating) {
+                                            start.linkTo(coverImage.start)
+                                            bottom.linkTo(coverImage.bottom)
+                                        })
 //                                TODO: need to use state
                                 if (feed.lastUpdateFailed) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error",
                                     modifier = Modifier.background(Color.Gray).constrainAs(error) {
@@ -749,7 +899,11 @@ class SubscriptionsFragment : Fragment() {
                                     Logd(TAG, "icon clicked!")
                                     if (!feed.isBuilding) {
                                         if (vm.selectMode) toggleSelected()
-                                        else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+//                                    else (vm.context as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed)
+                                        else {
+                                            feedOnDisplay = feed
+                                            mainNavController.navigate(Screens.FeedInfo.name)
+                                        }
                                     }
                                 })
                             )
@@ -758,7 +912,11 @@ class SubscriptionsFragment : Fragment() {
                                 Logd(TAG, "clicked: ${feed.title}")
                                 if (!feed.isBuilding) {
                                     if (vm.selectMode) toggleSelected()
-                                    else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                    else {
+                                        feedOnDisplay = feed
+                                        mainNavController.navigate(Screens.FeedEpisodes.name)
+//                                    (vm.context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                    }
                                 }
                             }, onLongClick = {
                                 if (!feed.isBuilding) {
@@ -838,176 +996,12 @@ class SubscriptionsFragment : Fragment() {
         }
     }
 
-    private fun exportOPML(uri: Uri?, selectedItems: List<Feed>) {
-        try {
-            runBlocking {
-                Logd(TAG, "selectedFeeds: ${selectedItems.size}")
-                if (uri == null) ExportWorker(OpmlWriter(), requireContext()).exportFile(selectedItems)
-                else {
-                    val worker = DocumentFileExportWorker(OpmlWriter(), requireContext(), uri)
-                    worker.exportFile(selectedItems)
-                }
-            }
-        } catch (e: Exception) { Log.e(TAG, "exportOPML error: ${e.message}") }
-    }
-
-    private fun sortArrays2CodeSet() {
-        vm.playStateCodeSet.clear()
-        for (i in vm.playStateSort.indices) {
-            if (vm.playStateSort[i].value) vm.playStateCodeSet.add(PlayState.entries[i].code.toString())
-        }
-        vm.ratingCodeSet.clear()
-        for (i in vm.ratingSort.indices) {
-            if (vm.ratingSort[i].value) vm.ratingCodeSet.add(Rating.entries[i].code.toString())
-        }
-    }
-    private fun sortArraysFromCodeSet() {
-        for (i in vm.playStateSort.indices) vm.playStateSort[i].value = false
-        for (c in vm.playStateCodeSet) vm.playStateSort[PlayState.fromCode(c.toInt()).ordinal].value = true
-        for (i in vm.ratingSort.indices) vm.ratingSort[i].value = false
-        for (c in vm.ratingCodeSet) vm.ratingSort[Rating.fromCode(c.toInt()).ordinal].value = true
-    }
-
-    private fun saveSortingPrefs() {
-        prefs.edit().putInt("sortIndex", vm.sortIndex).apply()
-        prefs.edit().putBoolean("titleAscending", vm.titleAscending).apply()
-        prefs.edit().putBoolean("dateAscending", vm.dateAscending).apply()
-        prefs.edit().putBoolean("countAscending", vm.countAscending).apply()
-        prefs.edit().putInt("dateSortIndex", vm.dateSortIndex).apply()
-        prefs.edit().putInt("downlaodedSortIndex", vm.downlaodedSortIndex).apply()
-        prefs.edit().putInt("commentedSortIndex", vm.commentedSortIndex).apply()
-        sortArrays2CodeSet()
-        prefs.edit().putStringSet("playStateCodeSet", vm.playStateCodeSet).apply()
-        prefs.edit().putStringSet("ratingCodeSet", vm.ratingCodeSet).apply()
-    }
-
-    private fun getSortingPrefs() {
-        vm.sortIndex = prefs.getInt("sortIndex", 0)
-        vm.titleAscending = prefs.getBoolean("titleAscending", true)
-        vm.dateAscending = prefs.getBoolean("dateAscending", true)
-        vm.countAscending = prefs.getBoolean("countAscending", true)
-        vm.dateSortIndex = prefs.getInt("dateSortIndex", 0)
-        vm.downlaodedSortIndex = prefs.getInt("downlaodedSortIndex", -1)
-        vm.commentedSortIndex = prefs.getInt("commentedSortIndex", -1)
-        vm.playStateCodeSet.clear()
-        vm.playStateCodeSet.addAll(prefs.getStringSet("playStateCodeSet", setOf())!!)
-        vm.ratingCodeSet.clear()
-        vm.ratingCodeSet.addAll(prefs.getStringSet("ratingCodeSet", setOf())!!)
-        sortArraysFromCodeSet()
-    }
-
-    private fun fetchAndSort(build: Boolean = true): List<Feed> {
-        fun getFeedList(): MutableList<Feed> {
-            var fQueryStr = FeedFilter(feedsFilter).queryString()
-            val tagsQueryStr = queryStringOfTags()
-            if (tagsQueryStr.isNotEmpty())  fQueryStr += " AND $tagsQueryStr"
-            val queuesQueryStr = queryStringOfQueues()
-            if (queuesQueryStr.isNotEmpty())  fQueryStr += " AND $queuesQueryStr"
-            Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
-            return getFeedList(fQueryStr).toMutableList()
-        }
-
-        val feedList_ = getFeedList()
-        for (f in feedList_) f.sortInfo = ""
-        val comparator = when (vm.sortIndex) {
-            0 -> {
-                val dir = if (vm.titleAscending) 1 else -1
-                Comparator { lhs: Feed, rhs: Feed ->
-                    val t1 = lhs.title
-                    val t2 = rhs.title
-                    when {
-                        t1 == null -> dir
-                        t2 == null -> -dir
-                        else -> t1.compareTo(t2, ignoreCase = true) * dir
-                    }
-                }
-            }
-            1 -> {
-                val dir = if (vm.dateAscending) 1 else -1
-                when (vm.dateSortIndex) {
-                    0 -> {  // date publish
-                        var playStateQueries = ""
-                        for (i in vm.playStateSort.indices) {
-                            if (vm.playStateSort[i].value) {
-                                if (playStateQueries.isNotEmpty()) playStateQueries += " OR "
-                                playStateQueries += " playState == ${PlayState.entries[i].code} "
-                            }
-                        }
-                        var queryString = "feedId == $0"
-                        if (playStateQueries.isNotEmpty()) queryString += " AND ($playStateQueries)"
-                        queryString += " SORT(pubDate DESC)"
-                        Logd(TAG, "queryString: $queryString")
-                        val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                        for (f in feedList_) {
-                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
-                            counterMap[f.id] = d
-                            f.sortInfo = formatDateTimeFlex(Date(d))
-                        }
-                        comparator(counterMap, dir)
-                    }
-                    1 -> {  // date downloaded
-                        val queryString = "feedId == $0 SORT(downloadTime DESC)"
-                        val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                        for (f in feedList_) {
-                            val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.downloadTime ?: 0L
-                            counterMap[f.id] = d
-                            f.sortInfo = "Downloaded: " + formatDateTimeFlex(Date(d))
-                        }
-                        Logd(TAG, "queryString: $queryString")
-                        comparator(counterMap, dir)
-                    }
-                    else -> comparator(mutableMapOf(), 0)
-                }
-            }
-            else -> {   // count
-                val dir = if (vm.countAscending) 1 else -1
-                var playStateQueries = ""
-                for (i in vm.playStateSort.indices) {
-                    if (vm.playStateSort[i].value) {
-                        if (playStateQueries.isNotEmpty()) playStateQueries += " OR "
-                        playStateQueries += " playState == ${PlayState.entries[i].code} "
-                    }
-                }
-                var ratingQueries = ""
-                for (i in vm.ratingSort.indices) {
-                    if (vm.ratingSort[i].value) {
-                        if (ratingQueries.isNotEmpty()) ratingQueries += " OR "
-                        ratingQueries += " rating == ${Rating.entries[i].code} "
-                    }
-                }
-                val downloadedQuery = if (vm.downlaodedSortIndex == 0) " downloaded == true " else if (vm.downlaodedSortIndex == 1) " downloaded == false " else ""
-                val commentedQuery = if (vm.commentedSortIndex == 0) " comment != '' " else if (vm.commentedSortIndex == 1) " comment == '' " else ""
-
-                var queryString = "feedId == $0"
-                if (playStateQueries.isNotEmpty()) queryString += " AND ($playStateQueries)"
-                if (ratingQueries.isNotEmpty()) queryString += " AND ($ratingQueries)"
-                if (downloadedQuery.isNotEmpty()) queryString += " AND ($downloadedQuery)"
-                if (commentedQuery.isNotEmpty()) queryString += " AND ($commentedQuery)"
-                Logd(TAG, "queryString: $queryString")
-                val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feedList_) {
-                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
-                    counterMap[f.id] = c
-                    f.sortInfo = "$c counts"
-                }
-                comparator(counterMap, dir)
-            }
-        }
-        vm.feedSorted++
-        if (!build) return feedList_.sortedWith(comparator)
-
-        saveSortingPrefs()
-        vm.feedListFiltered.clear()
-        vm.feedListFiltered.addAll(feedList_.sortedWith(comparator))
-        return listOf()
-    }
-
     @Composable
     fun SortDialog(onDismissRequest: () -> Unit) {
         var sortingJob = remember<Job?> { null }
         fun fetchAndSortRoutine() {
             sortingJob?.cancel()
-            sortingJob = runOnIOScope { fetchAndSort() }.apply { invokeOnCompletion { sortingJob = null } }
+            sortingJob = runOnIOScope { vm.fetchAndSort() }.apply { invokeOnCompletion { sortingJob = null } }
         }
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
@@ -1259,9 +1253,9 @@ class SubscriptionsFragment : Fragment() {
         val filterValues = remember { filter?.properties ?: mutableSetOf() }
 
         fun onFilterChanged(newFilterValues: Set<String>) {
-            feedsFilter = StringUtils.join(newFilterValues, ",")
-            Logd(TAG, "onFilterChanged: $feedsFilter")
-            loadSubscriptions()
+            vm.feedsFilter = StringUtils.join(newFilterValues, ",")
+            Logd(TAG, "onFilterChanged: ${vm.feedsFilter}")
+            vm.loadSubscriptions()
         }
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false), onDismissRequest = { onDismissRequest() }) {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
@@ -1409,20 +1403,41 @@ class SubscriptionsFragment : Fragment() {
         }
     }
 
-    companion object {
-        val TAG = SubscriptionsFragment::class.simpleName ?: "Anonymous"
-
-        private const val KEY_UP_ARROW = "up_arrow"
-        private const val ARGUMENT_FOLDER = "folder"
-
-        private var prevFeedUpdatingEvent: FlowEvent.FeedUpdatingEvent? = null
-
-        fun newInstance(folderTitle: String?): SubscriptionsFragment {
-            val fragment = SubscriptionsFragment()
-            val args = Bundle()
-            args.putString(ARGUMENT_FOLDER, folderTitle)
-            fragment.arguments = args
-            return fragment
+    if (vm.showFilterDialog) FilterDialog(FeedFilter(vm.feedsFilter)) { vm.showFilterDialog = false }
+    if (vm.showSortDialog) SortDialog { vm.showSortDialog = false }
+    if (vm.showNewSynthetic) RenameOrCreateSyntheticFeed { vm.showNewSynthetic = false }
+    Scaffold(topBar = { MyTopAppBar(displayUpArrow) }) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            InforBar()
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 20.dp, end = 20.dp)) {
+                Spinner(items = vm.spinnerTexts, selectedIndex = vm.queueFilterIndex) { index: Int ->
+                    vm.queueFilterIndex = index
+                    vm.loadSubscriptions()
+                }
+                Spacer(Modifier.weight(1f))
+                Spinner(items = vm.tags, selectedIndex = vm.tagFilterIndex) { index: Int ->
+                    vm.tagFilterIndex = index
+                    vm.loadSubscriptions()
+                }
+            }
+            if (vm.noSubscription) Text(stringResource(R.string.no_subscriptions_label))
+            else LazyList()
         }
     }
 }
+
+private const val TAG = "SubscriptionsScreen"
+
+private const val KEY_UP_ARROW = "up_arrow"
+private const val ARGUMENT_FOLDER = "folder"
+
+private var prevFeedUpdatingEvent: FlowEvent.FeedUpdatingEvent? = null
+
+//fun newInstance(folderTitle: String?): SubscriptionsFragment {
+//    val fragment = SubscriptionsFragment()
+//    val args = Bundle()
+//    args.putString(ARGUMENT_FOLDER, folderTitle)
+//    fragment.arguments = args
+//    return fragment
+//}
+

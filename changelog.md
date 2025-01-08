@@ -1,3 +1,12 @@
+# 7.3.0
+
+* last major step migrating to Jetpack Compose
+	* no more fragments
+	* navigation is in Compose
+	* drawer and bottom sheet are in Compose
+	* fully Compose based with minimal View components
+* made monitoring of feeds less aggressive, possibly improving efficiency
+
 # 7.2.3
 
 * fixed crash when opening FeedInfo with feed.link == null
@@ -38,7 +47,8 @@
 	* export and reconcile should also work with customized folder
 * in auto-download policy ONLY_NEW, added option "Replace", 
 	* when checked, new episodes will be downloaded and older downloaded episodes deleted
-* fixed OnlineFeed not resolving url caused by redirect routine
+* fixed OnlineFeed not resolving url caused by redirect routine        if (bottomSheetScaffoldState == null) bottomSheetScaffoldState = scaffoldState
+
 * in Queues, showFeeds icon on the title bar toggles with view
 * made some button text translatable
 * removed GPODDER_NET sync and search routines

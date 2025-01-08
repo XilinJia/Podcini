@@ -23,7 +23,7 @@ import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner

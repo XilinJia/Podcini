@@ -78,21 +78,6 @@ object InTheatre {
             }
             loadPlayableFromPreferences()
         }
-//        val curState_ = realm.query(CurrentState::class).first()
-//        val job = CoroutineScope(Dispatchers.Default).launch {
-//            val curStateFlow = curState_.asFlow()
-//            curStateFlow.collect { changes: SingleQueryChange<CurrentState> ->
-//                when (changes) {
-//                    is UpdatedObject -> {
-//                        if (changes.isFieldChanged("curPlayerStatus")) {
-//                            Logd(TAG, "curPlayerStatus ${changes.obj.curPlayerStatus}")
-////                            if (curEpisode != null) EventFlow.postEvent(FlowEvent.PlayEvent(curEpisode!!))
-//                        }
-//                    }
-//                    else -> {}
-//                }
-//            }
-//        }
     }
 
     fun writeNoMediaPlaying() {

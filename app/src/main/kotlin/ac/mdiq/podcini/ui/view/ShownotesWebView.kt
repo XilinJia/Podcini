@@ -86,8 +86,8 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
             HitTestResult.EMAIL_TYPE -> {
                 Logd(TAG, "E-Mail of webview was long-pressed. Extra: " + r.extra)
                 ContextCompat.getSystemService(context, ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("Podcini", r.extra))
-                if (Build.VERSION.SDK_INT <= 32 && this.context is MainActivity)
-                    (this.context as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
+//                if (Build.VERSION.SDK_INT <= 32 && this.context is MainActivity)
+//                    (this.context as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
                 return true
             }
             else -> {

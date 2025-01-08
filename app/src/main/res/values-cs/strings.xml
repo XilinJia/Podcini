@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">Aktualizovat odběry</string>
     <string name="feeds">Zdroje</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">Podcasty</string>
     <string name="statistics_label">Statistiky</string>
     <string name="add_feed_label">Přidat podcast</string>

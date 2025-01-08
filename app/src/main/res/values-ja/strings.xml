@@ -3,7 +3,6 @@
     <!-- Activity and fragment titles -->
     <string name="feed_update_receiver_name">サブスクリプションを更新</string>
     <string name="feeds">フィード</string>
-    <string name="pafeeds">PAFeeds</string>
     <string name="feeds_label">ポッドキャスト</string>
     <string name="statistics_label">統計情報</string>
     <string name="add_feed_label">ポッドキャストを追加</string>

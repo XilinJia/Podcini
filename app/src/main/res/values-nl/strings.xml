@@ -652,6 +652,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Automatisch de slaap timer activeren bij afspelen tussen %s en %s</string>
     <string name="auto_enable_change_times">Tijdsbereik wijzigen</string>
     <string name="sleep_timer_enabled_label">Slaaptimer ingeschakeld</string>
+    <string name="auto_enable_sum">Voer het \"Van\" uur in en het \"Aan\" uur in de twee vakjes en druk vervolgens op de instelling knop. Uren zijn van 0 tot 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synchroniseer met apparaat op Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Je kunt twee apparaten op hetzelfde wifi-netwerk verbinden om je afleveringen te synchroniseren</string>

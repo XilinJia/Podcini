@@ -668,6 +668,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Автоматически запускать таймер сна при пуске воспроизведения в интервале с%s до %s</string>
     <string name="auto_enable_change_times">Изменить диапазон времени</string>
     <string name="sleep_timer_enabled_label">Таймер сна включен</string>
+    <string name="auto_enable_sum">Введите \"От\" час и \"До\" в двух окнах, затем нажмите кнопку настройки. Часы от 0 до 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Синхронизация с устройством при WiFi</string>
     <string name="wifi_sync_summary_unchoosen">Вы можете подключить два устройства в одной сети Wi-Fi для синхронизации состояний воспроизведения эпизодов</string>

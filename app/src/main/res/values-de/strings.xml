@@ -655,6 +655,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Schlummerfunktion automatisch aktivieren, wenn zwischen %s und %s auf Play gedrückt wird</string>
     <string name="auto_enable_change_times">Zeitbereich ändern</string>
     <string name="sleep_timer_enabled_label">Schlummerfunktion aktiviert</string>
+    <string name="auto_enable_sum">Geben Sie die \"Von\" Stunde und die \"An\" Stunde in den beiden Feldern ein und drücken Sie dann die \"Einstellung\"-Taste.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Mit Gerät auf Wifi synchronisieren</string>
     <string name="wifi_sync_summary_unchoosen">Sie können zwei Geräte im gleichen Wifi-Netzwerk verbinden, um Ihre Episoden Wiedergabezustand zu synchronisieren</string>

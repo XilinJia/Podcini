@@ -652,6 +652,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Aktivér automatisk slukkefunktion ved tryk på afspil mellem %s og %s</string>
     <string name="auto_enable_change_times">Skift tidsinterval</string>
     <string name="sleep_timer_enabled_label">Søvntimer slået til</string>
+    <string name="auto_enable_sum">Indtast \"Fra\" time og \"Til\" time i de to kasser, og tryk derefter på indstillingsknappen. Timer er fra 0 til 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synkronisér med enhed på Wi-Fi</string>
     <string name="wifi_sync_summary_unchoosen">Du kan tilslutte to enheder på det samme wifi netværk for at synkronisere dine episoder spille stater</string>

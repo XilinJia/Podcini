@@ -655,6 +655,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Activer automatiquement lorsque la lecture commence entre %s et %s</string>
     <string name="auto_enable_change_times">Changer la plage horaire</string>
     <string name="sleep_timer_enabled_label">Arrêt automatique activé</string>
+    <string name="auto_enable_sum">Entrez l\'heure \"De\" et l\'heure \"À\" dans les deux boîtes, puis appuyez sur le bouton de réglage. Les heures sont de 0 à 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synchroniser avec l\'appareil en Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Vous pouvez connecter deux appareils sur le même réseau wifi pour synchroniser vos épisodes</string>

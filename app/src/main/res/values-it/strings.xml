@@ -655,6 +655,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Attiva automaticamente il timer di spegnimento premendo riproduci tra le %s e le %s</string>
     <string name="auto_enable_change_times">Modifica fascia oraria</string>
     <string name="sleep_timer_enabled_label">Timer spegnimento abilitato</string>
+    <string name="auto_enable_sum">Inserisci l\'ora \"Da\" e l\'ora \"A\" nelle due caselle, quindi premi il pulsante di impostazione. Le ore sono da 0 a 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sincronizza con il dispositivo su Wifi</string>
     <string name="wifi_sync_summary_unchoosen">È possibile collegare due dispositivi sulla stessa rete wifi per sincronizzare gli stati di riproduzione degli episodi</string>

@@ -646,6 +646,7 @@
     <string name="auto_enable_label_with_times" formatted="false">%s と %s の間の再生を押すと自動的にスリープタイマーを有効にします</string>
     <string name="auto_enable_change_times">時間範囲の変更</string>
     <string name="sleep_timer_enabled_label">スリープタイマーを有効にしました</string>
+    <string name="auto_enable_sum">2つのボックスに「From」時間と「To」時間を入力し、設定ボタンを押します。時間は0から23です。</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Wi-Fiでデバイスと同期</string>
     <string name="wifi_sync_summary_unchoosen">同じWi-Fiネットワークに2つのデバイスを接続してエピソードの再生状態を同期することができます</string>

@@ -670,6 +670,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Automatycznie aktywuj czasomierz uśpienia po naciśnięciu odtwarzania pomiędzy %s i %s</string>
     <string name="auto_enable_change_times">Zmień zakres czasowy</string>
     <string name="sleep_timer_enabled_label">Wyłącznik czasowy włączony</string>
+    <string name="auto_enable_sum">Wprowadź godzinę \"Od\" i godzinę \"Do\" w dwóch polach, a następnie naciśnij przycisk ustawienia. Godziny są od 0 do 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synchronizuj z urządzeniem na Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Możesz połączyć dwa urządzenia w tej samej sieci wifi, aby zsynchronizować twoje odcinki odtwarzania</string>

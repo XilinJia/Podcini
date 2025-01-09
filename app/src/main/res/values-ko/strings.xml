@@ -644,6 +644,7 @@
     <string name="auto_enable_label_with_times" formatted="false">%s와 %s 사이에 재생을 누를 때 자동으로 취침 타이머를 활성화</string>
     <string name="auto_enable_change_times">Change time range</string>
     <string name="sleep_timer_enabled_label">취침 타이머 사용함</string>
+    <string name="auto_enable_sum">Enter the \"From\" hour and the \"To\" hour in the two boxes, then press the setting button. Hours are from 0 to 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sync with device on Wifi</string>
     <string name="wifi_sync_summary_unchoosen">You can connect two devices on the same wifi network to synchronize your episodes play states</string>

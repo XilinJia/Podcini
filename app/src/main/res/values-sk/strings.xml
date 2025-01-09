@@ -668,6 +668,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Po stlačení tlačidla prehrávania medzi %s a %s automaticky aktivovať časovač vypnutia</string>
     <string name="auto_enable_change_times">Zmeniť časový rozsah</string>
     <string name="sleep_timer_enabled_label">Časovač vypnutia povolený</string>
+    <string name="auto_enable_sum">Enter the \"From\" hour and the \"To\" hour in the two boxes, then press the setting button. Hours are from 0 to 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sync with device on Wifi</string>
     <string name="wifi_sync_summary_unchoosen">You can connect two devices on the same wifi network to synchronize your episodes play states</string>

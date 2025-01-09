@@ -686,6 +686,7 @@
     <string name="auto_enable_label_with_times" formatted="false">قم بتشغيل مؤقت النوم آليا عند تشغيل الحلقة بين %s و %s</string>
     <string name="auto_enable_change_times">تغيير النطاق الزمني</string>
     <string name="sleep_timer_enabled_label">مؤقت النوم مفعل</string>
+    <string name="auto_enable_sum">أدخل ساعة \"من\" و ساعة \"إلى\" في المربعين، ثم اضغط على زر الإعداد. الساعات من 0 إلى 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">مزامنة مع الجهاز على Wi-Fi</string>
     <string name="wifi_sync_summary_unchoosen">يمكنك توصيل جهازين على نفس شبكة الواي فاي لمزامنة الحلقات الخاصة بك حالات التشغيل</string>

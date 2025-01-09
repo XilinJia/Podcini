@@ -668,6 +668,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Автоматично активувати таймер сну при натисканні на кнопку відтворення в проміжок часу між %s та %s</string>
     <string name="auto_enable_change_times">Змінити проміжок часу</string>
     <string name="sleep_timer_enabled_label">Таймер сну увімкнено</string>
+    <string name="auto_enable_sum">Введіть годину \"Від\" та \"Кому\" годину в обох полях, потім натисніть кнопку опції. Години - від 0 до 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Синхронізація з пристроєм на Wi-Fi</string>
     <string name="wifi_sync_summary_unchoosen">Ви можете підключити два пристрої на одній мережі Wi-Fi для синхронізації ваших епізодів зі станом відтворення</string>

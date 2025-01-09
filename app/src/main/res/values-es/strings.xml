@@ -654,6 +654,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Activar el temporizador de sueño automáticamente al pulsar el botón de play  entre %s y %s</string>
     <string name="auto_enable_change_times">Cambiar rango de tiempo</string>
     <string name="sleep_timer_enabled_label">Temporizador habilitado</string>
+    <string name="auto_enable_sum">Introduzca la hora \"De\" y la hora \"A\" en las dos casillas, luego pulse el botón de ajuste. Horas son de 0 a 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sincronizar con dispositivo en Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Puedes conectar dos dispositivos en la misma red wifi para sincronizar tus episodios reproduciendo estados</string>

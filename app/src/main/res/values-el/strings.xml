@@ -652,6 +652,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Αυτόματη ενεργοποίηση του χρονοδιακόπτη ύπνου όταν πατήσετε το παιχνίδι μεταξύ %s και %s</string>
     <string name="auto_enable_change_times">Αλλαγή χρονικού εύρους</string>
     <string name="sleep_timer_enabled_label">Ενεργοποίηση χρονοδιακόπτη ύπνου</string>
+    <string name="auto_enable_sum">Εισάγετε την ώρα \"Από\" και την ώρα \"Προς\" στα δύο κουτιά και μετά πατήστε το κουμπί ρύθμισης. Οι ώρες είναι από 0 έως 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Συγχρονισμός με συσκευή στο Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Μπορείτε να συνδέσετε δύο συσκευές στο ίδιο δίκτυο wifi για να συγχρονίσετε τις καταστάσεις παιχνιδιού επεισοδίων</string>

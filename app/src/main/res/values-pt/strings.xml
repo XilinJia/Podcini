@@ -654,6 +654,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Ativa automaticamente o temporizador se premir Reproduzir entre %s e %s</string>
     <string name="auto_enable_change_times">Alterar intervalo</string>
     <string name="sleep_timer_enabled_label">Temporizador ativado</string>
+    <string name="auto_enable_sum">Digite a hora \"De\" e a hora \"Para\" nas duas caixas e, em seguida, pressione o botão de configuração. Horas são de 0 a 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sincronizar com o dispositivo no Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Você pode conectar dois dispositivos na mesma rede Wi-Fi para sincronizar seus episódios de jogo estados</string>

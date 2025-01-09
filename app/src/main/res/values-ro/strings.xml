@@ -660,6 +660,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Activează automat cronometrul de somn în momenul redării între %s și %s</string>
     <string name="auto_enable_change_times">Schimbă intervalul de timp</string>
     <string name="sleep_timer_enabled_label">Cronometru pentru somn pornit</string>
+    <string name="auto_enable_sum">Introduceți ora \"De la\" și \"La\" în cele două cutii, apoi apăsați butonul de setare. Orele sunt de la 0 la 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Sincronizare cu dispozitivul pe WiFi</string>
     <string name="wifi_sync_summary_unchoosen">Puteți conecta două dispozitive pe aceeași rețea wifi pentru a sincroniza stările de joc</string>

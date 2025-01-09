@@ -652,6 +652,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Aktivoi nukkumisajastin automaattisesti painettaessa toistoa välillä %s ja %s</string>
     <string name="auto_enable_change_times">Muuta aikaväliä</string>
     <string name="sleep_timer_enabled_label">Uniajastin asetettu</string>
+    <string name="auto_enable_sum">Anna \"Alkaen\" tunti ja \"Loppu\" tunti kahdessa laatikossa, paina sitten asetusta nappia. Tunnit ovat 0-23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synkronoi laitteen kanssa WiFissä</string>
     <string name="wifi_sync_summary_unchoosen">Voit yhdistää kaksi samaa wifi-verkkoa olevaa laitetta synkronoidaksesi jaksot toisista tiloistasi</string>

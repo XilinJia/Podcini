@@ -668,6 +668,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Automatická aktivace časovače spánku při stisknutí tlačítka přehrávání mezi %s a %s</string>
     <string name="auto_enable_change_times">Změna časového rozmezí</string>
     <string name="sleep_timer_enabled_label">Časovač vypnutí povolen</string>
+    <string name="auto_enable_sum">Vložte do obou políček \"Od\" hodinu a \"do\" hodinu, pak stiskněte tlačítko nastavení. Hodiny jsou od 0 do 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synchronizovat se zařízením na Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Pro synchronizaci stavů přehrávání epizod můžete připojit dvě zařízení na stejné wifi síti</string>

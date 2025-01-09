@@ -652,6 +652,7 @@
     <string name="auto_enable_label_with_times" formatted="false">Aktivera automatiskt insomningstimern när du trycker på spela mellan %s och %s</string>
     <string name="auto_enable_change_times">Ändra tidsspann</string>
     <string name="sleep_timer_enabled_label">Insomningstimer aktiverad</string>
+    <string name="auto_enable_sum">Ange \"Från\" timme och \"Till\" timme i de två rutorna, tryck sedan på inställningsknappen. Timmar är från 0 till 23.</string>
     <!-- Synchronisation -->
     <string name="wifi_sync">Synkronisera med enheten på Wifi</string>
     <string name="wifi_sync_summary_unchoosen">Du kan ansluta två enheter på samma wifi-nätverk för att synkronisera dina avsnitt spela stater</string>

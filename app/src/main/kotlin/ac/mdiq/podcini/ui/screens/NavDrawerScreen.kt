@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.closeDrawer
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
 import ac.mdiq.podcini.ui.activity.MainActivity.Screens
@@ -132,7 +133,7 @@ fun NavDrawerScreen() {
                             feedOnDisplay = f
                             mainNavController.navigate(Screens.FeedEpisodes.name) { popUpTo(Screens.FeedEpisodes.name) { inclusive = true } }
                             closeDrawer()
-//                    (context as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                            MainActivity.collapseBottomSheet()
                         }) {
                             AsyncImage(model = f.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                                 modifier = Modifier.width(40.dp).height(40.dp))

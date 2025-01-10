@@ -15,9 +15,11 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.PlayState
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.content.Context
 import android.content.SharedPreferences
@@ -131,7 +133,7 @@ class SwipeActions(private val context: Context, private val tag: String) : Defa
             return R.drawable.ic_playlist_play
         }
         override fun getActionColor(): Int {
-            return androidx.appcompat.R.attr.colorAccent
+            return android.R.attr.colorAccent
         }
         override fun getTitle(): String {
             return getAppContext().getString(R.string.add_to_queue_label)
@@ -152,7 +154,7 @@ class SwipeActions(private val context: Context, private val tag: String) : Defa
             return R.drawable.baseline_category_24
         }
         override fun getActionColor(): Int {
-            return androidx.appcompat.R.attr.colorAccent
+            return android.R.attr.colorAccent
         }
         override fun getTitle(): String {
             return getAppContext().getString(R.string.combo_action)
@@ -342,7 +344,7 @@ class SwipeActions(private val context: Context, private val tag: String) : Defa
             return R.drawable.ic_playlist_remove
         }
         override fun getActionColor(): Int {
-            return androidx.appcompat.R.attr.colorAccent
+            return android.R.attr.colorAccent
         }
         override fun getTitle(): String {
             return getAppContext().getString(R.string.remove_from_queue_label)
@@ -530,21 +532,22 @@ class SwipeActions(private val context: Context, private val tag: String) : Defa
             }
 
             if (!showPickerDialog) Dialog(onDismissRequest = { onDismissRequest() }) {
+                Logd("SwipeActions", "SwipeActions tag: ${sa.tag}")
                 val forFragment = remember(sa.tag) {
-//                    if (sa.tag != QueuesFragment.TAG) keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_QUEUE.name }
+                    if (sa.tag != Screens.Queues.name) keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_QUEUE.name }
                     when (sa.tag) {
-//                    EpisodesFragment.TAG -> context.getString(R.string.episodes_label)
-//                    OnlineEpisodesFragment.TAG -> context.getString(R.string.online_episodes_label)
-//                    SearchFragment.TAG -> context.getString(R.string.search_label)
-//                    FeedEpisodesFragment.TAG -> {
-//                        keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name }
-//                        context.getString(R.string.subscription)
-//                    }
-//                    QueuesFragment.TAG -> {
-//                        keys = keys.filter { a: SwipeAction -> (a.getId() != ActionTypes.ADD_TO_QUEUE.name && a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name) }
-//                        context.getString(R.string.queue_label)
-//                    }
-                    else -> { "" }
+                        Screens.Episodes.name -> context.getString(R.string.episodes_label)
+                        Screens.OnlineEpisodes.name -> context.getString(R.string.online_episodes_label)
+                        Screens.Search.name -> context.getString(R.string.search_label)
+                        Screens.FeedEpisodes.name -> {
+                            keys = keys.filter { a: SwipeAction -> a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name }
+                            context.getString(R.string.subscription)
+                        }
+                        Screens.Queues.name -> {
+                            keys = keys.filter { a: SwipeAction -> (a.getId() != ActionTypes.ADD_TO_QUEUE.name && a.getId() != ActionTypes.REMOVE_FROM_HISTORY.name) }
+                            context.getString(R.string.queue_label)
+                        }
+                        else -> { "" }
                 } }
                 Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {

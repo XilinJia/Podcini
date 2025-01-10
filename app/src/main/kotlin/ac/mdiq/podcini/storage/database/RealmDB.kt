@@ -174,12 +174,21 @@ object RealmDB {
                     }
                 }
                 if (oldRealm.schemaVersion() < 39) {
-                    Logd(TAG, "migrating DB from below 37")
+                    Logd(TAG, "migrating DB from below 39")
                     mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
                         newObject?.run {
                             val fileUrl = oldObject.getNullableValue("fileUrl", String::class)
                             Logd(TAG, "fileUrl: $fileUrl")
-                            if (fileUrl != null) set("fileUrl", Uri.fromFile(File(fileUrl)).toString())
+                            if (!fileUrl.isNullOrBlank()) {
+                                try {
+                                    val f = File(fileUrl)
+                                    val uri = Uri.fromFile(f)
+                                    set("fileUrl", uri.toString())
+                                } catch (e: Throwable) {
+                                    Log.e(TAG, " can't create uri from $fileUrl")
+                                    set("fileUrl", "")
+                                }
+                            }
                         }
                     }
                 }

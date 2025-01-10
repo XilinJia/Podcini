@@ -314,13 +314,10 @@ class SearchVM(val context: Context, val lcScope: CoroutineScope) {
         if (query.matches("http[s]?://.*".toRegex())) {
             setOnlineFeedUrl(query)
             mainNavController.navigate(Screens.OnlineFeed.name)
-//            val fragment: Fragment = OnlineFeedFragment.newInstance(query)
-//            (context as MainActivity).loadChildFragment(fragment)
             return
         }
         setOnlineSearchTerms(CombinedSearcher::class.java, query)
         mainNavController.navigate(Screens.SearchResults.name)
-//        (context as MainActivity).loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
     }
 }
 
@@ -431,7 +428,6 @@ fun SearchScreen() {
                         error = painterResource(R.mipmap.ic_launcher),
                         modifier = Modifier.width(80.dp).height(80.dp).clickable(onClick = {
                             Logd(TAG, "icon clicked!")
-//                        if (!feed.isBuilding) (context as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
                             if (!feed.isBuilding) {
                                 feedOnDisplay = feed
                                 mainNavController.navigate(Screens.FeedInfo.name)
@@ -444,7 +440,6 @@ fun SearchScreen() {
                         if (!feed.isBuilding) {
                             feedOnDisplay = feed
                             mainNavController.navigate(Screens.FeedEpisodes.name)
-//                        (context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
                         }
                     })) {
                         Row {
@@ -491,7 +486,6 @@ fun SearchScreen() {
                             if (feed.feedUrl.isNotBlank()) {
                                 setOnlineFeedUrl(feed.feedUrl)
                                 mainNavController.navigate(Screens.OnlineFeed.name)
-//                            (context as MainActivity).loadChildFragment(OnlineFeedFragment.newInstance(feed.feedUrl))
                             }
                         })
                     )
@@ -501,7 +495,6 @@ fun SearchScreen() {
                         if (feed.feedUrl.isNotBlank()) {
                             setOnlineFeedUrl(feed.feedUrl)
                             mainNavController.navigate(Screens.OnlineFeed.name)
-//                        (context as MainActivity).loadChildFragment(OnlineFeedFragment.newInstance(feed.feedUrl))
                         }
                     })) {
                         Text(feed.name, color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,

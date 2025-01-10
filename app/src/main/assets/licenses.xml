@@ -30,12 +30,12 @@
         website="https://github.com/realm/realm-kotlin"
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
-        name="Balloon"
-        author="Jaewoong Eum"
-        website="https://github.com/skydoves/Balloon"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
+<!--    <library-->
+<!--        name="Balloon"-->
+<!--        author="Jaewoong Eum"-->
+<!--        website="https://github.com/skydoves/Balloon"-->
+<!--        license="Apache 2.0"-->
+<!--        licenseText="LICENSE_APACHE-2.0.txt" />-->
     <library
         name="Conscrypt"
         author="Google"

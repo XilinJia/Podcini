@@ -499,7 +499,6 @@ fun SubscriptionsScreen() {
                 IconButton(onClick = {
                     setSearchTerms("")
                     mainNavController.navigate(Screens.Search.name)
-//                (vm.context as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
                 IconButton(onClick = { vm.showFilterDialog = true
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_filter), contentDescription = "filter") }
@@ -899,7 +898,6 @@ fun SubscriptionsScreen() {
                                     Logd(TAG, "icon clicked!")
                                     if (!feed.isBuilding) {
                                         if (vm.selectMode) toggleSelected()
-//                                    else (vm.context as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed)
                                         else {
                                             feedOnDisplay = feed
                                             mainNavController.navigate(Screens.FeedInfo.name)
@@ -915,7 +913,6 @@ fun SubscriptionsScreen() {
                                     else {
                                         feedOnDisplay = feed
                                         mainNavController.navigate(Screens.FeedEpisodes.name)
-//                                    (vm.context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
                                     }
                                 }
                             }, onLongClick = {

@@ -208,14 +208,9 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult, log: Subsc
                     val feed_ = getFeed(feed.feedId) ?: return@combinedClickable
                     feedOnDisplay = feed_
                     mainNavController.navigate(Screens.FeedEpisodes.name)
-//                    val fragment = FeedEpisodesFragment.newInstance(feed.feedId)
-//                    activity.loadChildFragment(fragment)
                 } else {
                     setOnlineFeedUrl(feed.feedUrl, source = feed.source)
                     mainNavController.navigate(Screens.OnlineFeed.name)
-//                    val fragment = OnlineFeedFragment.newInstance(feed.feedUrl)
-//                    fragment.feedSource = feed.source
-//                    activity.loadChildFragment(fragment)
                 }
             }
         }, onLongClick = { showSubscribeDialog.value = true })) {

@@ -8,6 +8,7 @@ import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDial
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
+import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.onlineEpisodes
 import ac.mdiq.podcini.util.Logd
@@ -143,7 +144,7 @@ fun OnlineEpisodesScreen() {
 //    vm.episodes.addAll(episodeList_)
 //}
 
-private const val TAG = "OnlineEpisodesFragment"
+private val TAG = Screens.OnlineEpisodes.name
 
 private const val KEY_UP_ARROW = "up_arrow"
 private const val PREF_NAME: String = "RemoteEpisodesFragment"

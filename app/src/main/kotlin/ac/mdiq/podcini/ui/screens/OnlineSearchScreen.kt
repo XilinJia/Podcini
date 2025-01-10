@@ -171,8 +171,6 @@ class OnlineSearchVM(val context: Context, val lcScope: CoroutineScope) {
     internal fun addUrl(url: String) {
         setOnlineFeedUrl(url)
         mainNavController.navigate(Screens.OnlineFeed.name)
-//        val fragment: Fragment = OnlineFeedFragment.newInstance(url)
-//        mainAct?.loadChildFragment(fragment)
     }
 }
 
@@ -287,7 +285,6 @@ fun OnlineSearchScreen() {
             else {
                 setOnlineSearchTerms(CombinedSearcher::class.java, queryText)
                 mainNavController.navigate(Screens.SearchResults.name)
-//            vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, queryText))
             }
         } },
             navigationIcon = if (vm.displayUpArrow) {
@@ -308,10 +305,7 @@ fun OnlineSearchScreen() {
             Row(modifier = Modifier.padding(vertical = 10.dp)) {
                 Text(stringResource(R.string.discover), color = textColor, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.weight(1f))
-                Text(stringResource(R.string.discover_more), color = actionColor, modifier = Modifier.clickable(onClick = {
-                    mainNavController.navigate(Screens.Discovery.name)
-//                (context as MainActivity).loadChildFragment(DiscoveryFragment())
-                }))
+                Text(stringResource(R.string.discover_more), color = actionColor, modifier = Modifier.clickable(onClick = { mainNavController.navigate(Screens.Discovery.name) }))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
                 if (vm.showGrid) NonlazyGrid(columns = vm.numColumns, itemCount = vm.searchResult.size, modifier = Modifier.fillMaxWidth()) { index ->
@@ -324,8 +318,6 @@ fun OnlineSearchScreen() {
                                 if (!podcast?.feedUrl.isNullOrEmpty()) {
                                     setOnlineFeedUrl(podcast.feedUrl)
                                     mainNavController.navigate(Screens.OnlineFeed.name)
-//                                val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
-//                                (context as MainActivity).loadChildFragment(fragment)
                                 }
                             }))
                 }
@@ -356,23 +348,18 @@ fun OnlineSearchScreen() {
             Text(stringResource(R.string.search_vistaguide_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
                 setOnlineSearchTerms(VistaGuidePodcastSearcher::class.java)
                 mainNavController.navigate(Screens.SearchResults.name)
-//                vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(VistaGuidePodcastSearcher::class.java))
             }))
             Text(stringResource(R.string.search_itunes_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
                 setOnlineSearchTerms(ItunesPodcastSearcher::class.java)
                 mainNavController.navigate(Screens.SearchResults.name)
-//                vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(ItunesPodcastSearcher::class.java))
             }))
             Text(stringResource(R.string.search_fyyd_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
                 setOnlineSearchTerms(FyydPodcastSearcher::class.java)
                 mainNavController.navigate(Screens.SearchResults.name)
-//                vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(FyydPodcastSearcher::class.java))
             }))
-//                Text(stringResource(R.string.gpodnet_search_hint), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = { mainAct?.loadChildFragment(SearchResultsFragment.newInstance(GpodnetPodcastSearcher::class.java)) }))
             Text(stringResource(R.string.search_podcastindex_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {
                 setOnlineSearchTerms(PodcastIndexPodcastSearcher::class.java)
                 mainNavController.navigate(Screens.SearchResults.name)
-//                vm.mainAct?.loadChildFragment(SearchResultsFragment.newInstance(PodcastIndexPodcastSearcher::class.java))
             }))
             if (vm.showOpmlImportSelectionDialog) OpmlImportSelectionDialog(vm.readElements) { vm.showOpmlImportSelectionDialog = false }
             Text(stringResource(R.string.opml_add_podcast_label), color = actionColor, modifier = Modifier.padding(start = 10.dp, top = 10.dp).clickable(onClick = {

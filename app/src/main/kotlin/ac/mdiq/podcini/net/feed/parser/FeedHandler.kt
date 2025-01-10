@@ -133,7 +133,7 @@ class FeedHandler {
     }
 
     private fun createReader(feed: Feed): Reader? {
-        if (feed.fileUrl == null) return null
+        if (feed.fileUrl.isNullOrBlank()) return null
 
         val reader: Reader
         try { reader = XmlStreamReader(File(feed.fileUrl!!))

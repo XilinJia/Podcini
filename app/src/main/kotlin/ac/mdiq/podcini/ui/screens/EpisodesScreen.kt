@@ -565,7 +565,7 @@ enum class QuickAccess {
     New, Planned, Repeats, Liked, Commented, Downloaded, History, All
 }
 
-private const val TAG = "EpisodesScreen"
+private val TAG = Screens.Episodes.name
 private const val PREF_NAME: String = "PrefEpisodesFragment"
 private const val KEY_UP_ARROW = "up_arrow"
 

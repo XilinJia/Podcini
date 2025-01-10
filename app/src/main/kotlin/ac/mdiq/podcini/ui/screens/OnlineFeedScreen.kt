@@ -312,8 +312,6 @@ class OnlineFeedVM(val context: Context, val lcScope: CoroutineScope) {
         }
         onlineEpisodes = episodes
         mainNavController.navigate(Screens.OnlineEpisodes.name)
-//            val fragment: Fragment = OnlineEpisodesFragment.newInstance(episodes)
-//            (context as MainActivity).loadChildFragment(fragment)
     }
 
     internal fun handleUpdatedFeedStatus() {
@@ -504,7 +502,6 @@ fun OnlineFeedScreen() {
                                 if (log != null) upsertBlk(log) { it.status = ShareLog.Status.EXISTING.ordinal }
                             }
                             val feed = getFeedByTitleAndAuthor(vm.feed?.eigenTitle ?: "", vm.feed?.author ?: "")
-//                                if (feed != null) (context as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
                             if (feed != null) {
                                 feedOnDisplay = feed
                                 mainNavController.navigate(Screens.FeedInfo.name)
@@ -580,22 +577,6 @@ fun OnlineFeedScreen() {
         }
     }
 }
-
-//    private fun editUrl() {
-//        val builder = MaterialAlertDialogBuilder(context)
-//        builder.setTitle(R.string.edit_url_menu)
-//        val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
-//        if (downloader != null) dialogBinding.editText.setText(downloader!!.downloadRequest.source)
-//
-//        builder.setView(dialogBinding.root)
-//        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-//            setLoadingLayout()
-//            lookupUrlAndBuild(dialogBinding.editText.text.toString())
-//        }
-//        builder.setNegativeButton(R.string.cancel_label) { dialog1: DialogInterface, _: Int -> dialog1.cancel() }
-//        builder.setOnCancelListener {}
-//        builder.show()
-//    }
 
 const val ARG_FEEDURL: String = "arg.feedurl"
 const val ARG_WAS_MANUAL_URL: String = "manual_url"

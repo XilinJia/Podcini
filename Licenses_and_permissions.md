@@ -26,7 +26,7 @@ Apache License 2.0
 
 [com.github.ByteHamster](https://github.com/ByteHamster/SearchPreference/blob/master/LICENSE) MIT License
 
-[com.github.skydoves](https://github.com/skydoves/Only/blob/master/LICENSE) Apache License 2.0
+[//]: # ([com.github.skydoves]&#40;https://github.com/skydoves/Only/blob/master/LICENSE&#41; Apache License 2.0)
 
 [//]: # ([com.github.xabaras]&#40;https://github.com/xabaras/RecyclerViewSwipeDecorator/blob/master/LICENSE&#41; Apache License 2.0)
 

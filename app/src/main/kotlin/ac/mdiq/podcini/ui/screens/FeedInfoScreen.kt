@@ -211,13 +211,11 @@ fun FeedInfoScreen() {
                     modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         feedOnDisplay = vm.feed
                         mainNavController.navigate(Screens.FeedSettings.name)
-//                    (context as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(vm.feed), TransitionEffect.SLIDE)
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Button(onClick = {
                     feedOnDisplay = vm.feed
                     mainNavController.navigate(Screens.FeedEpisodes.name)
-//                (context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(vm.feed.id))
                 }) {
                     Text(vm.feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label))
                 }
@@ -314,8 +312,6 @@ fun FeedInfoScreen() {
                 Button(modifier = Modifier.padding(top = 10.dp), onClick = {
                     setOnlineSearchTerms(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
                     mainNavController.navigate(Screens.SearchResults.name)
-//                val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${vm.txtvAuthor} podcasts")
-//                (context as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
                 }) { Text(stringResource(R.string.feeds_related_to_author)) }
             }
             Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
@@ -324,7 +320,6 @@ fun FeedInfoScreen() {
                 Spacer(Modifier.weight(1f))
                 Button({
                     mainNavController.navigate(Screens.Statistics.name)
-//                (context as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
                 }) { Text(stringResource(R.string.statistics_view_all)) }
             }
         }

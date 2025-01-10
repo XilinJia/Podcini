@@ -20,6 +20,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.AppPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.AppPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.SleepTimerDialog
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
@@ -385,7 +386,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 if (!landscape) {
                     var sleepIconRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.drawable.ic_sleep else R.drawable.ic_sleep_off) }
                     IconButton(onClick = { showSleepTimeDialog = true
-//                        SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                     }) { Icon(imageVector = ImageVector.vectorResource(sleepIconRes), contentDescription = "sleeper") }
                     IconButton(onClick = { showSpeedDialog = true
                     }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_playback_speed), contentDescription = "open podcast") }
@@ -411,7 +411,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                         var sleeperRes by remember { mutableIntStateOf(if (!isSleepTimerActive()) R.string.set_sleeptimer_label else R.string.sleep_timer_label) }
                         DropdownMenuItem(text = { Text(stringResource(sleeperRes)) }, onClick = {
                             showSleepTimeDialog = true
-//                            SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                             expanded = false
                         })
                         DropdownMenuItem(text = { Text(stringResource(R.string.player_switch_to_audio_only)) }, onClick = {

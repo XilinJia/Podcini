@@ -3,9 +3,9 @@ package ac.mdiq.podcini.ui.screens
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
+import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.isYoutubeMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
@@ -19,6 +19,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPlayingVideoLocally
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isRunning
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerActive
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
@@ -30,6 +31,7 @@ import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.AppPreferences.videoPlayMode
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.SleepTimerDialog
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -41,9 +43,9 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.collapseBottomSheet
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.expandBottomSheet
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
-import ac.mdiq.podcini.ui.utils.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -51,6 +53,7 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter
 import ac.mdiq.podcini.util.MiscFormatter.formatLargeInteger
 import android.content.*
+import android.os.Build
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
@@ -84,6 +87,7 @@ import androidx.core.text.HtmlCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import coil.compose.AsyncImage
@@ -260,10 +264,7 @@ class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.position, media.duration))
-        if (isPlayingVideoLocally && curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) {
-            collapseBottomSheet()
-//            (context as? MainActivity)?.bottomSheet?.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        if (isPlayingVideoLocally && curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) collapseBottomSheet()
         prevItem = media
     }
 
@@ -566,7 +567,6 @@ fun AudioPlayerScreen() {
                         } else {
                             vm.onCollaped()
                             collapseBottomSheet()
-//                        (context as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
                         }
                     }))
             Spacer(Modifier.weight(0.1f))
@@ -737,7 +737,6 @@ fun AudioPlayerScreen() {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
                 vm.onCollaped()
                 collapseBottomSheet()
-//            (context as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             })
             var homeIcon by remember { mutableIntStateOf(R.drawable.baseline_home_24)}
             Icon(imageVector = ImageVector.vectorResource(homeIcon), tint = textColor, contentDescription = "Home", modifier = Modifier.clickable {
@@ -756,10 +755,7 @@ fun AudioPlayerScreen() {
                 })
             if (vm.controller != null) {
                 val sleepRes = if (vm.sleepTimerActive) R.drawable.ic_sleep_off else R.drawable.ic_sleep
-                Icon(imageVector = ImageVector.vectorResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable {
-                   showSleepTimeDialog = true
-//                SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
-                })
+                Icon(imageVector = ImageVector.vectorResource(sleepRes), tint = textColor, contentDescription = "Sleep timer", modifier = Modifier.clickable { showSleepTimeDialog = true })
             }
             if (vm.curItem != null) Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_feed), tint = textColor, contentDescription = "Open podcast",
                 modifier = Modifier.clickable {
@@ -998,6 +994,170 @@ fun AudioPlayerScreen() {
 ////        binding.itemDescriptionFragment.scrollTo(0, 0)
 //        savePreference()
 //    }
+
+/**
+ * Communicates with the playback service. GUI classes should use this class to
+ * control playback instead of communicating with the PlaybackService directly.
+ */
+abstract class ServiceStatusHandler(private val activity: MainActivity) {
+    private var mediaInfoLoaded = false
+    private var loadedFeedMediaId: Long = -1
+    private var initialized = false
+
+    private var prevStatus = PlayerStatus.STOPPED
+    private val statusUpdate: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "statusUpdate onReceive called with action: ${intent.action}")
+            if (playbackService != null && PlaybackService.mPlayerInfo != null) {
+                val info = PlaybackService.mPlayerInfo!!
+//                Logd(TAG, "statusUpdate onReceive $prevStatus ${MediaPlayerBase.status} ${info.playerStatus} ${curMedia?.id} ${info.playable?.id}.")
+                if (prevStatus != info.playerStatus || curEpisode == null || curEpisode!!.id != info.playable?.id) {
+                    Logd(TAG, "statusUpdate onReceive doing updates")
+                    status = info.playerStatus
+                    prevStatus = status
+//                    curMedia = info.playable
+                    handleStatus()
+                }
+            } else {
+                Logd(TAG, "statusUpdate onReceive: Couldn't receive status update: playbackService was null")
+                if (!isRunning) {
+                    status = PlayerStatus.STOPPED
+                    handleStatus()
+                }
+            }
+        }
+    }
+
+    private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "notificationReceiver onReceive called with action: ${intent.action}")
+            val type = intent.getIntExtra(PlaybackService.EXTRA_NOTIFICATION_TYPE, -1)
+            val code = intent.getIntExtra(PlaybackService.EXTRA_NOTIFICATION_CODE, -1)
+            if (code == -1 || type == -1) {
+                Logd(TAG, "Bad arguments. Won't handle intent")
+                return
+            }
+            when (type) {
+                PlaybackService.NOTIFICATION_TYPE_RELOAD -> {
+                    if (playbackService == null && isRunning) return
+                    mediaInfoLoaded = false
+                    updateStatus()
+                }
+                PlaybackService.NOTIFICATION_TYPE_PLAYBACK_END -> onPlaybackEnd()
+            }
+        }
+    }
+
+    @Synchronized
+    fun init() {
+        Logd(TAG, "controller init")
+        procFlowEvents()
+        if (isRunning) initServiceRunning()
+        else updatePlayButton(true)
+    }
+
+    private var eventSink: Job?     = null
+    private fun cancelFlowEvents() {
+        eventSink?.cancel()
+        eventSink = null
+    }
+    private fun procFlowEvents() {
+        if (eventSink != null) return
+        eventSink = activity.lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.PlaybackServiceEvent -> {
+                        if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED) {
+                            init()
+                            updateStatus()
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    @Synchronized
+    private fun initServiceRunning() {
+        if (initialized) return
+        initialized = true
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackService.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackService.ACTION_PLAYER_NOTIFICATION))
+        }
+        checkMediaInfoLoaded()
+    }
+
+    /**
+     * Should be called if the PlaybackController is no longer needed, for
+     * example in the activity's onStop() method.
+     */
+    fun release() {
+        Logd(TAG, "Releasing PlaybackController")
+        try {
+            activity.unregisterReceiver(statusUpdate)
+            activity.unregisterReceiver(notificationReceiver)
+        } catch (e: IllegalArgumentException) {/* ignore */ }
+        initialized = false
+        cancelFlowEvents()
+    }
+
+    open fun onPlaybackEnd() {}
+
+    /**
+     * Is called whenever the PlaybackService changes its status. This method
+     * should be used to update the GUI or start/cancel background threads.
+     */
+    private fun handleStatus() {
+        Log.d(TAG, "handleStatus() called status: ${status}")
+        checkMediaInfoLoaded()
+        when (status) {
+            PlayerStatus.PLAYING -> updatePlayButton(false)
+            PlayerStatus.PREPARING -> updatePlayButton(!PlaybackService.isStartWhenPrepared)
+            PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED -> updatePlayButton(true)
+            else -> {}
+        }
+    }
+
+    private fun checkMediaInfoLoaded() {
+        if (!mediaInfoLoaded || loadedFeedMediaId != curState.curMediaId) {
+            loadedFeedMediaId = curState.curMediaId
+            Logd(TAG, "checkMediaInfoLoaded: $loadedFeedMediaId")
+            loadMediaInfo()
+        }
+        mediaInfoLoaded = true
+    }
+
+    protected open fun updatePlayButton(showPlay: Boolean) {}
+
+    abstract fun loadMediaInfo()
+
+    /**
+     * Called when connection to playback service has been established or
+     * information has to be refreshed
+     */
+    private fun updateStatus() {
+        Logd(TAG, "Querying service info")
+        if (playbackService != null && PlaybackService.mPlayerInfo != null) {
+            status = PlaybackService.mPlayerInfo!!.playerStatus
+//            curMedia = PlaybackService.mPlayerInfo!!.playable
+            // make sure that new media is loaded if it's available
+            mediaInfoLoaded = false
+            handleStatus()
+        } else Log.e(TAG, "queryService() was called without an existing connection to playbackservice")
+    }
+
+    companion object {
+        private val TAG: String = ServiceStatusHandler::class.simpleName ?: "Anonymous"
+    }
+}
+
 
 private const val TAG = "AudioPlayerScreen"
 var media3Controller: MediaController? = null

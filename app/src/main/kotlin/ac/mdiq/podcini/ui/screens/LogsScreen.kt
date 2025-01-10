@@ -29,7 +29,6 @@ import android.content.Context
 import android.os.Build
 import android.text.format.DateUtils
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -216,7 +215,7 @@ fun LogsScreen() {
                 val textColor = MaterialTheme.colorScheme.onSurface
                 Row (modifier = Modifier.clickable {
                     if (log.status < ShareLog.Status.SUCCESS.ordinal) {
-                        receiveShared(log.url!!, context as AppCompatActivity, false) {
+                        receiveShared(log.url!!, context as MainActivity, false) {
                             sharedUrl = log.url!!
                             showYTMediaConfirmDialog = true
                         }
@@ -229,14 +228,10 @@ fun LogsScreen() {
                                 if (episode != null) {
                                     episodeOnDisplay = episode
                                     mainNavController.navigate(Screens.EpisodeInfo.name)
-                                }
-
-//                                 if (episode != null) (activity as MainActivity).loadChildFragment(EpisodeInfoFragment.newInstance(episode))
-                                else hasError = true
+                                } else hasError = true
                             }
                             ShareLog.Type.Podcast.name, "podcast" -> {
                                 val feed = getFeedByTitleAndAuthor(log.title?:"", log.author?:"")
-//                                if (feed != null ) (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
                                 if (feed != null) {
                                     feedOnDisplay = feed
                                     mainNavController.navigate(Screens.FeedInfo.name)

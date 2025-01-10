@@ -1,3 +1,12 @@
+# 7.3.2
+
+* added more checking in the DB migration procedure in 7.2.0, trying to prevent some reported crashes
+* fixed bottom spacing of the PlayerUI in relation to bottom panel of the phone
+* added back SwipeActions setting dialog title
+* some cleanup and class restructuring
+* no more xml layouts
+* androidx.appcompat and a few other dependencies removed
+
 # 7.3.1
 
 * likely fixed episodes list out of bound crashes

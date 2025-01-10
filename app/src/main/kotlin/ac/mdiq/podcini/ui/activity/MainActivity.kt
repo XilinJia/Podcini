@@ -65,6 +65,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -106,12 +108,12 @@ class MainActivity : CastEnabledActivity() {
 //    private val isDrawerOpen: Boolean
 //        get() = drawerLayout?.isDrawerOpen(navDrawer) == true
 
-    private val screenWidth: Int
-        get() {
-            val displayMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            return displayMetrics.widthPixels
-        }
+//    private val screenWidth: Int
+//        get() {
+//            val displayMetrics = DisplayMetrics()
+//            windowManager.defaultDisplay.getMetrics(displayMetrics)
+//            return displayMetrics.widthPixels
+//        }
 
     enum class Screens {
         Subscriptions,
@@ -199,8 +201,12 @@ class MainActivity : CastEnabledActivity() {
 
         if (showUnrestrictedBackgroundPermissionDialog) UnrestrictedBackgroundPermissionDialog { showUnrestrictedBackgroundPermissionDialog = false }
 
+        val insets = WindowInsets.systemBars.asPaddingValues()
+        val dynamicBottomPadding = insets.calculateBottomPadding()
+        Logd(TAG, "effectiveBottomPadding: $dynamicBottomPadding")
+
         ModalNavigationDrawer(drawerState = drawerState, modifier = Modifier.fillMaxHeight(), drawerContent = { NavDrawerScreen() }) {
-            BottomSheetScaffold(scaffoldState = scaffoldState, sheetPeekHeight = 160.dp, sheetDragHandle = {}, topBar = {},
+            BottomSheetScaffold(scaffoldState = scaffoldState, sheetPeekHeight = dynamicBottomPadding + 110.dp, sheetDragHandle = {}, topBar = {},
                 sheetSwipeEnabled = false, sheetShape = RectangleShape,
                 sheetContent = { AudioPlayerScreen() }
             ) { paddingValues ->
@@ -208,7 +214,7 @@ class MainActivity : CastEnabledActivity() {
                     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                     top = paddingValues.calculateTopPadding(),
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = 110.dp
+                    bottom = dynamicBottomPadding + 110.dp
                 )) {
                     CompositionLocalProvider(LocalNavController provides navController) {
                         NavHost(navController = navController, startDestination = Screens.Subscriptions.name) {
@@ -493,7 +499,6 @@ class MainActivity : CastEnabledActivity() {
         when {
             isDrawerOpen -> closeDrawer()
             isBottomSheetExpanded -> collapseBottomSheet()
-//            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             mainNavController.previousBackStackEntry != null -> mainNavController.popBackStack()
             else -> {
                 val toPage = defaultPage
@@ -553,7 +558,6 @@ class MainActivity : CastEnabledActivity() {
                     }
                 }
                 collapseBottomSheet()
-//                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
             intent.hasExtra(Extras.fragment_feed_url.name) -> {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
@@ -597,6 +601,7 @@ class MainActivity : CastEnabledActivity() {
         handleNavIntent()
     }
 
+    // TODO
 //    fun showSnackbarAbovePlayer(text: CharSequence, duration: Int): Snackbar {
 //        val s: Snackbar
 //        if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {

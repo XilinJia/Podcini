@@ -14,7 +14,10 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.PlayState
+import ac.mdiq.podcini.storage.model.Rating
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -22,7 +25,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
 import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
-import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.episodeOnDisplay
 import ac.mdiq.podcini.ui.utils.feedOnDisplay
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -34,17 +36,10 @@ import ac.mdiq.podcini.util.MiscFormatter.formatDateTimeFlex
 import ac.mdiq.podcini.util.MiscFormatter.fullDateTimeString
 import android.content.Context
 import android.content.ContextWrapper
-import android.text.TextUtils
 import android.text.format.Formatter.formatShortFileSize
 import android.util.Log
-import android.view.View
-import android.widget.Button
-import android.widget.TextView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -69,10 +64,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
-import com.skydoves.balloon.ArrowOrientation
-import com.skydoves.balloon.ArrowOrientationRules
-import com.skydoves.balloon.Balloon
-import com.skydoves.balloon.BalloonAnimation
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import okhttp3.Request.Builder
@@ -385,41 +376,32 @@ fun EpisodeInfoScreen() {
         )
     }
 
-    fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
-        val isLocaleRtl = (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL)
-        val balloon: Balloon = Balloon.Builder(vm.context)
-            .setArrowOrientation(ArrowOrientation.TOP)
-            .setArrowOrientationRules(ArrowOrientationRules.ALIGN_FIXED)
-            .setArrowPosition(0.25f + (if (isLocaleRtl xor offerStreaming) 0f else 0.5f))
-            .setWidthRatio(1.0f)
-            .setMarginLeft(8)
-            .setMarginRight(8)
-            .setBackgroundColor(ThemeUtils.getColorFromAttr(vm.context, com.google.android.material.R.attr.colorSecondary))
-            .setBalloonAnimation(BalloonAnimation.OVERSHOOT)
-            .setLayout(R.layout.popup_bubble_view)
-            .setDismissWhenTouchOutside(true)
-            .setLifecycleOwner(vm.actMain)
-            .build()
-        val ballonView = balloon.getContentView()
-        val positiveButton: Button = ballonView.findViewById(R.id.balloon_button_positive)
-        val negativeButton: Button = ballonView.findViewById(R.id.balloon_button_negative)
-        val message: TextView = ballonView.findViewById(R.id.balloon_message)
-        message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
-        else R.string.on_demand_config_download_text)
-        positiveButton.setOnClickListener {
-            AppPreferences.isStreamOverDownload = offerStreaming
-            // Update all visible lists to reflect new streaming action button
-            //            TODO: need another event type?
-            EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
-//        (vm.context as MainActivity).showSnackbarAbovePlayer(R.string.on_demand_config_setting_changed, Snackbar.LENGTH_SHORT)
-            balloon.dismiss()
-        }
-        negativeButton.setOnClickListener {
-            UsageStatistics.doNotAskAgain(UsageStatistics.ACTION_STREAM) // Type does not matter. Both are silenced.
-            balloon.dismiss()
-        }
-//        balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
+    var offerStreaming by remember { mutableStateOf(false) }
+    @Composable
+    fun OnDemandConfigDialog(onDismiss: () -> Unit) {
+        AlertDialog(modifier = Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)), onDismissRequest = onDismiss, title = { },
+            text = {
+                Text(stringResource(if (offerStreaming) R.string.on_demand_config_stream_text else R.string.on_demand_config_download_text))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    AppPreferences.isStreamOverDownload = offerStreaming
+                    // Update all visible lists to reflect new streaming action button
+                    //            TODO: need another event type?
+                    EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
+                    //        (vm.context as MainActivity).showSnackbarAbovePlayer(R.string.on_demand_config_setting_changed, Snackbar.LENGTH_SHORT)
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = {
+                UsageStatistics.doNotAskAgain(UsageStatistics.ACTION_STREAM)
+                onDismiss()
+            }) { Text(stringResource(R.string.cancel_label)) } }
+        )
     }
+
+    var showOnDemandConfigDialog by remember { mutableStateOf(false) }
+    if (showOnDemandConfigDialog) OnDemandConfigDialog { showOnDemandConfigDialog = false }
 
     var showEditComment by remember { mutableStateOf(false) }
     val localTime = remember { System.currentTimeMillis() }
@@ -477,7 +459,9 @@ fun EpisodeInfoScreen() {
                         when {
                             vm.actionButton1 is StreamActionButton && !AppPreferences.isStreamOverDownload
                                     && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
-                                showOnDemandConfigBalloon(true)
+                                offerStreaming = true
+                                showOnDemandConfigDialog = true
+//                                showOnDemandConfigBalloon(true)
                                 return@clickable
                             }
                             vm.actionButton1 == null -> return@clickable  // Not loaded yet
@@ -490,7 +474,9 @@ fun EpisodeInfoScreen() {
                         when {
                             vm.actionButton2 is DownloadActionButton && AppPreferences.isStreamOverDownload
                                     && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
-                                showOnDemandConfigBalloon(false)
+                                offerStreaming = false
+                                showOnDemandConfigDialog = true
+//                                showOnDemandConfigBalloon(false)
                                 return@clickable
                             }
                             vm.actionButton2 == null -> return@clickable  // Not loaded yet

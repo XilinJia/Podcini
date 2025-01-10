@@ -490,7 +490,7 @@ fun FeedEpisodesScreen() {
             actions = {
                 IconButton(onClick = {
                     mainNavController.navigate(Screens.Queues.name)
-//                (context as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                    MainActivity.collapseBottomSheet()
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "queue") }
                 if (vm.feed != null) IconButton(onClick = {
                     setSearchTerms("", vm.feed)
@@ -596,7 +596,7 @@ fun FeedEpisodesScreen() {
     }
 }
 
-private const val TAG = "FeedEpisodesScreen"
+private val TAG = Screens.FeedEpisodes.name
 const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
 private const val KEY_UP_ARROW = "up_arrow"
 

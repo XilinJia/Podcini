@@ -294,25 +294,19 @@ object Episodes {
     }
 
     @JvmStatic
-    fun indexOfItemWithId(episodes: List<Episode?>, id: Long): Int {
-        for (i in episodes.indices) {
-            val episode = episodes[i]
-            if (episode?.id == id) return i
-        }
+    fun indexOfItemWithId(episodes: List<Episode>, id: Long): Int {
+        for (i in episodes.indices) if (episodes[i].id == id) return i
         return -1
     }
 
-    @JvmStatic
-    fun episodeListContains(episodes: List<Episode?>, itemId: Long): Boolean {
-        return indexOfItemWithId(episodes, itemId) >= 0
-    }
+//    @JvmStatic
+//    fun episodeListContains(episodes: List<Episode?>, itemId: Long): Boolean {
+//        return indexOfItemWithId(episodes, itemId) >= 0
+//    }
 
     @JvmStatic
-    fun indexOfItemWithDownloadUrl(items: List<Episode?>, downloadUrl: String): Int {
-        for (i in items.indices) {
-            val item = items[i]
-            if (item?.downloadUrl == downloadUrl) return i
-        }
+    fun indexOfItemWithDownloadUrl(items: List<Episode>, downloadUrl: String): Int {
+        for (i in items.indices) if (items[i].downloadUrl == downloadUrl) return i
         return -1
     }
 

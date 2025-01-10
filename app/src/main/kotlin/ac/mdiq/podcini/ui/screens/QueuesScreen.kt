@@ -469,7 +469,6 @@ fun QueuesScreen() {
                 if (!vm.showBin) IconButton(onClick = {
                     setSearchTerms("")
                     mainNavController.navigate(Screens.Search.name)
-//                    (context as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_search), contentDescription = "search") }
                 IconButton(onClick = { expanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu") }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -628,7 +627,6 @@ fun QueuesScreen() {
                                 Logd(TAG, "clicked: ${feed.title}")
                                 feedOnDisplay = feed
                                 mainNavController.navigate(Screens.FeedEpisodes.name)
-//                            (context as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
                             }, onLongClick = {
                                 Logd(TAG, "long clicked: ${feed.title}")
 //                                val inflater: MenuInflater = (context as MainActivity).menuInflater
@@ -705,7 +703,7 @@ fun QueuesScreen() {
 //        }
 //    }
 
-private const val TAG = "QueuesScreen"
+private val TAG = Screens.Queues.name
 
 private const val KEY_UP_ARROW = "up_arrow"
 private const val PREFS = "QueueFragment"

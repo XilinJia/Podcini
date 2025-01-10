@@ -26,7 +26,7 @@ class ShownotesCleaner(context: Context) {
 
     init {
         val colorPrimary = colorToHtml(context, android.R.attr.textColorPrimary)
-        val colorAccent = colorToHtml(context, androidx.appcompat.R.attr.colorAccent)
+        val colorAccent = colorToHtml(context, android.R.attr.colorAccent)
         val margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.resources.displayMetrics).toInt()
         var styleString: String? = ""
         try {

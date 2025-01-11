@@ -14,7 +14,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 ### Note:
 
 #### Translation service is moved to Crowdin, see link down below.
-#### Podcini.R 7 supports importing databases from AntennaPod and Podcast Addict, and customizing downloaded media folder.
+#### Podcini.R 7 is now fully Compose-based, supports auto-backups, importing databases from AntennaPod and Podcast Addict, and customizing downloaded media folder.
 #### Podcini.R 6.5 as a major step forward brings contents from YouTube and YT Music in the app.  That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs). For more see the Youtube section below or the changelogs
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker or screen, you should install the "play" apk, not the "free" apk, that's about the difference between the two.

@@ -153,7 +153,7 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
             feed!!.episodes.forEach { e -> if (!e.title.isNullOrEmpty()) nameEpisodeMap[generateFileName(e.title!!)] = e }
             nameEpisodeMap.keys.forEach { Logd(TAG, "key: $it") }
             val dirFiles = srcFile.listFiles()
-            Logd(TAG, "srcFile: ${srcFile.name} dirFiles: ${dirFiles.size}")
+            Logd(TAG, "srcFile: ${srcFile.name} dirFiles: ${dirFiles?.size}")
             if (!dirFiles.isNullOrEmpty()) {
                 val destDir = destRootDir.findFile(relativePath) ?: destRootDir.createDirectory(relativePath) ?: return
                 dirFiles.forEach { file -> copyRecursive(context, file, srcFile, destDir, move) }
@@ -192,7 +192,7 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
             throw e
         }
     }
-    private fun copyRecursive(context: Context, srcFile: DocumentFile, srcRootDir: DocumentFile, destRootDir: DocumentFile, move: Boolean) {
+    private fun copyRecursive(context: Context, srcFile: DocumentFile, srcRootDir: DocumentFile, destRootDir: DocumentFile, move: Boolean, onlyUpdateDB: Boolean = false) {
         val relativePath = srcFile.uri.path?.substring(srcRootDir.uri.path!!.length+1) ?: return
         if (srcFile.isDirectory) {
             Logd(TAG, "copyRecursiveDD folder title: $relativePath")
@@ -204,7 +204,7 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
             val destDir = destRootDir.findFile(relativePath) ?: destRootDir.createDirectory(relativePath) ?: return
             val files = srcFile.listFiles()
             if (files.isNotEmpty()) files.forEach { file -> copyRecursive(context, file, srcFile, destDir, move) }
-            if (move) srcFile.delete()
+            if (!onlyUpdateDB && move) srcFile.delete()
         } else {
             val nameParts = relativePath.split(".")
             if (nameParts.size < 3) return
@@ -216,7 +216,7 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
             val destName = "$title.${episode.id}.$ext"
             val destFile = destRootDir.createFile(getMimeType(destName), destName) ?: return
             Logd(TAG, "copyRecursiveDD copying file to: ${destFile.uri}")
-            copyFile(srcFile, destFile, context, move)
+            if (!onlyUpdateDB) copyFile(srcFile, destFile, context, move)
             upsertBlk(episode) {
                 it.fileUrl = destFile.uri.toString()
                 it.setIsDownloaded()
@@ -289,6 +289,54 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
         var bytesRead: Int
         while (inputStream.read(buffer).also { bytesRead = it } != -1) outputStream.write(buffer, 0, bytesRead)
     }
+    private fun copyRecursive(srcFile: File, srcRootDir: File, destRootDir: File, move: Boolean, onlyUpdateDB: Boolean = false) {
+        val relativePath = srcFile.absolutePath.substring(srcRootDir.absolutePath.length+1)
+//        val relativePath = srcFile.name
+        if (srcFile.isDirectory) {
+            feed = nameFeedMap[relativePath] ?: return
+            Logd(TAG, "copyRecursiveFD found feed: ${feed?.title}")
+            nameEpisodeMap.clear()
+            feed!!.episodes.forEach { e -> if (!e.title.isNullOrEmpty()) nameEpisodeMap[generateFileName(e.title!!)] = e }
+            nameEpisodeMap.keys.forEach { Logd(TAG, "key: $it") }
+            val destFile = File(destRootDir, relativePath)
+            if (!destFile.exists()) destFile.mkdirs()
+            val files = srcFile.listFiles()
+            if (!files.isNullOrEmpty()) files.forEach { file -> copyRecursive(file, srcFile, destFile, move) }
+            if (!onlyUpdateDB && move) srcFile.delete()
+        } else {
+            val nameParts = relativePath.split(".")
+            if (nameParts.size < 3) return
+            val ext = nameParts[nameParts.size-1]
+            val title = nameParts.dropLast(2).joinToString(".")
+            Logd(TAG, "copyRecursiveFD file title: $title")
+            val episode = nameEpisodeMap[title] ?: return
+            Logd(TAG, "copyRecursiveFD found episode: ${episode.title}")
+            val destName = "$title.${episode.id}.$ext"
+            val destFile = File(destRootDir, destName)
+            if (!destFile.exists()) {
+                Logd(TAG, "copyRecursiveDF copying file to: ${destFile.absolutePath}")
+                if (!onlyUpdateDB) copyFile(srcFile, destFile, move)
+                upsertBlk(episode) {
+                    it.fileUrl = Uri.fromFile(destFile).toString()
+                    Logd(TAG, "copyRecursiveDF fileUrl: ${it.fileUrl}")
+                    it.setIsDownloaded()
+                }
+            }
+        }
+    }
+    private fun copyFile(sourceFile: File, destFile: File, move: Boolean) {
+        try {
+            val inputStream = FileInputStream(sourceFile)
+            val outputStream = FileOutputStream(destFile)
+            copyStream(inputStream, outputStream)
+            inputStream.close()
+            outputStream.close()
+            if (move) sourceFile.delete()
+        } catch (e: IOException) {
+            Log.e("Error", "Error copying file: $e")
+            throw e
+        }
+    }
     @Throws(IOException::class)
     fun importFromUri(uri: Uri, context: Context, move: Boolean = false, verify : Boolean = true) {
         try {
@@ -307,6 +355,33 @@ class MediaFilesTransporter(val mediaFilesDirName: String) {
                     val mediaDir = context.getExternalFilesDir("media") ?: return
                     fileList.forEach { file -> copyRecursive(context, file, exportedDir, mediaDir, move) }
                 }
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, Log.getStackTraceString(e))
+            throw e
+        } finally {
+            nameFeedMap.clear()
+            nameEpisodeMap.clear()
+            feed = null
+        }
+    }
+    @Throws(IOException::class)
+    fun updateDB(context: Context) {
+        try {
+            val feeds = getFeedList()
+            feeds.forEach { f -> if (!f.title.isNullOrEmpty()) nameFeedMap[generateFileName(f.title!!)] = f }
+            Logd(TAG, "importFromUri customMediaUriString: [$customMediaUriString]")
+            if (customMediaUriString.isNotBlank()) {
+                val customUri = Uri.parse(customMediaUriString)
+                val directory = DocumentFile.fromTreeUri(getAppContext(), customUri) ?: throw IllegalArgumentException("Invalid tree URI: $customMediaUriString")
+                val exportedDir = directory
+                val fileList = exportedDir.listFiles()
+                fileList.forEach { file -> copyRecursive(context, file, exportedDir, directory, false, true) }
+            } else {
+                val mediaDir = context.getExternalFilesDir("media") ?: return
+                val exportedDir = mediaDir
+                val fileList = exportedDir.listFiles()
+                fileList?.forEach { file -> copyRecursive(file, exportedDir, mediaDir, false, true) }
             }
         } catch (e: IOException) {
             Log.e(TAG, Log.getStackTraceString(e))

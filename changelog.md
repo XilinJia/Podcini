@@ -1,3 +1,21 @@
+# 7.3.3
+
+* major changes in 7.3
+	* final major step migrating to Jetpack Compose, fully Compose based with minimal View components
+	* no more fragments and no more xml layouts, navigation, drawer and bottom sheet are in Compose
+	* all activities derive from ComponentActivity
+	* various view related androidx dependencies removed
+	* made monitoring of feeds less aggressive, possibly improving efficiency
+	* fixed episodes list out of bound crashes
+* adjusted the DB migration procedure in 7.2.0 to prevent crash when updating from 6.16.4 or earlier
+* fixed exception thrown in fileExist that causes crash
+* Reconcile in menu appears regardless of episodes present in Downloaded
+* Reconcile first updates DB based on downloaded media files then performs double checks
+* fixed non-functioning back-press
+* fixed PlayerUI expand/collapse
+* fixed filter/sort dialogs blanking out system bar
+* fixed Subscriptions infor bar texts
+
 # 7.3.2
 
 * added more checking in the DB migration procedure in 7.2.0, trying to prevent some reported crashes

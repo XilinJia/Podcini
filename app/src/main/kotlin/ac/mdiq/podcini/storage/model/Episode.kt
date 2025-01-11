@@ -21,7 +21,9 @@ import ac.mdiq.podcini.storage.utils.StorageUtils.getDataFolder
 import ac.mdiq.podcini.storage.utils.StorageUtils.getMimeType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.StreamInfo
+import ac.mdiq.vista.extractor.stream.VideoStream
 import android.content.ContentResolver
 import android.content.Context
 import android.media.MediaMetadataRetriever
@@ -177,6 +179,9 @@ class Episode : RealmObject {
             }
             return field
         }
+
+//    var audioStreamsList: RealmList<AudioStream> = realmListOf()
+//    var videoStreamsList: RealmList<VideoStream> = realmListOf()
 
     @Ignore
     val isRemote = mutableStateOf(false)
@@ -535,7 +540,10 @@ class Episode : RealmObject {
                     false
                 }
             }
-            else -> throw IllegalArgumentException("Unsupported URI scheme: ${fileuri.scheme}")
+            else -> {
+                Logd(TAG, "Unsupported URI scheme: ${fileuri.scheme}")
+                false
+            }
         }
     }
 

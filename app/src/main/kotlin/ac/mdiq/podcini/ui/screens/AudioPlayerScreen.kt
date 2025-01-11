@@ -40,8 +40,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.DurationConverter.convertOnSpeed
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.activity.MainActivity.Companion.collapseBottomSheet
-import ac.mdiq.podcini.ui.activity.MainActivity.Companion.expandBottomSheet
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.isBSExpanded
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
@@ -106,8 +105,6 @@ import kotlin.math.sin
 
 class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
     internal val actMain: MainActivity? = generateSequence(context) { if (it is ContextWrapper) it.baseContext else null }.filterIsInstance<MainActivity>().firstOrNull()
-
-    internal var isCollapsed by mutableStateOf(true)
 
     internal var controllerFuture: ListenableFuture<MediaController>? = null
     internal var controller: ServiceStatusHandler? = null
@@ -209,7 +206,7 @@ class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
         }
 //        if (isShowPlay) setIsShowPlay(false)
         onPositionUpdate(event)
-        if (!isCollapsed) {
+        if (isBSExpanded) {
             if (curItem?.id != event.episode.id) return
             val newChapterIndex: Int = curItem!!.getCurrentChapterIndex(event.position)
             if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) refreshChapterData(newChapterIndex)
@@ -264,7 +261,7 @@ class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
         txtvPlaybackSpeed = DecimalFormat("0.00").format(curSpeedFB.toDouble())
         curPlaybackSpeed = curSpeedFB
         onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.position, media.duration))
-        if (isPlayingVideoLocally && curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) collapseBottomSheet()
+        if (isPlayingVideoLocally && curEpisode?.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) isBSExpanded = false
         prevItem = media
     }
 
@@ -395,7 +392,7 @@ class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
 //                imgLoc = ImageResourceUtils.getEpisodeListImageLocation(curMedia!!)
                 curItem = curEpisode
             }
-            if (!isCollapsed && curMediaChanged) {
+            if (isBSExpanded && curMediaChanged) {
                 Logd(TAG, "loadMediaInfo loading details ${curEpisode?.id}")
                 lcScope.launch {
                     withContext(Dispatchers.IO) { curEpisode?.apply { this.loadChapters(context, false) } }
@@ -428,20 +425,6 @@ class AudioPlayerVM(val context: Context, val lcScope: CoroutineScope) {
             homeText = null
         }
     }
-
-    internal fun onExpanded() {
-        Logd(TAG, "onExpanded()")
-//        the function can also be called from MainActivity when a select menu pops up and closes
-        isCollapsed = false
-        if (shownotesCleaner == null) shownotesCleaner = ShownotesCleaner(context)
-        setIsShowPlay(isShowPlay)
-    }
-
-    internal fun onCollaped() {
-        Logd(TAG, "onCollaped()")
-        isCollapsed = true
-        setIsShowPlay(isShowPlay)
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -473,7 +456,7 @@ fun AudioPlayerScreen() {
                         }
                         vm.controller!!.init()
                     }
-                    vm.onCollaped()
+                    isBSExpanded = false
                     if (vm.shownotesCleaner == null) vm.shownotesCleaner = ShownotesCleaner(context)
                     vm.actMain?.setPlayerVisible(curEpisode != null)
                     if (curEpisode != null) vm.updateUi(curEpisode!!)
@@ -516,6 +499,16 @@ fun AudioPlayerScreen() {
         }
     }
 
+    LaunchedEffect(isBSExpanded) {
+        if (isBSExpanded) {
+            if (vm.shownotesCleaner == null) vm.shownotesCleaner = ShownotesCleaner(context)
+            vm.setIsShowPlay(vm.isShowPlay)
+        } else {
+            vm.setIsShowPlay(vm.isShowPlay)
+        }
+        Logd(TAG, "isExpanded: ${isBSExpanded}")
+    }
+
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun ControlUI() {
@@ -547,7 +540,7 @@ fun AudioPlayerScreen() {
                 modifier = Modifier.width(65.dp).height(65.dp).padding(start = 5.dp)
                     .clickable(onClick = {
                         Logd(TAG, "playerUi icon was clicked")
-                        if (vm.isCollapsed) {
+                        if (!isBSExpanded) {
                             val media = curEpisode
                             if (media != null) {
                                 val mediaType = media.getMediaType()
@@ -555,19 +548,14 @@ fun AudioPlayerScreen() {
                                         || (media.feed?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
                                     Logd(TAG, "popping as audio episode")
                                     ensureService()
-                                    vm.onExpanded()
-                                    expandBottomSheet()
-//                                (context as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
+                                    isBSExpanded = true
                                 } else {
                                     Logd(TAG, "popping video context")
                                     val intent = getPlayerActivityIntent(context, mediaType)
                                     context.startActivity(intent)
                                 }
                             }
-                        } else {
-                            vm.onCollaped()
-                            collapseBottomSheet()
-                        }
+                        } else isBSExpanded = false
                     }))
             Spacer(Modifier.weight(0.1f))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -735,8 +723,7 @@ fun AudioPlayerScreen() {
         if (showShareDialog && vm.curItem != null && vm.actMain != null) ShareDialog(vm.curItem!!, vm.actMain) {showShareDialog = false }
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_down), tint = textColor, contentDescription = "Collapse", modifier = Modifier.clickable {
-                vm.onCollaped()
-                collapseBottomSheet()
+                isBSExpanded = false
             })
             var homeIcon by remember { mutableIntStateOf(R.drawable.baseline_home_24)}
             Icon(imageVector = ImageVector.vectorResource(homeIcon), tint = textColor, contentDescription = "Home", modifier = Modifier.clickable {
@@ -958,9 +945,9 @@ fun AudioPlayerScreen() {
         }
     }
     MediaPlayerErrorDialog(context, vm.errorMessage, vm.showErrorDialog)
-    Box(modifier = Modifier.fillMaxWidth().then(if (vm.isCollapsed) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
-        PlayerUI(Modifier.align(if (vm.isCollapsed) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
-        if (!vm.isCollapsed) {
+    Box(modifier = Modifier.fillMaxWidth().then(if (!isBSExpanded) Modifier else Modifier.statusBarsPadding().navigationBarsPadding())) {
+        PlayerUI(Modifier.align(if (!isBSExpanded) Alignment.TopCenter else Alignment.BottomCenter).zIndex(1f))
+        if (isBSExpanded) {
             if (vm.cleanedNotes == null) vm.updateDetails()
             Column(Modifier.padding(bottom = 120.dp)) {
                 Toolbar()
@@ -969,7 +956,6 @@ fun AudioPlayerScreen() {
         }
     }
 }
-
 
 //    @Subscribe(threadMode = ThreadMode.MAIN)
 //    @Suppress("unused")
@@ -1115,7 +1101,7 @@ abstract class ServiceStatusHandler(private val activity: MainActivity) {
      * should be used to update the GUI or start/cancel background threads.
      */
     private fun handleStatus() {
-        Log.d(TAG, "handleStatus() called status: ${status}")
+        Log.d(TAG, "handleStatus() called status: $status")
         checkMediaInfoLoaded()
         when (status) {
             PlayerStatus.PLAYING -> updatePlayButton(false)

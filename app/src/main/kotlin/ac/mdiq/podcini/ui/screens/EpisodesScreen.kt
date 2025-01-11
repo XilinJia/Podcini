@@ -6,6 +6,7 @@ import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
+import ac.mdiq.podcini.preferences.MediaFilesTransporter
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -301,8 +302,12 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
 //            val items = realm.query(Episode::class).query("media.episode == nil").find()
 //            Logd(TAG, "number of episode with null backlink: ${items.size}")
             nameEpisodeMap.clear()
-            for (e in episodes) {
-                var fileUrl = e.fileUrl ?: continue
+            MediaFilesTransporter("").updateDB(context)
+            val eList = realm.query(Episode::class).find()
+
+            for (e in eList) {
+                var fileUrl = e.fileUrl
+                if (fileUrl.isNullOrBlank()) continue
                 fileUrl = fileUrl.substring(fileUrl.lastIndexOf('/') + 1)
                 Logd(TAG, "reconcile: fileUrl: $fileUrl")
                 nameEpisodeMap[fileUrl] = e
@@ -516,7 +521,7 @@ fun EpisodesScreen() {
                             vm.showClearHistoryDialog.value = true
                             expanded = false
                         })
-                    if (vm.vms.isNotEmpty() && vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name)
+                    if (vm.spinnerTexts[vm.curIndex] == QuickAccess.Downloaded.name)
                         DropdownMenuItem(text = { Text(stringResource(R.string.reconcile_label)) }, onClick = {
                             vm.reconcile()
                             expanded = false

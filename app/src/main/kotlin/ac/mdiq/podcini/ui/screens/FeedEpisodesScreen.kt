@@ -16,6 +16,7 @@ import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.SwipeActionsSettingDialog
 import ac.mdiq.podcini.ui.actions.SwipeActions.NoActionSwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.isBSExpanded
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
 import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.compose.*
@@ -490,7 +491,7 @@ fun FeedEpisodesScreen() {
             actions = {
                 IconButton(onClick = {
                     mainNavController.navigate(Screens.Queues.name)
-                    MainActivity.collapseBottomSheet()
+                    isBSExpanded = false
                 }) { Icon(imageVector = ImageVector.vectorResource(R.drawable.playlist_play), contentDescription = "queue") }
                 if (vm.feed != null) IconButton(onClick = {
                     setSearchTerms("", vm.feed)

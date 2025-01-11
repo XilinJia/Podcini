@@ -8,6 +8,7 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.closeDrawer
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.isBSExpanded
 import ac.mdiq.podcini.ui.activity.MainActivity.Companion.mainNavController
 import ac.mdiq.podcini.ui.activity.MainActivity.Screens
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
@@ -89,7 +90,7 @@ fun NavDrawerScreen() {
                     Logd(TAG, "ON_START")
                 }
                 Lifecycle.Event.ON_RESUME -> {
-                    Logd(TAG, "ON_START")
+                    Logd(TAG, "ON_RESUME")
                     vm.loadData()
                 }
                 Lifecycle.Event.ON_STOP -> {
@@ -133,7 +134,7 @@ fun NavDrawerScreen() {
                             feedOnDisplay = f
                             mainNavController.navigate(Screens.FeedEpisodes.name) { popUpTo(Screens.FeedEpisodes.name) { inclusive = true } }
                             closeDrawer()
-                            MainActivity.collapseBottomSheet()
+                            isBSExpanded = false
                         }) {
                             AsyncImage(model = f.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                                 modifier = Modifier.width(40.dp).height(40.dp))

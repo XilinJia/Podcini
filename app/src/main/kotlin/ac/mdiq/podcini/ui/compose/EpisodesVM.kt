@@ -995,7 +995,7 @@ fun EpisodesFilterDialog(filter: EpisodeFilter? = null, filtersDisabled: Mutable
         val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
         dialogWindowProvider?.window?.let { window ->
             window.setGravity(Gravity.BOTTOM)
-            window.setDimAmount(0f)
+//            window.setDimAmount(0f)
         }
         Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
@@ -1147,7 +1147,7 @@ fun EpisodeSortDialog(initOrder: EpisodeSortOrder, showKeepSorted: Boolean = fal
         val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
         dialogWindowProvider?.window?.let { window ->
             window.setGravity(Gravity.BOTTOM)
-            window.setDimAmount(0f)
+//            window.setDimAmount(0f)
         }
         Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {

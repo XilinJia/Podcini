@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.isBSExpanded
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
@@ -274,7 +275,7 @@ fun MediaPlayerErrorDialog(activity: Context, message: String, showDialog: Mutab
             },
             confirmButton = {
                 TextButton(onClick = {
-                    MainActivity.collapseBottomSheet()
+                    isBSExpanded = false
                     showDialog.value = false
                 }) { Text("OK") }
             },

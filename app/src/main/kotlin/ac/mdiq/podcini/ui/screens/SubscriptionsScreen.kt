@@ -130,7 +130,7 @@ class SubscriptionsVM(val context: Context, val lcScope: CoroutineScope) {
     internal var displayedFolder by mutableStateOf("")
 
     internal var txtvInformation by mutableStateOf("")
-    internal var feedCount by mutableStateOf("")
+    internal var feedCountState by mutableStateOf("")
     internal var feedSorted by mutableIntStateOf(0)
 
     internal var sortIndex by mutableStateOf(0)
@@ -186,7 +186,7 @@ class SubscriptionsVM(val context: Context, val lcScope: CoroutineScope) {
         tags.addAll(getTags())
     }
 
-    private var eventSink: Job?     = null
+    private var eventSink: Job? = null
     private var eventStickySink: Job? = null
     internal fun cancelFlowEvents() {
         eventSink?.cancel()
@@ -241,7 +241,7 @@ class SubscriptionsVM(val context: Context, val lcScope: CoroutineScope) {
                     noSubscription = feedList.isEmpty()
                     feedListFiltered.clear()
                     feedListFiltered.addAll(feedList)
-                    feedCount = feedListFiltered.size.toString() + " / " + feedCount.toString()
+                    feedCountState = feedListFiltered.size.toString() + " / " + feedCount.toString()
                     infoTextFiltered = " "
                     if (feedsFilter.isNotEmpty()) infoTextFiltered = context.getString(R.string.filtered_label)
                     txtvInformation = (infoTextFiltered + infoTextUpdate)
@@ -455,7 +455,7 @@ fun SubscriptionsScreen() {
                     val queues = realm.query(PlayQueue::class).find()
                     vm.queueIds.addAll(queues.map { it.id })
                     vm.spinnerTexts.addAll(queues.map { it.name })
-                    vm.feedCount = vm.feedListFiltered.size.toString() + " / " + feedCount.toString()
+                    vm.feedCountState = vm.feedListFiltered.size.toString() + " / " + feedCount.toString()
                     vm.loadSubscriptions()
                 }
                 Lifecycle.Event.ON_START -> {
@@ -464,10 +464,10 @@ fun SubscriptionsScreen() {
                 }
                 Lifecycle.Event.ON_RESUME -> {
                     Logd(TAG, "ON_RESUME")
-                    vm.cancelFlowEvents()
                 }
                 Lifecycle.Event.ON_STOP -> {
                     Logd(TAG, "ON_STOP")
+                    vm.cancelFlowEvents()
                 }
                 Lifecycle.Event.ON_DESTROY -> {
                     Logd(TAG, "ON_DESTROY")
@@ -535,7 +535,7 @@ fun SubscriptionsScreen() {
                 if (vm.feedsFilter.isNotEmpty()) vm.showFilterDialog = true
             } )
             Spacer(Modifier.weight(1f))
-            Text(vm.feedCount, color = textColor)
+            Text(vm.feedCountState, color = textColor)
         }
     }
 
@@ -1004,7 +1004,9 @@ fun SubscriptionsScreen() {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
             dialogWindowProvider?.window?.let { window ->
                 window.setGravity(Gravity.BOTTOM)
-                window.setDimAmount(0f)
+//                window.setDimAmount(0f)
+//                window.setBackgroundDrawableResource(android.R.color.transparent)
+//                WindowCompat.setDecorFitsSystemWindows(window, false)
             }
             Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {
@@ -1258,7 +1260,7 @@ fun SubscriptionsScreen() {
             val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
             dialogWindowProvider?.window?.let { window ->
                 window.setGravity(Gravity.BOTTOM)
-                window.setDimAmount(0f)
+//                window.setDimAmount(0f)
             }
             Surface(modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp).height(350.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary)) {

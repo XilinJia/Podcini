@@ -23,7 +23,6 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.screens.*
@@ -31,6 +30,7 @@ import ac.mdiq.podcini.ui.utils.feedOnDisplay
 import ac.mdiq.podcini.ui.utils.setOnlineFeedUrl
 import ac.mdiq.podcini.ui.utils.setOnlineSearchTerms
 import ac.mdiq.podcini.ui.utils.setSearchTerms
+import ac.mdiq.podcini.ui.utils.starter.MainActivityStarter
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -48,13 +48,13 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.os.StrictMode
 import android.provider.Settings
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -65,13 +65,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -104,16 +102,6 @@ class MainActivity : CastEnabledActivity() {
     }
 
     var showUnrestrictedBackgroundPermissionDialog by mutableStateOf(false)
-
-//    private val isDrawerOpen: Boolean
-//        get() = drawerLayout?.isDrawerOpen(navDrawer) == true
-
-//    private val screenWidth: Int
-//        get() {
-//            val displayMetrics = DisplayMetrics()
-//            windowManager.defaultDisplay.getMetrics(displayMetrics)
-//            return displayMetrics.widthPixels
-//        }
 
     enum class Screens {
         Subscriptions,
@@ -148,10 +136,31 @@ class MainActivity : CastEnabledActivity() {
 
         lifecycleScope.launch((Dispatchers.IO)) { buildTags() }
 
-        if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
+//        if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Logd(TAG, "handleOnBackPressed called")
+                when {
+                    isDrawerOpen -> closeDrawer()
+                    isBSExpanded -> isBSExpanded = false
+                    mainNavController.previousBackStackEntry != null -> mainNavController.popBackStack()
+                    else -> {
+                        val toPage = defaultPage
+                        if (getLastNavScreen() == toPage || AppPreferences.DefaultPages.Remember.name == toPage) {
+                            if (getPref(AppPrefs.prefBackButtonOpensDrawer, false)) openDrawer()
+                            else {
+                                isEnabled = false
+                                onBackPressedDispatcher.onBackPressed()
+                            }
+                        } else loadScreen(toPage, null)
+                    }
+                }
+            }
+        })
 
         setContent {
             CustomTheme(this) {
@@ -196,25 +205,29 @@ class MainActivity : CastEnabledActivity() {
         lcScope = rememberCoroutineScope()
         val navController = rememberNavController()
         mainNavController = navController
-        val scaffoldState = rememberBottomSheetScaffoldState()
-        bottomSheetScaffoldState.value = scaffoldState
+        val sheetState = rememberBottomSheetScaffoldState(bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded))
 
         if (showUnrestrictedBackgroundPermissionDialog) UnrestrictedBackgroundPermissionDialog { showUnrestrictedBackgroundPermissionDialog = false }
 
-        val insets = WindowInsets.systemBars.asPaddingValues()
-        val dynamicBottomPadding = insets.calculateBottomPadding()
-        Logd(TAG, "effectiveBottomPadding: $dynamicBottomPadding")
+        LaunchedEffect(isBSExpanded) {
+            if (isBSExpanded) lcScope?.launch { sheetState.bottomSheetState.expand() }
+            else lcScope?.launch { sheetState.bottomSheetState.partialExpand() }
+        }
 
         ModalNavigationDrawer(drawerState = drawerState, modifier = Modifier.fillMaxHeight(), drawerContent = { NavDrawerScreen() }) {
-            BottomSheetScaffold(scaffoldState = scaffoldState, sheetPeekHeight = dynamicBottomPadding + 110.dp, sheetDragHandle = {}, topBar = {},
+            val insets = WindowInsets.systemBars.asPaddingValues()
+            var dynamicBottomPadding by remember {  mutableStateOf<Dp>(0.dp) }
+            dynamicBottomPadding = insets.calculateBottomPadding()
+            Logd(TAG, "effectiveBottomPadding: $dynamicBottomPadding")
+            BottomSheetScaffold(scaffoldState = sheetState, sheetPeekHeight = dynamicBottomPadding + 110.dp, sheetDragHandle = {}, topBar = {},
                 sheetSwipeEnabled = false, sheetShape = RectangleShape,
                 sheetContent = { AudioPlayerScreen() }
             ) { paddingValues ->
                 Box(modifier = Modifier.fillMaxSize().padding(
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                     top = paddingValues.calculateTopPadding(),
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = dynamicBottomPadding + 110.dp
+                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
+                    bottom = paddingValues.calculateBottomPadding() - 110.dp
                 )) {
                     CompositionLocalProvider(LocalNavController provides navController) {
                         NavHost(navController = navController, startDestination = Screens.Subscriptions.name) {
@@ -330,7 +343,10 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        updateInsets()
+        //        setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
+        val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
+        Logd(TAG, "playerHeight: $playerHeight ${navigationBarInsets.bottom}")
+//        bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
 
     /**
@@ -339,11 +355,11 @@ class MainActivity : CastEnabledActivity() {
      * This makes sure that we do not get ID collisions
      * and therefore errors when trying to restore state from another view.
      */
-    private fun ensureGeneratedViewIdGreaterThan(minimum: Int) {
-        while (View.generateViewId() <= minimum) {
-            // Generate new IDs
-        }
-    }
+//    private fun ensureGeneratedViewIdGreaterThan(minimum: Int) {
+//        while (View.generateViewId() <= minimum) {
+//            // Generate new IDs
+//        }
+//    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -393,13 +409,6 @@ class MainActivity : CastEnabledActivity() {
             edit.putBoolean(Extras.prefMainActivityIsFirstLaunch.name, false)
             edit.apply()
         }
-    }
-
-    private fun updateInsets() {
-//        setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
-        val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
-        Logd(TAG, "playerHeight: $playerHeight ${navigationBarInsets.bottom}")
-//        bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
 
     fun setPlayerVisible(visible_: Boolean?) {
@@ -495,21 +504,6 @@ class MainActivity : CastEnabledActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        when {
-            isDrawerOpen -> closeDrawer()
-            isBottomSheetExpanded -> collapseBottomSheet()
-            mainNavController.previousBackStackEntry != null -> mainNavController.popBackStack()
-            else -> {
-                val toPage = defaultPage
-                if (getLastNavScreen() == toPage || AppPreferences.DefaultPages.Remember.name == toPage) {
-                    if (getPref(AppPrefs.prefBackButtonOpensDrawer, false)) openDrawer()
-                    else super.onBackPressed()
-                } else loadScreen(toPage, null)
-            }
-        }
-    }
-
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
     private fun cancelFlowEvents() {
@@ -557,7 +551,7 @@ class MainActivity : CastEnabledActivity() {
                         mainNavController.navigate(Screens.FeedEpisodes.name)
                     }
                 }
-                collapseBottomSheet()
+                isBSExpanded = false
             }
             intent.hasExtra(Extras.fragment_feed_url.name) -> {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
@@ -580,7 +574,7 @@ class MainActivity : CastEnabledActivity() {
 ////                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
 //            }
             intent.getBooleanExtra(MainActivityStarter.Extras.open_player.name, false) -> {
-                expandBottomSheet()
+                isBSExpanded = true
 //                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
 //                bottomSheetCallback.onSlide(dummyView, 1.0f)
             }
@@ -695,11 +689,6 @@ class MainActivity : CastEnabledActivity() {
 
     companion object {
         private val TAG: String = MainActivity::class.simpleName ?: "Anonymous"
-        const val MAIN_FRAGMENT_TAG: String = "main"
-//        const val PREF_NAME: String = "MainActivityPrefs"
-
-        const val REQUEST_CODE_FIRST_PERMISSION = 1001
-        const val REQUEST_CODE_SECOND_PERMISSION = 1002
 
         lateinit var mainNavController: NavHostController
         val LocalNavController = staticCompositionLocalOf<NavController> { error("NavController not provided") }
@@ -718,22 +707,7 @@ class MainActivity : CastEnabledActivity() {
         val isDrawerOpen: Boolean
             get() = drawerState.isOpen
 
-        @OptIn(ExperimentalMaterial3Api::class)
-        val bottomSheetScaffoldState = mutableStateOf<BottomSheetScaffoldState?>(null)
-
-        @OptIn(ExperimentalMaterial3Api::class)
-        fun expandBottomSheet() {
-            lcScope?.launch { bottomSheetScaffoldState.value?.bottomSheetState?.expand() }
-        }
-
-        @OptIn(ExperimentalMaterial3Api::class)
-        fun collapseBottomSheet() {
-            lcScope?.launch { bottomSheetScaffoldState.value?.bottomSheetState?.partialExpand() }
-        }
-
-        @OptIn(ExperimentalMaterial3Api::class)
-        val isBottomSheetExpanded: Boolean
-            get() = bottomSheetScaffoldState.value?.bottomSheetState?.hasExpandedState == true
+        var isBSExpanded by mutableStateOf(false)
 
         @JvmStatic
         fun getIntentToOpenFeed(context: Context, feedId: Long): Intent {

@@ -293,7 +293,7 @@
     <string name="confirm_mobile_streaming_button_always">Sempre</string>
     <string name="confirm_mobile_streaming_button_once">Una volta</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Il media non può essere riprodotto.\n\n- Prova a eliminare e riscaricare l\'episodio.\n- Controlla la connessione e assicurati che nessuna VPN o pagina di login blocchi l\'accesso.\n- Prova a tenere premuto e condividere l\'indirizzo del media al tuo browser per vedere se può essere riprodotto. Se no, contatta il creatore del podcast.]]></string>
+
     <string name="no_media_playing_label">Nessun elemento multimediale in riproduzione</string>
     <string name="unknown_media_key">Podcini - Tasto dell\'elemento multimediale sconosciuto: %1$d</string>
     <string name="error_file_not_found">File non trovato</string>

@@ -256,7 +256,7 @@
   <string name="confirm_mobile_streaming_button_always">תמיד</string>
   <string name="confirm_mobile_streaming_button_once">פעם אחת</string>
   <!--Mediaplayer messages-->
-  <string name="playback_error_generic"><![CDATA[לא ניתן לנגן את המדיה.\n\n- כדאי לנסות למחוק ולהוריד מחדש את הפרק.\n- לבדוק את החיבור שלך לרשת ולוודא שאין VPN או עמוד כניסה שחוסמים את הגישה.\n- לנסות ללחוץ ארוכות ולשתף את „כתובת מדיה” עם הדפדפן שלך כדי לראות אם אפשר לנגן את זה שם. אם לא, נא ליצור קשר עם יוצרי הפודקאסט.]]></string>
+
 
 
 

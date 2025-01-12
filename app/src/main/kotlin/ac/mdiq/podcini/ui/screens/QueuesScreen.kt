@@ -11,7 +11,8 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackServic
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
-import ac.mdiq.podcini.storage.database.Episodes
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithDownloadUrl
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
 import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
@@ -196,7 +197,7 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
                     for (e in event.episodes) {
-                        val pos: Int = Episodes.indexOfItemWithId(queueItems, e.id)
+                        val pos: Int = queueItems.indexOfItemWithId(e.id)
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
 //                            queueItems[pos].stopMonitoring.value = true
@@ -232,7 +233,7 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-        val pos: Int = Episodes.indexOfItemWithId(queueItems, event.episode.id)
+        val pos: Int = queueItems.indexOfItemWithId(event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
         if (pos >= 0 && pos < vms.size) vms[pos].isPlayingState = event.isPlaying()
     }
@@ -242,7 +243,7 @@ class QueuesVM(val context: Context, val lcScope: CoroutineScope) {
         if (loadItemsRunning) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = Episodes.indexOfItemWithDownloadUrl(queueItems.toList(), url)
+            val pos: Int = queueItems.indexOfItemWithDownloadUrl(url)
             if (pos >= 0 && pos < vms.size) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
 
         }

@@ -290,7 +290,7 @@
     <string name="confirm_mobile_streaming_button_always">همیشه</string>
     <string name="confirm_mobile_streaming_button_once">یکبار</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[پروندهٔ رسانه نتوانست پخش شود.\n\n- حذف و بارگیری دوبارهٔ قسمت را بیازمایید.\n- اتّصال شبکه‌تان را بررس کرد و مطمئن شوید صفحهٔ ورود وی‌پی‌ان دسترسیتان را مسدود نکرده باشد.\n- فشار طولانی و هم‌رسانی «نشانی رسانه» با مرورگر وبتان را برای بررسی توانایی پخش در آن‌جا بیازمایید. در صورت پخش نشدن با سازندگان پادمست تماس بگیرید.]]></string>
+
     <string name="no_media_playing_label">رسانه‌ای در حال پخش نیست</string>
     <string name="unknown_media_key">آنتناپاد - کلید رسانه‌ای ناشناخته: %1$d</string>
     <string name="error_file_not_found">پرونده یافت نشد</string>

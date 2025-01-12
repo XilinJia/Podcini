@@ -290,7 +290,7 @@
     <string name="confirm_mobile_streaming_button_always">Alltid</string>
     <string name="confirm_mobile_streaming_button_once">En gång</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Mediefilen kunde inte spelas.\n\n- Försök att ta bort och ladda ner avsnittet igen.\n- Kontrollera din nätverksanslutning och se till att ingen VPN- eller inloggningssida blockerar åtkomst.\n- Försök att långtrycka och dela \"Medieadress\" till din webbläsare för att se om den kan spelas där. Om inte, kontakta podcast-skaparna.]]></string>
+
     <string name="no_media_playing_label">Inget media spelar</string>
     <string name="unknown_media_key">Podcini - Okänd mediaknapp: %1$d</string>
     <string name="error_file_not_found">Filen hittades inte</string>

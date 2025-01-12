@@ -237,7 +237,7 @@
   <string name="confirm_mobile_streaming_button_always">Sempre</string>
   <string name="confirm_mobile_streaming_button_once">Uma vez</string>
   <!--Mediaplayer messages-->
-  <string name="playback_error_generic"><![CDATA[Não foi possível reproduzir o arquivo de mídia.\n\n- Tente excluir e baixar novamente o episódio.\n- Verifique sua conexão de rede e certifique-se de que nenhuma VPN ou página de login esteja bloqueando o acesso.\n- Tente pressionar e compartilhar o \"Endereço de mídia\" com seu navegador para ver se ele pode ser reproduzido lá. Caso contrário, entre em contato com os criadores do podcast.]]></string>
+
 
 
 

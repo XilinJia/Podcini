@@ -23,12 +23,18 @@ class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder)
     private val client: OkHttpClient
         get() {
             builder.readTimeout(30, TimeUnit.SECONDS)
-            builder.networkInterceptors().add(object : Interceptor {
-                override fun intercept(chain: Chain): okhttp3.Response {
+            builder.addNetworkInterceptor(object : Interceptor {
+                override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
                     return chain.proceed(chain.request())
                 }
-            } )
+            })
+//            builder.networkInterceptors().add(object : Interceptor {
+//                override fun intercept(chain: Chain): okhttp3.Response {
+//                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+//                    return chain.proceed(chain.request())
+//                }
+//            } )
             return builder.build()
         }
 

@@ -293,7 +293,7 @@
     <string name="confirm_mobile_streaming_button_always">Immer</string>
     <string name="confirm_mobile_streaming_button_once">Einmalig</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Die Mediendatei konnte nicht abgespielt werden.\n\n- Versuche die Episode zu löschen und erneut herunterzuladen.\n- Überprüfe die Netzwerkverbindung und stelle sicher, dass kein VPN oder eine Anmeldeseite den Zugriff blockiert.\n- Tippe lange auf die Episode und teile die \"Medienadresse\" mit deinem Webbrowser, um zu sehen, ob sie dort abgespielt werden kann. Wenn nicht, wende dich an die Ersteller des Podcasts.]]></string>
+
     <string name="no_media_playing_label">Keine Medienwiedergabe</string>
     <string name="unknown_media_key">Podcini - Unbekannte Medientaste: %1$d</string>
     <string name="error_file_not_found">Datei nicht gefunden</string>

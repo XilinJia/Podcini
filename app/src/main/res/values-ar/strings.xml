@@ -311,7 +311,7 @@
     <string name="confirm_mobile_streaming_button_always">دائما</string>
     <string name="confirm_mobile_streaming_button_once">مرة</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[تعذر تشغيل ملف الوسائط.\n\n- حاول مسح وإعادة تنزيل الحلقة.\n- تحقق من اتصالك بالشبكة، وتأكد من عدم وجود شبكة خصوصية افتراضية VPN أو صفحة ولوج تمنعك من الوصول.\n- قم بالضغط المطول ثم مشاركة \"عنوان الوسائط\" إلى متصفح الإنترنت لرؤية ما إذا كانت تعمل هناك. إذا لم تعمل، قم بالتواصل مع منتجي البودكاست.]]></string>
+
     <string name="no_media_playing_label">لا يوجد وسائط قيد التشغيل</string>
     <string name="unknown_media_key">Podcini - مفتاح وسائط غير معروف: %1$d</string>
     <string name="error_file_not_found">ملف غير موجود</string>

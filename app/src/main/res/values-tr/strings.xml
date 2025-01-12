@@ -292,7 +292,7 @@
     <string name="confirm_mobile_streaming_button_always">Her zaman</string>
     <string name="confirm_mobile_streaming_button_once">Bir kere</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Medya dosyası oynatılamadı.\n\n- Bölümü silip yeniden indirmeyi deneyin.\n- Ağ bağlantınızı kontrol edin ve VPN veya giriş sayfasının erişimi engellemediğinden emin olun.\n- \"Medya adresi \"ne uzun basıp web tarayıcınızda paylaşmayı deneyin ve orada oynatılıp oynatılamayacağını görün. Değilse, podcast yapımcısı ile iletişime geçin]]></string>
+
     <string name="no_media_playing_label">Çalınan medya yok</string>
     <string name="unknown_media_key">Podcini - Bilinmeyen medya anahtarı: %1$d</string>
     <string name="error_file_not_found">Dosya bulunamadı</string>

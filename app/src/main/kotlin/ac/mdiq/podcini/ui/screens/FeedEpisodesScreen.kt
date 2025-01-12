@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.screens
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItem
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -86,8 +87,8 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
     internal val episodes = mutableStateListOf<Episode>()
     internal val vms = mutableStateListOf<EpisodeVM>()
 
-    internal var ieMap: Map<Long, Int> = mapOf()
-    internal var ueMap: Map<String, Int> = mapOf()
+//    internal var ieMap: Map<Long, Int> = mapOf()
+//    internal var ueMap: Map<String, Int> = mapOf()
 
     internal var enableFilter: Boolean = true
     internal var filterButtonColor = mutableStateOf(Color.White)
@@ -122,7 +123,7 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
     }
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         if (feed != null) {
-            val pos: Int = ieMap[event.episode.id] ?: -1
+            val pos: Int = vms.indexOfItem(event.episode.id)
             if (pos >= 0) {
                 if (!isFilteredOut(event.episode) && pos < vms.size) vms[pos].isPlayingState = event.isPlaying()
                 if (event.isPlaying()) upsertBlk(feed!!) { it.lastPlayed = Date().time }
@@ -135,7 +136,7 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
         if (feed == null || episodes.isEmpty()) return
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = ueMap[url] ?: -1
+            val pos: Int = vms.indexOfItem(url)
             if (pos >= 0 && pos < vms.size) {
                 Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].downloaded} ${episodes[pos].title}")
                 vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
@@ -203,8 +204,8 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
             val episodes_ = realm.query(Episode::class).query("feedId == ${feed!!.id}").query(feed!!.episodeFilter.queryString()).find()
             if (!episodes_.contains(episode)) {
                 episodes.remove(episode)
-                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.downloadUrl?.let { it to index } }.toMap()
+//                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+//                ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.downloadUrl?.let { it to index } }.toMap()
                 return true
             }
             return false
@@ -236,8 +237,8 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
                         getPermutor(sortOrder).reorder(eListTmp)
                         episodes.clear()
                         episodes.addAll(eListTmp)
-                        ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
+//                        ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+//                        ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
                         withContext(Dispatchers.Main) {
                             layoutModeIndex = if (feed_.useWideLayout == true) 1 else 0
                             stopMonitor(vms)
@@ -324,8 +325,8 @@ class FeedEpisodesVM(val context: Context, val lcScope: CoroutineScope) {
                 getPermutor(fromCode(feed?.sortOrderCode ?: 0)).reorder(eListTmp)
                 episodes.clear()
                 episodes.addAll(eListTmp)
-                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-                ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
+//                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+//                ueMap = episodes.mapIndexedNotNull { index, episode -> episode.downloadUrl?.let { it to index } }.toMap()
             }
             withContext(Dispatchers.Main) {
                 stopMonitor(vms)
@@ -389,8 +390,8 @@ fun FeedEpisodesScreen() {
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             vm.feed = null
-            vm.ieMap = mapOf()
-            vm.ueMap = mapOf()
+//            vm.ieMap = mapOf()
+//            vm.ueMap = mapOf()
             vm.episodes.clear()
             stopMonitor(vm.vms)
             vm.vms.clear()

@@ -295,7 +295,7 @@
     <string name="confirm_mobile_streaming_button_always">Always</string>
     <string name="confirm_mobile_streaming_button_once">Once</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[The media file could not be played.\n\n- Try deleting and re-downloading the episode.\n- Check your network connection, and make sure no VPN or login page is blocking access.\n- Try long-pressing and sharing the \"Media address\" to your web browser to see if it can be played there. If not, contact the podcast creators.]]></string>
+
     <string name="no_media_playing_label">No media playing</string>
     <string name="unknown_media_key">Podcini - Unknown media key: %1$d</string>
     <string name="error_file_not_found">File not found</string>

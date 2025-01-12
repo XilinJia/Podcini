@@ -292,7 +292,7 @@
     <string name="confirm_mobile_streaming_button_always">Sempre</string>
     <string name="confirm_mobile_streaming_button_once">Uma vez</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Não foi possível reproduzir o ficheiro.\n\n- Experimente eliminar o episódio e descarregue-o novamente.\n- Verifique a sua ligação de rede e certifique-se se existe uma VPN ou página de acesso que está a impedir a transmissão.\n- Toque longo no episódio e aceda ao \"Endereço multimédia\" no navegador web, para se certificar de que o episódio pode ser reproduzido. Se nada disto funcionar, contacte os criadores do podcast.]]></string>
+
     <string name="no_media_playing_label">Nada em reprodução</string>
     <string name="unknown_media_key">Tecla multimédia desconhecida: %1$d</string>
     <string name="error_file_not_found">Ficheiro não encontrado</string>

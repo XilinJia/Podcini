@@ -7,8 +7,9 @@ import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
 import ac.mdiq.podcini.preferences.MediaFilesTransporter
-import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItem
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -115,7 +116,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
-            val pos: Int = Episodes.indexOfItemWithDownloadUrl(episodes, url)
+            val pos: Int = vms.indexOfItem(url)
             if (pos >= 0 && pos < vms.size) vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
@@ -389,7 +390,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
             val size: Int = event.episodes.size
             while (i < size) {
                 val item: Episode = event.episodes[i++]
-                val pos = Episodes.indexOfItemWithId(episodes, item.id)
+                val pos = episodes.indexOfItemWithId(item.id)
                 if (pos >= 0) {
                     episodes.removeAt(pos)
                     if (pos < vms.size) vms.removeAt(pos)
@@ -409,7 +410,7 @@ class EpisodesVM(val context: Context, val lcScope: CoroutineScope) {
             val size: Int = event.episodes.size
             while (i < size) {
                 val item: Episode = event.episodes[i++]
-                val pos = Episodes.indexOfItemWithId(episodes, item.id)
+                val pos = episodes.indexOfItemWithId(item.id)
                 if (pos >= 0) {
                     episodes.removeAt(pos)
                     if (pos < vms.size) vms.removeAt(pos)

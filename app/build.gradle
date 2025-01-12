@@ -26,8 +26,8 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        versionCode 3020340
-        versionName "7.3.3"
+        versionCode 3020341
+        versionName "7.3.4"
 
         ndkVersion "27.0.12077973"
 
@@ -181,19 +181,14 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:2.8.5"
 
     implementation "androidx.annotation:annotation:1.9.1"
-//    implementation "androidx.appcompat:appcompat:1.7.0"
-//    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     implementation "androidx.core:core-ktx:1.15.0"
     implementation "androidx.documentfile:documentfile:1.0.1"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7"
-//    implementation "androidx.palette:palette-ktx:1.0.0"
-//    implementation "androidx.recyclerview:recyclerview:1.3.2"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.webkit:webkit:1.12.1"
     implementation "androidx.window:window:1.3.0"
     implementation "androidx.work:work-runtime:2.10.0"
-//    implementation "androidx.fragment:fragment-ktx:1.8.5"
 
     implementation "androidx.media3:media3-exoplayer:1.5.1"
     implementation "androidx.media3:media3-datasource-okhttp:1.5.1"
@@ -209,7 +204,6 @@ dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs_nio:2.1.4"
     implementation "com.github.XilinJia.vistaguide:VistaGuide:lv0.24.2.6"
 
-//    implementation "com.github.skydoves:balloon:1.6.6"
     implementation "io.coil-kt:coil:2.7.0"
     implementation "io.coil-kt:coil-compose:2.7.0"
     implementation "commons-io:commons-io:2.16.1"

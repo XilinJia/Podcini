@@ -300,7 +300,7 @@
     <string name="confirm_mobile_streaming_button_always">Завжди</string>
     <string name="confirm_mobile_streaming_button_once">Один раз</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Медіафайл не вдалося відтворити.\n\n- Спробуйте видалити та повторно завантажити епізод.\n- Перевірте мережеве з\'єднання та переконайтеся, що доступ не заблоковано VPN або запитом авторизації.\n- Спробуйте довго натиснути на \"Адресу медіафайлу\" та відправити її у ваш веб-браузер, щоб перевірити, чи можна її відтворити там. Якщо ні, зверніться до авторів подкасту.]]></string>
+
     <string name="no_media_playing_label">Немає що грати</string>
     <string name="unknown_media_key">Podcini - Невідомий медіа ключ: %1$d</string>
     <string name="error_file_not_found">Файл не знайдено</string>

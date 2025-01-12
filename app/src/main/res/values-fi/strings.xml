@@ -290,7 +290,7 @@
     <string name="confirm_mobile_streaming_button_always">Aina</string>
     <string name="confirm_mobile_streaming_button_once">Kerran</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Mediatiedostoa ei voitu toistaa.\n\n- Yritä poistaa ja ladata jakso uudelleen.\n- Tarkista verkkoyhteytesi ja varmista, ettei VPN tai kirjautumissivu estä pääsyä.\n- Kokeile pitkään painamalla \"Mediaosoite\" ja jakamalla se selaimellesi nähdäksesi, voidaanko sitä toistaa siellä. Jos ei, ota yhteyttä podcastien tekijöihin.]]></string>
+
     <string name="no_media_playing_label">Mediaa ei toisteta</string>
     <string name="unknown_media_key">Podcini - Tuntematon media-avain: %1$d</string>
     <string name="error_file_not_found">Tiedostoa ei löytynyt</string>

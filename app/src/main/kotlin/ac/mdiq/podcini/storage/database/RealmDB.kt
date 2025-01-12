@@ -40,9 +40,11 @@ object RealmDB {
                 SubscriptionLog::class,
                 Chapter::class,
                 PAFeed::class,
+                AStream::class,
+                VStream::class,
             ))
             .name("Podcini.realm")
-            .schemaVersion(40)
+            .schemaVersion(41)
             .migration({ mContext ->
                 val oldRealm = mContext.oldRealm // old realm using the previous schema
                 val newRealm = mContext.newRealm // new realm using the new schema

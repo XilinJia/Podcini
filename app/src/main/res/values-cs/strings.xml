@@ -300,7 +300,7 @@
     <string name="confirm_mobile_streaming_button_always">Vždy</string>
     <string name="confirm_mobile_streaming_button_once">Jednou</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Mediální soubor se nepodařilo přehrát.\n\n- Zkuste epizodu smazat a znovu stáhnout.\n- Zkontrolujte síťové připojení a ujistěte se, že přístup neblokuje žádná VPN nebo přihlašovací stránka.\n- Zkuste dlouze stisknout a sdílet \"Mediální adresu\" ve webovém prohlížeči a zjistit, zda ji lze přehrát tam. Pokud ne, kontaktujte tvůrce podcastu.]]></string>
+
     <string name="no_media_playing_label">Žádné probíhající přehrávání</string>
     <string name="unknown_media_key">Podcini - Neznámý klíč médií: %1$d</string>
     <string name="error_file_not_found">Soubor nebyl nalezen</string>

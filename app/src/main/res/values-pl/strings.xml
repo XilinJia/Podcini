@@ -302,7 +302,7 @@
     <string name="confirm_mobile_streaming_button_always">Zawsze</string>
     <string name="confirm_mobile_streaming_button_once">Tylko tym razem</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Nie można odtworzyć pliku multimedialnego.\n\n- Spróbuj usunąć i ponownie pobrać odcinek.\n- Sprawdź swoje połączenie sieciowe i upewnij się, że żaden VPN lub strona logowania nie blokuje dostępu.\n- Spróbuj długo nacisnąć i udostępnić \"Adres multimedialny\" swojej przeglądarce internetowej, aby sprawdzić, czy może ona być tam odtworzona. Jeśli nie, skontaktuj się z twórcami podcastu.]]></string>
+
     <string name="no_media_playing_label">Żadne media nie odtwarzane </string>
     <string name="unknown_media_key">Podcini - Nieznany klawisz: %1$d</string>
     <string name="error_file_not_found">Nie znaleziono pliku</string>

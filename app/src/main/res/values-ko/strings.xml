@@ -285,7 +285,7 @@
     <string name="confirm_mobile_streaming_button_always">항상</string>
     <string name="confirm_mobile_streaming_button_once">한번만</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[미디어 파일을 재생할 수 없습니다.\n\n- 해당 에피소드를 삭제하고 다시 다운로드해 보십시오.\n- 네트워크 연결이 올바른지 확인하고, VPN이나 로그인 페이지가 접근을 막고 있는 것은 아닌지 확인해 보십시오.\n- 길게 눌러 \"미디어 주소\"를 웹브라우저에 공유해 브라우저에서는 재생되는지 보십시오. 재생되지 않으면, 팟캐스트 제작자에게 연락하십시오.]]></string>
+
     <string name="no_media_playing_label">재생 중인 미디어 없음</string>
     <string name="unknown_media_key">안테나팟 - 알 수 없는 미디어 키: %1$d</string>
     <string name="error_file_not_found">파일이 없습니다</string>

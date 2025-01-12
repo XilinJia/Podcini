@@ -290,7 +290,7 @@
     <string name="confirm_mobile_streaming_button_always">Altijd</string>
     <string name="confirm_mobile_streaming_button_once">Eenmalig</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Het mediabestand kan niet worden afgespeeld.\n\n- Probeer de aflevering te verwijderen en opnieuw te downloaden.\n- Controleer uw netwerkverbinding en zorg ervoor dat geen VPN of inlogpagina toegang blokkeert.\n- Probeer het \"Media-adres\" lang in te drukken en te delen met uw webbrowser om te zien of het daar gespeeld kan worden. Zo niet, neem dan contact op met de makers van podcast]]></string>
+
     <string name="no_media_playing_label">Er wordt geen media afgespeeld</string>
     <string name="unknown_media_key">Podcini - onbekende mediasleutel: %1$d</string>
     <string name="error_file_not_found">Bestand niet aangetroffen</string>

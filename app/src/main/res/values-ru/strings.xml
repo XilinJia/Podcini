@@ -300,7 +300,7 @@
     <string name="confirm_mobile_streaming_button_always">Всегда</string>
     <string name="confirm_mobile_streaming_button_once">В этот раз</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Не удаётся воспроизвести медиафайл.\n\n- Попробуйте удалить и загрузить выпуск заново.\n- Проверьте соединение и блокировку со стороны VPN или страницы авторизации.\n- Попробуйте долгим нажатием поделиться \"ссылкой на медиафайл\" и попытайтесь открыть её в браузере. Если это не помогло, обратитесь к авторам подкаста.]]></string>
+
     <string name="no_media_playing_label">Ничего не воспроизводится</string>
     <string name="unknown_media_key">Podcini - неизвестный ключ носителя: %1$d</string>
     <string name="error_file_not_found">Файл не найден</string>

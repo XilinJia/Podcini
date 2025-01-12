@@ -468,10 +468,7 @@ fun AudioPlayerScreen() {
                     val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
                     if (vm.controllerFuture == null) {
                         vm.controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-                        vm.controllerFuture?.addListener({
-                            media3Controller = vm.controllerFuture!!.get()
-//            Logd(TAG, "controllerFuture.addListener: $mediaController")
-                        }, MoreExecutors.directExecutor())
+                        vm.controllerFuture?.addListener({ media3Controller = vm.controllerFuture!!.get() }, MoreExecutors.directExecutor())
                     }
                 }
                 Lifecycle.Event.ON_RESUME -> {
@@ -503,10 +500,8 @@ fun AudioPlayerScreen() {
         if (isBSExpanded) {
             if (vm.shownotesCleaner == null) vm.shownotesCleaner = ShownotesCleaner(context)
             vm.setIsShowPlay(vm.isShowPlay)
-        } else {
-            vm.setIsShowPlay(vm.isShowPlay)
-        }
-        Logd(TAG, "isExpanded: ${isBSExpanded}")
+        } else vm.setIsShowPlay(vm.isShowPlay)
+        Logd(TAG, "isExpanded: $isBSExpanded")
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -802,7 +797,7 @@ fun AudioPlayerScreen() {
                     val lSet = mutableSetOf<String>()
                     val bSet = mutableSetOf<String>()
                     val cSet = mutableSetOf<String>("Any")
-                    for (s in ytMediaSpecs.audioStreamsList) {
+                    if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
                         lSet.add(s.audioLocale.toString())
                         bSet.add(s.averageBitrate.toString())
                         if (s.codec != null) cSet.add(s.codec!!) else cSet.add("null")
@@ -822,7 +817,7 @@ fun AudioPlayerScreen() {
                             bitRates.clear()
                             locale = locales[index]
                             val bSet = mutableSetOf<String>()
-                            for (s in ytMediaSpecs.audioStreamsList) {
+                            if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
                                 if (s.audioLocale.toString() == locale) bSet.add(s.averageBitrate.toString())
                             }
                             bitRates.addAll(bSet)
@@ -839,7 +834,7 @@ fun AudioPlayerScreen() {
                             bitRates.clear()
                             codec = codecs[index]
                             val bSet = mutableSetOf<String>()
-                            for (s in ytMediaSpecs.audioStreamsList) {
+                            if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
                                 Logd(TAG, "${s.codec} $codec ${s.averageBitrate}")
                                 if (s.audioLocale.toString() == locale && (codec == "Any" || s.codec == codec)) bSet.add(s.averageBitrate.toString())
                             }

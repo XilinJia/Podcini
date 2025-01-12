@@ -295,7 +295,7 @@
     <string name="confirm_mobile_streaming_button_always">Mereu</string>
     <string name="confirm_mobile_streaming_button_once">O dată</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Fișierul media nu a putut fi redat.\n\n- Încearcă să ștergi și să redescraci episodul.\n- Verifică conexiunea ta la internet, și asigurăte că nu există un VPN sau o pagină de autentificare ce blochează accesul.\n- Încearcă să ții apăsat și să partajezi \"adresa media\" către browserul web, pentru a vedea dacă fisierul poate fi redat acolo. În cazul în care nu se poate contactează creatorul podacstului.]]></string>
+
     <string name="no_media_playing_label">Nu se ascultă nimic</string>
     <string name="unknown_media_key">Podcini - tastă media necunoscută: %1$d</string>
     <string name="error_file_not_found">Fișierul nu a fost găsit</string>

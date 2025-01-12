@@ -752,7 +752,7 @@ fun EpisodeLazyColumn(activity: Context, vms: MutableList<EpisodeVM>, feed: Feed
                         detectTapGestures(onLongPress = { vms[index].showAltActionsDialog = true }, onTap = { vm.actionButton.onClick(activity) })
                     }) {
 //                    val actionRes by remember(vm.actionButton.drawable) { derivedStateOf { vm.actionButton.drawable } }
-                    Logd(TAG, "actionRes: $index ${vm.actionButton.TAG}")
+//                    Logd(TAG, "actionRes: $index ${vm.actionButton.TAG}")
                     Icon(imageVector = ImageVector.vectorResource(vm.actionButton.drawable), tint = buttonColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                     if (isDownloading() && vm.dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * vm.dlPercent },
                         strokeWidth = 4.dp, color = buttonColor, modifier = Modifier.width(33.dp).height(37.dp))

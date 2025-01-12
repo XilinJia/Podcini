@@ -23,6 +23,7 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.getPermutor
 import ac.mdiq.podcini.storage.model.PlayState
+import ac.mdiq.podcini.ui.compose.EpisodeVM
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
@@ -293,22 +294,13 @@ object Episodes {
         return e
     }
 
-    @JvmStatic
-    fun indexOfItemWithId(episodes: List<Episode>, id: Long): Int {
-        for (i in episodes.indices) if (episodes[i].id == id) return i
-        return -1
-    }
+    fun List<Episode>.indexOfItemWithId(id: Long): Int = indexOfFirst { it.id == id }
 
-//    @JvmStatic
-//    fun episodeListContains(episodes: List<Episode?>, itemId: Long): Boolean {
-//        return indexOfItemWithId(episodes, itemId) >= 0
-//    }
+    fun List<EpisodeVM>.indexOfItem(id: Long): Int = indexOfFirst { it.episode.id == id }
 
-    @JvmStatic
-    fun indexOfItemWithDownloadUrl(items: List<Episode>, downloadUrl: String): Int {
-        for (i in items.indices) if (items[i].downloadUrl == downloadUrl) return i
-        return -1
-    }
+    fun List<Episode>.indexOfItemWithDownloadUrl(downloadUrl: String): Int = indexOfFirst { it.downloadUrl == downloadUrl }
+
+    fun List<EpisodeVM>.indexOfItem(downloadUrl: String): Int = indexOfFirst { it.episode.downloadUrl == downloadUrl }
 
     @JvmStatic
     fun hasAlmostEnded(media: Episode): Boolean {

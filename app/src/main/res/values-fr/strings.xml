@@ -293,7 +293,7 @@
     <string name="confirm_mobile_streaming_button_always">Toujours</string>
     <string name="confirm_mobile_streaming_button_once">Une seule fois</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Le fichier de média n\'a pas pu être lu.\n\n- Essayez de le supprimer et de télécharger l\'épisode à nouveau.\n- Vérifier votre connexion, et assurez-vous que l\'accès n\'est pas bloqué par un VPN ou une page de connexion.\n- Essayez de faire un appui long et partager le lien du fichier à votre navigateur pour contrôler si l\'épisode peut être lu. Si ce n\'est pas le cas, contactez le créateur du podcast.]]></string>
+
     <string name="no_media_playing_label">Aucune lecture</string>
     <string name="unknown_media_key">Podcini - Touche média inconnue : %1$d</string>
     <string name="error_file_not_found">Fichier non trouvé</string>

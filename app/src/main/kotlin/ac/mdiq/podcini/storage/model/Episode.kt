@@ -6,7 +6,6 @@ import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
-import ac.mdiq.podcini.preferences.AppPreferences
 import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
@@ -21,9 +20,7 @@ import ac.mdiq.podcini.storage.utils.StorageUtils.getDataFolder
 import ac.mdiq.podcini.storage.utils.StorageUtils.getMimeType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
-import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.StreamInfo
-import ac.mdiq.vista.extractor.stream.VideoStream
 import android.content.ContentResolver
 import android.content.Context
 import android.media.MediaMetadataRetriever
@@ -51,6 +48,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
 import java.io.*
 import java.util.*
+import kotlin.Throws
 import kotlin.math.max
 
 class Episode : RealmObject {
@@ -180,8 +178,8 @@ class Episode : RealmObject {
             return field
         }
 
-//    var audioStreamsList: RealmList<AudioStream> = realmListOf()
-//    var videoStreamsList: RealmList<VideoStream> = realmListOf()
+    var aStreamsList: RealmList<AStream> = realmListOf()
+    var vStreamsList: RealmList<VStream> = realmListOf()
 
     @Ignore
     val isRemote = mutableStateOf(false)

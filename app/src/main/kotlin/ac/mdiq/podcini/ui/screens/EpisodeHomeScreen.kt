@@ -100,16 +100,12 @@ class EpisodeHomeVM(val context: Context, val lcScope: CoroutineScope) {
                                         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                                             Log.w(TAG, "TTS language not supported ${episode?.feed?.language}")
                                             lcScope.launch(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${episode?.feed?.language}", Toast.LENGTH_LONG).show() }
-//                                            (context as MainActivity).runOnUiThread {
-//                                                Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${episode?.feed?.language}", Toast.LENGTH_LONG).show()
-//                                            }
                                         }
                                     }
                                     Logd(TAG, "TTS init success")
                                 } else {
                                     Log.w(TAG, "TTS init failed")
                                     lcScope.launch(Dispatchers.Main) { Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
-//                                    (context as MainActivity).runOnUiThread { Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
                                 }
                             }
                         }
@@ -128,13 +124,6 @@ class EpisodeHomeVM(val context: Context, val lcScope: CoroutineScope) {
         }
     }
 }
-
-//override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-//    super.onCreateView(inflater, container, savedInstanceState)
-//    Logd(TAG, "fragment onCreateView")
-//    val composeView = ComposeView(requireContext()).apply { setContent { CustomTheme(requireContext()) { EpisodeHomeView() } } }
-//    return composeView
-//}
 
 @Composable
 fun EpisodeHomeScreen() {

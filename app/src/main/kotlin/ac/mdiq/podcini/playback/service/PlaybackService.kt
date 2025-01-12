@@ -32,10 +32,10 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.hasAlmostEnded
+import ac.mdiq.podcini.storage.database.Episodes.indexOfItemWithId
 import ac.mdiq.podcini.storage.database.Feeds.allowForAutoDelete
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -436,7 +436,7 @@ class PlaybackService : MediaLibraryService() {
             }
             Logd(TAG, "getNextInQueue eList: ${eList.size}")
             var j = 0
-            val i = Episodes.indexOfItemWithId(eList, item.id)
+            val i = eList.indexOfItemWithId(item.id)
             Logd(TAG, "getNextInQueue current i: $i curIndexInQueue: $curIndexInQueue")
             if (i < 0) {
                 j = if (curIndexInQueue >= 0 && curIndexInQueue < eList.size) curIndexInQueue else eList.size-1

@@ -1,3 +1,9 @@
+# 7.3.4
+
+* made assembling Youtube media less stressful, persisted audio/video streams once played, hopefully for better future access
+* enhanced event handling in FeedEpisodes and fixed the issue of null episodes
+* the player error message was amended in English, and cleared in all other languages (translation needed)
+
 # 7.3.3
 
 * major changes in 7.3

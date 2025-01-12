@@ -292,7 +292,7 @@
     <string name="confirm_mobile_streaming_button_always">Siempre</string>
     <string name="confirm_mobile_streaming_button_once">Una vez</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[El archivo no se pudo reproducir.\n\n- Intenta borrar el episodio y descargarlo de nuevo.\n- Comprueba la conexión de red, y asegúrate de que no haya conexiones VPN o portales cautivos activos.\n- Intenta pulsar prolongadamente y compartir la \"dirección del medio\" hacia tu navegador web para ver si se puede reproducir desde ahí. En caso contrario, contacta con los creador del pódcast.]]></string>
+
     <string name="no_media_playing_label">No hay medios en reproducción</string>
     <string name="unknown_media_key">Podcini - Tecla multimedia desconocida: %1$d</string>
     <string name="error_file_not_found">Archivo no encontrado</string>

@@ -285,7 +285,7 @@
     <string name="confirm_mobile_streaming_button_always">总是显示</string>
     <string name="confirm_mobile_streaming_button_once">一次</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[无法播放媒体文件。\n\n- 尝试删除和重新下载剧集。\n- 请检查您的网络连接，并确保没有 VPN 或登录页面阻止访问。\n- 尝试长按并将 \"媒体地址\" 分享到您的网页浏览器以查看它是否可以在这里播放。 如果没有，请联系播客创建者。]]></string>
+
     <string name="no_media_playing_label">没有媒体播放</string>
     <string name="unknown_media_key">Podcini - Unknown media key: %1$d</string>
     <string name="error_file_not_found">找不到文件</string>

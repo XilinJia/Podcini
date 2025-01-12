@@ -290,7 +290,7 @@
     <string name="confirm_mobile_streaming_button_always">Altid</string>
     <string name="confirm_mobile_streaming_button_once">Én gang</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[Mediefilen kunne ikke afspilles.\n\n- Prøv at slette afsnittet og hente den igen.\n- Tjek din netværksforbindelse, og sørg for, at ingen VPN eller login-side blokerer for adgangen.\n- Prøv at trykke længe på og dele \"Medieadressen\" med din webbrowser for at se, om den kan afspilles der. Hvis ikke, så kontakt podcastens producenter.]]></string>
+
     <string name="no_media_playing_label">Ingen medier afspiller</string>
     <string name="unknown_media_key">Podcini - Ukendt medienøgle: %1$d</string>
     <string name="error_file_not_found">Fil ikke fundet</string>

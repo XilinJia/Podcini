@@ -9,9 +9,13 @@ import ac.mdiq.podcini.preferences.AppPreferences.AppPrefs
 import ac.mdiq.podcini.preferences.AppPreferences.getPref
 import ac.mdiq.podcini.preferences.AppPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.AppPreferences.putPref
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.model.AStream
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.VStream
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.MediaFormat
@@ -27,7 +31,6 @@ import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
@@ -117,24 +120,24 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         if (media.feed?.type == Feed.FeedType.YOUTUBE.name) {
             isYoutubeMedia = true
             if (ytMediaSpecs.media.id != media.id) ytMediaSpecs = YoutubeMediaSpecs(media)
-            if (ytMediaSpecs.streamInfo == null) throw IllegalStateException("streamInfo is null")
+//            if (media.streamInfo == null) throw IllegalStateException("streamInfo is null")
             Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
                 ytMediaSpecs.buildAudioStreams()
-                if (ytMediaSpecs.audioStreamsList.isEmpty()) throw IllegalStateException("audioStreamsList empty")
-                Logd(TAG, "setDataSource1 audioStreamsList ${ytMediaSpecs.audioStreamsList.size}")
+                if (media.aStreamsList.isEmpty()) throw IllegalStateException("audioStreamsList empty")
+                Logd(TAG, "setDataSource1 audioStreamsList ${media.aStreamsList.size}")
                 ytMediaSpecs.setAudioStream()
                 if (ytMediaSpecs.audioStream == null) throw IllegalStateException("audioStream is null")
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(
-                    MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.audioStream!!.content)).build())
+                    MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.audioStream!!.url)).build())
                 
                 if (media.forceVideo || media.feed?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                     ytMediaSpecs.buildVideoStreams()
-                    if (ytMediaSpecs.videoStreamsList.isEmpty()) throw IllegalStateException("videoStreamsList empty")
+                    if (media.vStreamsList.isEmpty()) throw IllegalStateException("videoStreamsList empty")
                     ytMediaSpecs.setVideoStream()
                     if (ytMediaSpecs.videoStream == null) throw IllegalStateException("videoStream is null")
                     val vSource = DefaultMediaSourceFactory(context).createMediaSource(
-                        MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.videoStream!!.content)).build())
+                        MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(ytMediaSpecs.videoStream!!.url)).build())
                     val mediaSources: MutableList<MediaSource> = ArrayList()
                     mediaSources.add(vSource)
                     mediaSources.add(aSource)
@@ -206,12 +209,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     abstract fun resume()
 
     /**
-     * Saves the current position and pauses playback. Note that, if audiofocus
-     * is abandoned, the lockscreen controls will also disapear.
+     * Saves the current position and pauses playback. Note that, if audiofocus is abandoned, the lockscreen controls will also disapear.
      * This method is executed on an internal executor service.
-     * @param abandonFocus is true if the service should release audio focus
-     * @param reinit       is true if service should reinit after pausing if the media
-     * file is being streamed
+     * @param reinit is true if service should reinit after pausing if the media file is being streamed
      */
     abstract fun pause(reinit: Boolean)
 
@@ -361,30 +361,31 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             @JvmField var playable: Episode?)
 
     class YoutubeMediaSpecs(val media: Episode) {
-        val streamInfo = media.streamInfo
-        val audioStreamsList = mutableStateListOf<AudioStream>()
-        val videoStreamsList = mutableStateListOf<VideoStream>()
-
         var audioIndex: Int
         var videoIndex: Int
-        var audioStream: AudioStream? = null
-        var videoStream: VideoStream? = null
+        var audioStream: AStream? = null
+        var videoStream: VStream? = null
 
         init {
-            audioStreamsList.clear()
-            videoStreamsList.clear()
             audioIndex = -1
             videoIndex = -1
         }
 
         fun buildAudioStreams() {
-            if (audioStreamsList.isEmpty()) audioStreamsList.addAll(getFilteredAudioStreams(streamInfo?.audioStreams))
+            Logd(TAG, "buildAudioStreams media.aStreamsList: ${media.aStreamsList.size}")
+            if (media.aStreamsList.isEmpty()) {
+                val streams = getFilteredAStreams(media.streamInfo?.audioStreams)
+                if (streams.isNotEmpty()) {
+                    media.aStreamsList.addAll(streams)
+                    runOnIOScope { upsert(media) {} }
+                }
+            }
         }
 
         fun setAudioStream(locale: String, codec: String, averageBitrate: Int) {
             Logd(TAG, "setAudioStream: locale: $locale codec: $codec averageBitrate: $averageBitrate")
-            for (i in 0..audioStreamsList.size-1) {
-                val s = audioStreamsList[i]
+            for (i in 0..media.aStreamsList.size-1) {
+                val s = media.aStreamsList[i]
                 Logd(TAG, "${s.audioLocale} ${s.codec} ${s.averageBitrate}")
                 if (s.audioLocale.toString() == locale && s.codec == codec && s.averageBitrate == averageBitrate) {
                     audioIndex = i
@@ -402,25 +403,31 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 else {
                     when (media.feed?.audioQualitySetting) {
                         Feed.AVQuality.LOW -> 0
-                        Feed.AVQuality.MEDIUM -> audioStreamsList.size / 2
-                        Feed.AVQuality.HIGH -> audioStreamsList.size - 1
-                        else -> audioStreamsList.size - 1
+                        Feed.AVQuality.MEDIUM -> media.aStreamsList.size / 2
+                        Feed.AVQuality.HIGH -> media.aStreamsList.size - 1
+                        else -> media.aStreamsList.size - 1
                     }
                 }
             }
-            for (a in ytMediaSpecs.audioStreamsList) {
-                Logd(TAG, "audioStreamsList: bitrate: ${a.bitrate} averageBitrate: ${a.averageBitrate} quality: ${a.quality}  codec: ${a.codec} audioLocale: ${a.audioLocale.toString()} id: ${a.audioTrackId} name: ${a.audioTrackName} format: ${a.format?.name}")
+            for (a in media.aStreamsList) {
+                Logd(TAG, "audioStreamsList: bitrate: ${a.bitrate} averageBitrate: ${a.averageBitrate} quality: ${a.quality}  codec: ${a.codec} audioLocale: ${a.audioLocale.toString()} id: ${a.audioTrackId} name: ${a.audioTrackName} format: ${a.format}")
             }
-            audioStream = audioStreamsList[audioIndex]
+            audioStream = media.aStreamsList[audioIndex]
             media.bitrate = audioStream?.bitrate ?:0
-            media.effectUrl = audioStream?.content ?:""
+            media.effectUrl = audioStream?.url ?:""
             Logd(TAG, "setAudioStream use audio quality: ${audioStream?.bitrate} forceVideo: ${media.forceVideo}")
-            Logd(TAG, "audioStream: ${audioStream?.content}")
+            Logd(TAG, "audioStream: ${audioStream?.url}")
         }
 
         fun buildVideoStreams() {
-            if (videoStreamsList.isEmpty()) videoStreamsList.addAll(getSortedStreamVideosList(listOf(), streamInfo?.videoOnlyStreams, true, true))
-            Logd(TAG, "setVideoStreams videoStreams: ${streamInfo?.videoStreams?.size} videoOnlyStreams: ${streamInfo?.videoOnlyStreams?.size} audioStreams: ${streamInfo?.audioStreams?.size}")
+            if (media.vStreamsList.isEmpty()) {
+                val streams = getSortedVStreams(listOf(), media.streamInfo?.videoOnlyStreams, ascendingOrder = true, preferVideoOnlyStreams = true)
+                if (streams.isNotEmpty()) {
+                    media.vStreamsList.addAll(streams)
+                    runOnIOScope { upsert(media) {} }
+                }
+            }
+//            Logd(TAG, "setVideoStreams videoStreams: ${media.streamInfo?.videoStreams?.size} videoOnlyStreams: ${media.streamInfo?.videoOnlyStreams?.size} audioStreams: ${media.streamInfo?.audioStreams?.size}")
         }
 
         fun setVideoStream() {
@@ -429,13 +436,13 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 else {
                     when (media.feed?.videoQualitySetting) {
                         Feed.AVQuality.LOW -> 0
-                        Feed.AVQuality.MEDIUM -> videoStreamsList.size / 2
-                        Feed.AVQuality.HIGH -> videoStreamsList.size - 1
+                        Feed.AVQuality.MEDIUM -> media.vStreamsList.size / 2
+                        Feed.AVQuality.HIGH -> media.vStreamsList.size - 1
                         else -> 0
                     }
                 }
             }
-            videoStream = videoStreamsList[videoIndex]
+            videoStream = media.vStreamsList[videoIndex]
             Logd(TAG, "setDataSource1 use video quality: ${ytMediaSpecs.videoStream?.resolution}")
         }
     }
@@ -469,7 +476,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         val prefPlaybackSpeed: Float
             get() {
-                try { return getPref(AppPrefs.prefPlaybackSpeed, "1.00")!!.toFloat()
+                try { return getPref(AppPrefs.prefPlaybackSpeed, "1.00").toFloat()
                 } catch (e: NumberFormatException) {
                     Log.e(TAG, Log.getStackTraceString(e))
                     putPref(AppPrefs.prefPlaybackSpeed, "1.0")
@@ -485,6 +492,18 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 if (stream.deliveryMethod == DeliveryMethod.TORRENT || (stream.deliveryMethod == DeliveryMethod.HLS && stream.format == MediaFormat.OPUS))
                     continue
                 collectedStreams.add(stream)
+            }
+            return collectedStreams.toList().sortedWith(compareBy { it.bitrate })
+        }
+
+        fun getFilteredAStreams(audioStreams: List<AudioStream>?): List<AStream> {
+            if (audioStreams == null) return listOf()
+            val collectedStreams = mutableSetOf<AStream>()
+            for (stream in audioStreams) {
+                Logd(TAG, "getFilteredAudioStreams stream: ${stream.audioTrackId} ${stream.bitrate} ${stream.deliveryMethod} ${stream.format}")
+                if (stream.deliveryMethod == DeliveryMethod.TORRENT || (stream.deliveryMethod == DeliveryMethod.HLS && stream.format == MediaFormat.OPUS))
+                    continue
+                collectedStreams.add(AStream(stream))
             }
             return collectedStreams.toList().sortedWith(compareBy { it.bitrate })
         }
@@ -513,6 +532,18 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             val allInitialStreams = videoStreamsOrdered.filterNotNull().flatten().toList()
             val comparator = compareBy<VideoStream> { it.resolution.toResolutionValue() }
             return if (ascendingOrder) allInitialStreams.sortedWith(comparator) else { allInitialStreams.sortedWith(comparator.reversed()) }
+        }
+
+        fun getSortedVStreams(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
+                                      preferVideoOnlyStreams: Boolean): List<VStream> {
+            val videoStreamsOrdered = if (preferVideoOnlyStreams) listOf(videoStreams, videoOnlyStreams) else listOf(videoOnlyStreams, videoStreams)
+            val allInitialStreams = videoStreamsOrdered.filterNotNull().flatten().toList()
+            val comparator = compareBy<VideoStream> { it.resolution.toResolutionValue() }
+            val vList = mutableListOf<VStream>()
+            if (ascendingOrder) allInitialStreams.sortedWith(comparator) else { allInitialStreams.sortedWith(comparator.reversed()) }.forEach {
+                vList.add(VStream(it))
+            }
+            return vList
         }
 
         fun buildMetadata(p: Episode): MediaMetadata {

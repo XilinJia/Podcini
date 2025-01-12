@@ -299,7 +299,7 @@
     <string name="confirm_mobile_streaming_button_always">Vendo</string>
     <string name="confirm_mobile_streaming_button_once">Enkrat</string>
     <!-- Mediaplayer messages -->
-    <string name="playback_error_generic"><![CDATA[The media file could not be played.\n\n- Try deleting and re-downloading the episode.\n- Check your network connection, and make sure no VPN or login page is blocking access.\n- Try long-pressing and sharing the \"Media address\" to your web browser to see if it can be played there. If not, contact the podcast creators.]]></string>
+    <string name="playback_error_generic"><![CDATA[The media file could not be played.\n\n- Something is wrong with the downloaded media file, or if streaming, the url address of the media or your network connection.]]></string>
     <string name="no_media_playing_label">Ni medijske vsebine za predvajati</string>
     <string name="unknown_media_key">Podcini - Neznan medijski ključ: %1$d</string>
     <string name="error_file_not_found">Datoteka ni najdena</string>

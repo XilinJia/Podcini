@@ -4,12 +4,9 @@
 
 An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg), adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) and aromatized with porcini ![porcini](./images/porcini.jpg), invites your harmonious heartbeats.
 
-### Rendezvous chez:
+### To avoid suspicions and allegations of possible violation of some legal terms, I decided to stop developing, updating and maintaining this project as of Jan 13 2025.
 
-[<img src="./images/external/getItGithub.png" alt="GitHub" height="50">](https://github.com/XilinJia/Podcini/releases/latest)
-[<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="50">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
-[<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
-[<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
+### I will continue on to project [Podcini.X](https://github.com/XilinJia/Podcini.X) that's compatible with this project but with access to Youtube stripped off.
 
 ### Note:
 

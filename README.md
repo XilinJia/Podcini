@@ -19,8 +19,6 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker or screen, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
 
-Podcini is no longer listed on Google Play, as apparently Google doesn't like accessing Youtube.
-
 Podcini.R requests for permission for unrestricted background activities for uninterrupted background play of a playlist.  For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
 
 If you intend to sync through a server, NextCloud server has been tested, but caution is advised. 

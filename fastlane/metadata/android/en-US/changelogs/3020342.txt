@@ -1,0 +1,4 @@
+ Version 7.3.5
+
+* removed persisted audio/video streams info, useless
+* fixed setting Locale in Player Detailed

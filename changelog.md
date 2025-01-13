@@ -1,3 +1,8 @@
+# 7.3.5
+
+* removed persisted audio/video streams info, useless
+* fixed setting Locale in Player Detailed
+
 # 7.3.4
 
 * made assembling Youtube media less stressful, persisted audio/video streams once played, hopefully for better future access

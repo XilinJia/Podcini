@@ -228,6 +228,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 when {
                     streaming -> {
                         val streamurl = curEpisode!!.downloadUrl
+                        Logd(TAG, "streamurl: $streamurl")
                         if (streamurl != null) {
                             mediaItem = null
                             mediaSource = null

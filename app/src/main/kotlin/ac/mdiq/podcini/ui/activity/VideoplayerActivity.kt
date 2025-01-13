@@ -542,7 +542,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             get() {
                 val tracks = playbackService?.mPlayer?.getAudioTracks()
                 if (tracks.isNullOrEmpty()) return emptyList()
-                return tracks.filterNotNull().map { it }
+                return tracks
             }
 
         private val selectedAudioTrack: Int

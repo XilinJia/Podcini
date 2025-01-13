@@ -4,10 +4,7 @@ import ac.mdiq.vista.extractor.stream.AudioStream
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
-class AStream : RealmObject {
-    @PrimaryKey
-    var id: Long = 0L
-
+class AStream  {
     var averageBitrate: Int = 0
 
     var bitrate: Int = 0

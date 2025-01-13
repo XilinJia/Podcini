@@ -265,8 +265,7 @@ fun MediaPlayerErrorDialog(activity: Context, message: String, showDialog: Mutab
             title = { Text(stringResource(R.string.error_label)) },
             text = {
                 val genericMessage: String = activity.getString(R.string.playback_error_generic)
-                val errorMessage = SpannableString("""
-                                    $genericMessage
+                val errorMessage = SpannableString("""$genericMessage
                                     
                                     $message
                                     """.trimIndent())
@@ -275,7 +274,7 @@ fun MediaPlayerErrorDialog(activity: Context, message: String, showDialog: Mutab
             },
             confirmButton = {
                 TextButton(onClick = {
-                    isBSExpanded = false
+//                    isBSExpanded = false
                     showDialog.value = false
                 }) { Text("OK") }
             },

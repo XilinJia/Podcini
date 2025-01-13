@@ -167,6 +167,7 @@ class Episode : RealmObject {
     @Ignore
     var streamInfo: StreamInfo? = null
         get() {
+//            return StreamInfo.getInfo(Vista.getService(0), downloadUrl!!)
             if (field == null) {
                 if (downloadUrl == null) return null
                 try { field = StreamInfo.getInfo(Vista.getService(0), downloadUrl!!)
@@ -177,9 +178,6 @@ class Episode : RealmObject {
             }
             return field
         }
-
-    var aStreamsList: RealmList<AStream> = realmListOf()
-    var vStreamsList: RealmList<VStream> = realmListOf()
 
     @Ignore
     val isRemote = mutableStateOf(false)

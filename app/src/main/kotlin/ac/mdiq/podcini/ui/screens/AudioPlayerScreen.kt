@@ -7,7 +7,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMediaId
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.isYoutubeMedia
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.isYTMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.ytMediaSpecs
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -58,6 +58,7 @@ import android.view.KeyEvent
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -783,24 +784,27 @@ fun AudioPlayerScreen() {
 //            if (Build.VERSION.SDK_INT <= 32) (context as MainActivity).showSnackbarAbovePlayer(context.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
                 return true
             }
-            if (isYoutubeMedia) {
+            if (isYTMedia) {
                 val locales = remember { mutableStateListOf<String>() }
                 var locale by remember { mutableStateOf("") }
                 val codecs = remember { mutableStateListOf<String>() }
                 var codec by remember { mutableStateOf("") }
                 val bitRates = remember { mutableStateListOf<String>() }
                 var bitrate by remember { mutableIntStateOf(0) }
-                LaunchedEffect(ytMediaSpecs) {
+                LaunchedEffect(ytMediaSpecs.media.id) {
                     locales.clear()
                     bitRates.clear()
                     codecs.clear()
                     val lSet = mutableSetOf<String>()
                     val bSet = mutableSetOf<String>()
                     val cSet = mutableSetOf<String>("Any")
-                    if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
-                        lSet.add(s.audioLocale.toString())
-                        bSet.add(s.averageBitrate.toString())
-                        if (s.codec != null) cSet.add(s.codec!!) else cSet.add("null")
+                    if (vm.curItem != null) {
+                        for (s in ytMediaSpecs.aStreamsList) {
+                            Logd(TAG, "s.codec ${s.codec} s.averageBitrate ${s.averageBitrate}")
+                            lSet.add(s.audioLocale.toString())
+                            bSet.add(s.averageBitrate.toString())
+                            if (s.codec != null) cSet.add(s.codec!!) else cSet.add("null")
+                        }
                     }
                     locales.addAll(lSet)
                     bitRates.addAll(bSet)
@@ -809,24 +813,23 @@ fun AudioPlayerScreen() {
                     if (bitRates.isNotEmpty()) bitrate = bitRates[0].toInt()
                     if (codecs.isNotEmpty()) codec = codecs[0]
                 }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    if (locales.size > 1) {
-                        Text("Locale:", color = textColor, modifier = Modifier.padding(end = 10.dp))
-                        Spinner(items = locales, modifier = Modifier.widthIn(max = 60.dp), selectedItem = locale) { index ->
-                            Logd(TAG, "Locale selected: ${locales[index]}")
-                            bitRates.clear()
-                            locale = locales[index]
-                            val bSet = mutableSetOf<String>()
-                            if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
-                                if (s.audioLocale.toString() == locale) bSet.add(s.averageBitrate.toString())
-                            }
-                            bitRates.addAll(bSet)
-                            bitrate = bitRates[0].toInt()
-                            ytMediaSpecs.setAudioStream(locale, codec, bitrate)
-                            vm.resetPlayer = true
+                if (locales.size > 1) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                    Text("Locale:", color = textColor, modifier = Modifier.padding(end = 10.dp))
+                    Spinner(items = locales, modifier = Modifier.widthIn(max = 60.dp), selectedItem = locale) { index ->
+                        Logd(TAG, "Locale selected: ${locales[index]}")
+                        bitRates.clear()
+                        locale = locales[index]
+                        val bSet = mutableSetOf<String>()
+                        if (vm.curItem != null) for (s in ytMediaSpecs.aStreamsList) {
+                            if (s.audioLocale.toString() == locale) bSet.add(s.averageBitrate.toString())
                         }
+                        bitRates.addAll(bSet)
+                        bitrate = bitRates[0].toInt()
+                        ytMediaSpecs.setAudioStream(locale, codec, bitrate)
+                        vm.resetPlayer = true
                     }
-                    Spacer(Modifier.weight(1f))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp)) {
                     if (codecs.size > 1) {
                         Text("Codec:", color = textColor, modifier = Modifier.padding(end = 10.dp))
                         Spinner(items = codecs, modifier = Modifier.widthIn(max = 100.dp), selectedItem = codec) { index ->
@@ -834,7 +837,7 @@ fun AudioPlayerScreen() {
                             bitRates.clear()
                             codec = codecs[index]
                             val bSet = mutableSetOf<String>()
-                            if (vm.curItem != null) for (s in vm.curItem!!.aStreamsList) {
+                            if (vm.curItem != null) for (s in ytMediaSpecs.aStreamsList) {
                                 Logd(TAG, "${s.codec} $codec ${s.averageBitrate}")
                                 if (s.audioLocale.toString() == locale && (codec == "Any" || s.codec == codec)) bSet.add(s.averageBitrate.toString())
                             }
@@ -846,12 +849,13 @@ fun AudioPlayerScreen() {
                     }
                     Spacer(Modifier.weight(1f))
                     Text("BPS:", color = textColor, modifier = Modifier.padding(end = 10.dp))
-                    if (bitRates.size > 1) {Spinner(items = bitRates, modifier = Modifier.widthIn(max = 50.dp), selectedItem = bitrate.toString()) { index ->
-                        Logd(TAG, "BitRate selected: ${bitRates[index]}")
-                        bitrate = bitRates[index].toInt()
-                        ytMediaSpecs.setAudioStream(locale, codec, bitrate)
-                        vm.resetPlayer = true
-                    }
+                    if (bitRates.size > 1) {
+                        Spinner(items = bitRates, modifier = Modifier.widthIn(max = 50.dp), selectedItem = bitrate.toString()) { index ->
+                            Logd(TAG, "BitRate selected: ${bitRates[index]}")
+                            bitrate = bitRates[index].toInt()
+                            ytMediaSpecs.setAudioStream(locale, codec, bitrate)
+                            vm.resetPlayer = true
+                        }
                     } else Text(bitrate.toString(), color = textColor)
                     Spacer(Modifier.weight(1f))
                     if (vm.resetPlayer) IconButton(onClick = {

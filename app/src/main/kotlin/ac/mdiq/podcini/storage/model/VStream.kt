@@ -4,10 +4,7 @@ import ac.mdiq.vista.extractor.stream.VideoStream
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
-class VStream : RealmObject {
-    @PrimaryKey
-    var id: Long = 0L
-
+class VStream {
     var isVideoOnly: Boolean = false
 
     var bitrate: Int = 0

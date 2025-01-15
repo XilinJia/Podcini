@@ -6,7 +6,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### To avoid suspicions and allegations of possible violation of some legal terms, I decided to stop developing, updating and maintaining this project as of Jan 13 2025.
 
-### I will continue on to project [Podcini.X](https://github.com/XilinJia/Podcini.X) that's compatible with this project but with access to Youtube stripped off.
+### I will continue on to project [Podcini.X](https://github.com/XilinJia/Podcini.X) that's compatible with this one but with access to Youtube stripped off.
 
 ### Note:
 
